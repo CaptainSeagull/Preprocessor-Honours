@@ -526,6 +526,7 @@ get_token(Tokenizer *tokenizer)
         case '=':  { res.type = TokenType::equals;         } break;
         case ',':  { res.type = TokenType::comma;          } break;
         case '~':  { res.type = TokenType::tilde;          } break;
+        case '#':  { res.type = TokenType::hash;           } break;
 
         case '.':  {
             B32 var_args = false;
@@ -1052,6 +1053,14 @@ struct FunctionData {
     U32 param_count;
 };
 
+internal void
+skip_to_end_of_line(Tokenizer *tokenizer)
+{
+    while(*tokenizer->at != '\n') {
+        ++tokenizer->at;
+    }
+}
+
 // TODO(Jonny): Always make sure arguments[0] is actually the exe being run...
 StuffToWrite
 start_parsing(AllFiles all_files, Memory *memory)
@@ -1085,6 +1094,10 @@ start_parsing(AllFiles all_files, Memory *memory)
                         case TokenType::end_of_stream: {
                             parsing = false;
                         } break;
+
+                        case TokenType::hash: {
+                            skip_to_end_of_line(&tokenizer);
+                        }
 
                         case TokenType::identifier: {
                             if(token_equals(token, "struct")) { // TODO(Jonny): Support classes and typedef struct {} name structs.
@@ -1331,6 +1344,28 @@ start_parsing(AllFiles all_files, Memory *memory)
     char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code, memory);
     write_to_output_buffer(&source_output, "%s", serialize_struct_implementation);
 
+    // Serialize func.
+    char *serialize_func_implementation = "\n\nsize_t\n"
+                                          "serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)\n"
+                                          "{\n"
+                                          "    size_t bytes_written = 0;\n"
+                                          "\n"
+                                          "    bytes_written = sprintf(buf, \"Function %%s\\n    Linkage: %%s\\n    Return Type: %%s\\n    Param Count: %%u\\n\",\n"
+                                          "                            func.name, (func.linkage) ? func.linkage : \"normal\", func.ret_type, func.param_count);\n"
+                                          "\n"
+                                          "    for(unsigned param_index = 0; (param_index < func.param_count); ++param_index) {\n"
+                                          "        Variable *param = func.params + param_index;\n"
+                                          ""
+                                          "        bytes_written += sprintf(buf + bytes_written, \"Param %%u : %%s %%s\", param_index + 1, param->ret_type, param->name);\n"
+                                          "    }\n"
+                                          "\n"
+                                          "    assert(bytes_written <  buf_size);\n"
+                                          "    return(bytes_written);\n"
+                                          "}\n";
+    write_to_output_buffer(&source_output, serialize_func_implementation);
+
+
+
     // # Guard stuff
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
     write_to_output_buffer(&source_output, "#endif // #if !defined(GENERATED_CPP)\n");
@@ -1377,10 +1412,10 @@ start_parsing(AllFiles all_files, Memory *memory)
     pop_temp_memory(&types_memory);
 
     // struct member_defintion.
-    write_to_output_buffer(&header_output, "\n\nstruct MemberDefinition {\n    MetaType type;\n    char *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n};\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
+    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//");
+    write_to_output_buffer(&header_output, "\nstruct MemberDefinition {\n    MetaType type;\n    char *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n};\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
 
     // Struct meta data.
-    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\n");
     for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = &struct_data[struct_index];
         write_to_output_buffer(&header_output, "// Meta Data for: %S\n", sd->name.len, sd->name.e);
@@ -1388,15 +1423,67 @@ start_parsing(AllFiles all_files, Memory *memory)
         write_to_output_buffer(&header_output, "static const size_t num_members_for_%S = %u;\n\n", sd->name.len, sd->name.e, sd->member_count);
     }
 
+    // SerializeStruct header.
+    write_to_output_buffer(&header_output, get_serialize_struct_declaration());
+
+    // Function meta data.
+    write_to_output_buffer(&header_output, "\n\n//\n// Function meta data.\n//\n");
+    char *variable_and_func_meta_data_structs = "struct Variable {\n"
+                                                "    char *ret_type;\n"
+                                                "    char *name;\n"
+                                                "};"
+                                                "\n"
+                                                "\n"
+                                                "unsigned const MAX_NUMBER_OF_PARAMS = 32;\n"
+                                                "struct FunctionMetaData {\n"
+                                                "    char *linkage;\n"
+                                                "    char *ret_type;\n"
+                                                "    char *name;\n"
+                                                "    unsigned param_count;\n"
+                                                "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
+                                                "};\n"
+                                                "\n"
+                                                "// FunctionMetaData get_func_meta_data(function_name);\n"
+                                                "#define get_func_meta_data(func) function_data_##func\n";
+
+    write_to_output_buffer(&header_output, variable_and_func_meta_data_structs);
+    for(U32 func_index = 0; (func_index < func_count); ++func_index) {
+        FunctionData *fd = func_data + func_index;
+        char buf[256] = {};
+        if(fd->linkage.len > 0) {
+            char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
+            format_string(buf, array_count(buf), meta_data,
+                          fd->name.len, fd->name.e);
+        } else {
+            char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
+            format_string(buf, array_count(buf), meta_data,
+                          fd->name.len, fd->name.e);
+        }
+
+        write_to_output_buffer(&header_output, buf);
+    }
+
+    char *serialize_func_header = "\n// size_t serialize_function(function_name, char *buf, size_t buf_size);"
+                                  "\n#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)\n"
+                                  "size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);\n";
+
+    write_to_output_buffer(&header_output, serialize_func_header);
+
+    //
+    // Forward Declared data.
+    //
+
+#if 1
     // Struct forward declarations.
-    write_to_output_buffer(&header_output, "\n//\n// Forward declared structs.\n//\n");
+    write_to_output_buffer(&header_output, "\n//\n// Forward Declared Data.\n//\n");
+    write_to_output_buffer(&header_output, "\n// Forward declared structs.\n");
     for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
         write_to_output_buffer(&header_output, "struct %S;\n", sd->name.len, sd->name.e);
     }
 
     // Enum forward declarations.
-    write_to_output_buffer(&header_output, "\n//\n// Forward declared enums.\n//\n");
+    write_to_output_buffer(&header_output, "\n// Forward declared enums.\n");
     for(U32 enum_index = 0; (enum_index < enum_count); ++enum_index) {
         EnumData *ED = &enum_data[enum_index];
         char const *struct_part = (ED->is_struct) ? "struct ": "";
@@ -1408,14 +1495,15 @@ start_parsing(AllFiles all_files, Memory *memory)
     }
 
     // Union forward declarations.
-    write_to_output_buffer(&header_output, "\n//\n// Forward declared unions.\n//\n");
+    write_to_output_buffer(&header_output, "\n// Forward declared unions.\n");
     for(U32 union_index = 0; (union_index < union_count); ++union_index) {
         String *UD = &union_data[union_index];
         write_to_output_buffer(&header_output, "union %S;\n", UD->len, UD->e);
     }
 
     // Function forward declarations.
-    write_to_output_buffer(&header_output, "\n//\n// Forward declared functions.\n//\n");
+
+    write_to_output_buffer(&header_output, "\n// Forward declared functions.\n");
     for(U32 func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
 
@@ -1439,50 +1527,11 @@ start_parsing(AllFiles all_files, Memory *memory)
 
         write_to_output_buffer(&header_output, ");\n");
     }
-
-    // Function meta data.
-    write_to_output_buffer(&header_output, "\n//\n// Function meta data.\n//\n");
-    char *variable_and_func_meta_data_structs = "struct Variable {\n"
-                                                "    char *ret_type;\n"
-                                                "    char *name;\n"
-                                                "};"
-                                                "\n"
-                                                "\n"
-                                                "unsigned const MAX_NUMBER_OF_PARAMS = 32;\n"
-                                                "struct FunctionMetaData {\n"
-                                                "    char *linkage;\n"
-                                                "    char *ret_type;\n"
-                                                "    char *name;\n"
-                                                "    unsigned param_count;\n"
-                                                "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
-                                                "};\n"
-                                                "#define get_func_meta_data(func) function_data_##func"
-                                                "\n";
-    write_to_output_buffer(&header_output, variable_and_func_meta_data_structs);
-    for(U32 func_index = 0; (func_index < func_count); ++func_index) {
-        FunctionData *fd = func_data + func_index;
-        char buf[256] = {};
-        if(fd->linkage.len > 0) {
-            char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
-            format_string(buf, array_count(buf), meta_data,
-                          fd->name.len, fd->name.e);
-        } else {
-            char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
-            format_string(buf, array_count(buf), meta_data,
-                          fd->name.len, fd->name.e);
-        }
-
-        write_to_output_buffer(&header_output, buf);
-    }
-
-    // SerializeStruct header.
-    write_to_output_buffer(&header_output, get_serialize_struct_declaration());
+#endif
 
     // # Guard macro.
     write_to_output_buffer(&header_output, "\n\n#define GENERATED_H");
     write_to_output_buffer(&header_output, "\n#endif // !defined(GENERATED_H)\n");
-
-    //platform_services.write_to_file("generated.h", header_output.buffer, header_output.index);
 
     res.header_size = header_output.index;
     res.header_data = header_output.buffer;

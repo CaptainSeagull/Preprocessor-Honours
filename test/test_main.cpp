@@ -36,7 +36,7 @@ union V2 {
 };
 
 static BarFoo
-foo(char *str, ...)
+foo(char *str, int len, ...)
 {
     BarFoo res = {};
     return(res);
@@ -48,11 +48,28 @@ struct FooOne {
     int three;
 };
 
-int main(int argc, char *argv[])
+/*  Should return:
+    "Linkage: static,
+    return type: BarFoo,
+    name: foo,
+    param 1: char *str,
+    param 2: var_args */
+
+
+int
+main(int argc, char *argv[])
 {
+    char buf[256] = {};
+    serialize_function(foo, buf, 256);
+
+    printf(buf);
+
+    int i = 0;
+
+#if 0
     size_t buf_size = 1024  * 1024;
 
-    auto foo_meta_data = get_func_meta_data(foo);
+    FunctionMetaData foo_meta_data = get_func_meta_data(foo);
 
     char *ReturnType = foo_meta_data.ret_type;
     printf(ReturnType);
@@ -88,6 +105,6 @@ int main(int argc, char *argv[])
 
     printf(buf);
     printf("\n");
-
+#endif
     return(0);
 }

@@ -69,9 +69,10 @@ FunctionMetaData function_data_foo = {
     "static",
     "BarFoo",
     "foo",
-    1,
+    2,
     {
-        {"char", "str"}
+        {"char", "str"},
+        {"int", "len"}
     }
 };
 
@@ -183,6 +184,24 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned 
 
     return(bytes_written);
 }
+
+size_t
+serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
+{
+    size_t bytes_written = 0;
+
+    bytes_written = sprintf(buf, "Function %s\n    Linkage: %s\n    Return Type: %s\n    Param Count: %u\n",
+                            func.name, (func.linkage) ? func.linkage : "normal", func.ret_type, func.param_count);
+
+    for(unsigned param_index = 0; (param_index < func.param_count); ++param_index) {
+        Variable *param = func.params + param_index;
+        bytes_written += sprintf(buf + bytes_written, "Param %u : %s %s", param_index + 1, param->ret_type, param->name);
+    }
+
+    assert(bytes_written <  buf_size);
+    return(bytes_written);
+}
+
 
 #define GENERATED_CPP
 #endif // #if !defined(GENERATED_CPP)
