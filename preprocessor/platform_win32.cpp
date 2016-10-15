@@ -9,12 +9,35 @@
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
 
+#include "platform.h"
+#include <windows.h>
+
+//
+// Stuff I need because I don't link to the crt.
+//
+
 #if WIN32
 extern "C" { int _fltused; }
 #endif
 
-#include <windows.h>
-#include "platform.h"
+#pragma function(memset)
+void *
+memset(void *ptr, int value, PtrSize num)
+{
+    assert(value < 0xFFFF);
+    set_memory_block(ptr, cast(U8)value, num);
+
+    return(ptr);
+}
+
+#pragma function(memcpy)
+void *
+memcpy(void *dest, const void *source, PtrSize num)
+{
+    copy_memory_block(dest, source, num);
+
+    return(dest);
+}
 
 #define GetProcAddress(lib, name) cast(void *)(GetProcAddress(lib, name)) // To avoid warning C4191.
 
@@ -30,7 +53,7 @@ safe_truncate_size_64(U64 value)
 internal char *
 win32_read_entire_file_and_null_terminate(char *filename, Memory *memory)
 {
-    assert((filename) &&(memory));
+    assert((filename) && (memory));
 
     char *res = {};
 
@@ -66,7 +89,7 @@ win32_get_file_size(char *filename)
     if(file_handle != INVALID_HANDLE_VALUE) {
         LARGE_INTEGER file_size = {};
         if(GetFileSizeEx(file_handle, &file_size)) {
-            size = file_size.QuadPart + DEFAULT_MEMORY_ALIGNMENT + 1;
+            size = safe_truncate_size_64(file_size.QuadPart + DEFAULT_MEMORY_ALIGNMENT + 1);
         }
 
         CloseHandle(file_handle);
