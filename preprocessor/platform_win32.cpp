@@ -21,18 +21,18 @@ extern "C" { int _fltused; }
 #endif
 
 #pragma function(memset)
-void *
-memset(void *ptr, int value, PtrSize num)
+void   *__cdecl
+memset(_Out_writes_bytes_all_(_Size) void *dest, _In_ int value, _In_ size_t num)
 {
     assert(value < 0xFFFF);
-    set_memory_block(ptr, cast(U8)value, num);
+    set_memory_block(dest, cast(U8)value, num);
 
-    return(ptr);
+    return(dest);
 }
 
 #pragma function(memcpy)
-void *
-memcpy(void *dest, const void *source, PtrSize num)
+void   *__cdecl
+memcpy(_Out_writes_bytes_all_(_Size) void *dest, _In_reads_bytes_(_Size) const void *source, _In_ size_t num)
 {
     copy_memory_block(dest, source, num);
 

@@ -20,6 +20,7 @@
 
 #include <stdarg.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef uint64_t U64;
 typedef uint32_t U32;
@@ -31,13 +32,7 @@ typedef int32_t S32;
 typedef int16_t s16;
 typedef int8_t S8;
 
-#if ENVIRONMENT64
-    typedef U64 PtrSize;
-    typedef S64 SignedPtrSize;
-#elif ENVIRONMENT32
-    typedef U32 PtrSize;
-    typedef S32 SignedPtrSize;
-#endif
+typedef intptr_t PtrSize;
 
 typedef float F32;
 typedef double F64;
@@ -246,17 +241,6 @@ is_whitespace(char c)
     return(res);
 }
 
-//
-// Platform Services.
-//
-#if 0
-#define READ_ENTIRE_FILE_AND_NULL_TERMINATE(name) char *name(char *filename, Memory *memory)
-typedef READ_ENTIRE_FILE_AND_NULL_TERMINATE(PlatformReadEntireFileAndNullTerminate);
-
-struct PlatformServices {
-    PlatformReadEntireFileAndNullTerminate *read_entire_file_and_null_terminate;
-};
-#endif
 //
 // Start Parsing function.
 //
