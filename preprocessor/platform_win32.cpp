@@ -21,8 +21,8 @@ extern "C" { int _fltused; }
 #endif
 
 #pragma function(memset)
-void   *__cdecl
-memset(_Out_writes_bytes_all_(_Size) void *dest, _In_ int value, _In_ size_t num)
+Void   *__cdecl
+memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num)
 {
     assert(value < 0xFFFF);
     set_memory_block(dest, cast(U8)value, num);
@@ -31,15 +31,15 @@ memset(_Out_writes_bytes_all_(_Size) void *dest, _In_ int value, _In_ size_t num
 }
 
 #pragma function(memcpy)
-void   *__cdecl
-memcpy(_Out_writes_bytes_all_(_Size) void *dest, _In_reads_bytes_(_Size) const void *source, _In_ size_t num)
+Void   *__cdecl
+memcpy(_Out_writes_bytes_all_(_Size) Void *dest, _In_reads_bytes_(_Size) const Void *source, _In_ size_t num)
 {
     copy_memory_block(dest, source, num);
 
     return(dest);
 }
 
-#define GetProcAddress(lib, name) cast(void *)(GetProcAddress(lib, name)) // To avoid warning C4191.
+#define GetProcAddress(lib, name) cast(Void *)(GetProcAddress(lib, name)) // To avoid warning C4191.
 
 internal U32
 safe_truncate_size_64(U64 value)
@@ -50,12 +50,12 @@ safe_truncate_size_64(U64 value)
     return(res);
 }
 
-internal char *
-win32_read_entire_file_and_null_terminate(char *filename, Memory *memory)
+internal Char *
+win32_read_entire_file_and_null_terminate(Char *filename, Memory *memory)
 {
     assert((filename) && (memory));
 
-    char *res = {};
+    Char *res = {};
 
     HANDLE file_handle = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if(file_handle != INVALID_HANDLE_VALUE) {
@@ -79,7 +79,7 @@ win32_read_entire_file_and_null_terminate(char *filename, Memory *memory)
 }
 
 internal PtrSize
-win32_get_file_size(char *filename)
+win32_get_file_size(Char *filename)
 {
     assert(filename);
 
@@ -99,12 +99,12 @@ win32_get_file_size(char *filename)
 }
 
 // TODO(Jonny): Need to turn /n to /r/n.
-internal B32
-win32_write_to_file(char *filename, void *data, PtrSize data_size)
+internal Bool
+win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
 {
     assert((filename) && (data) && (data_size > 0));
 
-    B32 res = false;
+    Bool res = false;
     HANDLE file_handle = CreateFileA(filename, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
     if((file_handle) && (file_handle != INVALID_HANDLE_VALUE)) {
         DWORD bytes_written = 0;
@@ -123,7 +123,7 @@ win32_write_to_file(char *filename, void *data, PtrSize data_size)
 }
 
 int
-main(int argc, char *argv[])
+main(Int argc, Char *argv[])
 {
     PtrSize tot_size_of_all_files = 0;
     for(S32 file_index = 1; (file_index < argc); ++file_index) {
@@ -132,7 +132,7 @@ main(int argc, char *argv[])
 
     PtrSize permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
     PtrSize temp_size = 1024 * 1024;
-    void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if(all_memory) {
         Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
@@ -143,25 +143,25 @@ main(int argc, char *argv[])
 
         StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
 
-        B32 header_success = win32_write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
-        B32 source_success = win32_write_to_file("generated.cpp", stuff_to_write.source_data, stuff_to_write.source_size);
+        Bool header_success = win32_write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
+        Bool source_success = win32_write_to_file("generated.cpp", stuff_to_write.source_data, stuff_to_write.source_size);
         assert((header_success) && (source_success));
     }
 
 
-    B32 mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE);
+    Bool mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE) != 0;
     assert(mem_freed);
 
     return(0);
 }
 
-void
-mainCRTStartup(void)
+Void
+mainCRTStartup(Void)
 {
-    char *buf[32] = {};
+    Char *buf[32] = {};
     U32 buf_index = 0;
 
-    char *args = GetCommandLine();
+    Char *args = GetCommandLine();
     int arg_count = 0;
 
     buf[buf_index++] = args;

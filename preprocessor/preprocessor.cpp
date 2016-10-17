@@ -23,7 +23,7 @@ get_digit_count(S32 value)
 }
 
 internal void
-copy_int(char *dest, S32 value, S32 start, U32 count)
+copy_int(Char *dest, S32 value, S32 start, U32 count)
 {
     assert(dest);
 
@@ -40,27 +40,27 @@ int_to_string(S32 value, char *buffer)
 {
     assert(buffer);
 
-    B32 is_neg = (value < 0);
+    Bool is_neg = (value < 0);
     S32 abs_value = (is_neg) ? -value : value;
     U32 num_digits = get_digit_count(abs_value);
     if(is_neg) {
-        char *ptr = buffer;
+        Char *ptr = buffer;
         *ptr = '-';
         copy_int(ptr, abs_value, 1, num_digits);
     } else {
-        char *ptr = buffer;
+        Char *ptr = buffer;
         copy_int(ptr, abs_value, 0, num_digits);
     }
 
     return(buffer);
 }
 
-internal char *
-float_to_string(F32 value, U32 dec_accuracy, char *buf)
+internal Char *
+float_to_string(F32 value, U32 dec_accuracy, Char *buf)
 {
     assert(buf);
 
-    B32 is_neg = (value < 0);
+    Bool is_neg = (value < 0);
     F32 abs_value = (is_neg) ? -value : value;
 
     S32 mul = 1;
@@ -75,13 +75,13 @@ float_to_string(F32 value, U32 dec_accuracy, char *buf)
     S32 digit_count_after_dec = get_digit_count(num_after_dec);
 
     if (is_neg) {
-        char *ptr = buf;
+        Char *ptr = buf;
         *ptr = '-';
         copy_int(ptr, num_before_dec, 1, digit_count_before_dec);
         *(ptr + digit_count_before_dec + 1) = '.';
         copy_int(ptr, num_after_dec, digit_count_before_dec + 2, digit_count_after_dec);
     } else {
-        char *ptr = buf;
+        Char *ptr = buf;
         copy_int(ptr, num_before_dec, 0, digit_count_before_dec);
         *(ptr + digit_count_before_dec) = '.';
         copy_int(ptr, num_after_dec, digit_count_before_dec + 1, digit_count_after_dec);
@@ -90,40 +90,40 @@ float_to_string(F32 value, U32 dec_accuracy, char *buf)
     return(buf);
 }
 
-internal char *
-bool_to_string(B32 boolean)
+internal Char *
+bool_to_string(Bool boolean)
 {
-    char *res = cast(char *)((boolean) ? "true" : "false");
+    Char *res = cast(Char *)((boolean) ? "true" : "false");
 
     return(res);
 }
 
-internal B32
-is_numeric(char input)
+internal Bool
+is_numeric(Char input)
 {
-    B32 res = ((input >= '0') && (input <= '9'));
+    Bool res = ((input >= '0') && (input <= '9'));
 
     return(res);
 }
 
 // Supports %s, %d, %u, %c, %b and %f. %S for string with length.
 internal U32
-format_string_varargs(char *buf, PtrSize buf_len, char const *format, va_list args)
+format_string_varargs(Char *buf, PtrSize buf_len, Char const *format, va_list args)
 {
     assert((buf) && (format));
 
-    char *dest = cast(char *)buf;
+    Char *dest = cast(Char *)buf;
     U32 bytes_written = 0;
     U32 float_precision = 1;
     U32 next_fractional_digit = float_precision;
 
     while (*format) {
-        char temp_buffer[1024] = {};
-        char c = *format;
+        Char temp_buffer[1024] = {};
+        Char c = *format;
         if (c == '%') {
-            char type = format[1];
+            Char type = format[1];
             if (type == 'c') {
-                *dest++ = cast(char)va_arg(args, int);
+                *dest++ = cast(Char)va_arg(args, int);
                 bytes_written++;
             } else {
                 if (is_numeric(type)) {
@@ -133,7 +133,7 @@ format_string_varargs(char *buf, PtrSize buf_len, char const *format, va_list ar
                     format++;
                 }
 
-                char *replacement = 0;
+                Char *replacement = 0;
                 switch (type) {
                     case 'b': {
                         int boolean = va_arg(args, int);
@@ -141,33 +141,33 @@ format_string_varargs(char *buf, PtrSize buf_len, char const *format, va_list ar
                     } break;
 
                     case 's': {
-                        char *str = va_arg(args, char *);
+                        Char *str = va_arg(args, Char *);
                         replacement = str;
                     } break;
 
                     case 'd': {
                         S32 s32 = va_arg(args, S32);
-                        char temp_buffer[1024] = {};
+                        Char temp_buffer[1024] = {};
                         replacement = int_to_string(s32, temp_buffer);
                     } break;
 
                     case 'u': {
                         U32 u32 = va_arg(args, S32);
-                        char temp_buffer[1024] = {};
+                        Char temp_buffer[1024] = {};
                         replacement = int_to_string(u32, temp_buffer);
                     } break;
 
                     case 'f': {
                         F32 float_num = cast(F32)va_arg(args, F64);
-                        char temp_buffer[1024] = {};
+                        Char temp_buffer[1024] = {};
                         replacement = float_to_string(float_num, next_fractional_digit, temp_buffer);
                         next_fractional_digit = float_precision;
                     } break;
 
                     case 'S': {
                         S32 len = va_arg(args, S32);
-                        char *str = va_arg(args, char *);
-                        char *at = temp_buffer;
+                        Char *str = va_arg(args, Char *);
+                        Char *at = temp_buffer;
                         for(S32 str_index = 0; (str_index < len); ++str_index, ++at) {
                             *at = str[str_index];
                         }
@@ -208,7 +208,7 @@ format_string_varargs(char *buf, PtrSize buf_len, char const *format, va_list ar
 }
 
 internal U32
-format_string(char *buf, PtrSize buf_len, char const *format, ...)
+format_string(Char *buf, PtrSize buf_len, Char const *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -220,14 +220,14 @@ format_string(char *buf, PtrSize buf_len, char const *format, ...)
 }
 
 struct OutputBuffer {
-    char *buffer;
+    Char *buffer;
     PtrSize index;
     PtrSize size;
 };
 
-#define write_to_output_buffer(ob, format, ...) write_to_output_buffer_(ob, cast(char *)format, ##__VA_ARGS__)
+#define write_to_output_buffer(ob, format, ...) write_to_output_buffer_(ob, cast(Char *)format, ##__VA_ARGS__)
 internal void
-write_to_output_buffer_(OutputBuffer *ob, char *format, ...)
+write_to_output_buffer_(OutputBuffer *ob, Char *format, ...)
 {
     assert(((ob) && (ob->buffer) && (ob->size > 0) && (ob->index < ob->size)) && (format));
 
@@ -243,7 +243,7 @@ create_output_buffer(PtrSize size, Memory *memory)
     assert((size > 0) && (memory));
 
     OutputBuffer res = {};
-    res.buffer = cast(char *)push_permanent_memory(memory, size);
+    res.buffer = cast(Char *)push_permanent_memory(memory, size);
     res.size = size;
 
     return(res);
@@ -277,18 +277,18 @@ enum struct TokenType {
 };
 
 struct Token {
-    char *e;
+    Char *e;
     PtrSize len;
 
     TokenType type;
 };
 
 struct Tokenizer {
-    char *at;
+    Char *at;
 };
 
 struct String {
-    char *e;
+    Char *e;
     PtrSize len;
 };
 
@@ -304,8 +304,8 @@ token_to_string(Token token)
     return(res);
 }
 
-internal char *
-token_to_string(Token token, char *buffer, PtrSize size)
+internal Char *
+token_to_string(Token token, Char *buffer, PtrSize size)
 {
     assert(size >= token.len);
 
@@ -318,7 +318,7 @@ token_to_string(Token token, char *buffer, PtrSize size)
 }
 
 internal U32
-string_length(char *str)
+string_length(Char *str)
 {
     assert(str);
 
@@ -331,12 +331,12 @@ string_length(char *str)
     return(res);
 }
 
-internal B32
-string_compare(char *a, char *b, U32 len)
+internal Bool
+string_compare(Char *a, Char *b, U32 len)
 {
     assert((a) && (b) && (len > 0));
 
-    B32 res = true;
+    Bool res = true;
 
     for(U32 string_index = 0; (string_index < len); ++string_index) {
         if(a[string_index] != b[string_index]) {
@@ -371,16 +371,16 @@ eat_whitespace(Tokenizer *tokenizer)
                 tokenizer->at += 2;
             }
         } else if(tokenizer->at[0] == '#') { // #if 0 blocks.
-            char *hash_if_zero = "#if 0";
+            Char *hash_if_zero = "#if 0";
             U32 hash_if_zero_length = string_length(hash_if_zero);
 
-            char *hash_if_one = "#if 1";
+            Char *hash_if_one = "#if 1";
             U32 hash_if_one_length = string_length(hash_if_one);
 
             if(string_compare(tokenizer->at, hash_if_zero, hash_if_zero_length)) {
                 tokenizer->at += hash_if_zero_length;
 
-                char *hash_end_if = "#endif";
+                Char *hash_end_if = "#endif";
                 U32 hash_end_if_length = string_length(hash_end_if);
 
                 U32 level = 0;
@@ -404,10 +404,10 @@ eat_whitespace(Tokenizer *tokenizer)
             } else if(string_compare(tokenizer->at, hash_if_one, hash_if_one_length)) { // #if 1 #else blocks.
                 tokenizer->at += hash_if_zero_length;
 
-                char *hash_else = "#else";
+                Char *hash_else = "#else";
                 U32 hash_else_length = string_length(hash_else);
 
-                char *hash_end_if = "#endif";
+                Char *hash_end_if = "#endif";
                 U32 hash_end_if_length = string_length(hash_end_if);
 
                 U32 level = 0;
@@ -461,18 +461,18 @@ eat_whitespace(Tokenizer *tokenizer)
     }
 }
 
-internal B32
-is_alphabetical(char c)
+internal Bool
+is_alphabetical(Char c)
 {
-    B32 res = (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')));
+    Bool res = (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')));
 
     return(res);
 }
 
-internal B32
-is_num(char c)
+internal Bool
+is_num(Char c)
 {
-    B32 res = ((c >= '0') && (c <= '9'));
+    Bool res = ((c >= '0') && (c <= '9'));
 
     return(res);
 }
@@ -508,7 +508,7 @@ get_token(Tokenizer *tokenizer)
     Token res = {};
     res.len = 1;
     res.e = tokenizer->at;
-    char c = tokenizer->at[0];
+    Char c = tokenizer->at[0];
     ++tokenizer->at;
 
     switch(c) {
@@ -529,7 +529,7 @@ get_token(Tokenizer *tokenizer)
         case '#':  { res.type = TokenType::hash;           } break;
 
         case '.':  {
-            B32 var_args = false;
+            Bool var_args = false;
             Tokenizer tokenizer_copy = *tokenizer;
             Token next = get_token(&tokenizer_copy);
             if(next.type == TokenType::period) {
@@ -607,14 +607,14 @@ get_token(Tokenizer *tokenizer)
     return(res);
 }
 
-internal B32
-token_equals(Token token, char *tatch)
+internal Bool
+token_equals(Token token, Char *tatch)
 {
     assert(tatch);
 
-    B32 res = false;
+    Bool res = false;
 
-    char *at = tatch;
+    Char *at = tatch;
     for(U32 str_index = 0; (str_index < token.len); ++str_index, ++at) {
         if((*at == '\0') == (*at == token.e[str_index])) {
             goto exit_func;
@@ -630,11 +630,11 @@ exit_func:
 
 struct ResultInt {
     S32 e;
-    B32 success;
+    Bool success;
 };
 
 internal ResultInt
-char_to_int(char C)
+char_to_int(Char C)
 {
     ResultInt res = {};
     switch(C) {
@@ -679,7 +679,7 @@ string_to_int(String str)
 }
 
 internal ResultInt
-string_to_int(char *str)
+string_to_int(Char *str)
 {
     String string = {};
     string.e = str;
@@ -692,7 +692,7 @@ string_to_int(char *str)
 struct Variable {
     String type;
     String name;
-    B32 is_ptr;
+    Bool is_ptr;
     U32 array_count; // This is 1 if it's not an array.
 };
 
@@ -705,7 +705,7 @@ parse_member(Tokenizer *tokenizer, Token member_type_token)
     res.array_count = 1;
     res.type = token_to_string(member_type_token);
 
-    B32 parsing = true;
+    Bool parsing = true;
     while(parsing) {
         Token token = get_token(tokenizer);
         switch(token.type) {
@@ -716,7 +716,7 @@ parse_member(Tokenizer *tokenizer, Token member_type_token)
             case TokenType::open_bracket: {
                 Token size_token = get_token(tokenizer);
                 if(size_token.type == TokenType::number) {
-                    char buffer[256] = {};
+                    Char buffer[256] = {};
                     token_to_string(size_token, buffer, array_count(buffer));
                     ResultInt arr_coount = string_to_int(buffer);
                     if(arr_coount.success) {
@@ -739,13 +739,13 @@ parse_member(Tokenizer *tokenizer, Token member_type_token)
     return(res);
 }
 
-internal B32
+internal Bool
 require_token(Tokenizer *tokenizer, TokenType desired_type)
 {
     assert(tokenizer);
 
     Token token = get_token(tokenizer);
-    B32 res = (token.type == desired_type);
+    Bool res = (token.type == desired_type);
 
     return(res);
 }
@@ -762,7 +762,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
     assert((tokenizer) && (memory));
 
     StructData res = {};
-    char *start = tokenizer->at;
+    Char *start = tokenizer->at;
 
     Token name = {};
     name = get_token(tokenizer);
@@ -770,7 +770,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
         res.name = token_to_string(name);
         if(require_token(tokenizer, TokenType::open_brace)) {
             res.member_count = 0;
-            char *member_pos[256] = {};
+            Char *member_pos[256] = {};
             Token member_token[256] = {};
             for(;;) {
                 Token *mt = member_token + res.member_count;
@@ -810,13 +810,13 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
     return(res);
 }
 
-internal char *
-get_serialize_struct_implementation(char *def_struct_code, Memory *mem)
+internal Char *
+get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
 {
     assert((def_struct_code) && (mem));
 
     PtrSize res_size = 10000;
-    char *res = cast(char *)push_permanent_memory(mem, res_size);
+    Char *res = cast(Char *)push_permanent_memory(mem, res_size);
     if(res) {
         format_string(res, res_size,
                       "// TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. \n"
@@ -893,10 +893,10 @@ get_serialize_struct_implementation(char *def_struct_code, Memory *mem)
     return(res);
 }
 
-internal char *
+internal Char *
 get_serialize_struct_declaration(void)
 {
-    char *res = "\n// size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);\n"
+    Char *res = "\n// size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);\n"
                 "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, 0, buffer, buf_size, 0)\n"
                 "#define serialize_struct_(var, type, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
                 "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);";
@@ -911,7 +911,7 @@ enum struct ExtensionType {
 };
 
 internal ExtensionType
-get_extension_from_str(char *str)
+get_extension_from_str(Char *str)
 {
     ExtensionType res = ExtensionType::unknown;
 
@@ -929,11 +929,11 @@ get_extension_from_str(char *str)
 struct EnumData {
     String name;
     String type;
-    B32 is_struct;
+    Bool is_struct;
 };
 
 internal EnumData
-add_token_to_enum(Token name, Token type, B32 is_enum_struct)
+add_token_to_enum(Token name, Token type, Bool is_enum_struct)
 {
     assert(name.type == TokenType::identifier);
     assert((type.type == TokenType::identifier) || (type.type == TokenType::unknown));
@@ -948,10 +948,10 @@ add_token_to_enum(Token name, Token type, B32 is_enum_struct)
     return(res);
 }
 
-internal B32
+internal Bool
 str_compare(String a, String b)
 {
-    B32 res = false;
+    Bool res = false;
 
     if(a.len == b.len) {
         res = true;
@@ -967,10 +967,10 @@ str_compare(String a, String b)
     return(res);
 }
 
-internal B32
+internal Bool
 is_meta_type_already_in_array(String *array, U32 len, String test)
 {
-    B32 res = false;
+    Bool res = false;
 
     for(U32 arr_index = 0; (arr_index < len); ++arr_index) {
         if(str_compare(array[arr_index], test)) {
@@ -1018,7 +1018,7 @@ set_primitive_type(String *array)
 
 #define copy_literal_to_char_buffer(buffer, index, lit) copy_literal_to_char_buffer_(buffer + index, index, lit, sizeof(lit) - 1)
 internal U32
-copy_literal_to_char_buffer_(char *buffer, U32 index, char *lit, U32 lit_len)
+copy_literal_to_char_buffer_(Char *buffer, U32 index, Char *lit, U32 lit_len)
 {
     assert(buffer);
     assert((lit) && (lit_len));
@@ -1031,10 +1031,10 @@ copy_literal_to_char_buffer_(char *buffer, U32 index, char *lit, U32 lit_len)
     return(res);
 }
 
-internal char *
+internal Char *
 get_default_struct_string(void)
 {
-    char *res = "                    case meta_type_%S: {\n"
+    Char *res = "                    case meta_type_%S: {\n"
                 "                        if(member->is_ptr) {\n"
                 "                            bytes_written += serialize_struct_(**(char **)member_ptr, %S, indent + 4, buffer, buf_size - bytes_written, bytes_written);\n"
                 "                        } else {\n"
@@ -1078,8 +1078,7 @@ start_parsing(AllFiles all_files, Memory *memory)
     U32 func_count = 0;
 
     for(U32 index = 0; (index < all_files.count); ++index) {
-        //char *file = platform_services.read_entire_file_and_null_terminate(arguments[index], memory);
-        char *file = all_files.file[index];
+        Char *file = all_files.file[index];
 
         ExtensionType extension_type = ExtensionType::cpp; // TODO(Jonny): Debug.
         if(extension_type != ExtensionType::unknown) {
@@ -1087,7 +1086,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                 Tokenizer tokenizer = {};
                 tokenizer.at = file;
 
-                B32 parsing = true;
+                Bool parsing = true;
                 while(parsing) {
                     Token token = get_token(&tokenizer);
                     switch(token.type) {
@@ -1100,14 +1099,14 @@ start_parsing(AllFiles all_files, Memory *memory)
                         }
 
                         case TokenType::identifier: {
-                            if(token_equals(token, "struct")) { // TODO(Jonny): Support classes and typedef struct {} name structs.
+                            if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
                                 struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
                             } else if((token_equals(token, "union"))) {
                                 Token name = get_token(&tokenizer);
                                 union_data[union_count++] = token_to_string(name);
                             } else if((token_equals(token, "enum"))) {
                                 Token name = get_token(&tokenizer);
-                                B32 is_enum_struct = false;
+                                Bool is_enum_struct = false;
                                 if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
                                     is_enum_struct = true;
                                     name = get_token(&tokenizer);
@@ -1158,7 +1157,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                                                             fd->params[param_index].array_count = 1;
                                                         }
 
-                                                        B32 parsing = true;
+                                                        Bool parsing = true;
                                                         Variable *var = fd->params + fd->param_count;
 
                                                         // If there aren't any parameters then just skip them.
@@ -1184,7 +1183,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                                                                 case TokenType::open_bracket: {
                                                                     Token SizeToken = get_token(&tokenizer);
                                                                     if(SizeToken.type == TokenType::number) {
-                                                                        char buffer[256] = {};
+                                                                        Char buffer[256] = {};
                                                                         token_to_string(SizeToken, buffer, array_count(buffer));
                                                                         ResultInt arr_count = string_to_int(buffer);
                                                                         if(arr_count.success) {
@@ -1244,8 +1243,8 @@ start_parsing(AllFiles all_files, Memory *memory)
         write_to_output_buffer(&source_output, "struct %S {\n", sd->name.len, sd->name.e);
         for(U32 member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
-            char const *arr = (md->array_count > 1) ? "[%u]" : "";
-            char arr_buffer[256] = {};
+            Char const *arr = (md->array_count > 1) ? "[%u]" : "";
+            Char arr_buffer[256] = {};
             if(md->array_count > 1) {
                 format_string(arr_buffer, 256, arr, md->array_count);
             }
@@ -1284,9 +1283,9 @@ start_parsing(AllFiles all_files, Memory *memory)
     for(U32 func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
         write_to_output_buffer(&source_output, "FunctionMetaData function_data_%S = {\n", fd->name.len, fd->name.e);
-        char buf[256] = {};
+        Char buf[256] = {};
         if(fd->linkage.len > 0) {
-            char *meta_data = "    \"%S\",\n"
+            Char *meta_data = "    \"%S\",\n"
                               "    \"%S\",\n"
                               "    \"%S\",\n"
                               "    %u,\n";
@@ -1296,7 +1295,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                           fd->name.len, fd->name.e,
                           fd->param_count);
         } else {
-            char *meta_data = "    0,\n"
+            Char *meta_data = "    0,\n"
                               "    \"%S\",\n"
                               "    \"%S\",\n"
                               "    %u,\n";
@@ -1326,13 +1325,13 @@ start_parsing(AllFiles all_files, Memory *memory)
     write_to_output_buffer(&source_output, "\n\n");
 
     PtrSize def_struct_code_size = 256 * 256;
-    char *def_struct_code = cast(char *)push_permanent_memory(memory, def_struct_code_size);
+    Char *def_struct_code = cast(Char *)push_permanent_memory(memory, def_struct_code_size);
     if(def_struct_code) {
         U32 index = 0;
         index = copy_literal_to_char_buffer(def_struct_code, index, "switch(member->type) {\n");
         for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
-            char *DefaultStructString = get_default_struct_string();
+            Char *DefaultStructString = get_default_struct_string();
             index += format_string(def_struct_code + index, def_struct_code_size, DefaultStructString,
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
@@ -1341,11 +1340,11 @@ start_parsing(AllFiles all_files, Memory *memory)
         index = copy_literal_to_char_buffer(def_struct_code, index, "                }");
     }
 
-    char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code, memory);
+    Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code, memory);
     write_to_output_buffer(&source_output, "%s", serialize_struct_implementation);
 
     // Serialize func.
-    char *serialize_func_implementation = "\n\nsize_t\n"
+    Char *serialize_func_implementation = "\n\nsize_t\n"
                                           "serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)\n"
                                           "{\n"
                                           "    size_t bytes_written = 0;\n"
@@ -1369,7 +1368,6 @@ start_parsing(AllFiles all_files, Memory *memory)
     // # Guard stuff
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
     write_to_output_buffer(&source_output, "#endif // #if !defined(GENERATED_CPP)\n");
-    //platform_services.write_to_file("generated.cpp", source_output.buffer, source_output.index);
 
     res.source_size = source_output.index;
     res.source_data = source_output.buffer;
@@ -1428,7 +1426,7 @@ start_parsing(AllFiles all_files, Memory *memory)
 
     // Function meta data.
     write_to_output_buffer(&header_output, "\n\n//\n// Function meta data.\n//\n");
-    char *variable_and_func_meta_data_structs = "struct Variable {\n"
+    Char *variable_and_func_meta_data_structs = "struct Variable {\n"
                                                 "    char *ret_type;\n"
                                                 "    char *name;\n"
                                                 "};"
@@ -1449,13 +1447,13 @@ start_parsing(AllFiles all_files, Memory *memory)
     write_to_output_buffer(&header_output, variable_and_func_meta_data_structs);
     for(U32 func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
-        char buf[256] = {};
+        Char buf[256] = {};
         if(fd->linkage.len > 0) {
-            char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
+            Char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
             format_string(buf, array_count(buf), meta_data,
                           fd->name.len, fd->name.e);
         } else {
-            char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
+            Char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
             format_string(buf, array_count(buf), meta_data,
                           fd->name.len, fd->name.e);
         }
@@ -1463,7 +1461,7 @@ start_parsing(AllFiles all_files, Memory *memory)
         write_to_output_buffer(&header_output, buf);
     }
 
-    char *serialize_func_header = "\n// size_t serialize_function(function_name, char *buf, size_t buf_size);"
+    Char *serialize_func_header = "\n// size_t serialize_function(function_name, char *buf, size_t buf_size);"
                                   "\n#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)\n"
                                   "size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);\n";
 
@@ -1473,7 +1471,7 @@ start_parsing(AllFiles all_files, Memory *memory)
     // Forward Declared data.
     //
 
-#if 1
+#if 0
     // Struct forward declarations.
     write_to_output_buffer(&header_output, "\n//\n// Forward Declared Data.\n//\n");
     write_to_output_buffer(&header_output, "\n// Forward declared structs.\n");
@@ -1486,7 +1484,7 @@ start_parsing(AllFiles all_files, Memory *memory)
     write_to_output_buffer(&header_output, "\n// Forward declared enums.\n");
     for(U32 enum_index = 0; (enum_index < enum_count); ++enum_index) {
         EnumData *ED = &enum_data[enum_index];
-        char const *struct_part = (ED->is_struct) ? "struct ": "";
+        Char const *struct_part = (ED->is_struct) ? "struct ": "";
         if(ED->type.e) {
             write_to_output_buffer(&header_output, "enum %s%S : %S;\n", struct_part, ED->name.len, ED->name.e, ED->type.len, ED->type.e);
         } else {

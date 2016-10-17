@@ -76,27 +76,6 @@ extern FunctionMetaData function_data_some_function;
 #define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)
 size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);
 
-//
-// Forward Declared Data.
-//
-
-// Forward declared structs.
-struct Position;
-struct test;
-struct FooOne;
-struct SomeStruct;
-
-// Forward declared enums.
-enum struct FooBar : short;
-enum BarFoo : long;
-
-// Forward declared unions.
-union V2;
-
-// Forward declared functions.
-static BarFoo foo(char *str, int len);
-void some_function(SomeStruct *some_struct);
-
 
 #define GENERATED_H
 #endif // !defined(GENERATED_H)

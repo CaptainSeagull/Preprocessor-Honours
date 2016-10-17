@@ -13,7 +13,7 @@
 // Generate metadata for enums so they can be converted to strings.
 // Rewrite the union parser. I'm not sure if metadata for a union could really be generated, but possibly?
 // Build without crt and only link to kernel32.
-// Convert all the char * string stuff to use the string struct.
+// Convert all the Char * string stuff to use the string struct.
 // I'll need some way to track overloaded functions, because this'll flop right now with them...
 // Make a slots/signal system.
 // Make a "lose" keyword. The use-case for this is write_to_output_buffer in preprocessor.cpp.
@@ -21,6 +21,11 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
+
+typedef bool Bool;
+typedef void Void;
+typedef char Char;
+typedef int Int;
 
 typedef uint64_t U64;
 typedef uint32_t U32;
@@ -37,8 +42,6 @@ typedef intptr_t PtrSize;
 typedef float F32;
 typedef double F64;
 
-typedef S32 B32;
-
 #define internal static
 #define persist static
 #define global static
@@ -46,9 +49,9 @@ typedef S32 B32;
 #define cast(type) (type)
 
 #if INTERNAL
-    #define assert(Expression) do { persist B32 Ignore = false; if(!Ignore) { if(!(Expression)) { *cast(int volatile *)0 = 0; } } } while(0)
+    #define assert(Expression) do { persist Bool Ignore = false; if(!Ignore) { if(!(Expression)) { *cast(int volatile *)0 = 0; } } } while(0)
 #else
-    #define assert(Expression) { }
+    #define assert(Expression) { /*Empty*/ }
 #endif
 
 #define array_count(arr) (sizeof(arr) / (sizeof((arr)[0])))
@@ -57,7 +60,7 @@ typedef S32 B32;
 // Memory stuff.
 //
 #define copy_memory_block(dest, source, size) copy_memory_block_(cast(U8 *)dest, cast(U8 *)source, size)
-internal void
+internal Void
 copy_memory_block_(U8 *dest, U8 *source, PtrSize size)
 {
     assert((dest) && (source) && (size > 0));
@@ -69,7 +72,7 @@ copy_memory_block_(U8 *dest, U8 *source, PtrSize size)
 
 #define zero_memory_block(dest, size) set_memory_block(dest, 0, size)
 #define set_memory_block(dest, value, size) set_memory_block_(cast(U8 *)dest, value, size)
-internal void
+internal Void
 set_memory_block_(U8 *dest, U8 value, PtrSize size)
 {
     assert((dest) && (size > 0));
@@ -80,21 +83,21 @@ set_memory_block_(U8 *dest, U8 value, PtrSize size)
 }
 
 struct Memory {
-    void *file_memory;
+    Void *file_memory;
     PtrSize file_index;
     PtrSize file_size;
 
-    void *permanent_memory;
+    Void *permanent_memory;
     PtrSize permanent_index;
     PtrSize permanent_size;
 
-    void *temp_memory;
+    Void *temp_memory;
     PtrSize temp_index;
     PtrSize temp_size;
 };
 
 internal Memory
-create_memory(void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSize temp_size)
+create_memory(Void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSize temp_size)
 {
     assert((all_memory) && (file_size) && (permanent_size > 0) && (temp_size > 0));
 
@@ -104,10 +107,10 @@ create_memory(void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSi
     res.file_memory = all_memory;
     res.file_size = file_size;
 
-    res.permanent_memory = cast(char *)all_memory + file_size;
+    res.permanent_memory = cast(Char *)all_memory + file_size;
     res.permanent_size = permanent_size;
 
-    res.temp_memory = cast(char *)all_memory + file_size + permanent_size;
+    res.temp_memory = cast(Char *)all_memory + file_size + permanent_size;
     res.temp_size = temp_size;
 
     return(res);
@@ -116,7 +119,7 @@ create_memory(void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSi
 U32 const DEFAULT_MEMORY_ALIGNMENT = 4;
 
 internal PtrSize
-get_alignment_offset(void *memory, PtrSize index, PtrSize desired_alignment = DEFAULT_MEMORY_ALIGNMENT)
+get_alignment_offset(Void *memory, PtrSize index, PtrSize desired_alignment = DEFAULT_MEMORY_ALIGNMENT)
 {
     assert(memory);
 
@@ -131,7 +134,7 @@ get_alignment_offset(void *memory, PtrSize index, PtrSize desired_alignment = DE
     return(res);
 }
 
-internal char *
+internal Char *
 push_file_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_MEMORY_ALIGNMENT)
 {
     assert((memory) && (size > 0));
@@ -139,7 +142,7 @@ push_file_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_MEMOR
     PtrSize alignment_offset = get_alignment_offset(memory->file_memory, memory->file_index, alignment);
     assert(memory->file_index + alignment_offset + size <= memory->file_size);
 
-    char *res = cast(char *)memory->file_memory + (memory->file_index + alignment_offset);
+    Char *res = cast(Char *)memory->file_memory + (memory->file_index + alignment_offset);
 
     memory->file_index += size + alignment_offset;
 
@@ -148,7 +151,7 @@ push_file_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_MEMOR
 
 #define push_permanent_struct(memory, type, ...) cast(type *)push_permanent_memory(memory, sizeof(type), ##__VA_ARGS__)
 #define push_permanent_array(memory, type, len, ...) cast(type *)push_permanent_memory(memory, sizeof(type) * len, ##__VA_ARGS__)
-internal void *
+internal Void *
 push_permanent_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_MEMORY_ALIGNMENT)
 {
     assert((memory) && (size > 0));
@@ -156,7 +159,7 @@ push_permanent_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_
     PtrSize alignment_offset = get_alignment_offset(memory->permanent_memory, memory->permanent_index, alignment);
     assert(memory->permanent_index + alignment_offset + size <= memory->permanent_size);
 
-    void *res = cast(U8 *)memory->permanent_memory + (memory->permanent_index + alignment_offset);
+    Void *res = cast(U8 *)memory->permanent_memory + (memory->permanent_index + alignment_offset);
 
     memory->permanent_index += size + alignment_offset;
 
@@ -195,7 +198,7 @@ push_temp_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_MEMOR
     return(res);
 }
 
-internal void
+internal Void
 pop_temp_memory(TempMemory *temp_memory)
 {
     assert((temp_memory) && (temp_memory->memory) && (temp_memory->Block) && (temp_memory->size > 0));
@@ -206,13 +209,13 @@ pop_temp_memory(TempMemory *temp_memory)
 
 #define push_struct_off_temp_memory(temp_memory, type, ...) cast(type *)push_off_temp_memory(temp_memory, sizeof(type), ##__VA_ARGS__)
 #define push_array_off_temp_memory(temp_memory, type, len, ...) cast(type *)push_off_temp_memory(temp_memory, sizeof(type) * len, ##__VA_ARGS__)
-internal void *
+internal Void *
 push_off_temp_memory(TempMemory *temp_memory, PtrSize size, PtrSize alignment = DEFAULT_MEMORY_ALIGNMENT)
 {
     assert((temp_memory) && (size > 0));
 
     PtrSize alignment_offset = get_alignment_offset(temp_memory->Block, temp_memory->used, alignment);
-    void *res = temp_memory->Block + temp_memory->used + alignment_offset;
+    Void *res = temp_memory->Block + temp_memory->used + alignment_offset;
     assert(temp_memory->used + alignment_offset <= temp_memory->size);
 
     temp_memory->used += size + alignment_offset;
@@ -225,18 +228,18 @@ push_off_temp_memory(TempMemory *temp_memory, PtrSize size, PtrSize alignment = 
 //
 
 // TODO(Jonny): Pass the Destination size in here too...
-internal B32
-is_end_of_line(char c)
+internal Bool
+is_end_of_line(Char c)
 {
-    B32 res = ((c == '\n') || (c == '\r'));
+    Bool res = ((c == '\n') || (c == '\r'));
 
     return(res);
 }
 
-internal B32
-is_whitespace(char c)
+internal Bool
+is_whitespace(Char c)
 {
-    B32 res = ((c == ' ') || (c == '\t') || (c == '\v') || (c == '\f') || (is_end_of_line(c)));
+    Bool res = ((c == ' ') || (c == '\t') || (c == '\v') || (c == '\f') || (is_end_of_line(c)));
 
     return(res);
 }
@@ -245,16 +248,16 @@ is_whitespace(char c)
 // Start Parsing function.
 //
 struct AllFiles {
-    char *file[16]; // TODO(Jonny): Random size.
+    Char *file[16]; // TODO(Jonny): Random size.
     U32 count;
 };
 
 struct StuffToWrite {
     PtrSize header_size;
-    void *header_data;
+    Void *header_data;
 
     PtrSize source_size;
-    void *source_data;
+    Void *source_data;
 };
 
 StuffToWrite start_parsing(AllFiles all_files, Memory *memory);
