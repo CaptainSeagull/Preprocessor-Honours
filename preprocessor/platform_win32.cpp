@@ -122,17 +122,49 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
     return(res);
 }
 
+enum ExtensionType {
+    unknown,
+    cpp,
+    c,
+};
+
+internal ExtensionType
+get_extension_from_str(Char *str)
+{
+    ExtensionType res = ExtensionType::unknown;
+
+    PtrSize len = string_length(str);
+    // TODO(Jonny): Do this properly...
+    if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
+        res = ExtensionType::c;
+    } else if((str[len - 1] == 'p') && (str[len - 2] == 'p') && (str[len - 3] == 'c') && (str[len - 4] == '.') ) {
+        res = ExtensionType::cpp;
+    }
+
+    return(res);
+}
+
 int
 main(Int argc, Char *argv[])
 {
     PtrSize tot_size_of_all_files = 0;
+
     for(S32 file_index = 1; (file_index < argc); ++file_index) {
         tot_size_of_all_files += win32_get_file_size(argv[file_index]);
+        ExtensionType type = get_extension_from_str(argv[file_index]); // TODO(Jonny): Hacky, should probably pass it in.
+        assert(type);
     }
+
+    ExtensionType type = get_extension_from_str(argv[1]); // TODO(Jonny): Hacky, should probably pass it in.
+    assert(type);
 
     PtrSize permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
     PtrSize temp_size = 1024 * 1024;
     Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+    char *header_name = "generated.h";
+    char *source_name = (type == ExtensionType::cpp) ? "generated.cpp" : "generated.c";
+
     if(all_memory) {
         Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
@@ -143,8 +175,8 @@ main(Int argc, Char *argv[])
 
         StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
 
-        Bool header_success = win32_write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
-        Bool source_success = win32_write_to_file("generated.cpp", stuff_to_write.source_data, stuff_to_write.source_size);
+        Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
+        Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
         assert((header_success) && (source_success));
     }
 

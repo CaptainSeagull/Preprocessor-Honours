@@ -8,30 +8,25 @@
 //
 // Recreated structs.
 //
-struct Position {
+typedef struct Position {
     float x;
     float y;
-};
+} Position;
 
-struct test {
+typedef struct Test {
     int sixteen[16];
     float float_four[4];
     double double_four[4];
     int one;
     Position *pos;
     char *str;
-};
+} Test;
 
-struct FooOne {
+typedef struct FooOne {
     int one;
     int two;
     int three;
-};
-
-struct SomeStruct {
-    int a;
-    int b;
-};
+} FooOne;
 
 //
 // Struct meta data.
@@ -41,25 +36,20 @@ MemberDefinition members_of_Position[] = {
     {meta_type_float, "x", (size_t)&((Position *)0)->x, 0, 1},
     {meta_type_float, "y", (size_t)&((Position *)0)->y, 0, 1},
 };
-// Meta data for: test
-MemberDefinition members_of_test[] = {
-    {meta_type_int, "sixteen", (size_t)&((test *)0)->sixteen, 0, 16},
-    {meta_type_float, "float_four", (size_t)&((test *)0)->float_four, 0, 4},
-    {meta_type_double, "double_four", (size_t)&((test *)0)->double_four, 0, 4},
-    {meta_type_int, "one", (size_t)&((test *)0)->one, 0, 1},
-    {meta_type_Position, "pos", (size_t)&((test *)0)->pos, 1, 1},
-    {meta_type_char, "str", (size_t)&((test *)0)->str, 1, 1},
+// Meta data for: Test
+MemberDefinition members_of_Test[] = {
+    {meta_type_int, "sixteen", (size_t)&((Test *)0)->sixteen, 0, 16},
+    {meta_type_float, "float_four", (size_t)&((Test *)0)->float_four, 0, 4},
+    {meta_type_double, "double_four", (size_t)&((Test *)0)->double_four, 0, 4},
+    {meta_type_int, "one", (size_t)&((Test *)0)->one, 0, 1},
+    {meta_type_Position, "pos", (size_t)&((Test *)0)->pos, 1, 1},
+    {meta_type_char, "str", (size_t)&((Test *)0)->str, 1, 1},
 };
 // Meta data for: FooOne
 MemberDefinition members_of_FooOne[] = {
     {meta_type_int, "one", (size_t)&((FooOne *)0)->one, 0, 1},
     {meta_type_int, "two", (size_t)&((FooOne *)0)->two, 0, 1},
     {meta_type_int, "three", (size_t)&((FooOne *)0)->three, 0, 1},
-};
-// Meta data for: SomeStruct
-MemberDefinition members_of_SomeStruct[] = {
-    {meta_type_int, "a", (size_t)&((SomeStruct *)0)->a, 0, 1},
-    {meta_type_int, "b", (size_t)&((SomeStruct *)0)->b, 0, 1},
 };
 
 //
@@ -76,23 +66,13 @@ FunctionMetaData function_data_foo = {
     }
 };
 
-FunctionMetaData function_data_some_function = {
-    0,
-    "void",
-    "some_function",
-    1,
-    {
-        {"SomeStruct", "some_struct"}
-    }
-};
-
 
 
 // TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
 size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
-    char indent_buf[256] = {};
+    char indent_buf[256] = {0};
     unsigned indent_index = 0, member_index = 0;
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
@@ -156,11 +136,11 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned 
                             bytes_written += serialize_struct_(*(char *)member_ptr, Position, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                     case meta_type_test: {
+                     case meta_type_Test: {
                         if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, test, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written += serialize_struct_(**(char **)member_ptr, Test, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, test, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written += serialize_struct_(*(char *)member_ptr, Test, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                      case meta_type_FooOne: {
@@ -168,13 +148,6 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned 
                             bytes_written += serialize_struct_(**(char **)member_ptr, FooOne, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written += serialize_struct_(*(char *)member_ptr, FooOne, indent + 4, buffer, buf_size - bytes_written, bytes_written);
-                        }
-                    } break;
-                     case meta_type_SomeStruct: {
-                        if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, SomeStruct, indent + 4, buffer, buf_size - bytes_written, bytes_written);
-                        } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, SomeStruct, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                  }

@@ -244,6 +244,20 @@ is_whitespace(Char c)
     return(res);
 }
 
+internal S32
+string_length(Char *str)
+{
+    assert(str);
+
+    S32 res = 0;
+    while(*str) {
+        ++res;
+        ++str;
+    }
+
+    return(res);
+}
+
 //
 // Start Parsing function.
 //

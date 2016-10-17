@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-enum MetaType {
+typedef enum MetaType {
     meta_type_char,
     meta_type_short,
     meta_type_int,
@@ -10,21 +10,20 @@ enum MetaType {
     meta_type_float,
     meta_type_double,
     meta_type_Position,
-    meta_type_test,
+    meta_type_Test,
     meta_type_FooOne,
-    meta_type_SomeStruct,
-};
+} MetaType;
 
 //
 // Struct meta data.
 //
-struct MemberDefinition {
+typedef struct MemberDefinition {
     MetaType type;
     char *name;
     size_t offset;
     int is_ptr;
     unsigned arr_size;
-};
+} MemberDefinition;
 
 #define get_num_of_members(type) num_members_for_##type
 
@@ -32,17 +31,13 @@ struct MemberDefinition {
 extern MemberDefinition members_of_Position[];
 static const size_t num_members_for_Position = 2;
 
-// Meta Data for: test
-extern MemberDefinition members_of_test[];
-static const size_t num_members_for_test = 6;
+// Meta Data for: Test
+extern MemberDefinition members_of_Test[];
+static const size_t num_members_for_Test = 6;
 
 // Meta Data for: FooOne
 extern MemberDefinition members_of_FooOne[];
 static const size_t num_members_for_FooOne = 3;
-
-// Meta Data for: SomeStruct
-extern MemberDefinition members_of_SomeStruct[];
-static const size_t num_members_for_SomeStruct = 2;
 
 
 // size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);
@@ -53,24 +48,23 @@ size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], un
 //
 // Function meta data.
 //
-struct Variable {
+typedef struct Variable {
     char *ret_type;
     char *name;
-};
+} Variable;
 
-unsigned const MAX_NUMBER_OF_PARAMS = 32;
-struct FunctionMetaData {
+#define MAX_NUMBER_OF_PARAMS (32)
+typedef struct FunctionMetaData {
     char *linkage;
     char *ret_type;
     char *name;
     unsigned param_count;
     Variable params[MAX_NUMBER_OF_PARAMS];
-};
+} FunctionMetaData;
 
 // FunctionMetaData get_func_meta_data(function_name);
 #define get_func_meta_data(func) function_data_##func
 extern FunctionMetaData function_data_foo;
-extern FunctionMetaData function_data_some_function;
 
 // size_t serialize_function(function_name, char *buf, size_t buf_size);
 #define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)
