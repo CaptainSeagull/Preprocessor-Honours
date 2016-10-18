@@ -14,7 +14,7 @@ Mac: N/A.
 
 # Contact
 
-Any bugs, suggestions, complains, or just general feedback, should be emailed to seagull127@ymail.com.
+Any bugs, suggestions, complaints, or just general feedback, should be emailed to: seagull127@ymail.com.
 
 # LICENSE
 
