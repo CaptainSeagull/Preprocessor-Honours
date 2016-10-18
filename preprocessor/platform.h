@@ -258,15 +258,6 @@ string_length(Char *str)
     return(res);
 }
 
-internal U32
-safe_truncate_size_64(U64 value)
-{
-    assert(value <= 0xFFFFFFFF);
-    U32 res = cast(U32)value;
-
-    return(res);
-}
-
 //
 // Start Parsing function.
 //
