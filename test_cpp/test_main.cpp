@@ -35,6 +35,7 @@ union V2 {
     float e[2];
 };
 
+#define func
 static BarFoo
 foo(char *str, int len, ...)
 {
@@ -42,11 +43,23 @@ foo(char *str, int len, ...)
     return(res);
 }
 
-struct FooOne {
+class FooOne
+{
+private:
     int one;
     int two;
     int three;
+
+public:
+    func void set(int one, int two, int three);
 };
+
+void FooOne::set(int one, int two, int three)
+{
+    this->one = one;
+    this->two = two;
+    this->three = three;
+}
 
 /*  Should return:
     "Linkage: static,

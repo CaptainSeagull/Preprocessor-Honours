@@ -249,6 +249,7 @@ create_output_buffer(PtrSize size, Memory *memory)
     return(res);
 }
 
+// TODO(Jonny): Make this a normal enum.
 enum struct TokenType {
     unknown,
 
@@ -742,6 +743,23 @@ struct StructData {
     Variable *members;
 };
 
+internal Bool
+is_stupid_class_keyword(Token t)
+{
+    assert(t.type != TokenType::unknown);
+    Bool result = false;
+
+    Char *keywords[] = {"private", "public", "protected"};
+    for(U32 keyword_index = 0, num_keywords = array_count(keywords); (keyword_index < num_keywords); ++keyword_index) {
+        if(string_compare(keywords[keyword_index], t.e, t.len)) {
+            result = true;
+        }
+    }
+
+    return(result);
+}
+
+// TODO(Jonny): This needs some way to ignore member functions.
 internal StructData
 parse_struct(Tokenizer *tokenizer, Memory *memory)
 {
@@ -759,28 +777,32 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
             Char *member_pos[256] = {};
             Token member_token[256] = {};
             for(;;) {
-                Token *mt = member_token + res.member_count;
-                *mt = get_token(tokenizer);
-                if(mt->type == TokenType::close_brace) {
-                    break; // for
-                } else if(mt->e[0] == '#') {
-                    while(tokenizer->at[0] != '\n') {
-                        ++tokenizer->at;
-                    }
-                } else if(mt->type == TokenType::tilde) {
-                    // Do nothing.
+                Token temp = get_token(tokenizer);
+                if(!is_stupid_class_keyword(temp)) {
+                    Token *mt = member_token + res.member_count;
+                    *mt = temp;
 
-                } else if((token_equals(*mt, "inline")) || (token_equals(*mt, "func"))) { // TODO(Jonny): Hacky way to skip member functions...
-                    Token temp = get_token(tokenizer);
-                    while(temp.type != TokenType::semi_colon) {
-                        temp = get_token(tokenizer);
-                    }
-                } else {
-                    member_pos[res.member_count++] = tokenizer->at;
+                    if(mt->type == TokenType::close_brace) {
+                        break; // for
+                    } else if(mt->e[0] == '#') {
+                        while(tokenizer->at[0] != '\n') {
+                            ++tokenizer->at;
+                        }
+                    } else if((mt->type == TokenType::tilde) || (mt->type == TokenType::colon)) {
+                        // Do nothing.
 
-                    Token token = get_token(tokenizer);
-                    while(token.type != TokenType::semi_colon) {
-                        token = get_token(tokenizer);
+                    } else if((token_equals(*mt, "inline")) || (token_equals(*mt, "func"))) { // TODO(Jonny): Hacky way to skip member functions...
+                        Token temp = get_token(tokenizer);
+                        while(temp.type != TokenType::semi_colon) {
+                            temp = get_token(tokenizer);
+                        }
+                    } else {
+                        member_pos[res.member_count++] = tokenizer->at;
+
+                        Token token = get_token(tokenizer);
+                        while(token.type != TokenType::semi_colon) {
+                            token = get_token(tokenizer);
+                        }
                     }
                 }
             }

@@ -144,14 +144,14 @@ get_extension_from_str(Char *str)
     return(res);
 }
 
-int
+Int
 main(Int argc, Char *argv[])
 {
     PtrSize tot_size_of_all_files = 0;
 
     for(S32 file_index = 1; (file_index < argc); ++file_index) {
         tot_size_of_all_files += win32_get_file_size(argv[file_index]);
-        ExtensionType type = get_extension_from_str(argv[file_index]); // TODO(Jonny): Hacky, should probably pass it in.
+        ExtensionType type = get_extension_from_str(argv[file_index]);
         assert(type);
     }
 
