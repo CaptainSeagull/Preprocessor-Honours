@@ -766,6 +766,28 @@ struct StructData {
     Variable *members;
 };
 
+internal void
+skip_to_matching_bracket(Tokenizer *tokenizer)
+{
+    assert(tokenizer);
+
+    Int brace_count = 1;
+    Token token = {};
+    Bool should_loop = true;
+        token = get_token(tokenizer);
+        switch(token.type) {
+                --brace_count;
+                if(!brace_count) {
+                    should_loop = false;
+                }
+            } break;
+
+                ++brace_count;
+            } break;
+        }
+    }
+}
+
 // TODO(Jonny): This needs some way to ignore member functions.
 internal StructData
 parse_struct(Tokenizer *tokenizer, Memory *memory)
@@ -793,19 +815,36 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 ++tokenizer->at;
                             }
                         } else {
-                            Bool is_func = false;
+                            Bool is_func = false, inline_func = false;
 
-                    } else if((token_equals(*mt, "inline")) || (token_equals(*mt, "func"))) { // TODO(Jonny): Hacky way to skip member functions...
-                        Token temp = get_token(tokenizer);
-                        while(temp.type != TokenType_semi_colon) {
-                            temp = get_token(tokenizer);
-                        }
-                    } else {
-                        member_pos[res.member_count++] = tokenizer->at;
+                            Tokenizer tokenizer_copy = *tokenizer;
+                            Token temp = get_token(&tokenizer_copy);
+                            while(temp.type != TokenType_semi_colon) {
+                                if(temp.type == TokenType_open_paren) {
+                                    is_func = true;
+                                }
 
-                        Token token = get_token(tokenizer);
-                        while(token.type != TokenType_semi_colon) {
-                            token = get_token(tokenizer);
+                                if(temp.type == TokenType_open_brace) {
+                                    is_func = true;
+                                    inline_func = true;
+                                    break; // while
+                                }
+
+                                temp = get_token(&tokenizer_copy);
+                            }
+
+                            if(!is_func) {
+                                member_pos[res.member_count++] = token.e;
+
+                                Token token = get_token(tokenizer);
+                                while(token.type != TokenType_semi_colon) {
+                                    token = get_token(tokenizer);
+                                }
+                            } else {
+                                if(inline_func) {
+                                }
+
+                                *tokenizer = tokenizer_copy;
                             }
                         }
                     }

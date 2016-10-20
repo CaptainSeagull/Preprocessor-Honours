@@ -51,15 +51,18 @@ private:
     int three;
 
 public:
-    void set(int one, int two, int three);
-};
+    void set(int one, int two, int three)
+    {
+        this->one = one;
+        this->two = two;
+        this->three = three;
+        if(1) {
+            while(1) {
 
-void FooOne::set(int one, int two, int three)
-{
-    this->one = one;
-    this->two = two;
-    this->three = three;
-}
+            }
+        }
+    }
+};
 
 /*  Should return:
     "Linkage: static,
