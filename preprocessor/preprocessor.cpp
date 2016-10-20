@@ -760,10 +760,21 @@ is_stupid_class_keyword(Token t)
     return(result);
 }
 
+struct FunctionData {
+    String linkage;
+    String ret_type;
+    String name;
+    Variable params[32];
+    Int param_count;
+};
+
 struct StructData {
     String name;
     Int member_count;
     Variable *members;
+
+    FunctionData *func_data;
+    Int func_count;
 };
 
 internal void
@@ -807,6 +818,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
         if(require_token(tokenizer, TokenType_open_brace)) {
             res.member_count = 0;
             Char *member_pos[256] = {};
+            res.func_data = push_permanent_array(memory, FunctionData, 32);
             for(;;) {
                 Token token = get_token(tokenizer);
                 if((!is_stupid_class_keyword(token))) {
@@ -842,6 +854,14 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 if(inline_func) {
                                     skip_to_matching_bracket(&tokenizer_copy);
                                 }
+
+                                Tokenizer second_copy = *tokenizer;
+                                FunctionData fd = {};
+                                //fd.linkage = ;
+                                fd.ret_type = token_to_string(token);
+                                fd.name = token_to_string(get_token(&second_copy));
+
+                                res.func_data[res.func_count++] = fd;
                             }
 
                             *tokenizer = tokenizer_copy;
@@ -1074,13 +1094,6 @@ get_default_struct_string(void)
     return(res);
 }
 
-struct FunctionData {
-    String linkage;
-    String ret_type;
-    String name;
-    Variable params[32];
-    Int param_count;
-};
 
 internal void
 skip_to_end_of_line(Tokenizer *tokenizer)
@@ -1090,183 +1103,126 @@ skip_to_end_of_line(Tokenizer *tokenizer)
     }
 }
 
-// TODO(Jonny): Always make sure arguments[0] is actually the exe being run...
-StuffToWrite
-start_parsing(AllFiles all_files, Memory *memory)
+struct ParseFunctionResult {
+    FunctionData func_data;
+    Bool success;
+};
+
+internal ParseFunctionResult
+attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 {
-    assert(memory);
+    ParseFunctionResult res = {};
 
-    EnumData *enum_data = push_permanent_array(memory, EnumData, 256);
-    Int enum_count = 0;
+    // Try to parse as a function.
+    Tokenizer copy_tokenizer = *tokenizer;
+    Token linkage = {};
+    Token return_type = {};
+    if((token_equals(token, "static")) || (token_equals(token, "inline")) || (token_equals(token, "internal"))) {
+        linkage = token;
+        return_type = get_token(&copy_tokenizer);
+    } else {
+        return_type = token;
+    }
 
-    StructData *struct_data = push_permanent_array(memory, StructData, 256);
-    Int struct_count = 0;
+    if(return_type.type == TokenType_identifier) {
+        if((!token_equals(return_type, "if")) && (!token_equals(return_type, "do")) && (!token_equals(return_type, "while")) && (!token_equals(return_type, "switch"))) { // TODO(Jonny): Extra check...
+            Token name = get_token(&copy_tokenizer);
+            if(name.type == TokenType_identifier) {
+                // Don't forward declare main.
+                if((!token_equals(name, "main")) && (!token_equals(name, "WinMain")) && (!token_equals(name, "_mainCRTStartup")) && (!token_equals(name, "_WinMainCRTStartup")) && (!token_equals(name, "__DllMainCRTStartup"))) {
+                    if((linkage.type == TokenType_identifier) || (linkage.type == TokenType_unknown)) {
+                        Token should_be_open_brace = get_token(&copy_tokenizer);
+                        if(should_be_open_brace.type == TokenType_open_paren) {
+                            res.success = true;
 
-    String *union_data = push_permanent_array(memory, String,  256);
-    Int union_count = 0;
+                            *tokenizer = copy_tokenizer;
 
-    FunctionData *func_data = push_permanent_array(memory, FunctionData, 256);
-    Int func_count = 0;
-
-    for(Int index = 0; (index < all_files.count); ++index) {
-        Char *file = all_files.file[index];
-
-        if(file) {
-            Tokenizer tokenizer = {};
-            tokenizer.at = file;
-
-            Bool parsing = true;
-            while(parsing) {
-                Token token = get_token(&tokenizer);
-                switch(token.type) {
-                    case TokenType_end_of_stream: {
-                        parsing = false;
-                    } break;
-
-                    case TokenType_hash: {
-                        skip_to_end_of_line(&tokenizer);
-                    }
-
-                    case TokenType_identifier: {
-                        if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
-                            struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
-                        } else if((token_equals(token, "union"))) {
-                            Token name = get_token(&tokenizer);
-                            union_data[union_count++] = token_to_string(name);
-                        } else if((token_equals(token, "enum"))) {
-                            Token name = get_token(&tokenizer);
-                            Bool is_enum_struct = false;
-                            if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
-                                is_enum_struct = true;
-                                name = get_token(&tokenizer);
+                            if(linkage.type == TokenType_identifier) {
+                                res.func_data.linkage = token_to_string(linkage);
                             }
 
-                            if(name.type == TokenType_identifier) {
-                                // If the enum has an underlying type, get it.
-                                Token underlying_type = {};
-                                Token next = get_token(&tokenizer);
-                                if(next.type == TokenType_colon) {
-                                    underlying_type = get_token(&tokenizer);
-                                    next = get_token(&tokenizer);
-                                }
+                            res.func_data.ret_type = token_to_string(return_type);
+                            res.func_data.name = token_to_string(name);
 
-                                // TODO(Jonny): This will fail if the size has two names (eg, long long).
-                                if(next.type == TokenType_open_brace) {
-                                    enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct);
-                                }
-                            }
-                        } else {
-                            // Try to parse as a function.
-                            Tokenizer copy_tokenizer = tokenizer;
-                            Token linkage = {};
-                            Token return_type = {};
-                            if((token_equals(token, "static")) || (token_equals(token, "inline")) || (token_equals(token, "internal"))) {
-                                linkage = token;
-                                return_type = get_token(&copy_tokenizer);
-                            } else {
-                                return_type = token;
+                            // Set the array size to 1 for all the variables...
+                            for(Int param_index = 0; (param_index < array_count(res.func_data.params)); ++param_index) {
+                                res.func_data.params[param_index].array_count = 1;
                             }
 
-                            if(return_type.type == TokenType_identifier) {
-                                if((!token_equals(return_type, "if")) && (!token_equals(return_type, "do")) && (!token_equals(return_type, "while")) && (!token_equals(return_type, "switch"))) { // TODO(Jonny): Extra check...
-                                    Token name = get_token(&copy_tokenizer);
-                                    if(name.type == TokenType_identifier) {
-                                        // Don't forward declare main.
-                                        if((!token_equals(name, "main")) && (!token_equals(name, "WinMain")) && (!token_equals(name, "_mainCRTStartup")) && (!token_equals(name, "_WinMainCRTStartup")) && (!token_equals(name, "__DllMainCRTStartup"))) {
-                                            if((linkage.type == TokenType_identifier) || (linkage.type == TokenType_unknown)) {
-                                                Token should_be_open_brace = get_token(&copy_tokenizer);
-                                                if(should_be_open_brace.type == TokenType_open_paren) {
-                                                    tokenizer = copy_tokenizer;
+                            Bool parsing = true;
+                            Variable *var = res.func_data.params + res.func_data.param_count;
 
-                                                    FunctionData *fd = func_data + func_count;
-                                                    if(linkage.type == TokenType_identifier) {
-                                                        fd->linkage = token_to_string(linkage);
-                                                    }
-                                                    fd->ret_type = token_to_string(return_type);
-                                                    fd->name = token_to_string(name);
-
-                                                    // Set the array size to 1 for all the variables...
-                                                    for(Int param_index = 0; (param_index < array_count(fd->params)); ++param_index) {
-                                                        fd->params[param_index].array_count = 1;
-                                                    }
-
-                                                    Bool parsing = true;
-                                                    Variable *var = fd->params + fd->param_count;
-
-                                                    // If there aren't any parameters then just skip them.
-                                                    {
-                                                        Tokenizer copy = tokenizer;
-                                                        Token token = get_token(&copy);
-                                                        if(token_equals(token, "void")) {
-                                                            Token next = get_token(&copy);
-                                                            if(next.type == TokenType_close_param) {
-                                                                parsing = false;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    // Parse the parameters.
-                                                    while(parsing) {
-                                                        Token token = get_token(&tokenizer);
-                                                        switch(token.type) {
-                                                            case TokenType_asterisk: {
-                                                                var->is_ptr = true;
-                                                            } break;
-
-                                                            case TokenType_open_bracket: {
-                                                                Token SizeToken = get_token(&tokenizer);
-                                                                if(SizeToken.type == TokenType_number) {
-                                                                    Char buffer[256] = {};
-                                                                    token_to_string(SizeToken, buffer, array_count(buffer));
-                                                                    ResultInt arr_count = string_to_int(buffer);
-                                                                    if(arr_count.success) {
-                                                                        var->array_count = arr_count.e;
-                                                                    }
-                                                                }
-                                                            } break;
-
-                                                            case TokenType_identifier: {
-                                                                if(var->type.len == 0) {
-                                                                    var->type = token_to_string(token);
-                                                                } else {
-                                                                    var->name = token_to_string(token);
-                                                                    ++fd->param_count;
-                                                                }
-                                                            } break;
-
-                                                            case TokenType_comma: {
-                                                                ++var;
-                                                            } break;
-
-                                                            case TokenType_end_of_stream: case TokenType_open_brace: {
-                                                                parsing = false; // TODO(Jonny): Something baaaad happened...
-                                                            } break;
-                                                        }
-                                                    }
-
-                                                    ++func_count;
-                                                }
-                                            }
-                                        }
+                            // If there aren't any parameters then just skip them.
+                            {
+                                Tokenizer copy = *tokenizer;
+                                Token token = get_token(&copy);
+                                if(token_equals(token, "void")) {
+                                    Token next = get_token(&copy);
+                                    if(next.type == TokenType_close_param) {
+                                        parsing = false;
                                     }
                                 }
                             }
+
+                            // Parse the parameters.
+                            while(parsing) {
+                                Token token = get_token(tokenizer);
+                                switch(token.type) {
+                                    case TokenType_asterisk: {
+                                        var->is_ptr = true;
+                                    } break;
+
+                                    case TokenType_open_bracket: {
+                                        Token SizeToken = get_token(tokenizer);
+                                        if(SizeToken.type == TokenType_number) {
+                                            Char buffer[256] = {};
+                                            token_to_string(SizeToken, buffer, array_count(buffer));
+                                            ResultInt arr_count = string_to_int(buffer);
+                                            if(arr_count.success) {
+                                                var->array_count = arr_count.e;
+                                            }
+                                        }
+                                    } break;
+
+                                    case TokenType_identifier: {
+                                        if(var->type.len == 0) {
+                                            var->type = token_to_string(token);
+                                        } else {
+                                            var->name = token_to_string(token);
+                                            ++res.func_data.param_count;
+                                        }
+                                    } break;
+
+                                    case TokenType_comma: {
+                                        ++var;
+                                    } break;
+
+                                    case TokenType_end_of_stream: case TokenType_open_brace: {
+                                        parsing = false; // TODO(Jonny): Something baaaad happened...
+                                    } break;
+                                }
+                            }
                         }
-                    } break;
+                    }
                 }
             }
         }
     }
 
-    //
+    return(res);
+}
+
+internal StuffToWrite
+write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count,
+           EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
+{
     // Source file.
     //
     StuffToWrite res = {};
 
     OutputBuffer source_output = create_output_buffer(256 * 256, memory); // TODO(Jonny): Random size...
 
-    write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n");
-    write_to_output_buffer(&source_output, "#include \"generated.h\"\n#include <stdio.h>\n#include <string.h>\n#include <assert.h>\n\n");
+    write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <stdio.h>\n#include <string.h>\n#include <assert.h>\n\n");
 
     // Recreated Structs.
     write_to_output_buffer(&source_output, "//\n// Recreated structs.\n//\n");
@@ -1499,71 +1455,93 @@ start_parsing(AllFiles all_files, Memory *memory)
 
     write_to_output_buffer(&header_output, serialize_func_header);
 
-    //
-    // Forward Declared data.
-    //
-#if 0
-    // Struct forward declarations.
-    write_to_output_buffer(&header_output, "\n//\n// Forward Declared Data.\n//\n");
-    write_to_output_buffer(&header_output, "\n// Forward declared structs.\n");
-    for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
-        StructData *sd = struct_data + struct_index;
-        write_to_output_buffer(&header_output, "struct %S;\n", sd->name.len, sd->name.e);
-    }
-
-    // Enum forward declarations.
-    write_to_output_buffer(&header_output, "\n// Forward declared enums.\n");
-    for(U32 enum_index = 0; (enum_index < enum_count); ++enum_index) {
-        EnumData *ED = &enum_data[enum_index];
-        Char const *struct_part = (ED->is_struct) ? "struct ": "";
-        if(ED->type.e) {
-            write_to_output_buffer(&header_output, "enum %s%S : %S;\n", struct_part, ED->name.len, ED->name.e, ED->type.len, ED->type.e);
-        } else {
-            write_to_output_buffer(&header_output, "enum %s%S;\n", struct_part, ED->name.len, ED->name.e);
-        }
-    }
-
-    // Union forward declarations.
-    write_to_output_buffer(&header_output, "\n// Forward declared unions.\n");
-    for(U32 union_index = 0; (union_index < union_count); ++union_index) {
-        String *UD = &union_data[union_index];
-        write_to_output_buffer(&header_output, "union %S;\n", UD->len, UD->e);
-    }
-
-    // Function forward declarations.
-
-    write_to_output_buffer(&header_output, "\n// Forward declared functions.\n");
-    for(U32 func_index = 0; (func_index < func_count); ++func_index) {
-        FunctionData *fd = func_data + func_index;
-
-        if(fd->linkage.len > 0) {
-            write_to_output_buffer(&header_output, "%S ", fd->linkage.len, fd->linkage.e);
-        }
-
-        write_to_output_buffer(&header_output, "%S %S(", fd->ret_type.len, fd->ret_type.e, fd->name.len, fd->name.e);
-        if(fd->param_count == 0) {
-            write_to_output_buffer(&header_output, "void");
-        } else {
-            for(U32 param_index = 0; (param_index < fd->param_count); ++param_index) {
-                Variable *param = fd->params + param_index;
-                if(param_index != 0) {
-                    write_to_output_buffer(&header_output, ", ");
-                }
-
-                write_to_output_buffer(&header_output, "%S %s%S%s", param->type.len, param->type.e, (param->is_ptr) ? "*" : "", param->name.len, param->name.e, (param->array_count > 1) ? "[]" : "");
-            }
-        }
-
-        write_to_output_buffer(&header_output, ");\n");
-    }
-#endif
-
     // # Guard macro.
-    write_to_output_buffer(&header_output, "\n\n#define GENERATED_H");
-    write_to_output_buffer(&header_output, "\n#endif // !defined(GENERATED_H)\n");
+    write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif // !defined(GENERATED_H)\n");
 
     res.header_size = header_output.index;
     res.header_data = header_output.buffer;
+
+    return(res);
+}
+
+// TODO(Jonny): Always make sure arguments[0] is actually the exe being run...
+StuffToWrite
+start_parsing(AllFiles all_files, Memory *memory)
+{
+    assert(memory);
+
+    EnumData *enum_data = push_permanent_array(memory, EnumData, 256);
+    Int enum_count = 0;
+
+    StructData *struct_data = push_permanent_array(memory, StructData, 256);
+    Int struct_count = 0;
+
+    String *union_data = push_permanent_array(memory, String,  256);
+    Int union_count = 0;
+
+    FunctionData *func_data = push_permanent_array(memory, FunctionData, 256);
+    Int func_count = 0;
+
+    for(Int index = 0; (index < all_files.count); ++index) {
+        Char *file = all_files.file[index];
+
+        if(file) {
+            Tokenizer tokenizer = { file };
+
+            Bool parsing = true;
+            while(parsing) {
+                Token token = get_token(&tokenizer);
+                switch(token.type) {
+                    case TokenType_end_of_stream: {
+                        parsing = false;
+                    } break;
+
+                    case TokenType_hash: {
+                        skip_to_end_of_line(&tokenizer);
+                    }
+
+                    case TokenType_identifier: {
+                        if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
+                            struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
+                        } else if((token_equals(token, "union"))) {
+                            Token name = get_token(&tokenizer);
+                            union_data[union_count++] = token_to_string(name);
+                        } else if((token_equals(token, "enum"))) {
+                            Token name = get_token(&tokenizer);
+                            Bool is_enum_struct = false;
+                            if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
+                                is_enum_struct = true;
+                                name = get_token(&tokenizer);
+                            }
+
+                            if(name.type == TokenType_identifier) {
+                                // If the enum has an underlying type, get it.
+                                Token underlying_type = {};
+                                Token next = get_token(&tokenizer);
+                                if(next.type == TokenType_colon) {
+                                    underlying_type = get_token(&tokenizer);
+                                    next = get_token(&tokenizer);
+                                }
+
+                                if(next.type == TokenType_open_brace) {
+                                    enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct);
+                                }
+                            }
+                        } else {
+                            ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
+                            if(pfr.success) {
+                                func_data[func_count++] = pfr.func_data;
+                            }
+                        }
+                    } break;
+                }
+            }
+        }
+    }
+
+    StuffToWrite res = write_data(memory, struct_data, struct_count, func_data, func_count, enum_data, enum_count,
+                                  union_data, union_count);
+
 
     return(res);
 }

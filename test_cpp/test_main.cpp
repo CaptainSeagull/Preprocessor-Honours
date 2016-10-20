@@ -51,7 +51,7 @@ private:
     int three;
 
 public:
-    void set(int one, int two, int three)
+    void inline_func(int one, int two, int three)
     {
         this->one = one;
         this->two = two;
@@ -62,7 +62,14 @@ public:
             }
         }
     }
+
+    void member_func(int one, int two, int three);
 };
+
+void FooOne::member_func(int one, int two, int three)
+{
+
+}
 
 /*  Should return:
     "Linkage: static,
