@@ -51,16 +51,9 @@ private:
     int three;
 
 public:
-    void inline_func(int one, int two, int three)
+    void inline_func(float one, float two)
     {
-        this->one = one;
-        this->two = two;
-        this->three = three;
-        if(1) {
-            while(1) {
 
-            }
-        }
     }
 
     void member_func(int one, int two, int three);

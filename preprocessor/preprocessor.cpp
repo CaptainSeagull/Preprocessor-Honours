@@ -234,7 +234,7 @@ struct OutputBuffer {
 };
 
 #define write_to_output_buffer(ob, format, ...) write_to_output_buffer_(ob, cast(Char *)format, ##__VA_ARGS__)
-internal void
+internal Void
 write_to_output_buffer_(OutputBuffer *ob, Char *format, ...)
 {
     assert(((ob) && (ob->buffer) && (ob->size > 0) && (ob->index < ob->size)) && (format));
@@ -343,7 +343,7 @@ string_compare(Char *a, Char *b, Int len)
     return(res);
 }
 
-internal void
+internal Void
 eat_whitespace(Tokenizer *tokenizer)
 {
     assert(tokenizer);
@@ -472,7 +472,7 @@ is_num(Char c)
     return(res);
 }
 
-internal void
+internal Void
 parse_number(Tokenizer *tokenizer)
 {
     assert(tokenizer);
@@ -481,7 +481,7 @@ parse_number(Tokenizer *tokenizer)
 }
 
 internal Token get_token(Tokenizer *tokenizer); // Because C++...
-internal void
+internal Void
 eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
     assert(tokenizer);
@@ -777,7 +777,7 @@ struct StructData {
     Int func_count;
 };
 
-internal void
+internal Void
 skip_to_matching_bracket(Tokenizer *tokenizer)
 {
     assert(tokenizer);
@@ -825,7 +825,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                     if((token.type != TokenType_colon) && (token.type != TokenType_tilde)) {
                         if(token.type == TokenType_close_brace) {
                             break; // for
-                        } else if(token.e[0] == '#') {
+                        } else if(token.type == TokenType_hash) {
                             while(tokenizer->at[0] != '\n') {
                                 ++tokenizer->at;
                             }
@@ -860,6 +860,21 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 //fd.linkage = ;
                                 fd.ret_type = token_to_string(token);
                                 fd.name = token_to_string(get_token(&second_copy));
+
+                                eat_tokens(&second_copy, 1);
+                                Token next = {};
+                                while(next.type != TokenType_close_param) {
+                                    Variable v = {};
+
+                                    next = get_token(&second_copy); // Eat the open_param.
+                                    v.type = token_to_string(next);
+
+                                    next = get_token(&second_copy);
+                                    v.name = token_to_string(next);
+
+                                    fd.params[fd.param_count++] = v;
+                                    next = get_token(&second_copy);
+                                }
 
                                 // TODO(Jonny): Parse functions.
 
@@ -1067,18 +1082,20 @@ set_primitive_type(String *array)
     return(res);
 }
 
-#define copy_literal_to_char_buffer(buffer, index, lit) copy_literal_to_char_buffer_(buffer + index, index, lit, sizeof(lit) - 1)
+#define copy_literal_to_char_buffer(buf, index, lit) copy_literal_to_char_buffer_(buf, index, lit, sizeof(lit) - 1)
 internal Int
-copy_literal_to_char_buffer_(Char *buffer, Int index, Char *lit, Int lit_len)
+copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len)
 {
-    assert(buffer);
-    assert((lit) && (lit_len));
+    assert(buf);
+    assert((literal) && (literal_len));
 
-    for(Int str_index = 0; (str_index < lit_len); ++str_index) {
-        buffer[str_index] = lit[str_index];
+    buf += index;
+
+    for(Int str_index = 0; (str_index < literal_len); ++str_index) {
+        buf[str_index] = literal[str_index];
     }
 
-    Int res = index + lit_len;
+    Int res = index + literal_len;
     return(res);
 }
 
@@ -1246,6 +1263,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                    (md->array_count > 1) ? arr_buffer : arr);
 
         }
+
         write_to_output_buffer(&source_output, "} %S;\n\n", sd->name.len, sd->name.e);
     }
 
@@ -1265,6 +1283,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                    md->is_ptr,
                                    md->array_count);
         }
+
         write_to_output_buffer(&source_output, "};\n");
     }
 
@@ -1298,18 +1317,15 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
         write_to_output_buffer(&source_output, buf);
 
         write_to_output_buffer(&source_output, "    {\n");
-        {
-            for(Int param_index = 0; (param_index < fd->param_count); ++param_index) {
-                Variable *param = fd->params + param_index;
-                write_to_output_buffer(&source_output, "        {\"%S\", \"%S\"}", param->type.len, param->type.e, param->name.len, param->name.e);
-                if(param_index != fd->param_count - 1) {
-                    write_to_output_buffer(&source_output, ",\n");
-                }
+        for(Int param_index = 0; (param_index < fd->param_count); ++param_index) {
+            Variable *param = fd->params + param_index;
+            write_to_output_buffer(&source_output, "        {\"%S\", \"%S\"}", param->type.len, param->type.e, param->name.len, param->name.e);
+            if(param_index != fd->param_count - 1) {
+                write_to_output_buffer(&source_output, ",\n");
             }
         }
-        write_to_output_buffer(&source_output, "\n    }");
 
-        write_to_output_buffer(&source_output, "\n};\n\n");
+        write_to_output_buffer(&source_output, "\n    }\n};\n\n");
     }
 
     write_to_output_buffer(&source_output, "\n\n");
@@ -1352,8 +1368,6 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                           "    return(bytes_written);\n"
                                           "}\n";
     write_to_output_buffer(&source_output, serialize_func_implementation);
-
-
 
     // # Guard stuff
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
@@ -1400,8 +1414,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     pop_temp_memory(&types_memory);
 
     // struct member_defintion.
-    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//");
-    write_to_output_buffer(&header_output, "\ntypedef struct MemberDefinition {\n    MetaType type;\n    char *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
+    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\ntypedef struct MemberDefinition {\n    MetaType type;\n    char *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
 
     // Struct meta data.
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -1484,8 +1497,8 @@ start_parsing(AllFiles all_files, Memory *memory)
     FunctionData *func_data = push_permanent_array(memory, FunctionData, 256);
     Int func_count = 0;
 
-    for(Int index = 0; (index < all_files.count); ++index) {
-        Char *file = all_files.file[index];
+    for(Int file_index = 0; (file_index < all_files.count); ++file_index) {
+        Char *file = all_files.file[file_index];
 
         if(file) {
             Tokenizer tokenizer = { file };
