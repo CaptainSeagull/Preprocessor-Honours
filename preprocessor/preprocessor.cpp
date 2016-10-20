@@ -106,9 +106,17 @@ is_numeric(Char input)
     return(res);
 }
 
-// Supports %s, %d, %u, %c, %b and %f. %S for string with length.
+// Printf replacement.
+// %s     - Nul terminated string.
+// %S     - String: Len and string.
+// %d, %i - Integer.
+// %u     - Unsigned Integer.
+// %c     - Char
+// %b     - Boolean
+// %f     - Float
+// TODO(Jonny): Print hex numbers for pointers.
 internal Int
-format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
+format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 {
     assert((buf) && (format));
 
@@ -140,7 +148,7 @@ format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
                         replacement = bool_to_string(boolean != 0);
                     } break;
 
-                    case 'd': {
+                    case 'd': case 'i': {
                         Int integer = va_arg(args, Int);
                         Char temp_buffer[1024] = {};
                         replacement = int_to_string(integer, temp_buffer);
@@ -208,7 +216,7 @@ format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
 }
 
 internal Int
-format_string(Char *buf, PtrSize buf_len, Char *format, ...)
+format_string(Char *buf, Int buf_len, Char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -221,8 +229,8 @@ format_string(Char *buf, PtrSize buf_len, Char *format, ...)
 
 struct OutputBuffer {
     Char *buffer;
-    PtrSize index;
-    PtrSize size;
+    Int index;
+    Int size;
 };
 
 #define write_to_output_buffer(ob, format, ...) write_to_output_buffer_(ob, cast(Char *)format, ##__VA_ARGS__)
@@ -238,7 +246,7 @@ write_to_output_buffer_(OutputBuffer *ob, Char *format, ...)
 }
 
 internal OutputBuffer
-create_output_buffer(PtrSize size, Memory *memory)
+create_output_buffer(Int size, Memory *memory)
 {
     assert((size > 0) && (memory));
 
@@ -306,7 +314,7 @@ token_to_string(Token token)
 }
 
 internal Char *
-token_to_string(Token token, Char *buffer, PtrSize size)
+token_to_string(Token token, Char *buffer, Int size)
 {
     assert(size >= token.len);
 
@@ -823,7 +831,7 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
 {
     assert((def_struct_code) && (mem));
 
-    PtrSize res_size = 10000;
+    Int res_size = 10000;
     Char *res = cast(Char *)push_permanent_memory(mem, res_size);
     if(res) {
         format_string(res, res_size,
@@ -1311,7 +1319,7 @@ start_parsing(AllFiles all_files, Memory *memory)
 
     write_to_output_buffer(&source_output, "\n\n");
 
-    PtrSize def_struct_code_size = 256 * 256;
+    Int def_struct_code_size = 256 * 256;
     Char *def_struct_code = cast(Char *)push_permanent_memory(memory, def_struct_code_size);
     if(def_struct_code) {
         Int index = 0;

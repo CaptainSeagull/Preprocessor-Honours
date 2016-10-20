@@ -133,7 +133,7 @@ get_extension_from_str(Char *str)
 {
     ExtensionType res = ExtensionType::unknown;
 
-    PtrSize len = string_length(str);
+    Int len = string_length(str);
     // TODO(Jonny): Do this properly...
     if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
         res = ExtensionType::c;
@@ -147,7 +147,7 @@ get_extension_from_str(Char *str)
 Int
 main(Int argc, Char *argv[])
 {
-    PtrSize tot_size_of_all_files = 0;
+    Int tot_size_of_all_files = 0;
 
     for(Int file_index = 1; (file_index < argc); ++file_index) {
         tot_size_of_all_files += win32_get_file_size(argv[file_index]);
@@ -158,8 +158,8 @@ main(Int argc, Char *argv[])
     ExtensionType type = get_extension_from_str(argv[1]); // TODO(Jonny): Hacky, should probably pass it in.
     assert(type);
 
-    PtrSize permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
-    PtrSize temp_size = 1024 * 1024;
+    Int permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
+    Int temp_size = 1024 * 1024;
     Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
     char *header_name = "generated.h";
