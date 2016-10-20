@@ -29,15 +29,15 @@ typedef struct MemberDefinition {
 
 // Meta Data for: Position
 extern MemberDefinition members_of_Position[];
-static const size_t num_members_for_Position = 2;
+static size_t const num_members_for_Position = 2;
 
 // Meta Data for: Test
 extern MemberDefinition members_of_Test[];
-static const size_t num_members_for_Test = 6;
+static size_t const num_members_for_Test = 6;
 
 // Meta Data for: FooOne
 extern MemberDefinition members_of_FooOne[];
-static const size_t num_members_for_FooOne = 3;
+static size_t const num_members_for_FooOne = 3;
 
 
 // size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);

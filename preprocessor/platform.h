@@ -22,25 +22,28 @@
 #include <stdint.h>
 #include <string.h>
 
+typedef uint64_t Uint64;
+typedef uint32_t Uint32;
+typedef uint16_t Uint16;
+typedef uint8_t Uint8;
+
+typedef int64_t Int64;
+typedef int32_t Int32;
+typedef int16_t Int16;
+typedef int8_t Int8;
+
 typedef bool Bool;
 typedef void Void;
 typedef char Char;
-typedef int Int;
 
-typedef uint64_t U64;
-typedef uint32_t U32;
-typedef uint16_t U16;
-typedef uint8_t U8;
+typedef Int32 Int;
+typedef Uint32 Uint;
 
-typedef int64_t S64;
-typedef int32_t S32;
-typedef int16_t s16;
-typedef int8_t S8;
-
+typedef Uint8 Byte;
 typedef intptr_t PtrSize;
 
-typedef float F32;
-typedef double F64;
+typedef float Float;
+typedef double Float64;
 
 #define internal static
 #define persist static
@@ -59,26 +62,28 @@ typedef double F64;
 //
 // Memory stuff.
 //
-#define copy_memory_block(dest, source, size) copy_memory_block_(cast(U8 *)dest, cast(U8 *)source, size)
 internal Void
-copy_memory_block_(U8 *dest, U8 *source, PtrSize size)
+copy_memory_block(Void *dest, Void *source, PtrSize size)
 {
     assert((dest) && (source) && (size > 0));
 
+    Byte *dest8 = cast(Byte *)dest, *source8 = cast(Byte *)source;
+
     while(size-- > 0) {
-        *dest++ = *source++;
+        *dest8++ = *source8++;
     }
 }
 
 #define zero_memory_block(dest, size) set_memory_block(dest, 0, size)
-#define set_memory_block(dest, value, size) set_memory_block_(cast(U8 *)dest, value, size)
 internal Void
-set_memory_block_(U8 *dest, U8 value, PtrSize size)
+set_memory_block(Void *dest, Uint8 value, PtrSize size)
 {
     assert((dest) && (size > 0));
 
+    Byte *dest8 = cast(Byte *)dest;
+
     while(size-- > 0) {
-        *dest++ = value;
+        *dest8++ = value;
     }
 }
 
@@ -116,7 +121,7 @@ create_memory(Void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSi
     return(res);
 }
 
-U32 const DEFAULT_MEMORY_ALIGNMENT = 4;
+global Int DEFAULT_MEMORY_ALIGNMENT = 4;
 
 internal PtrSize
 get_alignment_offset(Void *memory, PtrSize index, PtrSize desired_alignment = DEFAULT_MEMORY_ALIGNMENT)
@@ -159,7 +164,7 @@ push_permanent_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_
     PtrSize alignment_offset = get_alignment_offset(memory->permanent_memory, memory->permanent_index, alignment);
     assert(memory->permanent_index + alignment_offset + size <= memory->permanent_size);
 
-    Void *res = cast(U8 *)memory->permanent_memory + (memory->permanent_index + alignment_offset);
+    Void *res = cast(Char *)memory->permanent_memory + (memory->permanent_index + alignment_offset);
 
     memory->permanent_index += size + alignment_offset;
 
@@ -168,7 +173,7 @@ push_permanent_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_
 
 struct TempMemory {
     Memory *memory;
-    U8 *Block;
+    Char *Block;
     PtrSize size;
     PtrSize used;
     PtrSize alignment_offset;
@@ -188,7 +193,7 @@ push_temp_memory(Memory *memory, PtrSize size, PtrSize alignment = DEFAULT_MEMOR
     TempMemory res = {};
     res.memory = memory;
     res.alignment_offset = alignment_offset;
-    res.Block = cast(U8 *)memory->temp_memory + (memory->temp_index + res.alignment_offset);
+    res.Block = cast(Char *)memory->temp_memory + (memory->temp_index + res.alignment_offset);
 
     res.size = size;
     res.used = 0;
@@ -244,12 +249,12 @@ is_whitespace(Char c)
     return(res);
 }
 
-internal S32
+internal Int
 string_length(Char *str)
 {
     assert(str);
 
-    S32 res = 0;
+    Int res = 0;
     while(*str) {
         ++res;
         ++str;
@@ -263,7 +268,7 @@ string_length(Char *str)
 //
 struct AllFiles {
     Char *file[16]; // TODO(Jonny): Random size.
-    U32 count;
+    Int count;
 };
 
 struct StuffToWrite {

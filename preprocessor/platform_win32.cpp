@@ -25,7 +25,7 @@ Void   *__cdecl
 memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num)
 {
     assert(value < 0xFFFF);
-    set_memory_block(dest, cast(U8)value, num);
+    set_memory_block(dest, cast(Char)value, num);
 
     return(dest);
 }
@@ -34,18 +34,18 @@ memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num
 Void   *__cdecl
 memcpy(_Out_writes_bytes_all_(_Size) Void *dest, _In_reads_bytes_(_Size) const Void *source, _In_ size_t num)
 {
-    copy_memory_block(dest, source, num);
+    copy_memory_block(dest, cast(Void *)source, num);
 
     return(dest);
 }
 
 #define GetProcAddress(lib, name) cast(Void *)(GetProcAddress(lib, name)) // To avoid warning C4191.
 
-internal U32
-safe_truncate_size_64(U64 value)
+internal Uint32
+safe_truncate_size_64(Uint64 value)
 {
     assert(value <= 0xFFFFFFFF);
-    U32 res = cast(U32)value;
+    Uint32 res = cast(Uint32)value;
 
     return(res);
 }
@@ -61,7 +61,7 @@ win32_read_entire_file_and_null_terminate(Char *filename, Memory *memory)
     if(file_handle != INVALID_HANDLE_VALUE) {
         LARGE_INTEGER file_size = {};
         if(GetFileSizeEx(file_handle, &file_size)) {
-            U32 file_size_32 = safe_truncate_size_64(cast(size_t)file_size.QuadPart);
+            Uint32 file_size_32 = safe_truncate_size_64(cast(size_t)file_size.QuadPart);
             res = push_file_memory(memory, file_size_32 + 1);
 
             DWORD BytesRead = 0;
@@ -108,7 +108,7 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
     HANDLE file_handle = CreateFileA(filename, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
     if((file_handle) && (file_handle != INVALID_HANDLE_VALUE)) {
         DWORD bytes_written = 0;
-        U32 data_size32 = safe_truncate_size_64(data_size);
+        Uint data_size32 = safe_truncate_size_64(data_size);
         if(WriteFile(file_handle, data, data_size32, &bytes_written, 0)) {
             // Success case.
             res = (bytes_written  == data_size);
@@ -149,7 +149,7 @@ main(Int argc, Char *argv[])
 {
     PtrSize tot_size_of_all_files = 0;
 
-    for(S32 file_index = 1; (file_index < argc); ++file_index) {
+    for(Int file_index = 1; (file_index < argc); ++file_index) {
         tot_size_of_all_files += win32_get_file_size(argv[file_index]);
         ExtensionType type = get_extension_from_str(argv[file_index]);
         assert(type);
@@ -169,7 +169,7 @@ main(Int argc, Char *argv[])
         Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
         AllFiles all_files = {};
-        for(S32 file_index = 1; (file_index < argc); ++file_index) {
+        for(Int file_index = 1; (file_index < argc); ++file_index) {
             all_files.file[all_files.count++] = win32_read_entire_file_and_null_terminate(argv[file_index], &memory);
         }
 
@@ -191,7 +191,7 @@ Void
 mainCRTStartup(Void)
 {
     Char *buf[32] = {};
-    U32 buf_index = 0;
+    Int buf_index = 0;
 
     Char *args = GetCommandLine();
     int arg_count = 0;

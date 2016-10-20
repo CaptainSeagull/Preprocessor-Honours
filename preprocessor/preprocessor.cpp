@@ -11,10 +11,10 @@
 
 #include "platform.h"
 
-internal U32
-get_digit_count(S32 value)
+internal Int
+get_digit_count(Int value)
 {
-    U32 res = 1;
+    Int res = 1;
     while((value /= 10) > 0) {
         ++res;
     }
@@ -22,13 +22,13 @@ get_digit_count(S32 value)
     return(res);
 }
 
-internal void
-copy_int(Char *dest, S32 value, S32 start, U32 count)
+internal Void
+copy_int(Char *dest, Int value, Int start, Int count)
 {
     assert(dest);
 
-    S32 end = start + count;
-    for(S32 index = end - 1; (index >= start); --index, value /= 10) {
+    Int end = start + count;
+    for(Int index = end - 1; (index >= start); --index, value /= 10) {
         *(dest + index) = cast(Char)(value % 10 + 48);
     }
 
@@ -36,13 +36,13 @@ copy_int(Char *dest, S32 value, S32 start, U32 count)
 }
 
 internal Char *
-int_to_string(S32 value, Char *buf)
+int_to_string(Int value, Char *buf)
 {
     assert(buf);
 
     Bool is_neg = (value < 0);
-    S32 abs_value = (is_neg) ? -value : value;
-    U32 num_digits = get_digit_count(abs_value);
+    Int abs_value = (is_neg) ? -value : value;
+    Int num_digits = get_digit_count(abs_value);
     if(is_neg) {
         Char *ptr = buf;
         *ptr = '-';
@@ -56,23 +56,23 @@ int_to_string(S32 value, Char *buf)
 }
 
 internal Char *
-float_to_string(F32 value, U32 dec_accuracy, Char *buf)
+float_to_string(Float value, Int dec_accuracy, Char *buf)
 {
     assert(buf);
 
     Bool is_neg = (value < 0);
-    F32 abs_value = (is_neg) ? -value : value;
+    Float abs_value = (is_neg) ? -value : value;
 
-    S32 mul = 1;
-    for(U32 dec_index = 0; (dec_index < dec_accuracy); ++dec_index) {
+    Int mul = 1;
+    for(Int dec_index = 0; (dec_index < dec_accuracy); ++dec_index) {
         mul *= 10;
     }
 
-    S32 num_as_whole = cast(S32)(abs_value * mul);
-    S32 num_before_dec = num_as_whole / mul;
-    S32 num_after_dec = num_as_whole % mul;
-    S32 digit_count_before_dec = get_digit_count(num_before_dec);
-    S32 digit_count_after_dec = get_digit_count(num_after_dec);
+    Int num_as_whole = cast(Int)(abs_value * mul);
+    Int num_before_dec = num_as_whole / mul;
+    Int num_after_dec = num_as_whole % mul;
+    Int digit_count_before_dec = get_digit_count(num_before_dec);
+    Int digit_count_after_dec = get_digit_count(num_after_dec);
 
     if(is_neg) {
         Char *ptr = buf;
@@ -107,15 +107,15 @@ is_numeric(Char input)
 }
 
 // Supports %s, %d, %u, %c, %b and %f. %S for string with length.
-internal U32
+internal Int
 format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
 {
     assert((buf) && (format));
 
     Char *dest = cast(Char *)buf;
-    U32 bytes_written = 0;
-    U32 float_precision = 1;
-    U32 next_fractional_digit = float_precision;
+    Int bytes_written = 0;
+    Int float_precision = 1;
+    Int next_fractional_digit = float_precision;
 
     while(*format) {
         Char temp_buffer[1024] = {};
@@ -141,19 +141,19 @@ format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
                     } break;
 
                     case 'd': {
-                        S32 s32 = va_arg(args, S32);
+                        Int integer = va_arg(args, Int);
                         Char temp_buffer[1024] = {};
-                        replacement = int_to_string(s32, temp_buffer);
+                        replacement = int_to_string(integer, temp_buffer);
                     } break;
 
                     case 'u': {
-                        U32 u32 = va_arg(args, S32);
+                        Uint unsigned_int = va_arg(args, Uint);
                         Char temp_buffer[1024] = {};
-                        replacement = int_to_string(u32, temp_buffer);
+                        replacement = int_to_string(unsigned_int, temp_buffer);
                     } break;
 
                     case 'f': {
-                        F32 float_num = cast(F32)va_arg(args, F64);
+                        Float float_num = cast(Float)va_arg(args, Float64);
                         Char temp_buffer[1024] = {};
                         replacement = float_to_string(float_num, next_fractional_digit, temp_buffer);
                         next_fractional_digit = float_precision;
@@ -165,10 +165,10 @@ format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
                     } break;
 
                     case 'S': {
-                        S32 len = va_arg(args, S32);
+                        Int len = va_arg(args, Int);
                         Char *str = va_arg(args, Char *);
                         Char *at = temp_buffer;
-                        for(S32 str_index = 0; (str_index < len); ++str_index, ++at) {
+                        for(Int str_index = 0; (str_index < len); ++str_index, ++at) {
                             *at = str[str_index];
                         }
 
@@ -207,12 +207,12 @@ format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
     return(bytes_written);
 }
 
-internal U32
+internal Int
 format_string(Char *buf, PtrSize buf_len, Char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    U32 bytes_written = format_string_varargs(buf, buf_len, format, args);
+    Int bytes_written = format_string_varargs(buf, buf_len, format, args);
     assert((bytes_written > 0) && (bytes_written < buf_len));
     va_end(args);
 
@@ -279,7 +279,7 @@ enum TokenType {
 
 struct Token {
     Char *e;
-    PtrSize len;
+    Int len;
 
     TokenType type;
 };
@@ -290,7 +290,7 @@ struct Tokenizer {
 
 struct String {
     Char *e;
-    PtrSize len;
+    Int len;
 };
 
 internal String
@@ -311,7 +311,7 @@ token_to_string(Token token, Char *buffer, PtrSize size)
     assert(size >= token.len);
 
     zero_memory_block(buffer, size);
-    for(U32 str_index = 0; (str_index < token.len); ++str_index) {
+    for(Int str_index = 0; (str_index < token.len); ++str_index) {
         buffer[str_index] = token.e[str_index];
     }
 
@@ -319,13 +319,13 @@ token_to_string(Token token, Char *buffer, PtrSize size)
 }
 
 internal Bool
-string_compare(Char *a, Char *b, U32 len)
+string_compare(Char *a, Char *b, Int len)
 {
     assert((a) && (b) && (len > 0));
 
     Bool res = true;
 
-    for(U32 string_index = 0; (string_index < len); ++string_index) {
+    for(Int string_index = 0; (string_index < len); ++string_index) {
         if(a[string_index] != b[string_index]) {
             res = false;
             break; // while
@@ -359,18 +359,18 @@ eat_whitespace(Tokenizer *tokenizer)
             }
         } else if(tokenizer->at[0] == '#') { // #if 0 blocks.
             Char *hash_if_zero = "#if 0";
-            U32 hash_if_zero_length = string_length(hash_if_zero);
+            Int hash_if_zero_length = string_length(hash_if_zero);
 
             Char *hash_if_one = "#if 1";
-            U32 hash_if_one_length = string_length(hash_if_one);
+            Int hash_if_one_length = string_length(hash_if_one);
 
             if(string_compare(tokenizer->at, hash_if_zero, hash_if_zero_length)) {
                 tokenizer->at += hash_if_zero_length;
 
                 Char *hash_end_if = "#endif";
-                U32 hash_end_if_length = string_length(hash_end_if);
+                Int hash_end_if_length = string_length(hash_end_if);
 
-                U32 level = 0;
+                Int level = 0;
                 while(++tokenizer->at) {
                     if(tokenizer->at[0] == '#') {
                         if((tokenizer->at[1] == 'i') && (tokenizer->at[2] == 'f')) {
@@ -392,12 +392,12 @@ eat_whitespace(Tokenizer *tokenizer)
                 tokenizer->at += hash_if_zero_length;
 
                 Char *hash_else = "#else";
-                U32 hash_else_length = string_length(hash_else);
+                Int hash_else_length = string_length(hash_else);
 
                 Char *hash_end_if = "#endif";
-                U32 hash_end_if_length = string_length(hash_end_if);
+                Int hash_end_if_length = string_length(hash_end_if);
 
-                U32 level = 0;
+                Int level = 0;
                 while(++tokenizer->at) {
                     if(tokenizer->at[0] == '#') {
                         if((tokenizer->at[1] == 'i') && (tokenizer->at[2] == 'f')) {
@@ -412,7 +412,7 @@ eat_whitespace(Tokenizer *tokenizer)
                         } else if(string_compare(tokenizer->at, hash_else, hash_else_length)) {
                             if(level == 0) {
                                 tokenizer->at += hash_else_length;
-                                U32 Level2 = 0;
+                                Int Level2 = 0;
 
                                 while(++tokenizer->at) {
                                     if(tokenizer->at[0] == '#') {
@@ -474,11 +474,11 @@ parse_number(Tokenizer *tokenizer)
 
 internal Token get_token(Tokenizer *tokenizer); // Because C++...
 internal void
-eat_tokens(Tokenizer *tokenizer, U32 num_tokens_to_eat)
+eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
     assert(tokenizer);
 
-    for(U32 token_index = 0; (token_index < num_tokens_to_eat); ++token_index) {
+    for(Int token_index = 0; (token_index < num_tokens_to_eat); ++token_index) {
         get_token(tokenizer);
     }
 }
@@ -595,14 +595,14 @@ get_token(Tokenizer *tokenizer)
 }
 
 internal Bool
-token_equals(Token token, Char *tatch)
+token_equals(Token token, Char *str)
 {
-    assert(tatch);
+    assert(str);
 
     Bool res = false;
 
-    Char *at = tatch;
-    for(U32 str_index = 0; (str_index < token.len); ++str_index, ++at) {
+    Char *at = str;
+    for(Int str_index = 0; (str_index < token.len); ++str_index, ++at) {
         if((*at == '\0') == (*at == token.e[str_index])) {
             goto exit_func;
         }
@@ -616,7 +616,7 @@ exit_func:
 }
 
 struct ResultInt {
-    S32 e;
+    Int e;
     Bool success;
 };
 
@@ -647,7 +647,7 @@ string_to_int(String str)
 {
     ResultInt res = {};
 
-    for(U32 str_index = 0; (str_index < str.len); ++str_index) {
+    for(Int str_index = 0; (str_index < str.len); ++str_index) {
         ResultInt temp_int = char_to_int(str.e[str_index]);
         if(!temp_int.success) {
             break; // for
@@ -680,7 +680,7 @@ struct Variable {
     String type;
     String name;
     Bool is_ptr;
-    U32 array_count; // This is 1 if it's not an array.
+    Int array_count; // This is 1 if it's not an array.
 };
 
 internal Variable
@@ -739,7 +739,7 @@ require_token(Tokenizer *tokenizer, TokenType desired_type)
 
 struct StructData {
     String name;
-    U32 member_count;
+    Int member_count;
     Variable *members;
 };
 
@@ -750,7 +750,7 @@ is_stupid_class_keyword(Token t)
     Bool result = false;
 
     Char *keywords[] = {"private", "public", "protected"};
-    for(U32 keyword_index = 0, num_keywords = array_count(keywords); (keyword_index < num_keywords); ++keyword_index) {
+    for(Int keyword_index = 0, num_keywords = array_count(keywords); (keyword_index < num_keywords); ++keyword_index) {
         if(string_compare(keywords[keyword_index], t.e, t.len)) {
             result = true;
         }
@@ -808,7 +808,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
             }
 
             res.members = push_permanent_array(memory, Variable, res.member_count);
-            for(U32 member_index = 0; (member_index < res.member_count); ++member_index) {
+            for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
                 Tokenizer fake_tokenizer = { member_pos[member_index] };
                 res.members[member_index] = parse_member(&fake_tokenizer, member_token[member_index]);
             }
@@ -942,7 +942,7 @@ str_compare(String a, String b)
     if(a.len == b.len) {
         res = true;
 
-        for(U32 str_index = 0; (str_index < a.len); ++str_index) {
+        for(Int str_index = 0; (str_index < a.len); ++str_index) {
             if(a.e[str_index] != b.e[str_index]) {
                 res = false;
                 break; // for
@@ -954,11 +954,11 @@ str_compare(String a, String b)
 }
 
 internal Bool
-is_meta_type_already_in_array(String *array, U32 len, String test)
+is_meta_type_already_in_array(String *array, Int len, String test)
 {
     Bool res = false;
 
-    for(U32 arr_index = 0; (arr_index < len); ++arr_index) {
+    for(Int arr_index = 0; (arr_index < len); ++arr_index) {
         if(str_compare(array[arr_index], test)) {
             res = true;
             break; // for
@@ -968,12 +968,12 @@ is_meta_type_already_in_array(String *array, U32 len, String test)
     return(res);
 }
 
-internal U32
+internal Int
 set_primitive_type(String *array)
 {
     assert(array);
 
-    U32 res = 0;
+    Int res = 0;
 
     array[res].e = "char";
     array[res].len = string_length(array[res].e);
@@ -1003,17 +1003,17 @@ set_primitive_type(String *array)
 }
 
 #define copy_literal_to_char_buffer(buffer, index, lit) copy_literal_to_char_buffer_(buffer + index, index, lit, sizeof(lit) - 1)
-internal U32
-copy_literal_to_char_buffer_(Char *buffer, U32 index, Char *lit, U32 lit_len)
+internal Int
+copy_literal_to_char_buffer_(Char *buffer, Int index, Char *lit, Int lit_len)
 {
     assert(buffer);
     assert((lit) && (lit_len));
 
-    for(U32 str_index = 0; (str_index < lit_len); ++str_index) {
+    for(Int str_index = 0; (str_index < lit_len); ++str_index) {
         buffer[str_index] = lit[str_index];
     }
 
-    U32 res = index + lit_len;
+    Int res = index + lit_len;
     return(res);
 }
 
@@ -1036,7 +1036,7 @@ struct FunctionData {
     String ret_type;
     String name;
     Variable params[32];
-    U32 param_count;
+    Int param_count;
 };
 
 internal void
@@ -1052,18 +1052,18 @@ StuffToWrite
 start_parsing(AllFiles all_files, Memory *memory)
 {
     EnumData *enum_data = push_permanent_array(memory, EnumData, 256);
-    U32 enum_count = 0;
+    Int enum_count = 0;
 
     StructData *struct_data = push_permanent_array(memory, StructData, 256);
-    U32 struct_count = 0;
+    Int struct_count = 0;
 
     String *union_data = push_permanent_array(memory, String,  256);
-    U32 union_count = 0;
+    Int union_count = 0;
 
     FunctionData *func_data = push_permanent_array(memory, FunctionData, 256);
-    U32 func_count = 0;
+    Int func_count = 0;
 
-    for(U32 index = 0; (index < all_files.count); ++index) {
+    for(Int index = 0; (index < all_files.count); ++index) {
         Char *file = all_files.file[index];
 
         if(file) {
@@ -1111,6 +1111,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                                 }
                             }
                         } else {
+                            // Try to parse as a function.
                             Tokenizer copy_tokenizer = tokenizer;
                             Token linkage = {};
                             Token return_type = {};
@@ -1140,7 +1141,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                                                     fd->name = token_to_string(name);
 
                                                     // Set the array size to 1 for all the variables...
-                                                    for(U32 param_index = 0; (param_index < array_count(fd->params)); ++param_index) {
+                                                    for(Int param_index = 0; (param_index < array_count(fd->params)); ++param_index) {
                                                         fd->params[param_index].array_count = 1;
                                                     }
 
@@ -1224,10 +1225,10 @@ start_parsing(AllFiles all_files, Memory *memory)
 
     // Recreated Structs.
     write_to_output_buffer(&source_output, "//\n// Recreated structs.\n//\n");
-    for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
+    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
         write_to_output_buffer(&source_output, "typedef struct %S {\n", sd->name.len, sd->name.e);
-        for(U32 member_index = 0; (member_index < sd->member_count); ++member_index) {
+        for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
             Char *arr = (md->array_count > 1) ? "[%u]" : "";
             Char arr_buffer[256] = {};
@@ -1247,11 +1248,11 @@ start_parsing(AllFiles all_files, Memory *memory)
 
     // Struct Meta Data
     write_to_output_buffer(&source_output, "//\n// Struct meta data.\n//\n");
-    for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
+    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
         write_to_output_buffer(&source_output, "// Meta data for: %S\n", sd->name.len, sd->name.e);
         write_to_output_buffer(&source_output, "MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
-        for(U32 member_index = 0; (member_index < sd->member_count); ++member_index) {
+        for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
             write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
                                    md->type.len, md->type.e,
@@ -1266,7 +1267,7 @@ start_parsing(AllFiles all_files, Memory *memory)
 
     // Function meta data.
     write_to_output_buffer(&source_output, "\n//\n// Function meta data.\n//\n");
-    for(U32 func_index = 0; (func_index < func_count); ++func_index) {
+    for(Int func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
         write_to_output_buffer(&source_output, "FunctionMetaData function_data_%S = {\n", fd->name.len, fd->name.e);
         Char buf[256] = {};
@@ -1295,7 +1296,7 @@ start_parsing(AllFiles all_files, Memory *memory)
 
         write_to_output_buffer(&source_output, "    {\n");
         {
-            for(U32 param_index = 0; (param_index < fd->param_count); ++param_index) {
+            for(Int param_index = 0; (param_index < fd->param_count); ++param_index) {
                 Variable *param = fd->params + param_index;
                 write_to_output_buffer(&source_output, "        {\"%S\", \"%S\"}", param->type.len, param->type.e, param->name.len, param->name.e);
                 if(param_index != fd->param_count - 1) {
@@ -1313,9 +1314,9 @@ start_parsing(AllFiles all_files, Memory *memory)
     PtrSize def_struct_code_size = 256 * 256;
     Char *def_struct_code = cast(Char *)push_permanent_memory(memory, def_struct_code_size);
     if(def_struct_code) {
-        U32 index = 0;
+        Int index = 0;
         index = copy_literal_to_char_buffer(def_struct_code, index, "switch(member->type) {\n");
-        for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
             Char *DefaultStructString = get_default_struct_string();
             index += format_string(def_struct_code + index, def_struct_code_size, DefaultStructString,
@@ -1369,15 +1370,15 @@ start_parsing(AllFiles all_files, Memory *memory)
     TempMemory types_memory = push_temp_arr(memory, String, 256);
     {
         String *types = cast(String *)types_memory.memory;
-        U32 type_count = set_primitive_type(types);
-        for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
+        Int type_count = set_primitive_type(types);
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
 
             if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
                 types[type_count++] = sd->name;
             }
 
-            for(U32 member_index = 0; (member_index < sd->member_count); ++member_index) {
+            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
 
                 if(!is_meta_type_already_in_array(types, type_count, md->type)) {
@@ -1387,7 +1388,7 @@ start_parsing(AllFiles all_files, Memory *memory)
         }
 
         write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
-        for(U32 type_index = 0; (type_index < type_count); ++type_index) {
+        for(Int type_index = 0; (type_index < type_count); ++type_index) {
             String *type = types + type_index;
             write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
         }
@@ -1400,11 +1401,11 @@ start_parsing(AllFiles all_files, Memory *memory)
     write_to_output_buffer(&header_output, "\ntypedef struct MemberDefinition {\n    MetaType type;\n    char *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
 
     // Struct meta data.
-    for(U32 struct_index = 0; (struct_index < struct_count); ++struct_index) {
+    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = &struct_data[struct_index];
         write_to_output_buffer(&header_output, "// Meta Data for: %S\n", sd->name.len, sd->name.e);
         write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n", sd->name.len, sd->name.e);
-        write_to_output_buffer(&header_output, "static const size_t num_members_for_%S = %u;\n\n", sd->name.len, sd->name.e, sd->member_count);
+        write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n", sd->name.len, sd->name.e, sd->member_count);
     }
 
     // SerializeStruct header.
@@ -1431,7 +1432,7 @@ start_parsing(AllFiles all_files, Memory *memory)
                                                 "#define get_func_meta_data(func) function_data_##func\n";
 
     write_to_output_buffer(&header_output, variable_and_func_meta_data_structs);
-    for(U32 func_index = 0; (func_index < func_count); ++func_index) {
+    for(Int func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
         Char buf[256] = {};
         if(fd->linkage.len > 0) {
@@ -1456,7 +1457,6 @@ start_parsing(AllFiles all_files, Memory *memory)
     //
     // Forward Declared data.
     //
-
 #if 0
     // Struct forward declarations.
     write_to_output_buffer(&header_output, "\n//\n// Forward Declared Data.\n//\n");
