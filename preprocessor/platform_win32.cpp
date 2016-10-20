@@ -24,8 +24,14 @@ extern "C" { int _fltused; }
 Void   *__cdecl
 memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num)
 {
-    assert(value < 0xFFFF);
-    set_memory_block(dest, cast(Char)value, num);
+    assert((dest) && (value < 0xFFFF) && (num));
+
+    Byte *dest8 = cast(Byte *)dest;
+
+    while(num-- > 0) {
+        *dest8++ = cast(Byte)value;
+    }
+
 
     return(dest);
 }
@@ -89,7 +95,7 @@ win32_get_file_size(Char *filename)
     if(file_handle != INVALID_HANDLE_VALUE) {
         LARGE_INTEGER file_size = {};
         if(GetFileSizeEx(file_handle, &file_size)) {
-            size = safe_truncate_size_64(file_size.QuadPart + DEFAULT_MEMORY_ALIGNMENT + 1);
+            size = safe_truncate_size_64(file_size.QuadPart + default_memory_alignment + 1);
         }
 
         CloseHandle(file_handle);

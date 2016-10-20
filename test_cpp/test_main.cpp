@@ -51,7 +51,7 @@ private:
     int three;
 
 public:
-    func void set(int one, int two, int three);
+    void set(int one, int two, int three);
 };
 
 void FooOne::set(int one, int two, int three)

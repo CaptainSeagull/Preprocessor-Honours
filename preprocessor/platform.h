@@ -36,7 +36,7 @@ typedef bool Bool;
 typedef void Void;
 typedef char Char;
 
-typedef Int32 Int;
+typedef Int32 Int; // Int guaranteed to be 32-bits.
 typedef Uint32 Uint;
 
 typedef Uint8 Byte;
@@ -50,7 +50,6 @@ typedef double Float64;
 #define global static
 
 #define cast(type) (type)
-
 
 #if INTERNAL
     #define assert(Expression) do { persist Bool Ignore = false; if(!Ignore) { if(!(Expression)) { *cast(int volatile *)0 = 0; } } } while(0)
@@ -75,16 +74,15 @@ copy_memory_block(Void *dest, Void *source, PtrSize size)
     }
 }
 
-#define zero_memory_block(dest, size) set_memory_block(dest, 0, size)
 internal Void
-set_memory_block(Void *dest, Uint8 value, PtrSize size)
+zero_memory_block(Void *dest, PtrSize size)
 {
     assert((dest) && (size > 0));
 
     Byte *dest8 = cast(Byte *)dest;
 
     while(size-- > 0) {
-        *dest8++ = value;
+        *dest8++ = 0;
     }
 }
 
@@ -122,10 +120,10 @@ create_memory(Void *all_memory, Int file_size, Int permanent_size, Int temp_size
     return(res);
 }
 
-global Int const DEFAULT_MEMORY_ALIGNMENT = 4;
+global Int default_memory_alignment = 4;
 
 internal Int
-get_alignment_offset(Void *memory, Int index, Int desired_alignment = DEFAULT_MEMORY_ALIGNMENT)
+get_alignment_offset(Void *memory, Int index, Int desired_alignment = default_memory_alignment)
 {
     assert(memory);
 
@@ -141,7 +139,7 @@ get_alignment_offset(Void *memory, Int index, Int desired_alignment = DEFAULT_ME
 }
 
 internal Char *
-push_file_memory(Memory *memory, Int size, Int alignment = DEFAULT_MEMORY_ALIGNMENT)
+push_file_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
 {
     assert((memory) && (size > 0));
 
@@ -158,7 +156,7 @@ push_file_memory(Memory *memory, Int size, Int alignment = DEFAULT_MEMORY_ALIGNM
 #define push_permanent_struct(memory, type, ...) cast(type *)push_permanent_memory(memory, sizeof(type), ##__VA_ARGS__)
 #define push_permanent_array(memory, type, len, ...) cast(type *)push_permanent_memory(memory, sizeof(type) * len, ##__VA_ARGS__)
 internal Void *
-push_permanent_memory(Memory *memory, Int size, Int alignment = DEFAULT_MEMORY_ALIGNMENT)
+push_permanent_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
 {
     assert((memory) && (size > 0));
 
@@ -184,7 +182,7 @@ struct TempMemory {
 #define push_temp_struct(memory, Type, ...) push_temp_memory(memory, sizeof(Type), ##__VA_ARGS__)
 #define push_temp_arr(memory, Type, len, ...) push_temp_memory(memory, sizeof(Type) * len, ##__VA_ARGS__)
 internal TempMemory
-push_temp_memory(Memory *memory, Int size, Int alignment = DEFAULT_MEMORY_ALIGNMENT)
+push_temp_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
 {
     assert((memory) && (size > 0));
 
@@ -216,7 +214,7 @@ pop_temp_memory(TempMemory *temp_memory)
 #define push_struct_off_temp_memory(temp_memory, Type, ...) cast(Type *)push_off_temp_memory(temp_memory, sizeof(Type), ##__VA_ARGS__)
 #define push_array_off_temp_memory(temp_memory, Type, len, ...) cast(Type *)push_off_temp_memory(temp_memory, sizeof(Type) * len, ##__VA_ARGS__)
 internal Void *
-push_off_temp_memory(TempMemory *temp_memory, Int size, Int alignment = DEFAULT_MEMORY_ALIGNMENT)
+push_off_temp_memory(TempMemory *temp_memory, Int size, Int alignment = default_memory_alignment)
 {
     assert((temp_memory) && (size > 0));
 

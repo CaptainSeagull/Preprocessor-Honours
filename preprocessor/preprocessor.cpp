@@ -692,13 +692,13 @@ struct Variable {
 };
 
 internal Variable
-parse_member(Tokenizer *tokenizer, Token member_type_token)
+parse_member(Tokenizer *tokenizer)
 {
     assert(tokenizer);
 
     Variable res = {};
     res.array_count = 1;
-    res.type = token_to_string(member_type_token);
+    res.type = token_to_string(get_token(tokenizer));
 
     Bool parsing = true;
     while(parsing) {
@@ -722,7 +722,6 @@ parse_member(Tokenizer *tokenizer, Token member_type_token)
 
             case TokenType_identifier: {
                 res.name = token_to_string(token);
-
             } break;
 
             case TokenType_semi_colon: case TokenType_end_of_stream: {
@@ -745,12 +744,6 @@ require_token(Tokenizer *tokenizer, TokenType desired_type)
     return(res);
 }
 
-struct StructData {
-    String name;
-    Int member_count;
-    Variable *members;
-};
-
 internal Bool
 is_stupid_class_keyword(Token t)
 {
@@ -766,6 +759,12 @@ is_stupid_class_keyword(Token t)
 
     return(result);
 }
+
+struct StructData {
+    String name;
+    Int member_count;
+    Variable *members;
+};
 
 // TODO(Jonny): This needs some way to ignore member functions.
 internal StructData
@@ -783,21 +782,18 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
         if(require_token(tokenizer, TokenType_open_brace)) {
             res.member_count = 0;
             Char *member_pos[256] = {};
-            Token member_token[256] = {};
             for(;;) {
-                Token temp = get_token(tokenizer);
-                if(!is_stupid_class_keyword(temp)) {
-                    Token *mt = member_token + res.member_count;
-                    *mt = temp;
-
-                    if(mt->type == TokenType_close_brace) {
-                        break; // for
-                    } else if(mt->e[0] == '#') {
-                        while(tokenizer->at[0] != '\n') {
-                            ++tokenizer->at;
-                        }
-                    } else if((mt->type == TokenType_tilde) || (mt->type == TokenType_colon)) {
-                        // Do nothing.
+                Token token = get_token(tokenizer);
+                if((!is_stupid_class_keyword(token))) {
+                    if((token.type != TokenType_colon) && (token.type != TokenType_tilde)) {
+                        if(token.type == TokenType_close_brace) {
+                            break; // for
+                        } else if(token.e[0] == '#') {
+                            while(tokenizer->at[0] != '\n') {
+                                ++tokenizer->at;
+                            }
+                        } else {
+                            Bool is_func = false;
 
                     } else if((token_equals(*mt, "inline")) || (token_equals(*mt, "func"))) { // TODO(Jonny): Hacky way to skip member functions...
                         Token temp = get_token(tokenizer);
@@ -810,6 +806,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                         Token token = get_token(tokenizer);
                         while(token.type != TokenType_semi_colon) {
                             token = get_token(tokenizer);
+                            }
                         }
                     }
                 }
@@ -818,7 +815,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
             res.members = push_permanent_array(memory, Variable, res.member_count);
             for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
                 Tokenizer fake_tokenizer = { member_pos[member_index] };
-                res.members[member_index] = parse_member(&fake_tokenizer, member_token[member_index]);
+                res.members[member_index] = parse_member(&fake_tokenizer);
             }
         }
     }
@@ -1059,6 +1056,8 @@ skip_to_end_of_line(Tokenizer *tokenizer)
 StuffToWrite
 start_parsing(AllFiles all_files, Memory *memory)
 {
+    assert(memory);
+
     EnumData *enum_data = push_permanent_array(memory, EnumData, 256);
     Int enum_count = 0;
 
