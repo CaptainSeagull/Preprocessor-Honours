@@ -838,18 +838,13 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
 
                             if(!is_func) {
                                 member_pos[res.member_count++] = token.e;
-
-                                Token token = get_token(tokenizer);
-                                while(token.type != TokenType_semi_colon) {
-                                    token = get_token(tokenizer);
-                                }
                             } else {
                                 if(inline_func) {
                                     skip_to_matching_bracket(&tokenizer_copy);
                                 }
-
-                                *tokenizer = tokenizer_copy;
                             }
+
+                            *tokenizer = tokenizer_copy;
                         }
                     }
                 }
