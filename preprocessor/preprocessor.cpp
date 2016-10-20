@@ -36,23 +36,23 @@ copy_int(Char *dest, S32 value, S32 start, U32 count)
 }
 
 internal char *
-int_to_string(S32 value, char *buffer)
+int_to_string(S32 value, char *buf)
 {
-    assert(buffer);
+    assert(buf);
 
     Bool is_neg = (value < 0);
     S32 abs_value = (is_neg) ? -value : value;
     U32 num_digits = get_digit_count(abs_value);
     if(is_neg) {
-        Char *ptr = buffer;
+        Char *ptr = buf;
         *ptr = '-';
         copy_int(ptr, abs_value, 1, num_digits);
     } else {
-        Char *ptr = buffer;
+        Char *ptr = buf;
         copy_int(ptr, abs_value, 0, num_digits);
     }
 
-    return(buffer);
+    return(buf);
 }
 
 internal Char *
@@ -91,9 +91,9 @@ float_to_string(F32 value, U32 dec_accuracy, Char *buf)
 }
 
 internal Char *
-bool_to_string(Bool boolean)
+bool_to_string(Bool b)
 {
-    Char *res = cast(Char *)((boolean) ? "true" : "false");
+    Char *res = cast(Char *)((b) ? "true" : "false");
 
     return(res);
 }
@@ -108,7 +108,7 @@ is_numeric(Char input)
 
 // Supports %s, %d, %u, %c, %b and %f. %S for string with length.
 internal U32
-format_string_varargs(Char *buf, PtrSize buf_len, Char const *format, va_list args)
+format_string_varargs(Char *buf, PtrSize buf_len, Char *format, va_list args)
 {
     assert((buf) && (format));
 
@@ -208,7 +208,7 @@ format_string_varargs(Char *buf, PtrSize buf_len, Char const *format, va_list ar
 }
 
 internal U32
-format_string(Char *buf, PtrSize buf_len, Char const *format, ...)
+format_string(Char *buf, PtrSize buf_len, Char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -1229,7 +1229,7 @@ start_parsing(AllFiles all_files, Memory *memory)
         write_to_output_buffer(&source_output, "typedef struct %S {\n", sd->name.len, sd->name.e);
         for(U32 member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
-            Char const *arr = (md->array_count > 1) ? "[%u]" : "";
+            Char *arr = (md->array_count > 1) ? "[%u]" : "";
             Char arr_buffer[256] = {};
             if(md->array_count > 1) {
                 format_string(arr_buffer, 256, arr, md->array_count);
@@ -1435,11 +1435,11 @@ start_parsing(AllFiles all_files, Memory *memory)
         FunctionData *fd = func_data + func_index;
         Char buf[256] = {};
         if(fd->linkage.len > 0) {
-            Char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
+            Char *meta_data = "extern FunctionMetaData function_data_%S;\n";
             format_string(buf, array_count(buf), meta_data,
                           fd->name.len, fd->name.e);
         } else {
-            Char const *meta_data = "extern FunctionMetaData function_data_%S;\n";
+            Char *meta_data = "extern FunctionMetaData function_data_%S;\n";
             format_string(buf, array_count(buf), meta_data,
                           fd->name.len, fd->name.e);
         }
