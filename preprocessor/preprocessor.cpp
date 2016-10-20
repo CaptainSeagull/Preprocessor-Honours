@@ -861,6 +861,8 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 fd.ret_type = token_to_string(token);
                                 fd.name = token_to_string(get_token(&second_copy));
 
+                                // TODO(Jonny): Parse functions.
+
                                 res.func_data[res.func_count++] = fd;
                             }
 
