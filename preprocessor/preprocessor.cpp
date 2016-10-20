@@ -774,14 +774,17 @@ skip_to_matching_bracket(Tokenizer *tokenizer)
     Int brace_count = 1;
     Token token = {};
     Bool should_loop = true;
+    while(should_loop) {
         token = get_token(tokenizer);
         switch(token.type) {
+            case TokenType_close_brace: {
                 --brace_count;
                 if(!brace_count) {
                     should_loop = false;
                 }
             } break;
 
+            case TokenType_open_brace: {
                 ++brace_count;
             } break;
         }
@@ -842,6 +845,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 }
                             } else {
                                 if(inline_func) {
+                                    skip_to_matching_bracket(&tokenizer_copy);
                                 }
 
                                 *tokenizer = tokenizer_copy;
