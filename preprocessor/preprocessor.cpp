@@ -29,14 +29,14 @@ copy_int(Char *dest, S32 value, S32 start, U32 count)
 
     S32 end = start + count;
     for(S32 index = end - 1; (index >= start); --index, value /= 10) {
-        *(dest + index) = cast(char)(value % 10 + 48);
+        *(dest + index) = cast(Char)(value % 10 + 48);
     }
 
     dest[end] = 0;
 }
 
-internal char *
-int_to_string(S32 value, char *buf)
+internal Char *
+int_to_string(S32 value, Char *buf)
 {
     assert(buf);
 
