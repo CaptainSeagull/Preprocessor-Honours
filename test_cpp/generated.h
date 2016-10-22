@@ -72,6 +72,20 @@ typedef struct FunctionMetaData {
 extern FunctionMetaData function_data_foo;
 extern FunctionMetaData function_data_some_function;
 
+
+//
+// Member function meta data.
+//
+#define get_method_meta_data__(macro, method) macro##method
+#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)
+#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)
+
+// FooOne's methods.
+extern FunctionMetaData method_data_FooOneinline_func;
+extern FunctionMetaData method_data_FooOnemember_func;
+
+
+
 // size_t serialize_function(function_name, char *buf, size_t buf_size);
 #define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)
 size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);

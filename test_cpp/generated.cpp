@@ -87,6 +87,35 @@ FunctionMetaData function_data_some_function = {
 };
 
 
+//
+// Method meta data.
+//
+// FooOne's methods.
+FunctionMetaData method_data_FooOneinline_func = {
+    0,
+    "void",
+    "inline_func",
+    2,
+    {
+        {"float", "one"},
+        {"float", "two"}
+    }
+};
+
+
+FunctionMetaData method_data_FooOnemember_func = {
+    0,
+    "void",
+    "member_func",
+    3,
+    {
+        {"int", "one"},
+        {"int", "two"},
+        {"int", "three"}
+    }
+};
+
+
 
 // TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
 size_t

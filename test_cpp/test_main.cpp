@@ -80,7 +80,11 @@ main(int argc, char *argv[])
 
     printf(buf);
 
+
+    FunctionMetaData md = get_method_meta_data(FooOne, member_func);
+
     int i = 0;
+
 
 #if 0
     size_t buf_size = 1024  * 1024;

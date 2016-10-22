@@ -67,6 +67,10 @@ FunctionMetaData function_data_foo = {
 };
 
 
+//
+// Method meta data.
+//
+
 
 // TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
 size_t

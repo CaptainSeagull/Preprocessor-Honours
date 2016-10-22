@@ -917,6 +917,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                     skip_to_matching_bracket(&tokenizer_copy);
                                 }
 
+                                // Get member function name and return type.
                                 Tokenizer second_copy = *tokenizer;
                                 FunctionData fd = {};
                                 //fd.linkage = ;
@@ -924,6 +925,8 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 fd.name = token_to_string(get_token(&second_copy));
 
                                 eat_token(&second_copy);
+
+                                // Parse the parameters.
                                 Token next = {};
                                 while(next.type != TokenType_close_param) {
                                     fd.params[fd.param_count++] = parse_variable(&second_copy, TokenType_comma, TokenType_close_param);
@@ -935,8 +938,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                     }
                                 }
 
-                                // TODO(Jonny): Parse functions.
-
+                                // Now store the function data.
                                 res.func_data[res.func_count++] = fd;
                             }
 
@@ -1387,6 +1389,60 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
         write_to_output_buffer(&source_output, "\n    }\n};\n\n");
     }
 
+    // Method meta data.
+    write_to_output_buffer(&source_output, "\n//\n// Method meta data.\n//\n");
+    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+        StructData *sd = struct_data + struct_index;
+
+        if(sd->func_count) {
+            write_to_output_buffer(&source_output, "// %S's methods.", sd->name.len, sd->name.e);
+
+            for(Int method_index = 0; (method_index < sd->func_count); ++method_index) {
+                FunctionData *md = sd->func_data + method_index;
+
+                write_to_output_buffer(&source_output, "\nFunctionMetaData method_data_%S%S = {\n",
+                                       sd->name.len, sd->name.e,
+                                       md->name.len, md->name.e);
+                Char buf[1024] = {};
+                if(md->linkage.len) {
+                    Char *meta_data = "    \"%S\",\n"
+                                      "    \"%S\",\n"
+                                      "    \"%S\",\n"
+                                      "    %u,\n";
+                    format_string(buf, array_count(buf), meta_data,
+                                  md->linkage.len, md->linkage.e,
+                                  md->ret_type.len, md->ret_type.e,
+                                  md->name.len, md->name.e,
+                                  md->param_count);
+                } else {
+                    Char *meta_data = "    0,\n"
+                                      "    \"%S\",\n"
+                                      "    \"%S\",\n"
+                                      "    %u,\n";
+                    format_string(buf, array_count(buf), meta_data,
+                                  md->ret_type.len, md->ret_type.e,
+                                  md->name.len, md->name.e,
+                                  md->param_count);
+                }
+
+                write_to_output_buffer(&source_output, buf);
+
+                write_to_output_buffer(&source_output, "    {\n");
+                for(Int param_index = 0; (param_index < md->param_count); ++param_index) {
+                    Variable *param = md->params + param_index;
+
+                    write_to_output_buffer(&source_output, "        {\"%S\", \"%S\"}", param->type.len, param->type.e, param->name.len, param->name.e);
+                    if(param_index != md->param_count - 1) {
+                        write_to_output_buffer(&source_output, ",\n");
+                    }
+                }
+
+                write_to_output_buffer(&source_output, "\n    }\n};\n\n");
+            }
+        }
+    }
+
+    // Serialize func stuff.
     write_to_output_buffer(&source_output, "\n\n");
 
     Int def_struct_code_size = 256 * 256;
@@ -1523,7 +1579,37 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
         write_to_output_buffer(&header_output, buf);
     }
 
-    Char *serialize_func_header = "\n// size_t serialize_function(function_name, char *buf, size_t buf_size);"
+    // Member function meta data.
+    write_to_output_buffer(&header_output,
+                           "\n\n//\n// Member function meta data.\n//\n"
+                           "#define get_method_meta_data__(macro, method) macro##method\n"
+                           "#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)\n"
+                           "#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)\n");
+
+    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+        StructData *sd = struct_data + struct_index;
+
+        if(sd->func_count) {
+            write_to_output_buffer(&header_output, "\n// %S's methods.\n", sd->name.len, sd->name.e);
+            for(Int method_index = 0; (method_index < sd->func_count); ++method_index) {
+                FunctionData *md = sd->func_data + method_index;
+
+                Char buf[256] = {};
+                if(md->linkage.len) {
+                    // TODO(Jonny): Implement.
+                } else {
+                    Char *meta_data = "extern FunctionMetaData method_data_%S%S;\n";
+                    format_string(buf, array_count(buf), meta_data,
+                                  sd->name.len, sd->name.e,
+                                  md->name.len, md->name.e);
+                }
+
+                write_to_output_buffer(&header_output, buf);
+            }
+        }
+    }
+
+    Char *serialize_func_header = "\n\n\n// size_t serialize_function(function_name, char *buf, size_t buf_size);"
                                   "\n#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)\n"
                                   "size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);\n";
 
@@ -1538,7 +1624,6 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     return(res);
 }
 
-// TODO(Jonny): Always make sure arguments[0] is actually the exe being run...
 StuffToWrite
 start_parsing(AllFiles all_files, Memory *memory)
 {
@@ -1577,9 +1662,11 @@ start_parsing(AllFiles all_files, Memory *memory)
                     case TokenType_identifier: {
                         if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
                             struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
+
                         } else if((token_equals(token, "union"))) {
                             Token name = get_token(&tokenizer);
                             union_data[union_count++] = token_to_string(name);
+
                         } else if((token_equals(token, "enum"))) {
                             Token name = get_token(&tokenizer);
                             Bool is_enum_struct = false;
