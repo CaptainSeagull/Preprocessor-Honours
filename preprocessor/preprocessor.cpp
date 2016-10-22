@@ -479,6 +479,8 @@ parse_number(Tokenizer *tokenizer)
 }
 
 internal Token get_token(Tokenizer *tokenizer); // Because C++...
+
+#define eat_token(tokenizer) eat_tokens(tokenizer, 1);
 internal Void
 eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
@@ -600,6 +602,17 @@ get_token(Tokenizer *tokenizer)
     return(res);
 }
 
+internal Token
+peak_token(Tokenizer *tokenizer)
+{
+    assert(tokenizer);
+
+    Tokenizer cpy = *tokenizer;
+    Token res = get_token(&cpy);
+
+    return(res);
+}
+
 internal Bool
 token_equals(Token token, Char *str)
 {
@@ -668,6 +681,15 @@ string_to_int(String str)
     }
 
     assert(res.success);
+    return(res);
+}
+
+internal ResultInt
+token_to_int(Token t)
+{
+    String str = token_to_string(t);
+    ResultInt res = string_to_int(str);
+
     return(res);
 }
 
@@ -800,6 +822,48 @@ skip_to_matching_bracket(Tokenizer *tokenizer)
     }
 }
 
+internal Variable
+parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_token_type_2 = TokenType_unknown)
+{
+    Variable res = {};
+
+    // Return type.
+    Token token = get_token(tokenizer);
+    res.type = token_to_string(token);
+
+    // Is pointer?
+    token = get_token(tokenizer);
+    if(token.type == TokenType_asterisk) {
+        res.is_ptr = true;
+        token = get_token(tokenizer);
+    }
+
+    // Name.
+    res.name = token_to_string(token);
+
+    // Is array?
+    token = peak_token(tokenizer);
+    if((token.type != end_token_type_1) && (token.type != end_token_type_2)) {
+        eat_token(tokenizer);
+        if(token.type == TokenType_open_bracket) {
+            token = get_token(tokenizer);
+            ResultInt num = token_to_int(token);
+            if(num.success) {
+                res.array_count = num.e;
+                eat_token(tokenizer); // Eat the second ']'.
+            } else {
+                // TODO(Jonny): Error case.
+            }
+        } else {
+            // TODO(Jonny): Error case.
+        }
+    } else {
+        res.array_count = 1;
+    }
+
+    return(res);
+}
+
 // TODO(Jonny): This needs some way to ignore member functions.
 internal StructData
 parse_struct(Tokenizer *tokenizer, Memory *memory)
@@ -859,19 +923,16 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                                 fd.ret_type = token_to_string(token);
                                 fd.name = token_to_string(get_token(&second_copy));
 
-                                eat_tokens(&second_copy, 1);
+                                eat_token(&second_copy);
                                 Token next = {};
                                 while(next.type != TokenType_close_param) {
-                                    Variable v = {};
+                                    fd.params[fd.param_count++] = parse_variable(&second_copy, TokenType_comma, TokenType_close_param);
 
-                                    next = get_token(&second_copy); // Eat the open_param.
-                                    v.type = token_to_string(next);
-
-                                    next = get_token(&second_copy);
-                                    v.name = token_to_string(next);
-
-                                    fd.params[fd.param_count++] = v;
-                                    next = get_token(&second_copy);
+                                    next = peak_token(&second_copy);
+                                    assert((next.type == TokenType_comma) || (next.type == TokenType_close_param));
+                                    if(next.type == TokenType_comma) {
+                                        eat_token(&second_copy);
+                                    }
                                 }
 
                                 // TODO(Jonny): Parse functions.
