@@ -233,9 +233,8 @@ struct OutputBuffer {
     Int size;
 };
 
-#define write_to_output_buffer(ob, format, ...) write_to_output_buffer_(ob, cast(Char *)format, ##__VA_ARGS__)
 internal Void
-write_to_output_buffer_(OutputBuffer *ob, Char *format, ...)
+write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
 {
     assert(((ob) && (ob->buffer) && (ob->size > 0) && (ob->index < ob->size)) && (format));
 
@@ -257,7 +256,6 @@ create_output_buffer(Int size, Memory *memory)
     return(res);
 }
 
-// TODO(Jonny): Make this a normal enum.
 enum TokenType {
     TokenType_unknown,
 
@@ -316,7 +314,7 @@ token_to_string(Token token)
 internal Char *
 token_to_string(Token token, Char *buffer, Int size)
 {
-    assert(size >= token.len);
+    assert((token.type) && (buffer) && (size >= token.len));
 
     zero_memory_block(buffer, size);
     for(Int str_index = 0; (str_index < token.len); ++str_index) {
