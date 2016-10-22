@@ -65,7 +65,7 @@ typedef double Float64;
 internal Void
 copy_memory_block(Void *dest, Void *source, PtrSize size)
 {
-    assert((dest) && (source) && (size > 0));
+    assert((dest) && (source) && (size));
 
     Byte *dest8 = cast(Byte *)dest, *source8 = cast(Byte *)source;
 
@@ -77,7 +77,7 @@ copy_memory_block(Void *dest, Void *source, PtrSize size)
 internal Void
 zero_memory_block(Void *dest, PtrSize size)
 {
-    assert((dest) && (size > 0));
+    assert((dest) && (size));
 
     Byte *dest8 = cast(Byte *)dest;
 
@@ -103,7 +103,7 @@ struct Memory {
 internal Memory
 create_memory(Void *all_memory, Int file_size, Int permanent_size, Int temp_size)
 {
-    assert((all_memory) && (file_size) && (permanent_size > 0) && (temp_size > 0));
+    assert((all_memory) && (file_size) && (permanent_size) && (temp_size));
 
     zero_memory_block(all_memory, file_size + permanent_size + temp_size);
 
@@ -141,7 +141,7 @@ get_alignment_offset(Void *memory, Int index, Int desired_alignment = default_me
 internal Char *
 push_file_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
 {
-    assert((memory) && (size > 0));
+    assert((memory) && (size));
 
     Int alignment_offset = get_alignment_offset(memory->file_memory, memory->file_index, alignment);
     assert(memory->file_index + alignment_offset + size <= memory->file_size);
@@ -158,7 +158,7 @@ push_file_memory(Memory *memory, Int size, Int alignment = default_memory_alignm
 internal Void *
 push_permanent_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
 {
-    assert((memory) && (size > 0));
+    assert((memory) && (size));
 
     Int alignment_offset = get_alignment_offset(memory->permanent_memory, memory->permanent_index, alignment);
     assert(memory->permanent_index + alignment_offset + size <= memory->permanent_size);
@@ -184,7 +184,7 @@ struct TempMemory {
 internal TempMemory
 push_temp_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
 {
-    assert((memory) && (size > 0));
+    assert((memory) && (size));
 
     Int alignment_offset = get_alignment_offset(memory->temp_memory, memory->temp_index, alignment);
     assert(memory->temp_index + alignment_offset + size <= memory->temp_size);
@@ -205,7 +205,8 @@ push_temp_memory(Memory *memory, Int size, Int alignment = default_memory_alignm
 internal Void
 pop_temp_memory(TempMemory *temp_memory)
 {
-    assert((temp_memory) && (temp_memory->memory) && (temp_memory->block) && (temp_memory->size > 0));
+    assert(temp_memory);
+    assert((temp_memory->memory) && (temp_memory->block) && (temp_memory->size));
 
     temp_memory->memory->temp_index -= temp_memory->size + temp_memory->alignment_offset;
     zero_memory_block(temp_memory, sizeof(*temp_memory));
@@ -216,7 +217,7 @@ pop_temp_memory(TempMemory *temp_memory)
 internal Void *
 push_off_temp_memory(TempMemory *temp_memory, Int size, Int alignment = default_memory_alignment)
 {
-    assert((temp_memory) && (size > 0));
+    assert((temp_memory) && (size));
 
     Int alignment_offset = get_alignment_offset(temp_memory->block, temp_memory->used, alignment);
     Void *res = temp_memory->block + temp_memory->used + alignment_offset;

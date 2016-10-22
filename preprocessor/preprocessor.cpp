@@ -118,7 +118,7 @@ is_numeric(Char input)
 internal Int
 format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 {
-    assert((buf) && (format));
+    assert((buf) && (buf_len) && (format));
 
     Char *dest = cast(Char *)buf;
     Int bytes_written = 0;
@@ -218,6 +218,8 @@ format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 internal Int
 format_string(Char *buf, Int buf_len, Char *format, ...)
 {
+    assert((buf) && (buf_len) && (format));
+
     va_list args;
     va_start(args, format);
     Int bytes_written = format_string_varargs(buf, buf_len, format, args);
@@ -236,7 +238,8 @@ struct OutputBuffer {
 internal Void
 write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
 {
-    assert(((ob) && (ob->buffer) && (ob->size > 0) && (ob->index < ob->size)) && (format));
+    assert((ob) && (ob->buffer) && (ob->size > 0) && (ob->index < ob->size));
+    assert(format);
 
     va_list args;
     va_start(args, format);
@@ -1191,6 +1194,8 @@ struct ParseFunctionResult {
 internal ParseFunctionResult
 attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 {
+    assert((tokenizer) && (token.type));
+
     ParseFunctionResult res = {};
 
     // Try to parse as a function.
@@ -1296,6 +1301,9 @@ internal StuffToWrite
 write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count,
            EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
 {
+    assert((memory) && (struct_data) && (func_data) && (enum_data) && (union_count));
+
+    //
     // Source file.
     //
     StuffToWrite res = {};

@@ -40,6 +40,8 @@ memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num
 Void   *__cdecl
 memcpy(_Out_writes_bytes_all_(_Size) Void *dest, _In_reads_bytes_(_Size) const Void *source, _In_ size_t num)
 {
+    assert((dest) && (source) && (num));
+
     copy_memory_block(dest, cast(Void *)source, num);
 
     return(dest);
@@ -108,7 +110,7 @@ win32_get_file_size(Char *filename)
 internal Bool
 win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
 {
-    assert((filename) && (data) && (data_size > 0));
+    assert((filename) && (data) && (data_size));
 
     Bool res = false;
     HANDLE file_handle = CreateFileA(filename, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
@@ -137,6 +139,8 @@ enum ExtensionType {
 internal ExtensionType
 get_extension_from_str(Char *str)
 {
+    assert(str);
+
     ExtensionType res = ExtensionType::unknown;
 
     Int len = string_length(str);
