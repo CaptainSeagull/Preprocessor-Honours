@@ -49,15 +49,6 @@ memcpy(_Out_writes_bytes_all_(_Size) Void *dest, _In_reads_bytes_(_Size) const V
 
 #define GetProcAddress(lib, name) cast(Void *)(GetProcAddress(lib, name)) // To avoid warning C4191.
 
-internal Uint32
-safe_truncate_size_64(Uint64 value)
-{
-    assert(value <= 0xFFFFFFFF);
-    Uint32 res = cast(Uint32)value;
-
-    return(res);
-}
-
 internal Char *
 win32_read_entire_file_and_null_terminate(Char *filename, Memory *memory)
 {
@@ -157,7 +148,7 @@ get_extension_from_str(Char *str)
 Int
 main(Int argc, Char *argv[])
 {
-    Int tot_size_of_all_files = 0;
+    PtrSize tot_size_of_all_files = 0;
 
     for(Int file_index = 1; (file_index < argc); ++file_index) {
         tot_size_of_all_files += win32_get_file_size(argv[file_index]);

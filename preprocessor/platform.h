@@ -59,6 +59,15 @@ typedef double Float64;
 
 #define array_count(arr) (sizeof(arr) / (sizeof((arr)[0])))
 
+internal Uint32
+safe_truncate_size_64(Uint64 value)
+{
+    assert(value <= 0xFFFFFFFF);
+    Uint32 res = cast(Uint32)value;
+
+    return(res);
+}
+
 //
 // Memory stuff.
 //
@@ -88,20 +97,20 @@ zero_memory_block(Void *dest, PtrSize size)
 
 struct Memory {
     Void *file_memory;
-    Int file_index;
-    Int file_size;
+    PtrSize file_index;
+    PtrSize file_size;
 
     Void *permanent_memory;
-    Int permanent_index;
-    Int permanent_size;
+    PtrSize permanent_index;
+    PtrSize permanent_size;
 
     Void *temp_memory;
-    Int temp_index;
-    Int temp_size;
+    PtrSize temp_index;
+    PtrSize temp_size;
 };
 
 internal Memory
-create_memory(Void *all_memory, Int file_size, Int permanent_size, Int temp_size)
+create_memory(Void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSize temp_size)
 {
     assert((all_memory) && (file_size) && (permanent_size) && (temp_size));
 
@@ -123,13 +132,13 @@ create_memory(Void *all_memory, Int file_size, Int permanent_size, Int temp_size
 global Int default_memory_alignment = 4;
 
 internal Int
-get_alignment_offset(Void *memory, Int index, Int desired_alignment = default_memory_alignment)
+get_alignment_offset(Void *memory, PtrSize index, Int desired_alignment = default_memory_alignment)
 {
     assert(memory);
 
     Int res = 0;
 
-    Int result_pointer = cast(Int)memory + index;
+    PtrSize result_pointer = cast(PtrSize)(cast(Char *)memory + index);
     Int alignment_mask = desired_alignment - 1;
     if(result_pointer & alignment_mask) {
         res = desired_alignment - (result_pointer & alignment_mask);

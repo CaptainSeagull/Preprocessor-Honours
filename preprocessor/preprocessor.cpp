@@ -558,7 +558,7 @@ get_token(Tokenizer *tokenizer)
             }
 
             res.type = TokenType_string;
-            res.len = tokenizer->at - res.e;
+            res.len = safe_truncate_size_64(tokenizer->at - res.e);
             if(tokenizer->at[0] == '"') {
                 ++tokenizer->at;
             }
@@ -575,7 +575,7 @@ get_token(Tokenizer *tokenizer)
             }
 
             res.type = TokenType_string;
-            res.len = tokenizer->at - res.e;
+            res.len = safe_truncate_size_64(tokenizer->at - res.e);
             if(tokenizer->at[0] == '\'') {
                 ++tokenizer->at;
             }
@@ -587,14 +587,14 @@ get_token(Tokenizer *tokenizer)
                     ++tokenizer->at;
                 }
 
-                res.len = tokenizer->at - res.e;
+                res.len = safe_truncate_size_64(tokenizer->at - res.e);
                 res.type = TokenType_identifier;
             } else if(is_num(c)) {
                 while(is_num(tokenizer->at[0])) {
                     ++tokenizer->at;
                 }
 
-                res.len = tokenizer->at - res.e;
+                res.len = safe_truncate_size_64(tokenizer->at - res.e);
                 res.type = TokenType_number;
             } else {
                 res.type = TokenType_unknown;
