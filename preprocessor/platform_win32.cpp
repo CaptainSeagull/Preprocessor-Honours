@@ -195,7 +195,6 @@ mainCRTStartup(Void)
     Int buf_index = 0;
 
     Char *args = GetCommandLine();
-    int arg_count = 0;
 
     buf[buf_index++] = args;
     while(*args) {
