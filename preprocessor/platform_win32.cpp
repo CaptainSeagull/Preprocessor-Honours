@@ -21,8 +21,8 @@ extern "C" { int _fltused; }
 #endif
 
 #pragma function(memset)
-Void   *__cdecl
-memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num)
+Void *
+memset(Void *dest, int value, size_t num)
 {
     assert((dest) && (value < 0xFFFF) && (num));
 
@@ -37,8 +37,8 @@ memset(_Out_writes_bytes_all_(_Size) Void *dest, _In_ int value, _In_ size_t num
 }
 
 #pragma function(memcpy)
-Void   *__cdecl
-memcpy(_Out_writes_bytes_all_(_Size) Void *dest, _In_reads_bytes_(_Size) const Void *source, _In_ size_t num)
+Void *
+memcpy(Void *dest, const Void *source, size_t num)
 {
     assert((dest) && (source) && (num));
 
@@ -54,7 +54,7 @@ win32_read_entire_file_and_null_terminate(Char *filename, Memory *memory)
 {
     assert((filename) && (memory));
 
-    Char *res = {};
+    Char *res = 0;
 
     HANDLE file_handle = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if(file_handle != INVALID_HANDLE_VALUE) {
@@ -82,7 +82,7 @@ win32_get_file_size(Char *filename)
 {
     assert(filename);
 
-    PtrSize size = {};
+    PtrSize size = 0;
 
     HANDLE file_handle = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if(file_handle != INVALID_HANDLE_VALUE) {
@@ -122,9 +122,9 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
 }
 
 enum ExtensionType {
-    unknown,
-    cpp,
-    c,
+    ExtensionType_unknown,
+    ExtensionType_cpp,
+    ExtensionType_c,
 };
 
 internal ExtensionType
@@ -132,14 +132,14 @@ get_extension_from_str(Char *str)
 {
     assert(str);
 
-    ExtensionType res = ExtensionType::unknown;
+    ExtensionType res = ExtensionType_unknown;
 
     Int len = string_length(str);
     // TODO(Jonny): Do this properly...
     if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
-        res = ExtensionType::c;
+        res = ExtensionType_c;
     } else if((str[len - 1] == 'p') && (str[len - 2] == 'p') && (str[len - 3] == 'c') && (str[len - 4] == '.') ) {
-        res = ExtensionType::cpp;
+        res = ExtensionType_cpp;
     }
 
     return(res);
@@ -164,7 +164,7 @@ main(Int argc, Char *argv[])
     Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
     char *header_name = "generated.h";
-    char *source_name = (type == ExtensionType::cpp) ? "generated.cpp" : "generated.c";
+    char *source_name = (type == ExtensionType_cpp) ? "generated.cpp" : "generated.c";
 
     if(all_memory) {
         Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
