@@ -77,7 +77,7 @@ size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
     char indent_buf[256] = {0};
-    unsigned indent_index = 0, member_index = 0;
+    unsigned indent_index = 0, member_index = 0, arr_index = 0;
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
     memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */
@@ -91,7 +91,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned 
          void *member_ptr = (char *)var + member->offset;
          switch(member->type) {
             case meta_type_float: {
-                for(unsigned arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
                     float *value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;
                     if(member->arr_size > 1) {
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s[%d] : %f", indent_buf, member->name, arr_index, value[arr_index]);
@@ -102,7 +102,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned 
             } break;
 
             case meta_type_short: case meta_type_int: case meta_type_long: {
-                for(unsigned arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
                     int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;
                     if(member->arr_size > 1) {
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s[%d] : %d", indent_buf, member->name, arr_index, value[arr_index]);
@@ -121,7 +121,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned 
             } break;
 
             case meta_type_double: {
-                for(unsigned arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
                     double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;
                     if(member->arr_size > 1) {
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s[%d] : %f", indent_buf, member->name, arr_index, value[arr_index]);
@@ -166,11 +166,12 @@ size_t
 serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 {
     size_t bytes_written = 0;
+    unsigned param_index = 0;
 
     bytes_written = sprintf(buf, "Function %s\n    Linkage: %s\n    Return Type: %s\n    Param Count: %u\n",
                             func.name, (func.linkage) ? func.linkage : "normal", func.ret_type, func.param_count);
 
-    for(unsigned param_index = 0; (param_index < func.param_count); ++param_index) {
+    for(param_index = 0; (param_index < func.param_count); ++param_index) {
         Variable *param = func.params + param_index;
         bytes_written += sprintf(buf + bytes_written, "Param %u : %s %s", param_index + 1, param->ret_type, param->name);
     }
