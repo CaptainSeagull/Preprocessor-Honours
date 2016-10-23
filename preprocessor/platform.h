@@ -180,7 +180,7 @@ push_permanent_memory(Memory *memory, Int size, Int alignment = default_memory_a
 }
 
 struct TempMemory {
-    Memory *memory;
+    Memory *full_memory_block;
     Char *block;
     Int size;
     Int used;
@@ -199,7 +199,7 @@ push_temp_memory(Memory *memory, Int size, Int alignment = default_memory_alignm
     assert(memory->temp_index + alignment_offset + size <= memory->temp_size);
 
     TempMemory res = {};
-    res.memory = memory;
+    res.full_memory_block = memory;
     res.alignment_offset = alignment_offset;
     res.block = cast(Char *)memory->temp_memory + (memory->temp_index + res.alignment_offset);
 
@@ -215,9 +215,9 @@ internal Void
 pop_temp_memory(TempMemory *temp_memory)
 {
     assert(temp_memory);
-    assert((temp_memory->memory) && (temp_memory->block) && (temp_memory->size));
+    assert((temp_memory->full_memory_block) && (temp_memory->block) && (temp_memory->size));
 
-    temp_memory->memory->temp_index -= temp_memory->size + temp_memory->alignment_offset;
+    temp_memory->full_memory_block->temp_index -= temp_memory->size + temp_memory->alignment_offset;
     zero_memory_block(temp_memory, sizeof(*temp_memory));
 }
 

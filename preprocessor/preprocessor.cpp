@@ -1510,7 +1510,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     // Write out meta types
     TempMemory types_memory = push_temp_arr(memory, String, 256);
     {
-        String *types = cast(String *)types_memory.memory;
+        String *types = cast(String *)types_memory.block;
         Int type_count = set_primitive_type(types);
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
