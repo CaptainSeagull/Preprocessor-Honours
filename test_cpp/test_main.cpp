@@ -35,7 +35,6 @@ union V2 {
     float e[2];
 };
 
-#define func
 static BarFoo
 foo(char *str, int len, ...)
 {

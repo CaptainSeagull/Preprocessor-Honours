@@ -151,20 +151,20 @@ format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 
                     case 'd': case 'i': {
                         Int integer = va_arg(args, Int);
-                        Char temp_buffer[1024] = {};
-                        replacement = int_to_string(integer, temp_buffer);
+                        Char temp_buffer_2[1024] = {};
+                        replacement = int_to_string(integer, temp_buffer_2);
                     } break;
 
                     case 'u': {
                         Uint unsigned_int = va_arg(args, Uint);
-                        Char temp_buffer[1024] = {};
-                        replacement = int_to_string(unsigned_int, temp_buffer);
+                        Char temp_buffer_2[1024] = {};
+                        replacement = int_to_string(unsigned_int, temp_buffer_2);
                     } break;
 
                     case 'f': {
                         Float float_num = cast(Float)va_arg(args, Float64);
-                        Char temp_buffer[1024] = {};
-                        replacement = float_to_string(float_num, next_fractional_digit, temp_buffer);
+                        Char temp_buffer_2[1024] = {};
+                        replacement = float_to_string(float_num, next_fractional_digit, temp_buffer_2);
                         next_fractional_digit = float_precision;
                     } break;
 
@@ -176,6 +176,8 @@ format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
                     case 'S': {
                         Int len = va_arg(args, Int);
                         Char *str = va_arg(args, Char *);
+
+                        assert(len < array_count(temp_buffer));
                         Char *at = temp_buffer;
                         for(Int str_index = 0; (str_index < len); ++str_index, ++at) {
                             *at = str[str_index];

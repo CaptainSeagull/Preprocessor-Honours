@@ -121,8 +121,8 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
     return(res);
 }
 
-Int
-main(Int argc, Char *argv[])
+int
+main(Int argc, Char **argv)
 {
     PtrSize tot_size_of_all_files = 0;
 
