@@ -1,27 +1,31 @@
 # Batch File to compile Frozen on Linux
 
-mkdir -p "/home/jonathan/Desktop/builds/preprocessor_build"
-pushd "/home/jonathan/Desktop/builds/preprocessor_build"
+pushd "/home/jonathan/Desktop/projects/preprocessor"
+
+mkdir -p "builds/linux_clang"
+pushd "builds/linux_clang"
 
 
 # Build preprocessor
-clang++ "/home/jonathan/Desktop/projects/preprocessor/preprocessor/platform_linux.cpp" "/home/jonathan/Desktop/projects/preprocessor/preprocessor/preprocessor.cpp" -std=c++1y -o preprocessor -DENVIRONMENT64 -DINTERNAL -Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-prototypes -Wno-unused-function -Wno-unused-variable -Wno-padded -Wno-float-equal -Wno-conversion -Wno-missing-field-initializers -Wno-missing-braces -Wno-missing-variable-declarations -Wno-format-nonliteral -Wno-cast-align -Wno-switch-enum -Wno-incompatible-pointer-types-discards-qualifiers -Wno-unused-macros -Wno-typedef-redefinition -Wno-format -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -g -ldl
+clang++ -Wall "../../preprocessor/platform_linux.cpp" "../../preprocessor/preprocessor.cpp" -std=c++1y -o preprocessor -DINTERNAL -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -g -ldl
 
 
 # Build CPP test.
-pushd "/home/jonathan/Desktop/projects/preprocessor/test_cpp"
-"/home/jonathan/Desktop/builds/preprocessor_build/preprocessor" test_main.cpp test_file.cpp
-popd # "/home/jonathan/Desktop/projects/preprocessor/test_cpp"
+pushd "../../test_cpp"
+"../builds/linux_clang/preprocessor" test_main.cpp test_file.cpp
 
-clang++ "/home/jonathan/Desktop/projects/preprocessor/test_cpp/test_main.cpp" "/home/jonathan/Desktop/projects/preprocessor/test_cpp/test_file.cpp" "/home/jonathan/Desktop/projects/preprocessor/test_cpp/generated.cpp" -std=c++1y -o preprocessor_test_cpp -Wno-switch -g
+clang++ -Wall "test_main.cpp" "test_file.cpp" "generated.cpp" -std=c++1y -o preprocessor_test_cpp -Wno-unused-variable -Wno-unused-function -Wno-switch -g
+mv "./preprocessor_test_cpp" "../builds/linux_clang/preprocessor_test_cpp"
+popd
 
 
 # Build C test.
-pushd "/home/jonathan/Desktop/projects/preprocessor/test_c"
-"/home/jonathan/Desktop/builds/preprocessor_build/preprocessor" test_main.c
-popd # "/home/jonathan/Desktop/projects/preprocessor/test_c"
+pushd "../../test_c"
+"../builds/linux_clang/preprocessor" test_main.c
 
-clang "/home/jonathan/Desktop/projects/preprocessor/test_c/test_main.c" "/home/jonathan/Desktop/projects/preprocessor/test_c/generated.c" -std=c89 -o preprocessor_test_c -Wno-format-nonliteral -Wno-switch -g
+clang -Wall "test_main.c" "generated.c" -std=c89 -o preprocessor_test_c -Wno-comment -Wno-switch -g
+mv "./preprocessor_test_c" "../builds/linux_clang/preprocessor_test_c"
+popd
 
 
-popd # "/home/jonathan/Desktop/builds/preprocessor_build"
+popd

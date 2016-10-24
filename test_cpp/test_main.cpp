@@ -53,7 +53,9 @@ private:
 public:
     void inline_func(float one, float two)
     {
-
+        this->one = one;
+        this->two = two;
+        this->three = one * two;
     }
 
     void member_func(int one, int two, int three);

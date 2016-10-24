@@ -38,7 +38,7 @@ typedef union V2 {
 static BarFoo
 foo(char *str, int len, ...)
 {
-    BarFoo res = {0};
+    BarFoo res;
     return(res);
 }
 
@@ -66,12 +66,12 @@ main(int argc, char *argv[])
 
         serialize_function(foo, buf, 256);
 
-        printf(buf);
+        printf("%s", buf);
 
         int i = 0;
 
 
-        printf(ReturnType);
+        printf("%s", ReturnType);
     }
 
     {
@@ -100,11 +100,9 @@ main(int argc, char *argv[])
         test.pos->x = 3.3f;
         test.pos->y = 2.2f;
 
-        test.str = "Hello";
-
         serialize_struct(test, Test, buf, buf_size);
 
-        printf(buf);
+        printf("%s", buf);
         printf("\n");
     }
 

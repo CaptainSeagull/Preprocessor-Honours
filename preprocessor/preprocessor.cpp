@@ -125,6 +125,7 @@ format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
     Int float_precision = 1;
     Int next_fractional_digit = float_precision;
 
+    // TODO(Jonny): Remove shadowing of temp_buffer.
     while(*format) {
         Char temp_buffer[1024] = {};
         Char c = *format;
@@ -874,7 +875,6 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
     assert((tokenizer) && (memory));
 
     StructData res = {};
-    Char *start = tokenizer->at;
 
     Token name = {};
     name = get_token(tokenizer);
