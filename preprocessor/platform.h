@@ -271,6 +271,30 @@ string_length(Char *str)
     return(res);
 }
 
+enum ExtensionType {
+    ExtensionType_unknown,
+    ExtensionType_cpp,
+    ExtensionType_c,
+};
+
+internal ExtensionType
+get_extension_from_str(Char *str)
+{
+    assert(str);
+
+    ExtensionType res = ExtensionType_unknown;
+
+    Int len = string_length(str);
+    // TODO(Jonny): Do this properly...
+    if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
+        res = ExtensionType_c;
+    } else if((str[len - 1] == 'p') && (str[len - 2] == 'p') && (str[len - 3] == 'c') && (str[len - 4] == '.') ) {
+        res = ExtensionType_cpp;
+    }
+
+    return(res);
+}
+
 //
 // Start Parsing function.
 //

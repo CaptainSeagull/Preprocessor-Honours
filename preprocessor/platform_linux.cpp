@@ -26,14 +26,14 @@
 
 #include "platform.h"
 
-internal char *
-linux_read_entire_file_and_null_terminate(char *filename, Memory *memory)
+internal Char *
+linux_read_entire_file_and_null_terminate(Char *filename, Memory *memory)
 {
     assert((filename) &&(memory));
 
-    char *res = 0;
+    Char *res = 0;
 
-    int file_des = open(filename, 0, O_RDONLY);
+    Int file_des = open(filename, 0, O_RDONLY);
     if(file_des != -1) {
         PtrSize size = lseek(file_des, 0, SEEK_END);
         lseek(file_des, 0, SEEK_SET);
@@ -47,12 +47,12 @@ linux_read_entire_file_and_null_terminate(char *filename, Memory *memory)
     return(res);
 }
 
-internal B32
-linux_write_to_file(char *filename, void *data, PtrSize data_size)
+internal Bool
+linux_write_to_file(Char *filename, Void *data, PtrSize data_size)
 {
     assert((filename) && (data) && (data_size > 0));
 
-    B32 res = false;
+    Bool res = false;
 
 #if 1
     // TODO(Jonny): Use Posix version, not C standard lib version.
@@ -63,9 +63,9 @@ linux_write_to_file(char *filename, void *data, PtrSize data_size)
         res = true;
     }
 #else
-    int file_des = open(filename, 0, O_WRONLY | O_CREAT);
+    Int file_des = open(filename, 0, O_WRONLY | O_CREAT);
     if(file_des != -1) {
-        SignedPtrSize bytes_written = pwrite(file_des, data, data_size, 0);
+        signed long long bytes_written = pwrite(file_des, data, data_size, 0);
         assert(bytes_written != -1);
         close(file_des);
     } else {
@@ -77,15 +77,15 @@ linux_write_to_file(char *filename, void *data, PtrSize data_size)
 }
 
 internal PtrSize
-linux_get_file_size(char *filename)
+linux_get_file_size(Char *filename)
 {
     assert(filename);
 
     PtrSize size = 0;
 
-    int file_des = open(filename, 0, O_RDONLY);
+    Int file_des = open(filename, 0, O_RDONLY);
     if(file_des != -1) {
-        size = lseek(file_des, 0, SEEK_END) + DEFAULT_MEMORY_ALIGNMENT + 1;
+        size = lseek(file_des, 0, SEEK_END) + default_memory_alignment + 1;
         lseek(file_des, 0, SEEK_SET);
 
         close(file_des);
@@ -95,29 +95,35 @@ linux_get_file_size(char *filename)
     return(size);
 }
 
-int
-main(int argc, char *argv[])
+Int
+main(Int argc, Char *argv[])
 {
     PtrSize tot_size_of_all_files = 0;
-    for(S32 file_index = 1; (file_index < argc); ++file_index) {
+    for(Int file_index = 1; (file_index < argc); ++file_index) {
         tot_size_of_all_files += linux_get_file_size(argv[file_index]);
     }
 
+    ExtensionType type = get_extension_from_str(argv[1]); // TODO(Jonny): Hacky.
+    assert(type);
+
+    Char *header_name = "generated.h";
+    Char *source_name = cast(Char *)((type == ExtensionType_cpp) ? "generated.cpp" : "generated.c");
+
     PtrSize permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
     PtrSize temp_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
-    void *all_memory = mmap(0, permanent_size + temp_size + tot_size_of_all_files, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    Void *all_memory = mmap(0, permanent_size + temp_size + tot_size_of_all_files, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if((all_memory) && (all_memory != MAP_FAILED)) {
         Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
         AllFiles all_files = {};
-        for(S32 file_index = 1; (file_index < argc); ++file_index) {
+        for(Int file_index = 1; (file_index < argc); ++file_index) {
             all_files.file[all_files.count++] = linux_read_entire_file_and_null_terminate(argv[file_index], &memory);
         }
 
         StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
 
-        B32 header_success = linux_write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
-        B32 source_success = linux_write_to_file("generated.cpp", stuff_to_write.source_data, stuff_to_write.source_size);
+        Bool header_success = linux_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
+        Bool source_success = linux_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
         assert((header_success) && (source_success));
 
         // TODO(Jonny): Unmap memory.
