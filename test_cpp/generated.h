@@ -23,7 +23,7 @@ typedef struct MemberDefinition {
     char const *name;
     size_t offset;
     int is_ptr;
-    unsigned arr_size;
+    int arr_size;
 } MemberDefinition;
 
 #define get_num_of_members(type) num_members_for_##type
@@ -48,7 +48,7 @@ static size_t const num_members_for_SomeStruct = 2;
 // size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);
 #define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, 0, buffer, buf_size, 0)
 #define serialize_struct_(var, type, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)
-size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);
+size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);
 
 //
 // Function meta data.
@@ -63,7 +63,7 @@ typedef struct FunctionMetaData {
     char const *linkage;
     char const *ret_type;
     char const *name;
-    unsigned param_count;
+    int param_count;
     Variable params[MAX_NUMBER_OF_PARAMS];
 } FunctionMetaData;
 

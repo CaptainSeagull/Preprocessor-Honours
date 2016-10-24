@@ -119,10 +119,10 @@ FunctionMetaData method_data_FooOnemember_func = {
 
 // TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
 size_t
-serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
+serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
     char indent_buf[256] = {0};
-    unsigned indent_index = 0, member_index = 0, arr_index = 0;
+    int indent_index = 0, member_index = 0, arr_index = 0;
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
     memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */
@@ -218,7 +218,7 @@ size_t
 serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 {
     size_t bytes_written = 0;
-    unsigned param_index = 0;
+    int param_index = 0;
 
     bytes_written = sprintf(buf, "Function %s\n    Linkage: %s\n    Return Type: %s\n    Param Count: %u\n",
                             func.name, (func.linkage) ? func.linkage : "normal", func.ret_type, func.param_count);

@@ -973,10 +973,10 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
         format_string(res, res_size,
                       "// TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. \n"
                       "size_t\n"
-                      "serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
+                      "serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                       "{\n"
                       "    char indent_buf[256] = {0};\n"
-                      "    unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
+                      "    int indent_index = 0, member_index = 0, arr_index = 0;\n"
                       "\n"
                       "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
                       "    memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */\n"
@@ -1051,7 +1051,7 @@ get_serialize_struct_declaration(void)
     Char *res = "\n// size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);\n"
                 "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, 0, buffer, buf_size, 0)\n"
                 "#define serialize_struct_(var, type, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
-                "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], unsigned indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);";
+                "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);";
 
     return(res);
 }
@@ -1477,7 +1477,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                           "serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)\n"
                                           "{\n"
                                           "    size_t bytes_written = 0;\n"
-                                          "    unsigned param_index = 0;\n"
+                                          "    int param_index = 0;\n"
                                           "\n"
                                           "    bytes_written = sprintf(buf, \"Function %%s\\n    Linkage: %%s\\n    Return Type: %%s\\n    Param Count: %%u\\n\",\n"
                                           "                            func.name, (func.linkage) ? func.linkage : \"normal\", func.ret_type, func.param_count);\n"
@@ -1538,7 +1538,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     pop_temp_memory(&types_memory);
 
     // struct member_defintion.
-    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\ntypedef struct MemberDefinition {\n    MetaType type;\n    char const *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
+    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\ntypedef struct MemberDefinition {\n    MetaType type;\n    char const *name;\n    size_t offset;\n    int is_ptr;\n    int arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
 
     // Struct meta data.
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -1556,15 +1556,14 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     Char *variable_and_func_meta_data_structs = "typedef struct Variable {\n"
                                                 "    char const *ret_type;\n"
                                                 "    char const *name;\n"
-                                                "} Variable;"
-                                                "\n"
+                                                "} Variable;\n"
                                                 "\n"
                                                 "#define MAX_NUMBER_OF_PARAMS (32)\n"
                                                 "typedef struct FunctionMetaData {\n"
                                                 "    char const *linkage;\n"
                                                 "    char const *ret_type;\n"
                                                 "    char const *name;\n"
-                                                "    unsigned param_count;\n"
+                                                "    int param_count;\n"
                                                 "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
                                                 "} FunctionMetaData;\n"
                                                 "\n"
