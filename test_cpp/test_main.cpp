@@ -5,127 +5,35 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct Position {
-    float x;
-    float y;
-};
 
-struct test {
-    int sixteen[16];
-    float float_four[4];
-    double double_four[4];
-    int one;
-    Position *pos;
-    char *str;
-};
-
-enum struct FooBar : short {
-    a,
-    b,
-    c
-};
-
-enum BarFoo : long {
-    x,
-    y,
-    z
-};
-
-union V2 {
-    float e[2];
-};
-
-static BarFoo
-foo(char *str, int len, ...)
+class Base
 {
-    BarFoo res = {};
-    return(res);
-}
-
-class FooOne
-{
-private:
-    int one;
-    int two;
-    int three;
-
 public:
-    void inline_func(int one, int two)
-    {
-        this->one = one;
-        this->two = two;
-        this->three = one * two;
-    }
-
-    void member_func(int one, int two, int three);
+    int a;
+    int b;
+    int c;
 };
 
-void FooOne::member_func(int one, int two, int three)
+class Sub : public Base
 {
-
-}
-
-/*  Should return:
-    "Linkage: static,
-    return type: BarFoo,
-    name: foo,
-    param 1: char *str,
-    param 2: var_args */
-
+public:
+    int x;
+    int y;
+    int z;
+};
 
 int
 main(int argc, char *argv[])
 {
-    char buf[256] = {};
-    serialize_function(foo, buf, 256);
+    Sub s = {};
 
-    printf("%s", buf);
+    printf("\n%ull", (size_t)&s.a - (size_t)&s);
+    printf("\n%ull", (size_t)&s.b - (size_t)&s);
+    printf("\n%ull", (size_t)&s.c - (size_t)&s);
 
+    printf("\n%ull", (size_t)&s.x - (size_t)&s);
+    printf("\n%ull", (size_t)&s.y - (size_t)&s);
+    printf("\n%ull", (size_t)&s.z - (size_t)&s);
 
-    FunctionMetaData md = get_method_meta_data(FooOne, member_func);
-
-    int i = 0;
-
-
-#if 0
-    size_t buf_size = 1024  * 1024;
-
-    FunctionMetaData foo_meta_data = get_func_meta_data(foo);
-
-    char *ReturnType = foo_meta_data.ret_type;
-    printf(ReturnType);
-
-    char *buf = (char *)malloc(buf_size);
-    unsigned Index = 0;
-
-    test Test = {};
-    for(Index = 0; (Index < 16); ++Index) {
-        Test.sixteen[Index] = Index * 2;
-    }
-
-    Test.double_four[0] = 1.1f;
-    Test.double_four[1] = 2.2f;
-    Test.double_four[2] = 3.3f;
-    Test.double_four[3] = 4.4f;
-
-    Test.float_four[0] = 1.1f;
-    Test.float_four[1] = 2.2f;
-    Test.float_four[2] = 3.3f;
-    Test.float_four[3] = 4.4f;
-
-    Test.one = 1;
-
-    Test.pos = (Position *)malloc(sizeof(Position));
-
-    Test.pos->x = 3.3f;
-    Test.pos->y = 2.2f;
-
-    Test.str = "Hello";
-
-    serialize_struct(Test, test, buf, buf_size);
-
-    printf(buf);
-    printf("\n");
-#endif
     return(0);
 }

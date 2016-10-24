@@ -8,25 +8,17 @@
 //
 // Recreated structs.
 //
-typedef struct Position {
-    float x;
-    float y;
-} Position;
+typedef struct Base {
+    int a;
+    int b;
+    int c;
+} Base;
 
-typedef struct test {
-    int sixteen[16];
-    float float_four[4];
-    double double_four[4];
-    int one;
-    Position *pos;
-    char *str;
-} test;
-
-typedef struct FooOne {
-    int one;
-    int two;
-    int three;
-} FooOne;
+typedef struct Sub {
+    int x;
+    int y;
+    int z;
+} Sub;
 
 typedef struct SomeStruct {
     int a;
@@ -36,25 +28,17 @@ typedef struct SomeStruct {
 //
 // Struct meta data.
 //
-// Meta data for: Position
-MemberDefinition members_of_Position[] = {
-    {meta_type_float, "x", (size_t)&((Position *)0)->x, 0, 1},
-    {meta_type_float, "y", (size_t)&((Position *)0)->y, 0, 1},
+// Meta data for: Base
+MemberDefinition members_of_Base[] = {
+    {meta_type_int, "a", (size_t)&((Base *)0)->a, 0, 1},
+    {meta_type_int, "b", (size_t)&((Base *)0)->b, 0, 1},
+    {meta_type_int, "c", (size_t)&((Base *)0)->c, 0, 1},
 };
-// Meta data for: test
-MemberDefinition members_of_test[] = {
-    {meta_type_int, "sixteen", (size_t)&((test *)0)->sixteen, 0, 16},
-    {meta_type_float, "float_four", (size_t)&((test *)0)->float_four, 0, 4},
-    {meta_type_double, "double_four", (size_t)&((test *)0)->double_four, 0, 4},
-    {meta_type_int, "one", (size_t)&((test *)0)->one, 0, 1},
-    {meta_type_Position, "pos", (size_t)&((test *)0)->pos, 1, 1},
-    {meta_type_char, "str", (size_t)&((test *)0)->str, 1, 1},
-};
-// Meta data for: FooOne
-MemberDefinition members_of_FooOne[] = {
-    {meta_type_int, "one", (size_t)&((FooOne *)0)->one, 0, 1},
-    {meta_type_int, "two", (size_t)&((FooOne *)0)->two, 0, 1},
-    {meta_type_int, "three", (size_t)&((FooOne *)0)->three, 0, 1},
+// Meta data for: Sub
+MemberDefinition members_of_Sub[] = {
+    {meta_type_int, "x", (size_t)&((Sub *)0)->x, 0, 1},
+    {meta_type_int, "y", (size_t)&((Sub *)0)->y, 0, 1},
+    {meta_type_int, "z", (size_t)&((Sub *)0)->z, 0, 1},
 };
 // Meta data for: SomeStruct
 MemberDefinition members_of_SomeStruct[] = {
@@ -65,17 +49,6 @@ MemberDefinition members_of_SomeStruct[] = {
 //
 // Function meta data.
 //
-FunctionMetaData function_data_foo = {
-    "static",
-    "BarFoo",
-    "foo",
-    2,
-    {
-        {"char", "str"},
-        {"int", "len"}
-    }
-};
-
 FunctionMetaData function_data_some_function = {
     0,
     "void",
@@ -90,31 +63,6 @@ FunctionMetaData function_data_some_function = {
 //
 // Method meta data.
 //
-// FooOne's methods.
-FunctionMetaData method_data_FooOneinline_func = {
-    0,
-    "void",
-    "inline_func",
-    2,
-    {
-        {"int", "one"},
-        {"int", "two"}
-    }
-};
-
-
-FunctionMetaData method_data_FooOnemember_func = {
-    0,
-    "void",
-    "member_func",
-    3,
-    {
-        {"int", "one"},
-        {"int", "two"},
-        {"int", "three"}
-    }
-};
-
 
 
 // TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
@@ -178,25 +126,18 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
 
             default: {
                 switch(member->type) {
-                    case meta_type_Position: {
+                    case meta_type_Base: {
                         if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, Position, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written += serialize_struct_(**(char **)member_ptr, Base, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, Position, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written += serialize_struct_(*(char *)member_ptr, Base, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                     case meta_type_test: {
+                     case meta_type_Sub: {
                         if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, test, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written += serialize_struct_(**(char **)member_ptr, Sub, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, test, indent + 4, buffer, buf_size - bytes_written, bytes_written);
-                        }
-                    } break;
-                     case meta_type_FooOne: {
-                        if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, FooOne, indent + 4, buffer, buf_size - bytes_written, bytes_written);
-                        } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, FooOne, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written += serialize_struct_(*(char *)member_ptr, Sub, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                      case meta_type_SomeStruct: {

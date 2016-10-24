@@ -9,9 +9,8 @@ typedef enum MetaType {
     meta_type_long,
     meta_type_float,
     meta_type_double,
-    meta_type_Position,
-    meta_type_test,
-    meta_type_FooOne,
+    meta_type_Base,
+    meta_type_Sub,
     meta_type_SomeStruct,
 } MetaType;
 
@@ -28,17 +27,13 @@ typedef struct MemberDefinition {
 
 #define get_num_of_members(type) num_members_for_##type
 
-// Meta Data for: Position
-extern MemberDefinition members_of_Position[];
-static size_t const num_members_for_Position = 2;
+// Meta Data for: Base
+extern MemberDefinition members_of_Base[];
+static size_t const num_members_for_Base = 3;
 
-// Meta Data for: test
-extern MemberDefinition members_of_test[];
-static size_t const num_members_for_test = 6;
-
-// Meta Data for: FooOne
-extern MemberDefinition members_of_FooOne[];
-static size_t const num_members_for_FooOne = 3;
+// Meta Data for: Sub
+extern MemberDefinition members_of_Sub[];
+static size_t const num_members_for_Sub = 3;
 
 // Meta Data for: SomeStruct
 extern MemberDefinition members_of_SomeStruct[];
@@ -69,7 +64,6 @@ typedef struct FunctionMetaData {
 
 // FunctionMetaData get_func_meta_data(function_name);
 #define get_func_meta_data(func) function_data_##func
-extern FunctionMetaData function_data_foo;
 extern FunctionMetaData function_data_some_function;
 
 
@@ -79,10 +73,6 @@ extern FunctionMetaData function_data_some_function;
 #define get_method_meta_data__(macro, method) macro##method
 #define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)
 #define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)
-
-// FooOne's methods.
-extern FunctionMetaData method_data_FooOneinline_func;
-extern FunctionMetaData method_data_FooOnemember_func;
 
 
 

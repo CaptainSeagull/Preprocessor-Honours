@@ -882,6 +882,14 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
     name = get_token(tokenizer);
     if(name.len > 1) {
         res.name = token_to_string(name);
+
+        Token inherited_from = {};
+        Token peaked_token = peak_token(tokenizer);
+        if(peaked_token.type == TokenType_colon) {
+            eat_tokens(tokenizer, 2);
+            inherited_from = get_token(tokenizer);
+        }
+
         if(require_token(tokenizer, TokenType_open_brace)) {
             res.member_count = 0;
             Char *member_pos[256] = {};
@@ -1303,7 +1311,7 @@ internal StuffToWrite
 write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count,
            EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
 {
-    assert((memory) && (struct_data) && (func_data) && (enum_data) && (union_count));
+    assert((memory) && (struct_data) && (func_data) && (enum_data) && (union_data));
 
     //
     // Source file.
@@ -1709,6 +1717,8 @@ start_parsing(AllFiles all_files, Memory *memory)
             }
         }
     }
+
+    int i = 0;
 
     StuffToWrite res = write_data(memory, struct_data, struct_count, func_data, func_count, enum_data, enum_count,
                                   union_data, union_count);
