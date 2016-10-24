@@ -55,7 +55,6 @@ typedef struct FooOne {
     param 1: char *str,
     param 2: var_args */
 
-
 int
 main(int argc, char *argv[])
 {
@@ -63,12 +62,13 @@ main(int argc, char *argv[])
     char buf[256] = {0};
     {
         FunctionMetaData foo_meta_data = get_func_meta_data(foo);
-        char *ReturnType = foo_meta_data.ret_type;
+        char const *ReturnType = foo_meta_data.ret_type;
 
         serialize_function(foo, buf, 256);
 
         printf(buf);
 
+        int i = 0;
 
 
         printf(ReturnType);

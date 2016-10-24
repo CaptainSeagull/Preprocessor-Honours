@@ -1538,7 +1538,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     pop_temp_memory(&types_memory);
 
     // struct member_defintion.
-    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\ntypedef struct MemberDefinition {\n    MetaType type;\n    char *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
+    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\ntypedef struct MemberDefinition {\n    MetaType type;\n    char const *name;\n    size_t offset;\n    int is_ptr;\n    unsigned arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
 
     // Struct meta data.
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -1554,16 +1554,16 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     // Function meta data.
     write_to_output_buffer(&header_output, "\n\n//\n// Function meta data.\n//\n");
     Char *variable_and_func_meta_data_structs = "typedef struct Variable {\n"
-                                                "    char *ret_type;\n"
-                                                "    char *name;\n"
+                                                "    char const *ret_type;\n"
+                                                "    char const *name;\n"
                                                 "} Variable;"
                                                 "\n"
                                                 "\n"
                                                 "#define MAX_NUMBER_OF_PARAMS (32)\n"
                                                 "typedef struct FunctionMetaData {\n"
-                                                "    char *linkage;\n"
-                                                "    char *ret_type;\n"
-                                                "    char *name;\n"
+                                                "    char const *linkage;\n"
+                                                "    char const *ret_type;\n"
+                                                "    char const *name;\n"
                                                 "    unsigned param_count;\n"
                                                 "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
                                                 "} FunctionMetaData;\n"

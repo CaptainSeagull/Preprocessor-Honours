@@ -50,7 +50,7 @@ linux_read_entire_file_and_null_terminate(Char *filename, Memory *memory)
 internal Bool
 linux_write_to_file(Char *filename, Void *data, PtrSize data_size)
 {
-    assert((filename) && (data) && (data_size > 0));
+    assert((filename) && (data) && (data_size));
 
     Bool res = false;
 
@@ -96,7 +96,7 @@ linux_get_file_size(Char *filename)
 }
 
 Int
-main(Int argc, Char *argv[])
+main(Int argc, Char **argv)
 {
     PtrSize tot_size_of_all_files = 0;
     for(Int file_index = 1; (file_index < argc); ++file_index) {

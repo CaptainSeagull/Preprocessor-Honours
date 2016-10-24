@@ -20,7 +20,7 @@ typedef enum MetaType {
 //
 typedef struct MemberDefinition {
     MetaType type;
-    char *name;
+    char const *name;
     size_t offset;
     int is_ptr;
     unsigned arr_size;
@@ -54,15 +54,15 @@ size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], un
 // Function meta data.
 //
 typedef struct Variable {
-    char *ret_type;
-    char *name;
+    char const *ret_type;
+    char const *name;
 } Variable;
 
 #define MAX_NUMBER_OF_PARAMS (32)
 typedef struct FunctionMetaData {
-    char *linkage;
-    char *ret_type;
-    char *name;
+    char const *linkage;
+    char const *ret_type;
+    char const *name;
     unsigned param_count;
     Variable params[MAX_NUMBER_OF_PARAMS];
 } FunctionMetaData;

@@ -78,7 +78,7 @@ main(int argc, char *argv[])
     char buf[256] = {};
     serialize_function(foo, buf, 256);
 
-    printf(buf);
+    printf("%s", buf);
 
 
     FunctionMetaData md = get_method_meta_data(FooOne, member_func);
