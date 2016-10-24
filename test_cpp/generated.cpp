@@ -97,8 +97,8 @@ FunctionMetaData method_data_FooOneinline_func = {
     "inline_func",
     2,
     {
-        {"float", "one"},
-        {"float", "two"}
+        {"int", "one"},
+        {"int", "two"}
     }
 };
 

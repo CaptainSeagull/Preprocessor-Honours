@@ -51,7 +51,7 @@ private:
     int three;
 
 public:
-    void inline_func(float one, float two)
+    void inline_func(int one, int two)
     {
         this->one = one;
         this->two = two;
