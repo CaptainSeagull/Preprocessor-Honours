@@ -1718,8 +1718,6 @@ start_parsing(AllFiles all_files, Memory *memory)
         }
     }
 
-    int i = 0;
-
     StuffToWrite res = write_data(memory, struct_data, struct_count, func_data, func_count, enum_data, enum_count,
                                   union_data, union_count);
 
