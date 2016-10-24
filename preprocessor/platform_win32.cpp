@@ -138,11 +138,11 @@ main(Int argc, Char *argv[])
     Int permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
     Int temp_size = 1024 * 1024;
     Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
-    char *header_name = "generated.h";
-    char *source_name = (type == ExtensionType_cpp) ? "generated.cpp" : "generated.c";
-
     if(all_memory) {
+
+        char *header_name = "generated.h";
+        char *source_name = (type == ExtensionType_cpp) ? "generated.cpp" : "generated.c";
+
         Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
         AllFiles all_files = {};
@@ -155,11 +155,10 @@ main(Int argc, Char *argv[])
         Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
         Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
         assert((header_success) && (source_success));
+
+        Bool mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE) != 0;
+        assert(mem_freed);
     }
-
-
-    Bool mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE) != 0;
-    assert(mem_freed);
 
     return(0);
 }
