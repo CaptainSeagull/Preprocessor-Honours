@@ -986,7 +986,7 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
                       "serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                       "{\n"
                       "    char indent_buf[256] = {0};\n"
-                      "    int indent_index = 0, member_index = 0, arr_index = 0;\n"
+                      "    unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
                       "\n"
                       "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
                       "    memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */\n"
