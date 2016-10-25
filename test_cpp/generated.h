@@ -11,6 +11,8 @@ typedef enum MetaType {
     meta_type_double,
     meta_type_Base,
     meta_type_Sub,
+    meta_type_DemoString,
+    meta_type_StructTest,
     meta_type_SomeStruct,
 } MetaType;
 
@@ -34,6 +36,14 @@ static size_t const num_members_for_Base = 3;
 // Meta Data for: Sub
 extern MemberDefinition members_of_Sub[];
 static size_t const num_members_for_Sub = 3;
+
+// Meta Data for: DemoString
+extern MemberDefinition members_of_DemoString[];
+static size_t const num_members_for_DemoString = 2;
+
+// Meta Data for: StructTest
+extern MemberDefinition members_of_StructTest[];
+static size_t const num_members_for_StructTest = 3;
 
 // Meta Data for: SomeStruct
 extern MemberDefinition members_of_SomeStruct[];
@@ -64,6 +74,7 @@ typedef struct FunctionMetaData {
 
 // FunctionMetaData get_func_meta_data(function_name);
 #define get_func_meta_data(func) function_data_##func
+extern FunctionMetaData function_data_function_test;
 extern FunctionMetaData function_data_some_function;
 
 

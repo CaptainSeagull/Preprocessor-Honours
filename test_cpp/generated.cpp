@@ -20,6 +20,17 @@ typedef struct Sub {
     int z;
 } Sub;
 
+typedef struct DemoString {
+    char *str;
+    int len;
+} DemoString;
+
+typedef struct StructTest {
+    int i;
+    float f;
+    DemoString str;
+} StructTest;
+
 typedef struct SomeStruct {
     int a;
     int b;
@@ -40,6 +51,17 @@ MemberDefinition members_of_Sub[] = {
     {meta_type_int, "y", (size_t)&((Sub *)0)->y, 0, 1},
     {meta_type_int, "z", (size_t)&((Sub *)0)->z, 0, 1},
 };
+// Meta data for: DemoString
+MemberDefinition members_of_DemoString[] = {
+    {meta_type_char, "str", (size_t)&((DemoString *)0)->str, 1, 1},
+    {meta_type_int, "len", (size_t)&((DemoString *)0)->len, 0, 1},
+};
+// Meta data for: StructTest
+MemberDefinition members_of_StructTest[] = {
+    {meta_type_int, "i", (size_t)&((StructTest *)0)->i, 0, 1},
+    {meta_type_float, "f", (size_t)&((StructTest *)0)->f, 0, 1},
+    {meta_type_DemoString, "str", (size_t)&((StructTest *)0)->str, 0, 1},
+};
 // Meta data for: SomeStruct
 MemberDefinition members_of_SomeStruct[] = {
     {meta_type_int, "a", (size_t)&((SomeStruct *)0)->a, 0, 1},
@@ -49,6 +71,18 @@ MemberDefinition members_of_SomeStruct[] = {
 //
 // Function meta data.
 //
+FunctionMetaData function_data_function_test = {
+    0,
+    "int",
+    "function_test",
+    3,
+    {
+        {"float", "f"},
+        {"int", "i"},
+        {"char", "str"}
+    }
+};
+
 FunctionMetaData function_data_some_function = {
     0,
     "void",
@@ -138,6 +172,20 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
                             bytes_written += serialize_struct_(**(char **)member_ptr, Sub, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written += serialize_struct_(*(char *)member_ptr, Sub, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_DemoString: {
+                        if(member->is_ptr) {
+                            bytes_written += serialize_struct_(**(char **)member_ptr, DemoString, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written += serialize_struct_(*(char *)member_ptr, DemoString, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_StructTest: {
+                        if(member->is_ptr) {
+                            bytes_written += serialize_struct_(**(char **)member_ptr, StructTest, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written += serialize_struct_(*(char *)member_ptr, StructTest, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                      case meta_type_SomeStruct: {
