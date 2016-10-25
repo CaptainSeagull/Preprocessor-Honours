@@ -1,7 +1,5 @@
 # Batch File to compile Frozen on Linux
 
-pushd "/home/jonathan/Desktop/projects/preprocessor"
-
 mkdir -p "builds/linux_clang"
 pushd "builds/linux_clang"
 
