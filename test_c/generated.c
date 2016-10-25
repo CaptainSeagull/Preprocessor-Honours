@@ -173,7 +173,7 @@ serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 
     for(param_index = 0; (param_index < func.param_count); ++param_index) {
         Variable *param = func.params + param_index;
-        bytes_written += sprintf(buf + bytes_written, "Param %u : %s %s", param_index + 1, param->ret_type, param->name);
+        bytes_written += sprintf(buf + bytes_written, "        Param %u : %s %s\n", param_index + 1, param->ret_type, param->name);
     }
 
     assert(bytes_written <  buf_size);

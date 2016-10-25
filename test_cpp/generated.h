@@ -9,6 +9,7 @@ typedef enum MetaType {
     meta_type_long,
     meta_type_float,
     meta_type_double,
+    meta_type_SomeStruct2,
     meta_type_Base,
     meta_type_Sub,
     meta_type_DemoString,
@@ -28,6 +29,10 @@ typedef struct MemberDefinition {
 } MemberDefinition;
 
 #define get_num_of_members(type) num_members_for_##type
+
+// Meta Data for: SomeStruct2
+extern MemberDefinition members_of_SomeStruct2[];
+static size_t const num_members_for_SomeStruct2 = 2;
 
 // Meta Data for: Base
 extern MemberDefinition members_of_Base[];

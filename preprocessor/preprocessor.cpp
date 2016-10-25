@@ -1495,7 +1495,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                           "    for(param_index = 0; (param_index < func.param_count); ++param_index) {\n"
                                           "        Variable *param = func.params + param_index;\n"
                                           ""
-                                          "        bytes_written += sprintf(buf + bytes_written, \"Param %%u : %%s %%s\", param_index + 1, param->ret_type, param->name);\n"
+                                          "        bytes_written += sprintf(buf + bytes_written, \"        Param %%u : %%s %%s\\n\", param_index + 1, param->ret_type, param->name);\n"
                                           "    }\n"
                                           "\n"
                                           "    assert(bytes_written <  buf_size);\n"

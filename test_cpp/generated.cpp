@@ -8,6 +8,11 @@
 //
 // Recreated structs.
 //
+typedef struct SomeStruct2 {
+    int a;
+    int b;
+} SomeStruct2;
+
 typedef struct Base {
     int a;
     int b;
@@ -39,6 +44,11 @@ typedef struct SomeStruct {
 //
 // Struct meta data.
 //
+// Meta data for: SomeStruct2
+MemberDefinition members_of_SomeStruct2[] = {
+    {meta_type_int, "a", (size_t)&((SomeStruct2 *)0)->a, 0, 1},
+    {meta_type_int, "b", (size_t)&((SomeStruct2 *)0)->b, 0, 1},
+};
 // Meta data for: Base
 MemberDefinition members_of_Base[] = {
     {meta_type_int, "a", (size_t)&((Base *)0)->a, 0, 1},
@@ -160,7 +170,14 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
 
             default: {
                 switch(member->type) {
-                    case meta_type_Base: {
+                    case meta_type_SomeStruct2: {
+                        if(member->is_ptr) {
+                            bytes_written += serialize_struct_(**(char **)member_ptr, SomeStruct2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written += serialize_struct_(*(char *)member_ptr, SomeStruct2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_Base: {
                         if(member->is_ptr) {
                             bytes_written += serialize_struct_(**(char **)member_ptr, Base, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
@@ -214,7 +231,7 @@ serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 
     for(param_index = 0; (param_index < func.param_count); ++param_index) {
         Variable *param = func.params + param_index;
-        bytes_written += sprintf(buf + bytes_written, "Param %u : %s %s", param_index + 1, param->ret_type, param->name);
+        bytes_written += sprintf(buf + bytes_written, "        Param %u : %s %s\n", param_index + 1, param->ret_type, param->name);
     }
 
     assert(bytes_written <  buf_size);

@@ -6,6 +6,14 @@
 #include <stdio.h>
 
 
+struct SomeStruct2 {
+    int a;
+    int b;
+};
+
+
+extern FunctionMetaData function_data_function_test2;
+
 class Base
 {
 public:
@@ -60,7 +68,7 @@ main(int argc, char *argv[])
     {
         StructTest st;
         st.i = 45;
-        st.f = 3.1415;
+        st.f = 3.1415f;
         st.str.str = "Hello\0";
         st.str.len = 5;
 
@@ -73,13 +81,13 @@ main(int argc, char *argv[])
 #if 1
     // Function test.
     {
-        FunctionMetaData get_func_meta_data(function_test);
+        FunctionMetaData f = get_func_meta_data(function_test);
 
         int const size = 1024;
         char buf[size] = {};
         serialize_function(function_test, buf, size);
 
-        //printf("%s", buf);
+        printf("%s", buf);
     }
 #endif
     return(0);
