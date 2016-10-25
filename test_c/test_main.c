@@ -38,7 +38,7 @@ typedef union V2 {
 static BarFoo
 foo(char *str, int len, ...)
 {
-    BarFoo res;
+    BarFoo res = x;
     return(res);
 }
 
@@ -68,16 +68,17 @@ main(int argc, char *argv[])
 
         printf("%s", buf);
 
-        int i = 0;
-
 
         printf("%s", ReturnType);
     }
 
+    foo("Hello", 3);
+
     {
         char *buf = (char *)malloc(buf_size);
         unsigned Index = 0;
-        Test test = {0};
+        Test test;
+        memset(&test, 0, sizeof(Test));
 
         for(Index = 0; (Index < 16); ++Index) {
             test.sixteen[Index] = Index * 2;

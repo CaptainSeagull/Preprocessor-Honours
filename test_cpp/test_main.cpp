@@ -27,13 +27,13 @@ main(int argc, char *argv[])
 {
     Sub s = {};
 
-    printf("\n%ull", (size_t)&s.a - (size_t)&s);
-    printf("\n%ull", (size_t)&s.b - (size_t)&s);
-    printf("\n%ull", (size_t)&s.c - (size_t)&s);
+    printf("\n%u", (unsigned)((size_t)&s.a - (size_t)&s));
+    printf("\n%u", (unsigned)((size_t)&s.b - (size_t)&s));
+    printf("\n%u", (unsigned)((size_t)&s.c - (size_t)&s));
 
-    printf("\n%ull", (size_t)&s.x - (size_t)&s);
-    printf("\n%ull", (size_t)&s.y - (size_t)&s);
-    printf("\n%ull", (size_t)&s.z - (size_t)&s);
+    printf("\n%u", (unsigned)((size_t)&s.x - (size_t)&s));
+    printf("\n%u", (unsigned)((size_t)&s.y - (size_t)&s));
+    printf("\n%u", (unsigned)((size_t)&s.z - (size_t)&s));
 
     return(0);
 }
