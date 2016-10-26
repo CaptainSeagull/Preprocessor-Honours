@@ -1,13 +1,10 @@
 #if !defined(GENERATED_CPP)
 
 #include "generated.h"
-#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-//
-// Recreated structs.
-//
+/* Recreated structs. */
 typedef struct SomeStruct2 {
     int a;
     int b;
@@ -41,46 +38,46 @@ typedef struct SomeStruct {
     int b;
 } SomeStruct;
 
-//
-// Struct meta data.
-//
-// Meta data for: SomeStruct2
+
+/* Struct meta data. */
+
+/* Meta data for: SomeStruct2. */
 MemberDefinition members_of_SomeStruct2[] = {
     {meta_type_int, "a", (size_t)&((SomeStruct2 *)0)->a, 0, 1},
     {meta_type_int, "b", (size_t)&((SomeStruct2 *)0)->b, 0, 1},
 };
-// Meta data for: Base
+/* Meta data for: Base. */
 MemberDefinition members_of_Base[] = {
     {meta_type_int, "a", (size_t)&((Base *)0)->a, 0, 1},
     {meta_type_int, "b", (size_t)&((Base *)0)->b, 0, 1},
     {meta_type_int, "c", (size_t)&((Base *)0)->c, 0, 1},
 };
-// Meta data for: Sub
+/* Meta data for: Sub. */
 MemberDefinition members_of_Sub[] = {
     {meta_type_int, "x", (size_t)&((Sub *)0)->x, 0, 1},
     {meta_type_int, "y", (size_t)&((Sub *)0)->y, 0, 1},
     {meta_type_int, "z", (size_t)&((Sub *)0)->z, 0, 1},
 };
-// Meta data for: DemoString
+/* Meta data for: DemoString. */
 MemberDefinition members_of_DemoString[] = {
     {meta_type_char, "str", (size_t)&((DemoString *)0)->str, 1, 1},
     {meta_type_int, "len", (size_t)&((DemoString *)0)->len, 0, 1},
 };
-// Meta data for: StructTest
+/* Meta data for: StructTest. */
 MemberDefinition members_of_StructTest[] = {
     {meta_type_int, "i", (size_t)&((StructTest *)0)->i, 0, 1},
     {meta_type_float, "f", (size_t)&((StructTest *)0)->f, 0, 1},
     {meta_type_DemoString, "str", (size_t)&((StructTest *)0)->str, 0, 1},
 };
-// Meta data for: SomeStruct
+/* Meta data for: SomeStruct. */
 MemberDefinition members_of_SomeStruct[] = {
     {meta_type_int, "a", (size_t)&((SomeStruct *)0)->a, 0, 1},
     {meta_type_int, "b", (size_t)&((SomeStruct *)0)->b, 0, 1},
 };
 
-//
-// Function meta data.
-//
+
+/* Function meta data. */
+/* Meta data for: function_test. */
 FunctionMetaData function_data_function_test = {
     0,
     "int",
@@ -93,6 +90,7 @@ FunctionMetaData function_data_function_test = {
     }
 };
 
+/* Meta data for: some_function. */
 FunctionMetaData function_data_some_function = {
     0,
     "void",
@@ -104,12 +102,8 @@ FunctionMetaData function_data_some_function = {
 };
 
 
-//
-// Method meta data.
-//
 
-
-// TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
+/* Function to serialize a struct to a char array buffer. */
 size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
@@ -117,7 +111,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
     unsigned indent_index = 0, member_index = 0, arr_index = 0;
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
-    memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */
+    memset(buffer + bytes_written, 0, buf_size - bytes_written);
     for(indent_index = 0; (indent_index < indent); ++indent_index) {
         indent_buf[indent_index] = ' ';
     }
@@ -213,13 +207,14 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
                         }
                     } break;
                  }
-            } break; // default
+            } break; /* default */
         }
     }
 
     return(bytes_written);
 }
 
+/* Function to serialize a function into a char buffer. */
 size_t
 serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 {
@@ -240,4 +235,4 @@ serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 
 
 #define GENERATED_CPP
-#endif // #if !defined(GENERATED_CPP)
+#endif /* #if !defined(GENERATED_CPP) */

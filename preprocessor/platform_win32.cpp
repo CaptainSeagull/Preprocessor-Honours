@@ -121,6 +121,8 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
     return(res);
 }
 
+
+
 int
 main(Int argc, Char **argv)
 {
@@ -151,6 +153,10 @@ main(Int argc, Char **argv)
         }
 
         StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
+
+        char *static_file_data = get_static_file();
+        Int static_file_len = string_length(static_file_data);
+        Bool static_success = win32_write_to_file("static_generated.h", static_file_data, static_file_len);
 
         Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
         Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);

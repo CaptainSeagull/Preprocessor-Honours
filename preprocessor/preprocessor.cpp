@@ -981,7 +981,7 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
     Char *res = cast(Char *)push_permanent_memory(mem, res_size);
     if(res) {
         format_string(res, res_size,
-                      "// TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. \n"
+                      "/* Function to serialize a struct to a char array buffer. */\n"
                       "size_t\n"
                       "serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                       "{\n"
@@ -989,7 +989,7 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
                       "    unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
                       "\n"
                       "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
-                      "    memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */\n"
+                      "    memset(buffer + bytes_written, 0, buf_size - bytes_written);\n"
                       "    for(indent_index = 0; (indent_index < indent); ++indent_index) {\n"
                       "        indent_buf[indent_index] = ' ';\n"
                       "    }\n"
@@ -1042,7 +1042,7 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
                       "\n"
                       "            default: {\n"
                       "                %s\n"
-                      "            } break; // default\n"
+                      "            } break; /* default */\n"
                       "        }\n"
                       "    }\n"
                       "\n"
@@ -1051,17 +1051,6 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
                       def_struct_code
                      );
     }
-
-    return(res);
-}
-
-internal Char *
-get_serialize_struct_declaration(void)
-{
-    Char *res = "\n// size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size);\n"
-                "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, 0, buffer, buf_size, 0)\n"
-                "#define serialize_struct_(var, type, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
-                "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);";
 
     return(res);
 }
@@ -1320,10 +1309,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 
     OutputBuffer source_output = create_output_buffer(256 * 256, memory); // TODO(Jonny): Random size...
 
-    write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <stdio.h>\n#include <string.h>\n#include <assert.h>\n\n");
+    write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <string.h>\n#include <assert.h>\n\n");
 
     // Recreated Structs.
-    write_to_output_buffer(&source_output, "//\n// Recreated structs.\n//\n");
+    write_to_output_buffer(&source_output, "/* Recreated structs. */\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
         write_to_output_buffer(&source_output, "typedef struct %S {\n", sd->name.len, sd->name.e);
@@ -1347,10 +1336,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     }
 
     // Struct Meta Data
-    write_to_output_buffer(&source_output, "//\n// Struct meta data.\n//\n");
+    write_to_output_buffer(&source_output, "\n/* Struct meta data. */\n\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
-        write_to_output_buffer(&source_output, "// Meta data for: %S\n", sd->name.len, sd->name.e);
+        write_to_output_buffer(&source_output, "/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
         write_to_output_buffer(&source_output, "MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
         for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
@@ -1367,11 +1356,14 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     }
 
     // Function meta data.
-    write_to_output_buffer(&source_output, "\n//\n// Function meta data.\n//\n");
+    write_to_output_buffer(&source_output, "\n\n/* Function meta data. */\n");
     for(Int func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
-        write_to_output_buffer(&source_output, "FunctionMetaData function_data_%S = {\n", fd->name.len, fd->name.e);
+        write_to_output_buffer(&source_output, "/* Meta data for: %S. */\nFunctionMetaData function_data_%S = {\n",
+                               fd->name.len, fd->name.e, fd->name.len, fd->name.e);
+
         Char buf[256] = {};
+
         if(fd->linkage.len > 0) {
             Char *meta_data = "    \"%S\",\n"
                               "    \"%S\",\n"
@@ -1408,7 +1400,6 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     }
 
     // Method meta data.
-    write_to_output_buffer(&source_output, "\n//\n// Method meta data.\n//\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
 
@@ -1483,7 +1474,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "%s", serialize_struct_implementation);
 
     // Serialize func.
-    Char *serialize_func_implementation = "\n\nsize_t\n"
+    Char *serialize_func_implementation = "\n"
+                                          "\n"
+                                          "/* Function to serialize a function into a char buffer. */\n"
+                                          "size_t\n"
                                           "serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)\n"
                                           "{\n"
                                           "    size_t bytes_written = 0;\n"
@@ -1505,7 +1499,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 
     // # Guard stuff
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
-    write_to_output_buffer(&source_output, "#endif // #if !defined(GENERATED_CPP)\n");
+    write_to_output_buffer(&source_output, "#endif /* #if !defined(GENERATED_CPP) */\n");
 
     res.source_size = source_output.index;
     res.source_data = source_output.buffer;
@@ -1515,7 +1509,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     //
     OutputBuffer header_output = create_output_buffer(256 * 256, memory);
 
-    write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include <stdio.h>\n\n");
+    write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n#include <stdio.h>\n\n");
 
     // Write out meta types
     TempMemory types_memory = push_temp_arr(memory, String, 256);
@@ -1538,51 +1532,33 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
             }
         }
 
+        write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
         write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
         for(Int type_index = 0; (type_index < type_count); ++type_index) {
             String *type = types + type_index;
             write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
         }
-        write_to_output_buffer(&header_output, "} MetaType;\n");
+        write_to_output_buffer(&header_output, "} MetaType;\n\n");
     }
     pop_temp_memory(&types_memory);
 
-    // struct member_defintion.
-    write_to_output_buffer(&header_output, "\n//\n// Struct meta data.\n//\ntypedef struct MemberDefinition {\n    MetaType type;\n    char const *name;\n    size_t offset;\n    int is_ptr;\n    int arr_size;\n} MemberDefinition;\n\n#define get_num_of_members(type) num_members_for_##type\n\n");
-
     // Struct meta data.
+    write_to_output_buffer(&header_output, "/* Struct meta data. */\n\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = &struct_data[struct_index];
-        write_to_output_buffer(&header_output, "// Meta Data for: %S\n", sd->name.len, sd->name.e);
+        write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n", sd->name.len, sd->name.e);
         write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n", sd->name.len, sd->name.e);
         write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n", sd->name.len, sd->name.e, sd->member_count);
     }
 
-    // SerializeStruct header.
-    write_to_output_buffer(&header_output, get_serialize_struct_declaration());
-
     // Function meta data.
-    write_to_output_buffer(&header_output, "\n\n//\n// Function meta data.\n//\n");
-    Char *variable_and_func_meta_data_structs = "typedef struct Variable {\n"
-                                                "    char const *ret_type;\n"
-                                                "    char const *name;\n"
-                                                "} Variable;\n"
-                                                "\n"
-                                                "#define MAX_NUMBER_OF_PARAMS (32)\n"
-                                                "typedef struct FunctionMetaData {\n"
-                                                "    char const *linkage;\n"
-                                                "    char const *ret_type;\n"
-                                                "    char const *name;\n"
-                                                "    int param_count;\n"
-                                                "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
-                                                "} FunctionMetaData;\n"
-                                                "\n"
-                                                "// FunctionMetaData get_func_meta_data(function_name);\n"
-                                                "#define get_func_meta_data(func) function_data_##func\n";
+    write_to_output_buffer(&header_output, "\n/* Function meta data. */\n\n");
 
-    write_to_output_buffer(&header_output, variable_and_func_meta_data_structs);
     for(Int func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
+
+        write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n", fd->name.len, fd->name.e);
+
         Char buf[256] = {};
         if(fd->linkage.len > 0) {
             Char *meta_data = "extern FunctionMetaData function_data_%S;\n";
@@ -1596,13 +1572,6 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 
         write_to_output_buffer(&header_output, buf);
     }
-
-    // Member function meta data.
-    write_to_output_buffer(&header_output,
-                           "\n\n//\n// Member function meta data.\n//\n"
-                           "#define get_method_meta_data__(macro, method) macro##method\n"
-                           "#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)\n"
-                           "#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)\n");
 
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
@@ -1627,14 +1596,8 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
         }
     }
 
-    Char *serialize_func_header = "\n\n\n// size_t serialize_function(function_name, char *buf, size_t buf_size);"
-                                  "\n#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)\n"
-                                  "size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);\n";
-
-    write_to_output_buffer(&header_output, serialize_func_header);
-
     // # Guard macro.
-    write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif // !defined(GENERATED_H)\n");
+    write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
 
     res.header_size = header_output.index;
     res.header_data = header_output.buffer;

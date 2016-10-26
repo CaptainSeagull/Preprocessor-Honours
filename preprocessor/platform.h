@@ -295,6 +295,59 @@ get_extension_from_str(Char *str)
     return(res);
 }
 
+internal char *
+get_static_file(void)
+{
+    char *res = "#if !defined(STATIC_GENERATED)\n"
+                "\n"
+                "#include <stdio.h>\n"
+                "\n"
+                "typedef struct MemberDefinition {\n"
+                "    int/*MetaType*/ type;\n"
+                "    char const *name;\n"
+                "    size_t offset;\n"
+                "    int is_ptr;\n"
+                "    int arr_size;\n"
+                "} MemberDefinition;\n"
+                "\n"
+                "typedef struct Variable {\n"
+                "    char const *ret_type;\n"
+                "    char const *name;\n"
+                "} Variable;\n"
+                "\n"
+                "#define get_num_of_members(type) num_members_for_##type\n"
+                "\n"
+                "/* size_t serialize_struct(void *var, type VariableType, char *buffer, size_t buf_size); */\n"
+                "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, 0, buffer, buf_size, 0)\n"
+                "#define serialize_struct_(var, type, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
+                "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
+                "\n"
+                "#define MAX_NUMBER_OF_PARAMS (32)\n"
+                "typedef struct FunctionMetaData {\n"
+                "    char const *linkage;\n"
+                "    char const *ret_type;\n"
+                "    char const *name;\n"
+                "    int param_count;\n"
+                "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
+                "} FunctionMetaData;\n"
+                "\n"
+                "/* FunctionMetaData get_func_meta_data(function_name); */\n"
+                "#define get_func_meta_data(func) function_data_##func\n"
+                "#define get_method_meta_data__(macro, method) macro##method\n"
+                "\n"
+                "#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)\n"
+                "size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);\n"
+                "\n"
+                "#define get_method_meta_data__(macro, method) macro##method\n"
+                "#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)\n"
+                "#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)\n"
+                "\n"
+                "#define STATIC_GENERATED\n"
+                "#endif";
+
+    return(res);
+}
+
 //
 // Start Parsing function.
 //

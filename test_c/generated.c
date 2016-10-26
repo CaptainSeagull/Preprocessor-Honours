@@ -1,13 +1,10 @@
 #if !defined(GENERATED_CPP)
 
 #include "generated.h"
-#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-//
-// Recreated structs.
-//
+/* Recreated structs. */
 typedef struct Position {
     float x;
     float y;
@@ -28,15 +25,15 @@ typedef struct FooOne {
     int three;
 } FooOne;
 
-//
-// Struct meta data.
-//
-// Meta data for: Position
+
+/* Struct meta data. */
+
+/* Meta data for: Position. */
 MemberDefinition members_of_Position[] = {
     {meta_type_float, "x", (size_t)&((Position *)0)->x, 0, 1},
     {meta_type_float, "y", (size_t)&((Position *)0)->y, 0, 1},
 };
-// Meta data for: Test
+/* Meta data for: Test. */
 MemberDefinition members_of_Test[] = {
     {meta_type_int, "sixteen", (size_t)&((Test *)0)->sixteen, 0, 16},
     {meta_type_float, "float_four", (size_t)&((Test *)0)->float_four, 0, 4},
@@ -45,16 +42,16 @@ MemberDefinition members_of_Test[] = {
     {meta_type_Position, "pos", (size_t)&((Test *)0)->pos, 1, 1},
     {meta_type_char, "str", (size_t)&((Test *)0)->str, 1, 1},
 };
-// Meta data for: FooOne
+/* Meta data for: FooOne. */
 MemberDefinition members_of_FooOne[] = {
     {meta_type_int, "one", (size_t)&((FooOne *)0)->one, 0, 1},
     {meta_type_int, "two", (size_t)&((FooOne *)0)->two, 0, 1},
     {meta_type_int, "three", (size_t)&((FooOne *)0)->three, 0, 1},
 };
 
-//
-// Function meta data.
-//
+
+/* Function meta data. */
+/* Meta data for: foo. */
 FunctionMetaData function_data_foo = {
     "static",
     "BarFoo",
@@ -67,12 +64,8 @@ FunctionMetaData function_data_foo = {
 };
 
 
-//
-// Method meta data.
-//
 
-
-// TODO(Jonny): At some point, I'd like to replace memset, assert, and sprintf with my own versions. 
+/* Function to serialize a struct to a char array buffer. */
 size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
@@ -80,7 +73,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
     unsigned indent_index = 0, member_index = 0, arr_index = 0;
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
-    memset(buffer + bytes_written, 0, buf_size - bytes_written);/* TODO(Jonny): Implement my own memset. */
+    memset(buffer + bytes_written, 0, buf_size - bytes_written);
     for(indent_index = 0; (indent_index < indent); ++indent_index) {
         indent_buf[indent_index] = ' ';
     }
@@ -155,13 +148,14 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
                         }
                     } break;
                  }
-            } break; // default
+            } break; /* default */
         }
     }
 
     return(bytes_written);
 }
 
+/* Function to serialize a function into a char buffer. */
 size_t
 serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 {
@@ -182,4 +176,4 @@ serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
 
 
 #define GENERATED_CPP
-#endif // #if !defined(GENERATED_CPP)
+#endif /* #if !defined(GENERATED_CPP) */
