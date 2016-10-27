@@ -26,4 +26,14 @@ mv "./preprocessor_test_c" "../builds/linux_clang/preprocessor_test_c"
 popd
 
 
+# Build SDL test.
+# g++ -o sdl_test sdl_main.cpp lSDL
+pushd "../../app test"
+"../builds/linux_clang/preprocessor" sdl_main.cpp
+
+clang -Wall "sdl_main.cpp" -std=c++1y -o sdl_test -Wno-switch -g -lSDL2
+mv "./sdl_test" "../builds/linux_clang/app_test"
+popd
+
+
 popd
