@@ -1,4 +1,8 @@
-#include "SDL2/SDL.h"
+#if WIN32
+    #include "C:\dev\SDL2-2.0.0\include\SDL.h"
+#else
+    #include "SDL2/SDL.h"
+#endif
 
 int
 main(int argc, char **argv)
