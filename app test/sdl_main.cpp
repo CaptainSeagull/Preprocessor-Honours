@@ -1,7 +1,16 @@
 #include <assert.h>
-#include "SDL2/SDL.h"
-
+#include <string.h>
 #include "generated.h"
+
+#if WIN32
+    #include "C:\dev\SDL2-2.0.0\include\SDL.h"
+
+    #if _DEBUG
+        #pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"")
+    #endif
+#else
+    #include "SDL2/SDL.h"
+#endif
 
 
 struct V2 {
@@ -21,7 +30,7 @@ struct Paddle {
     int max_speed;
 };
 
-Paddle create_paddle(int x, bool right)
+Paddle create_paddle(float x, bool right)
 {
     Paddle res = {};
 
@@ -38,8 +47,8 @@ main(int argc, char **argv)
 {
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    Paddle l = create_paddle(1, false);
-    Paddle r = create_paddle(2, true);
+    Paddle l = create_paddle(1.0f, false);
+    Paddle r = create_paddle(2.0f, true);
 
     {
         size_t const size = 1024;
@@ -48,16 +57,7 @@ main(int argc, char **argv)
         int len = strlen(buf);
         assert(bytes_written < size);
         printf("\n%s\n", buf);
-        //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Left Paddle", buf, 0);
-    }
-
-    {
-        size_t const size = 1024;
-        char buf[size] = {};
-        size_t bytes_written = serialize_struct(r, Paddle, buf, size);
-        assert(bytes_written < size);
-        //printf("%s", buf);
-        //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Right Paddle", buf, 0);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Left Paddle", buf, 0);
     }
 
     SDL_Quit();

@@ -1169,9 +1169,9 @@ get_default_struct_string(void)
 {
     Char *res = "                    case meta_type_%S: {\n"
                 "                        if(member->is_ptr) {\n"
-                "                            bytes_written += serialize_struct_(**(char **)member_ptr, %S, indent + 4, buffer, buf_size - bytes_written, bytes_written);\n"
+                "                            bytes_written = serialize_struct_(**(char **)member_ptr, %S, indent + 4, buffer, buf_size - bytes_written, bytes_written);\n"
                 "                        } else {\n"
-                "                            bytes_written += serialize_struct_(*(char *)member_ptr, %S, indent + 4, buffer, buf_size - bytes_written, bytes_written);\n"
+                "                            bytes_written = serialize_struct_(*(char *)member_ptr, %S, indent + 4, buffer, buf_size - bytes_written, bytes_written);\n"
                 "                        }\n"
                 "                    } break;\n ";
 

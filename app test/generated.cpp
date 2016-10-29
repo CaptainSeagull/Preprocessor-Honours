@@ -52,7 +52,7 @@ FunctionMetaData function_data_create_paddle = {
     "create_paddle",
     2,
     {
-        {"int", "x"},
+        {"float", "x"},
         {"bool", "right"}
     }
 };
@@ -124,23 +124,23 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
                 switch(member->type) {
                     case meta_type_V2: {
                         if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, V2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_(**(char **)member_ptr, V2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, V2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_(*(char *)member_ptr, V2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                      case meta_type_Transform: {
                         if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, Transform, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_(**(char **)member_ptr, Transform, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, Transform, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_(*(char *)member_ptr, Transform, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                      case meta_type_Paddle: {
                         if(member->is_ptr) {
-                            bytes_written += serialize_struct_(**(char **)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_(**(char **)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written += serialize_struct_(*(char *)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_(*(char *)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                  }
