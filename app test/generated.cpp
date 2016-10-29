@@ -5,20 +5,68 @@
 #include <assert.h>
 
 /* Recreated structs. */
+typedef struct V2 {
+    float x;
+    float y;
+} V2;
+
+typedef struct Transform {
+    V2 pos;
+    V2 size;
+} Transform;
+
+typedef struct Paddle {
+    char *name;
+    Transform trans;
+    int speed;
+    int max_speed;
+} Paddle;
+
 
 /* Struct meta data. */
 
+/* Meta data for: V2. */
+MemberDefinition members_of_V2[] = {
+    {meta_type_float, "x", (size_t)&((V2 *)0)->x, 0, 1},
+    {meta_type_float, "y", (size_t)&((V2 *)0)->y, 0, 1},
+};
+/* Meta data for: Transform. */
+MemberDefinition members_of_Transform[] = {
+    {meta_type_V2, "pos", (size_t)&((Transform *)0)->pos, 0, 1},
+    {meta_type_V2, "size", (size_t)&((Transform *)0)->size, 0, 1},
+};
+/* Meta data for: Paddle. */
+MemberDefinition members_of_Paddle[] = {
+    {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
+    {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
+    {meta_type_int, "speed", (size_t)&((Paddle *)0)->speed, 0, 1},
+    {meta_type_int, "max_speed", (size_t)&((Paddle *)0)->max_speed, 0, 1},
+};
 
 
 /* Function meta data. */
+/* Meta data for: create_paddle. */
+FunctionMetaData function_data_create_paddle = {
+    0,
+    "Paddle",
+    "create_paddle",
+    2,
+    {
+        {"int", "x"},
+        {"bool", "right"}
+    }
+};
+
 
 
 /* Function to serialize a struct to a char array buffer. */
 size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
-    char indent_buf[256] = {0};
+    char indent_buf[256];
     unsigned indent_index = 0, member_index = 0, arr_index = 0;
+
+    memset(indent_buf, 0, 256);
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
     memset(buffer + bytes_written, 0, buf_size - bytes_written);
@@ -74,7 +122,28 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
 
             default: {
                 switch(member->type) {
-                }
+                    case meta_type_V2: {
+                        if(member->is_ptr) {
+                            bytes_written += serialize_struct_(**(char **)member_ptr, V2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written += serialize_struct_(*(char *)member_ptr, V2, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_Transform: {
+                        if(member->is_ptr) {
+                            bytes_written += serialize_struct_(**(char **)member_ptr, Transform, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written += serialize_struct_(*(char *)member_ptr, Transform, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_Paddle: {
+                        if(member->is_ptr) {
+                            bytes_written += serialize_struct_(**(char **)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written += serialize_struct_(*(char *)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                 }
             } break; /* default */
         }
     }
