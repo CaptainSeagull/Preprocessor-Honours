@@ -28,13 +28,17 @@ static size_t const num_members_for_Transform = 2;
 
 /* Meta Data for: Paddle */
 extern MemberDefinition members_of_Paddle[];
-static size_t const num_members_for_Paddle = 4;
+static size_t const num_members_for_Paddle = 2;
 
 
 /* Function meta data. */
 
-/* Meta Data for: create_paddle */
-extern FunctionMetaData function_data_create_paddle;
+/* Meta Data for: create_rect */
+extern FunctionMetaData function_data_create_rect;
+/* Meta Data for: draw_paddle */
+extern FunctionMetaData function_data_draw_paddle;
+/* Meta Data for: paddle_clicked */
+extern FunctionMetaData function_data_paddle_clicked;
 
 
 #define GENERATED_H

@@ -6,8 +6,8 @@
 
 /* Recreated structs. */
 typedef struct V2 {
-    float x;
-    float y;
+    int x;
+    int y;
 } V2;
 
 typedef struct Transform {
@@ -18,8 +18,6 @@ typedef struct Transform {
 typedef struct Paddle {
     char *name;
     Transform trans;
-    int speed;
-    int max_speed;
 } Paddle;
 
 
@@ -27,8 +25,8 @@ typedef struct Paddle {
 
 /* Meta data for: V2. */
 MemberDefinition members_of_V2[] = {
-    {meta_type_float, "x", (size_t)&((V2 *)0)->x, 0, 1},
-    {meta_type_float, "y", (size_t)&((V2 *)0)->y, 0, 1},
+    {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
+    {meta_type_int, "y", (size_t)&((V2 *)0)->y, 0, 1},
 };
 /* Meta data for: Transform. */
 MemberDefinition members_of_Transform[] = {
@@ -39,21 +37,46 @@ MemberDefinition members_of_Transform[] = {
 MemberDefinition members_of_Paddle[] = {
     {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
     {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
-    {meta_type_int, "speed", (size_t)&((Paddle *)0)->speed, 0, 1},
-    {meta_type_int, "max_speed", (size_t)&((Paddle *)0)->max_speed, 0, 1},
 };
 
 
 /* Function meta data. */
-/* Meta data for: create_paddle. */
-FunctionMetaData function_data_create_paddle = {
-    0,
-    "Paddle",
-    "create_paddle",
+/* Meta data for: create_rect. */
+FunctionMetaData function_data_create_rect = {
+    "static",
+    "SDL_Rect",
+    "create_rect",
+    4,
+    {
+        {"int", "x"},
+        {"int", "y"},
+        {"int", "w"},
+        {"int", "h"}
+    }
+};
+
+/* Meta data for: draw_paddle. */
+FunctionMetaData function_data_draw_paddle = {
+    "static",
+    "void",
+    "draw_paddle",
     2,
     {
-        {"float", "x"},
-        {"bool", "right"}
+        {"Paddle", "p"},
+        {"SDL_Surface", "surface"}
+    }
+};
+
+/* Meta data for: paddle_clicked. */
+FunctionMetaData function_data_paddle_clicked = {
+    "static",
+    "bool",
+    "paddle_clicked",
+    3,
+    {
+        {"int", "x"},
+        {"int", "y"},
+        {"Paddle", "p"}
     }
 };
 
