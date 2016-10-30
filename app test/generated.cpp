@@ -20,6 +20,11 @@ typedef struct Paddle {
     Transform trans;
 } Paddle;
 
+typedef struct GameState {
+    Paddle right;
+    Paddle left;
+} GameState;
+
 
 /* Struct meta data. */
 
@@ -37,6 +42,11 @@ MemberDefinition members_of_Transform[] = {
 MemberDefinition members_of_Paddle[] = {
     {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
     {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
+};
+/* Meta data for: GameState. */
+MemberDefinition members_of_GameState[] = {
+    {meta_type_Paddle, "right", (size_t)&((GameState *)0)->right, 0, 1},
+    {meta_type_Paddle, "left", (size_t)&((GameState *)0)->left, 0, 1},
 };
 
 
@@ -77,6 +87,17 @@ FunctionMetaData function_data_paddle_clicked = {
         {"int", "x"},
         {"int", "y"},
         {"Paddle", "p"}
+    }
+};
+
+/* Meta data for: if. */
+FunctionMetaData function_data_if = {
+    0,
+    "else",
+    "if",
+    0,
+    {
+
     }
 };
 
@@ -164,6 +185,13 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], int inden
                             bytes_written = serialize_struct_(**(char **)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, Paddle, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_GameState: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, GameState, indent + 4, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, GameState, indent + 4, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                  }

@@ -5,9 +5,7 @@
 #if WIN32
     #include "C:\dev\SDL2-2.0.0\include\SDL.h"
 
-    #if _DEBUG
-        #pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"")
-    #endif
+    #pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"")
 #else
     #include "SDL2/SDL.h"
 #endif
@@ -25,6 +23,11 @@ struct Transform {
 struct Paddle {
     char *name;
     Transform trans;
+};
+
+struct GameState {
+    Paddle right;
+    Paddle left;
 };
 
 static SDL_Rect
@@ -54,7 +57,6 @@ static bool
 paddle_clicked(int x, int y, Paddle p)
 {
     bool res = false;
-    //if((x + p.trans.size.x > p.trans.pos.x) && (p.trans.pos.x < x) && (y + p.trans.size.y > p.trans.pos.y) && (p.trans.pos.y < y)) {
     if(((p.trans.pos.x < x) && (p.trans.pos.x + p.trans.size.x > x)) && ((p.trans.pos.y < y) && (p.trans.pos.y + p.trans.size.y > y))) {
         res = true;
     }
@@ -70,25 +72,25 @@ main(int argc, char **argv)
         if(win) {
             SDL_Surface *surface = SDL_GetWindowSurface(win);
             if(surface) {
-                Paddle r = {};
-                r.name = "Right";
-                r.trans.pos.x = 600;
-                r.trans.pos.y = 20;
-                r.trans.size.x = 20;
-                r.trans.size.y = 100;
+                GameState game_state = {};
 
-                Paddle l = {};
-                l.name = "Left";
-                l.trans.pos.x = 20;
-                l.trans.pos.y = 20;
-                l.trans.size.x = 20;
-                l.trans.size.y = 100;
+                game_state.right.name = "Right";
+                game_state.right.trans.pos.x = 600;
+                game_state.right.trans.pos.y = 20;
+                game_state.right.trans.size.x = 20;
+                game_state.right.trans.size.y = 100;
+
+                game_state.left.name = "Left";
+                game_state.left.trans.pos.x = 20;
+                game_state.left.trans.pos.y = 20;
+                game_state.left.trans.size.x = 20;
+                game_state.left.trans.size.y = 100;
 
 
                 SDL_Rect back = create_rect(0, 0, 640, 480);
 
                 bool running = true;
-                SDL_Event e = {};
+                SDL_Event event = {};
 
                 int movement_speed = 10;
 
@@ -96,18 +98,22 @@ main(int argc, char **argv)
                     bool right_up = false, right_down = false;
                     bool left_up = false, left_down = false;
                     bool clicked = false;
+                    bool display_game_state = false;
                     int mouse_x = 0, mouse_y = 0;
 
-                    while(SDL_PollEvent(&e)) {
-                        switch(e.type) {
+                    while(SDL_PollEvent(&event)) {
+                        switch(event.type) {
                             case SDL_QUIT: { running = false; } break;
 
                             case SDL_KEYDOWN: {
-                                switch(e.key.keysym.sym) {
-                                    case SDLK_UP:       { right_up = true;   } break;
-                                    case SDLK_DOWN:     { right_down = true; } break;
-                                    case 'w': case 'W': { left_up = true;    } break;
-                                    case 's': case 'S': { left_down = true;  } break;
+                                switch(event.key.keysym.sym) {
+                                    case SDLK_UP:   { right_up = true;   } break;
+                                    case SDLK_DOWN: { right_down = true; } break;
+
+                                    case 'w': case 'W': { left_up = true;   } break;
+                                    case 's': case 'S': { left_down = true; } break;
+
+                                    case SDLK_F1: { display_game_state = true; } break;
                                 }
                             } break;
 
@@ -118,21 +124,29 @@ main(int argc, char **argv)
                         }
                     }
 
-                    if(clicked) {
-                        if(paddle_clicked(mouse_x, mouse_y, r)) {
+                    if(display_game_state) {
+                        size_t const size = 1024;
+                        char buf[size] = {};
+                        size_t bytes_written = serialize_struct(game_state.right, GameState, buf, size);
+                        assert(bytes_written < size);
+
+                        printf("\n%s\n", buf);
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game State", buf, 0);
+                    } else if(clicked) {
+                        if(paddle_clicked(mouse_x, mouse_y, game_state.right)) {
                             size_t const size = 1024;
                             char buf[size] = {};
-                            size_t bytes_written = serialize_struct(r, Paddle, buf, size);
+                            size_t bytes_written = serialize_struct(game_state.right, Paddle, buf, size);
                             assert(bytes_written < size);
 
                             printf("\n%s\n", buf);
                             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Right Paddle", buf, 0);
                         }
 
-                        if(paddle_clicked(mouse_x, mouse_y, l)) {
+                        if(paddle_clicked(mouse_x, mouse_y, game_state.left)) {
                             size_t const size = 1024;
                             char buf[size] = {};
-                            size_t bytes_written = serialize_struct(l, Paddle, buf, size);
+                            size_t bytes_written = serialize_struct(game_state.left, Paddle, buf, size);
                             assert(bytes_written < size);
 
                             printf("\n%s\n", buf);
@@ -141,22 +155,23 @@ main(int argc, char **argv)
                     }
 
                     if(right_up) {
-                        r.trans.pos.y -= movement_speed;
+                        game_state.right.trans.pos.y -= movement_speed;
                     }
                     if(right_down) {
-                        r.trans.pos.y += movement_speed;
+                        game_state.right.trans.pos.y += movement_speed;
                     }
                     if(left_up) {
-                        l.trans.pos.y -= movement_speed;
+                        game_state.left.trans.pos.y -= movement_speed;
                     }
                     if(left_down) {
-                        l.trans.pos.y += movement_speed;
+                        game_state.left.trans.pos.y += movement_speed;
                     }
 
                     SDL_FillRect(surface, &back, SDL_MapRGB(surface->format, 0, 0, 0));
 
-                    draw_paddle(r, surface);
-                    draw_paddle(l, surface);
+                    draw_paddle(game_state.right, surface);
+                    draw_paddle(game_state.left, surface);
+
                     SDL_UpdateWindowSurface(win);
                 }
 
@@ -166,7 +181,6 @@ main(int argc, char **argv)
 
         SDL_Quit();
     }
-
 
     return(0);
 }

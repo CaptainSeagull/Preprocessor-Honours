@@ -14,6 +14,7 @@ typedef enum MetaType {
     meta_type_V2,
     meta_type_Transform,
     meta_type_Paddle,
+    meta_type_GameState,
 } MetaType;
 
 /* Struct meta data. */
@@ -30,6 +31,10 @@ static size_t const num_members_for_Transform = 2;
 extern MemberDefinition members_of_Paddle[];
 static size_t const num_members_for_Paddle = 2;
 
+/* Meta Data for: GameState */
+extern MemberDefinition members_of_GameState[];
+static size_t const num_members_for_GameState = 2;
+
 
 /* Function meta data. */
 
@@ -39,6 +44,8 @@ extern FunctionMetaData function_data_create_rect;
 extern FunctionMetaData function_data_draw_paddle;
 /* Meta Data for: paddle_clicked */
 extern FunctionMetaData function_data_paddle_clicked;
+/* Meta Data for: if */
+extern FunctionMetaData function_data_if;
 
 
 #define GENERATED_H
