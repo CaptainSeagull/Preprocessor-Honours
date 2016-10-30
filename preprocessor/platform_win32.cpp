@@ -127,6 +127,7 @@ write_to_console(char *str)
     HANDLE console_window = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD chars_written = 0;
     Int len = string_length(str);
+    Bool success = WriteConsole(console_window, str, len, &chars_written, 0) != 0;
 
     assert((success) && (chars_written == len));
 }
