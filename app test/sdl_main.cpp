@@ -90,7 +90,6 @@ main(int argc, char **argv)
                 game_state.left.trans.size.x = 20;
                 game_state.left.trans.size.y = 100;
 
-
                 SDL_Rect back = create_rect(0, 0, window_width, window_height);
 
                 bool running = true;
@@ -101,7 +100,6 @@ main(int argc, char **argv)
                 size_t buf_size = 1024 * 1024;
                 char *buf = (char *)malloc(buf_size);
                 if(buf) {
-
                     while(running) {
                         memset(buf, 0, buf_size);
 

@@ -1325,7 +1325,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "/* Recreated structs. */\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
-        write_to_output_buffer(&source_output, "typedef struct %S {\n", sd->name.len, sd->name.e);
+        write_to_output_buffer(&source_output, "typedef struct %S %S; struct %S {\n", sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
         for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
             Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
@@ -1342,7 +1342,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 
         }
 
-        write_to_output_buffer(&source_output, "} %S;\n\n", sd->name.len, sd->name.e);
+        write_to_output_buffer(&source_output, "};\n\n", sd->name.len, sd->name.e);
     }
 
     // Struct Meta Data

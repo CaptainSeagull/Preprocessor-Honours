@@ -5,25 +5,25 @@
 #include <assert.h>
 
 /* Recreated structs. */
-typedef struct V2 {
+typedef struct V2 V2; struct V2 {
     int x;
     int y;
-} V2;
+};
 
-typedef struct Transform {
+typedef struct Transform Transform; struct Transform {
     V2 pos;
     V2 size;
-} Transform;
+};
 
-typedef struct Paddle {
+typedef struct Paddle Paddle; struct Paddle {
     char *name;
     Transform trans;
-} Paddle;
+};
 
-typedef struct GameState {
+typedef struct GameState GameState; struct GameState {
     Paddle right;
     Paddle left;
-} GameState;
+};
 
 
 /* Struct meta data. */
