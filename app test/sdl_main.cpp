@@ -57,8 +57,10 @@ static bool
 paddle_clicked(int x, int y, Paddle p)
 {
     bool res = false;
-    if(((p.trans.pos.x < x) && (p.trans.pos.x + p.trans.size.x > x)) && ((p.trans.pos.y < y) && (p.trans.pos.y + p.trans.size.y > y))) {
-        res = true;
+    if((p.trans.pos.x < x) && (p.trans.pos.x + p.trans.size.x > x)) {
+        if ((p.trans.pos.y < y) && (p.trans.pos.y + p.trans.size.y > y)) {
+            res = true;
+        }
     }
 
     return(res);
@@ -68,7 +70,9 @@ int
 main(int argc, char **argv)
 {
     if(SDL_Init(SDL_INIT_VIDEO) >= 0) {
-        SDL_Window *win = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN);
+        int window_width = 640, window_height = 480;
+        SDL_Window *win = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                           window_width, window_height, SDL_WINDOW_SHOWN);
         if(win) {
             SDL_Surface *surface = SDL_GetWindowSurface(win);
             if(surface) {
@@ -87,7 +91,7 @@ main(int argc, char **argv)
                 game_state.left.trans.size.y = 100;
 
 
-                SDL_Rect back = create_rect(0, 0, 640, 480);
+                SDL_Rect back = create_rect(0, 0, window_width, window_height);
 
                 bool running = true;
                 SDL_Event event = {};
@@ -124,34 +128,25 @@ main(int argc, char **argv)
                         }
                     }
 
-                    if(display_game_state) {
-                        size_t const size = 1024;
-                        char buf[size] = {};
-                        size_t bytes_written = serialize_struct(game_state.right, GameState, buf, size);
-                        assert(bytes_written < size);
+                    size_t const size = 1024;
+                    char buf[size] = {};
 
-                        printf("\n%s\n", buf);
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game State", buf, 0);
+
+                    if(display_game_state) {
+                        serialize_struct(game_state.right, GameState, buf, size);
                     } else if(clicked) {
                         if(paddle_clicked(mouse_x, mouse_y, game_state.right)) {
-                            size_t const size = 1024;
-                            char buf[size] = {};
-                            size_t bytes_written = serialize_struct(game_state.right, Paddle, buf, size);
-                            assert(bytes_written < size);
-
-                            printf("\n%s\n", buf);
-                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Right Paddle", buf, 0);
+                            serialize_struct(game_state.right, Paddle, buf, size);
                         }
 
                         if(paddle_clicked(mouse_x, mouse_y, game_state.left)) {
-                            size_t const size = 1024;
-                            char buf[size] = {};
-                            size_t bytes_written = serialize_struct(game_state.left, Paddle, buf, size);
-                            assert(bytes_written < size);
-
-                            printf("\n%s\n", buf);
-                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Left Paddle", buf, 0);
+                            serialize_struct(game_state.left, Paddle, buf, size);
                         }
+                    }
+
+                    if(*buf) {
+                        printf("\n%s\n", buf);
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Serialized", buf, 0);
                     }
 
                     if(right_up) {
