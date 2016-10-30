@@ -98,76 +98,82 @@ main(int argc, char **argv)
 
                 int movement_speed = 10;
 
-                while(running) {
-                    bool right_up = false, right_down = false;
-                    bool left_up = false, left_down = false;
-                    bool clicked = false;
-                    bool display_game_state = false;
-                    int mouse_x = 0, mouse_y = 0;
+                size_t buf_size = 1024 * 1024;
+                char *buf = (char *)malloc(buf_size);
+                if(buf) {
 
-                    while(SDL_PollEvent(&event)) {
-                        switch(event.type) {
-                            case SDL_QUIT: { running = false; } break;
+                    while(running) {
+                        memset(buf, 0, buf_size);
 
-                            case SDL_KEYDOWN: {
-                                switch(event.key.keysym.sym) {
-                                    case SDLK_UP:   { right_up = true;   } break;
-                                    case SDLK_DOWN: { right_down = true; } break;
+                        bool right_up = false, right_down = false;
+                        bool left_up = false, left_down = false;
+                        bool clicked = false;
+                        bool display_game_state = false;
+                        int mouse_x = 0, mouse_y = 0;
 
-                                    case 'w': case 'W': { left_up = true;   } break;
-                                    case 's': case 'S': { left_down = true; } break;
+                        while(SDL_PollEvent(&event)) {
+                            switch(event.type) {
+                                case SDL_QUIT: { running = false; } break;
 
-                                    case SDLK_F1: { display_game_state = true; } break;
-                                }
-                            } break;
+                                case SDL_KEYDOWN: {
+                                    switch(event.key.keysym.sym) {
+                                        case SDLK_UP:   { right_up = true;   } break;
+                                        case SDLK_DOWN: { right_down = true; } break;
 
-                            case SDL_MOUSEBUTTONDOWN: {
-                                SDL_GetMouseState(&mouse_x, &mouse_y);
-                                clicked = true;
-                            } break;
-                        }
-                    }
+                                        case 'w': case 'W': { left_up = true;   } break;
+                                        case 's': case 'S': { left_down = true; } break;
 
-                    size_t const size = 1024;
-                    char buf[size] = {};
+                                        case SDLK_F1: { display_game_state = true; } break;
+                                    }
+                                } break;
 
-
-                    if(display_game_state) {
-                        serialize_struct(game_state.right, GameState, buf, size);
-                    } else if(clicked) {
-                        if(paddle_clicked(mouse_x, mouse_y, game_state.right)) {
-                            serialize_struct(game_state.right, Paddle, buf, size);
+                                case SDL_MOUSEBUTTONDOWN: {
+                                    SDL_GetMouseState(&mouse_x, &mouse_y);
+                                    clicked = true;
+                                } break;
+                            }
                         }
 
-                        if(paddle_clicked(mouse_x, mouse_y, game_state.left)) {
-                            serialize_struct(game_state.left, Paddle, buf, size);
+                        if(display_game_state) {
+                            serialize_struct(game_state, GameState, buf, buf_size);
+                        } else if(clicked) {
+                            if(paddle_clicked(mouse_x, mouse_y, game_state.right)) {
+                                serialize_struct(game_state.right, Paddle, buf, buf_size);
+                            }
+
+                            if(paddle_clicked(mouse_x, mouse_y, game_state.left)) {
+                                serialize_struct(game_state.left, Paddle, buf, buf_size);
+                            }
                         }
+
+                        if(*buf) {
+                            printf("\n%s\n", buf);
+                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Serialized", buf, 0);
+                        }
+
+                        if(right_up) {
+                            game_state.right.trans.pos.y -= movement_speed;
+                        }
+                        if(right_down) {
+                            game_state.right.trans.pos.y += movement_speed;
+                        }
+                        if(left_up) {
+                            game_state.left.trans.pos.y -= movement_speed;
+                        }
+                        if(left_down) {
+                            game_state.left.trans.pos.y += movement_speed;
+                        }
+
+                        SDL_FillRect(surface, &back, SDL_MapRGB(surface->format, 0, 0, 0));
+
+                        draw_paddle(game_state.right, surface);
+                        draw_paddle(game_state.left, surface);
+
+
+                        SDL_UpdateWindowSurface(win);
                     }
 
-                    if(*buf) {
-                        printf("\n%s\n", buf);
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Serialized", buf, 0);
-                    }
-
-                    if(right_up) {
-                        game_state.right.trans.pos.y -= movement_speed;
-                    }
-                    if(right_down) {
-                        game_state.right.trans.pos.y += movement_speed;
-                    }
-                    if(left_up) {
-                        game_state.left.trans.pos.y -= movement_speed;
-                    }
-                    if(left_down) {
-                        game_state.left.trans.pos.y += movement_speed;
-                    }
-
-                    SDL_FillRect(surface, &back, SDL_MapRGB(surface->format, 0, 0, 0));
-
-                    draw_paddle(game_state.right, surface);
-                    draw_paddle(game_state.left, surface);
-
-                    SDL_UpdateWindowSurface(win);
+                    free(buf);
                 }
 
                 SDL_DestroyWindow(win);
