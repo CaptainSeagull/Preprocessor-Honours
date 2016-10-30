@@ -121,49 +121,61 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
     return(res);
 }
 
+internal void
+write_to_console(char *str)
+{
+    HANDLE console_window = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD chars_written = 0;
+    Int len = string_length(str);
 
+    assert((success) && (chars_written == len));
+}
 
 int
 main(Int argc, Char **argv)
 {
-    PtrSize tot_size_of_all_files = 0;
+    if(argc <= 1) {
+        write_to_console("Error: No parameters");
+    } else {
+        PtrSize tot_size_of_all_files = 0;
 
-    for(Int file_index = 1; (file_index < argc); ++file_index) {
-        tot_size_of_all_files += win32_get_file_size(argv[file_index]);
-        ExtensionType type = get_extension_from_str(argv[file_index]);
-        assert(type);
-    }
-
-    ExtensionType type = get_extension_from_str(argv[1]); // TODO(Jonny): Hacky, should probably pass it in.
-    assert(type);
-
-    Int permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
-    Int temp_size = 1024 * 1024;
-    Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    if(all_memory) {
-
-        char *header_name = "generated.h";
-        char *source_name = (type == ExtensionType_cpp) ? "generated.cpp" : "generated.c";
-
-        Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
-
-        AllFiles all_files = {};
         for(Int file_index = 1; (file_index < argc); ++file_index) {
-            all_files.file[all_files.count++] = win32_read_entire_file_and_null_terminate(argv[file_index], &memory);
+            tot_size_of_all_files += win32_get_file_size(argv[file_index]);
+            ExtensionType type = get_extension_from_str(argv[file_index]);
+            assert(type);
         }
 
-        StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
+        ExtensionType type = get_extension_from_str(argv[1]); // TODO(Jonny): Hacky, should probably pass it in.
+        assert(type);
 
-        char *static_file_data = get_static_file();
-        Int static_file_len = string_length(static_file_data);
-        Bool static_success = win32_write_to_file("static_generated.h", static_file_data, static_file_len);
+        Int permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
+        Int temp_size = 1024 * 1024;
+        Void *all_memory = VirtualAlloc(0, permanent_size + temp_size + tot_size_of_all_files, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        if(all_memory) {
 
-        Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
-        Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
-        assert((header_success) && (source_success));
+            char *header_name = "generated.h";
+            char *source_name = (type == ExtensionType_cpp) ? "generated.cpp" : "generated.c";
 
-        Bool mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE) != 0;
-        assert(mem_freed);
+            Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
+
+            AllFiles all_files = {};
+            for(Int file_index = 1; (file_index < argc); ++file_index) {
+                all_files.file[all_files.count++] = win32_read_entire_file_and_null_terminate(argv[file_index], &memory);
+            }
+
+            StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
+
+            char *static_file_data = get_static_file();
+            Int static_file_len = string_length(static_file_data);
+            Bool static_success = win32_write_to_file("static_generated.h", static_file_data, static_file_len);
+
+            Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
+            Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
+            assert((header_success) && (source_success));
+
+            Bool mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE) != 0;
+            assert(mem_freed);
+        }
     }
 
     return(0);
@@ -184,7 +196,9 @@ mainCRTStartup(Void)
                 *args++ = 0;
             }
 
-            buf[buf_index++] = args;
+            if(*args) {
+                buf[buf_index++] = args;
+            }
         }
 
         ++args;
