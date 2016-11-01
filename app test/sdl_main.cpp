@@ -24,7 +24,7 @@ struct Transform {
 };
 
 struct Ball {
-    char *name;
+    char const *name;
     V2 pos;
     int radius;
     int speed;
@@ -32,7 +32,7 @@ struct Ball {
 };
 
 struct Paddle {
-    char *name;
+    char const *name;
     Transform trans;
     int score;
 };
