@@ -15,14 +15,24 @@ typedef struct Transform Transform; struct Transform {
     V2 size;
 };
 
+typedef struct Ball Ball; struct Ball {
+    char *name;
+    V2 pos;
+    int radius;
+    int speed;
+    int direction;
+};
+
 typedef struct Paddle Paddle; struct Paddle {
     char *name;
     Transform trans;
+    int score;
 };
 
 typedef struct GameState GameState; struct GameState {
     Paddle right;
     Paddle left;
+    Ball ball;
 };
 
 
@@ -38,22 +48,32 @@ MemberDefinition members_of_Transform[] = {
     {meta_type_V2, "pos", (size_t)&((Transform *)0)->pos, 0, 1},
     {meta_type_V2, "size", (size_t)&((Transform *)0)->size, 0, 1},
 };
+/* Meta data for: Ball. */
+MemberDefinition members_of_Ball[] = {
+    {meta_type_char, "name", (size_t)&((Ball *)0)->name, 1, 1},
+    {meta_type_V2, "pos", (size_t)&((Ball *)0)->pos, 0, 1},
+    {meta_type_int, "radius", (size_t)&((Ball *)0)->radius, 0, 1},
+    {meta_type_int, "speed", (size_t)&((Ball *)0)->speed, 0, 1},
+    {meta_type_int, "direction", (size_t)&((Ball *)0)->direction, 0, 1},
+};
 /* Meta data for: Paddle. */
 MemberDefinition members_of_Paddle[] = {
     {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
     {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
+    {meta_type_int, "score", (size_t)&((Paddle *)0)->score, 0, 1},
 };
 /* Meta data for: GameState. */
 MemberDefinition members_of_GameState[] = {
     {meta_type_Paddle, "right", (size_t)&((GameState *)0)->right, 0, 1},
     {meta_type_Paddle, "left", (size_t)&((GameState *)0)->left, 0, 1},
+    {meta_type_Ball, "ball", (size_t)&((GameState *)0)->ball, 0, 1},
 };
 
 
 /* Function meta data. */
 /* Meta data for: create_rect. */
 FunctionMetaData function_data_create_rect = {
-    "static",
+    0,
     "SDL_Rect",
     "create_rect",
     4,
@@ -67,7 +87,7 @@ FunctionMetaData function_data_create_rect = {
 
 /* Meta data for: draw_paddle. */
 FunctionMetaData function_data_draw_paddle = {
-    "static",
+    0,
     "void",
     "draw_paddle",
     2,
@@ -77,9 +97,21 @@ FunctionMetaData function_data_draw_paddle = {
     }
 };
 
+/* Meta data for: draw_ball. */
+FunctionMetaData function_data_draw_ball = {
+    0,
+    "void",
+    "draw_ball",
+    2,
+    {
+        {"Ball", "b"},
+        {"SDL_Surface", "surface"}
+    }
+};
+
 /* Meta data for: paddle_clicked. */
 FunctionMetaData function_data_paddle_clicked = {
-    "static",
+    0,
     "bool",
     "paddle_clicked",
     3,
@@ -90,11 +122,24 @@ FunctionMetaData function_data_paddle_clicked = {
     }
 };
 
-/* Meta data for: if. */
-FunctionMetaData function_data_if = {
+/* Meta data for: ball_clicked. */
+FunctionMetaData function_data_ball_clicked = {
     0,
-    "else",
-    "if",
+    "bool",
+    "ball_clicked",
+    3,
+    {
+        {"int", "x"},
+        {"int", "y"},
+        {"Ball", "b"}
+    }
+};
+
+/* Meta data for: create_ball. */
+FunctionMetaData function_data_create_ball = {
+    0,
+    "Ball",
+    "create_ball",
     0,
     {
 
@@ -186,6 +231,13 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                             bytes_written = serialize_struct_(**(char **)member_ptr, Transform, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, Transform, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+                     case meta_type_Ball: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, Ball, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, Ball, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
                      case meta_type_Paddle: {

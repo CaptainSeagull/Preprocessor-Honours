@@ -10,6 +10,9 @@
     #include "SDL2/SDL.h"
 #endif
 
+int window_width = 640;
+int window_height = 480;
+
 struct V2 {
     int x;
     int y;
@@ -20,18 +23,27 @@ struct Transform {
     V2 size;
 };
 
+struct Ball {
+    char *name;
+    V2 pos;
+    int radius;
+    int speed;
+    int direction;
+};
+
 struct Paddle {
     char *name;
     Transform trans;
+    int score;
 };
 
 struct GameState {
     Paddle right;
     Paddle left;
+    Ball ball;
 };
 
-static SDL_Rect
-create_rect(int x, int y, int w, int h)
+SDL_Rect create_rect(int x, int y, int w, int h)
 {
     SDL_Rect res;
     res.x = x;
@@ -42,19 +54,29 @@ create_rect(int x, int y, int w, int h)
     return(res);
 }
 
-static void
-draw_paddle(Paddle p, SDL_Surface *surface)
+void draw_paddle(Paddle p, SDL_Surface *surface)
 {
     SDL_Rect rect = {};
     rect.x = p.trans.pos.x;
     rect.y = p.trans.pos.y;
     rect.w = p.trans.size.x;
     rect.h = p.trans.size.y;
+
     SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 255, 255, 255));
 }
 
-static bool
-paddle_clicked(int x, int y, Paddle p)
+void draw_ball(Ball b, SDL_Surface *surface)
+{
+    SDL_Rect rect = {};
+    rect.x = b.pos.x;
+    rect.y = b.pos.y;
+    rect.w = b.radius;
+    rect.h = b.radius;
+
+    SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 255, 255, 255));
+}
+
+bool paddle_clicked(int x, int y, Paddle p)
 {
     bool res = false;
     if((p.trans.pos.x < x) && (p.trans.pos.x + p.trans.size.x > x)) {
@@ -66,11 +88,36 @@ paddle_clicked(int x, int y, Paddle p)
     return(res);
 }
 
+bool ball_clicked(int x, int y, Ball b)
+{
+    bool res = false;
+    if((b.pos.x < x) && (b.pos.x + b.radius > x)) {
+        if ((b.pos.y < y) && (b.pos.y + b.radius > y)) {
+            res = true;
+        }
+    }
+
+    return(res);
+}
+
+Ball create_ball(void)
+{
+    Ball res = {};
+
+    res.name = "Ball";
+    res.radius = 40;
+    res.speed = 0;
+    res.direction = 0;
+    res.pos.x = window_width / 2;
+    res.pos.y = window_height / 2;
+
+    return(res);
+}
+
 int
 main(int argc, char **argv)
 {
     if(SDL_Init(SDL_INIT_VIDEO) >= 0) {
-        int window_width = 640, window_height = 480;
         SDL_Window *win = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                            window_width, window_height, SDL_WINDOW_SHOWN);
         if(win) {
@@ -89,6 +136,8 @@ main(int argc, char **argv)
                 game_state.left.trans.pos.y = 20;
                 game_state.left.trans.size.x = 20;
                 game_state.left.trans.size.y = 100;
+
+                game_state.ball = create_ball();
 
                 SDL_Rect back = create_rect(0, 0, window_width, window_height);
 
@@ -137,10 +186,10 @@ main(int argc, char **argv)
                         } else if(clicked) {
                             if(paddle_clicked(mouse_x, mouse_y, game_state.right)) {
                                 serialize_struct(game_state.right, Paddle, buf, buf_size);
-                            }
-
-                            if(paddle_clicked(mouse_x, mouse_y, game_state.left)) {
+                            } else if(paddle_clicked(mouse_x, mouse_y, game_state.left)) {
                                 serialize_struct(game_state.left, Paddle, buf, buf_size);
+                            } else if(ball_clicked(mouse_x, mouse_y, game_state.ball)) {
+                                serialize_struct(game_state.ball, Ball, buf, buf_size);
                             }
                         }
 
@@ -167,6 +216,7 @@ main(int argc, char **argv)
                         draw_paddle(game_state.right, surface);
                         draw_paddle(game_state.left, surface);
 
+                        draw_ball(game_state.ball, surface);
 
                         SDL_UpdateWindowSurface(win);
                     }

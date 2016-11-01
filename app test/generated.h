@@ -13,6 +13,7 @@ typedef enum MetaType {
     meta_type_double,
     meta_type_V2,
     meta_type_Transform,
+    meta_type_Ball,
     meta_type_Paddle,
     meta_type_GameState,
 } MetaType;
@@ -27,13 +28,17 @@ static size_t const num_members_for_V2 = 2;
 extern MemberDefinition members_of_Transform[];
 static size_t const num_members_for_Transform = 2;
 
+/* Meta Data for: Ball */
+extern MemberDefinition members_of_Ball[];
+static size_t const num_members_for_Ball = 5;
+
 /* Meta Data for: Paddle */
 extern MemberDefinition members_of_Paddle[];
-static size_t const num_members_for_Paddle = 2;
+static size_t const num_members_for_Paddle = 3;
 
 /* Meta Data for: GameState */
 extern MemberDefinition members_of_GameState[];
-static size_t const num_members_for_GameState = 2;
+static size_t const num_members_for_GameState = 3;
 
 
 /* Function meta data. */
@@ -42,10 +47,14 @@ static size_t const num_members_for_GameState = 2;
 extern FunctionMetaData function_data_create_rect;
 /* Meta Data for: draw_paddle */
 extern FunctionMetaData function_data_draw_paddle;
+/* Meta Data for: draw_ball */
+extern FunctionMetaData function_data_draw_ball;
 /* Meta Data for: paddle_clicked */
 extern FunctionMetaData function_data_paddle_clicked;
-/* Meta Data for: if */
-extern FunctionMetaData function_data_if;
+/* Meta Data for: ball_clicked */
+extern FunctionMetaData function_data_ball_clicked;
+/* Meta Data for: create_ball */
+extern FunctionMetaData function_data_create_ball;
 
 
 #define GENERATED_H
