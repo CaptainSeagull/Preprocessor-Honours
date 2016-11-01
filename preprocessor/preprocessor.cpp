@@ -619,6 +619,8 @@ peak_token(Tokenizer *tokenizer)
     return(res);
 }
 
+// TODO(Jonny): Create a token_equals_keyword function. This could also test macro'd aliases for keywords, as well as the actual keyword.
+
 internal Bool
 token_equals(Token token, Char *str)
 {
