@@ -1224,76 +1224,79 @@ attempt_to_parse_function(Tokenizer *tokenizer, Token token)
             if(name.type == TokenType_identifier) {
                 // Don't forward declare main.
                 if((!token_equals(name, "main")) && (!token_equals(name, "WinMain")) && (!token_equals(name, "_mainCRTStartup")) && (!token_equals(name, "_WinMainCRTStartup")) && (!token_equals(name, "__DllMainCRTStartup"))) {
-                    if((linkage.type == TokenType_identifier) || (linkage.type == TokenType_unknown)) {
-                        Token should_be_open_brace = get_token(&copy_tokenizer);
-                        if(should_be_open_brace.type == TokenType_open_paren) {
-                            res.success = true;
+                    // Make sure we aren't parsing a if statement.
+                    if((!token_equals(name, "if")) && (!token_equals(name, "do")) && (!token_equals(name, "while")) && (!token_equals(name, "for"))) {
+                        if(((linkage.type == TokenType_identifier) && (!token_equals(linkage, "else"))) || (linkage.type == TokenType_unknown)) {
+                            Token should_be_open_brace = get_token(&copy_tokenizer);
+                            if(should_be_open_brace.type == TokenType_open_paren) {
+                                res.success = true;
 
-                            *tokenizer = copy_tokenizer;
+                                *tokenizer = copy_tokenizer;
 
-                            if(linkage.type == TokenType_identifier) {
-                                res.func_data.linkage = token_to_string(linkage);
-                            }
+                                if(linkage.type == TokenType_identifier) {
+                                    res.func_data.linkage = token_to_string(linkage);
+                                }
 
-                            res.func_data.ret_type = token_to_string(return_type);
-                            res.func_data.name = token_to_string(name);
+                                res.func_data.ret_type = token_to_string(return_type);
+                                res.func_data.name = token_to_string(name);
 
-                            // Set the array size to 1 for all the variables...
-                            for(Int param_index = 0; (param_index < array_count(res.func_data.params)); ++param_index) {
-                                res.func_data.params[param_index].array_count = 1;
-                            }
+                                // Set the array size to 1 for all the variables...
+                                for(Int param_index = 0; (param_index < array_count(res.func_data.params)); ++param_index) {
+                                    res.func_data.params[param_index].array_count = 1;
+                                }
 
-                            Bool parsing = true;
-                            Variable *var = res.func_data.params + res.func_data.param_count;
+                                Bool parsing = true;
+                                Variable *var = res.func_data.params + res.func_data.param_count;
 
-                            // If there aren't any parameters then just skip them.
-                            {
-                                Tokenizer copy = *tokenizer;
-                                Token token = get_token(&copy);
-                                if(token_equals(token, "void")) {
-                                    Token next = get_token(&copy);
-                                    if(next.type == TokenType_close_param) {
-                                        parsing = false;
+                                // If there aren't any parameters then just skip them.
+                                {
+                                    Tokenizer copy = *tokenizer;
+                                    Token token = get_token(&copy);
+                                    if(token_equals(token, "void")) {
+                                        Token next = get_token(&copy);
+                                        if(next.type == TokenType_close_param) {
+                                            parsing = false;
+                                        }
                                     }
                                 }
-                            }
 
-                            // Parse the parameters.
-                            while(parsing) {
-                                Token token = get_token(tokenizer);
-                                switch(token.type) {
-                                    case TokenType_asterisk: {
-                                        var->is_ptr = true;
-                                    } break;
+                                // Parse the parameters.
+                                while(parsing) {
+                                    Token token = get_token(tokenizer);
+                                    switch(token.type) {
+                                        case TokenType_asterisk: {
+                                            var->is_ptr = true;
+                                        } break;
 
-                                    case TokenType_open_bracket: {
-                                        Token SizeToken = get_token(tokenizer);
-                                        if(SizeToken.type == TokenType_number) {
-                                            Char buffer[256] = {};
-                                            token_to_string(SizeToken, buffer, array_count(buffer));
-                                            ResultInt arr_count = string_to_int(buffer);
-                                            if(arr_count.success) {
-                                                var->array_count = arr_count.e;
+                                        case TokenType_open_bracket: {
+                                            Token SizeToken = get_token(tokenizer);
+                                            if(SizeToken.type == TokenType_number) {
+                                                Char buffer[256] = {};
+                                                token_to_string(SizeToken, buffer, array_count(buffer));
+                                                ResultInt arr_count = string_to_int(buffer);
+                                                if(arr_count.success) {
+                                                    var->array_count = arr_count.e;
+                                                }
                                             }
-                                        }
-                                    } break;
+                                        } break;
 
-                                    case TokenType_identifier: {
-                                        if(var->type.len == 0) {
-                                            var->type = token_to_string(token);
-                                        } else {
-                                            var->name = token_to_string(token);
-                                            ++res.func_data.param_count;
-                                        }
-                                    } break;
+                                        case TokenType_identifier: {
+                                            if(var->type.len == 0) {
+                                                var->type = token_to_string(token);
+                                            } else {
+                                                var->name = token_to_string(token);
+                                                ++res.func_data.param_count;
+                                            }
+                                        } break;
 
-                                    case TokenType_comma: {
-                                        ++var;
-                                    } break;
+                                        case TokenType_comma: {
+                                            ++var;
+                                        } break;
 
-                                    case TokenType_end_of_stream: case TokenType_open_brace: {
-                                        parsing = false; // TODO(Jonny): Something baaaad happened...
-                                    } break;
+                                        case TokenType_end_of_stream: case TokenType_open_brace: {
+                                            parsing = false; // TODO(Jonny): Something baaaad happened...
+                                        } break;
+                                    }
                                 }
                             }
                         }
