@@ -13,7 +13,11 @@
 int window_width = 640;
 int window_height = 480;
 
-struct V2 {
+struct Object {
+    int i = 0;
+};
+
+struct V2 : public Object {
     int x;
     int y;
 };
