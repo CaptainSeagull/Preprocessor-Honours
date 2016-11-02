@@ -5,7 +5,11 @@
 #include <assert.h>
 
 /* Recreated structs. */
-typedef struct V2 V2; struct V2 {
+typedef struct Object Object; struct Object {
+    int i;
+};
+
+typedef struct V2 V2; struct V2 : public Object {
     int x;
     int y;
 };
@@ -38,6 +42,10 @@ typedef struct GameState GameState; struct GameState {
 
 /* Struct meta data. */
 
+/* Meta data for: Object. */
+MemberDefinition members_of_Object[] = {
+    {meta_type_int, "i", (size_t)&((Object *)0)->i, 0, 1},
+};
 /* Meta data for: V2. */
 MemberDefinition members_of_V2[] = {
     {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
@@ -219,6 +227,14 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
             default: {
                 switch(member->type) {
+                    case meta_type_Object: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, Object, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, Object, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+
                     case meta_type_V2: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
@@ -226,35 +242,40 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                             bytes_written = serialize_struct_(*(char *)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                     case meta_type_Transform: {
+
+                    case meta_type_Transform: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, Transform, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, Transform, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                     case meta_type_Ball: {
+
+                    case meta_type_Ball: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, Ball, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, Ball, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                     case meta_type_Paddle: {
+
+                    case meta_type_Paddle: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, Paddle, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, Paddle, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                     case meta_type_GameState: {
+
+                    case meta_type_GameState: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, GameState, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, GameState, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
-                 }
+
+                }
             } break; /* default */
         }
     }

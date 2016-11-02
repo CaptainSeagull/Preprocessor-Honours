@@ -800,6 +800,7 @@ struct StructData {
     String name;
     Int member_count;
     Variable *members;
+    String inherited;
 
     FunctionData *func_data;
     Int func_count;
@@ -885,14 +886,20 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
     if(name.len > 1) {
         res.name = token_to_string(name);
 
+        Bool inherited = false;
         Token inherited_from = {};
         Token peaked_token = peak_token(tokenizer);
         if(peaked_token.type == TokenType_colon) {
             eat_tokens(tokenizer, 2);
             inherited_from = get_token(tokenizer);
+            inherited = true;
         }
 
         if(require_token(tokenizer, TokenType_open_brace)) {
+            if(inherited) {
+                res.inherited = token_to_string(inherited_from);
+            }
+
             res.member_count = 0;
             Char *member_pos[256] = {};
             res.func_data = push_permanent_array(memory, FunctionData, 32);
@@ -1183,7 +1190,8 @@ get_default_struct_string(void)
                 "                        } else {\n"
                 "                            bytes_written = serialize_struct_(*(char *)member_ptr, %S, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                 "                        }\n"
-                "                    } break;\n ";
+                "                    } break;\n"
+                "\n";
 
     return(res);
 }
@@ -1330,7 +1338,12 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "/* Recreated structs. */\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
-        write_to_output_buffer(&source_output, "typedef struct %S %S; struct %S {\n", sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+        write_to_output_buffer(&source_output, "typedef struct %S %S; struct %S", sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+        if(sd->inherited.len) {
+            write_to_output_buffer(&source_output, " : public %S", sd->inherited.len, sd->inherited.e);
+        }
+        write_to_output_buffer(&source_output, " {\n");
+
         for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
             Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
