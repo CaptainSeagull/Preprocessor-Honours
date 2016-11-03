@@ -935,6 +935,7 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                             if(!is_func) {
                                 member_pos[res.member_count++] = token.e;
                             } else {
+                                // TODO(Jonny): This fails for constructors (and probably destructors).
                                 if(inline_func) {
                                     skip_to_matching_bracket(&tokenizer_copy);
                                 }

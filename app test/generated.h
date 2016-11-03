@@ -11,7 +11,6 @@ typedef enum MetaType {
     meta_type_long,
     meta_type_float,
     meta_type_double,
-    meta_type_Object,
     meta_type_V2,
     meta_type_Transform,
     meta_type_Ball,
@@ -20,10 +19,6 @@ typedef enum MetaType {
 } MetaType;
 
 /* Struct meta data. */
-
-/* Meta Data for: Object */
-extern MemberDefinition members_of_Object[];
-static size_t const num_members_for_Object = 1;
 
 /* Meta Data for: V2 */
 extern MemberDefinition members_of_V2[];

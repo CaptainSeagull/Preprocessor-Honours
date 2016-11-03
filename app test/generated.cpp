@@ -5,11 +5,7 @@
 #include <assert.h>
 
 /* Recreated structs. */
-typedef struct Object Object; struct Object {
-    int i;
-};
-
-typedef struct V2 V2; struct V2 : public Object {
+typedef struct V2 V2; struct V2 {
     int x;
     int y;
 };
@@ -42,10 +38,6 @@ typedef struct GameState GameState; struct GameState {
 
 /* Struct meta data. */
 
-/* Meta data for: Object. */
-MemberDefinition members_of_Object[] = {
-    {meta_type_int, "i", (size_t)&((Object *)0)->i, 0, 1},
-};
 /* Meta data for: V2. */
 MemberDefinition members_of_V2[] = {
     {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
@@ -227,14 +219,6 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
             default: {
                 switch(member->type) {
-                    case meta_type_Object: {
-                        if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, Object, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                        } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, Object, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                        }
-                    } break;
-
                     case meta_type_V2: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
