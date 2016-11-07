@@ -50,37 +50,38 @@ struct GameState {
 
 /* Meta data for: base_class. */
 MemberDefinition members_of_base_class[] = {
-    {meta_type_int, "i", "", (size_t)&((base_class *)0)->i, 0, 1},
+    {meta_type_int, "i", (size_t)&((base_class *)0)->i, 0, 1},
 };
 /* Meta data for: V2. */
 MemberDefinition members_of_V2[] = {
-    {meta_type_int, "x", "base_class", (size_t)&((V2 *)0)->x, 0, 1},
-    {meta_type_int, "y", "base_class", (size_t)&((V2 *)0)->y, 0, 1},
+    {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
+    {meta_type_int, "y", (size_t)&((V2 *)0)->y, 0, 1},
+    {meta_type_int, "i", (size_t)&((V2 *)0)->i, 0, 1},
 };
 /* Meta data for: Transform. */
 MemberDefinition members_of_Transform[] = {
-    {meta_type_V2, "pos", "", (size_t)&((Transform *)0)->pos, 0, 1},
-    {meta_type_V2, "size", "", (size_t)&((Transform *)0)->size, 0, 1},
+    {meta_type_V2, "pos", (size_t)&((Transform *)0)->pos, 0, 1},
+    {meta_type_V2, "size", (size_t)&((Transform *)0)->size, 0, 1},
 };
 /* Meta data for: Ball. */
 MemberDefinition members_of_Ball[] = {
-    {meta_type_char, "name", "", (size_t)&((Ball *)0)->name, 1, 1},
-    {meta_type_V2, "pos", "", (size_t)&((Ball *)0)->pos, 0, 1},
-    {meta_type_int, "radius", "", (size_t)&((Ball *)0)->radius, 0, 1},
-    {meta_type_int, "speed", "", (size_t)&((Ball *)0)->speed, 0, 1},
-    {meta_type_int, "direction", "", (size_t)&((Ball *)0)->direction, 0, 1},
+    {meta_type_char, "name", (size_t)&((Ball *)0)->name, 1, 1},
+    {meta_type_V2, "pos", (size_t)&((Ball *)0)->pos, 0, 1},
+    {meta_type_int, "radius", (size_t)&((Ball *)0)->radius, 0, 1},
+    {meta_type_int, "speed", (size_t)&((Ball *)0)->speed, 0, 1},
+    {meta_type_int, "direction", (size_t)&((Ball *)0)->direction, 0, 1},
 };
 /* Meta data for: Paddle. */
 MemberDefinition members_of_Paddle[] = {
-    {meta_type_char, "name", "", (size_t)&((Paddle *)0)->name, 1, 1},
-    {meta_type_Transform, "trans", "", (size_t)&((Paddle *)0)->trans, 0, 1},
-    {meta_type_int, "score", "", (size_t)&((Paddle *)0)->score, 0, 1},
+    {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
+    {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
+    {meta_type_int, "score", (size_t)&((Paddle *)0)->score, 0, 1},
 };
 /* Meta data for: GameState. */
 MemberDefinition members_of_GameState[] = {
-    {meta_type_Paddle, "right", "", (size_t)&((GameState *)0)->right, 0, 1},
-    {meta_type_Paddle, "left", "", (size_t)&((GameState *)0)->left, 0, 1},
-    {meta_type_Ball, "ball", "", (size_t)&((GameState *)0)->ball, 0, 1},
+    {meta_type_Paddle, "right", (size_t)&((GameState *)0)->right, 0, 1},
+    {meta_type_Paddle, "left", (size_t)&((GameState *)0)->left, 0, 1},
+    {meta_type_Ball, "ball", (size_t)&((GameState *)0)->ball, 0, 1},
 };
 
 
@@ -108,7 +109,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
     }
 
     for(member_index = 0; (member_index < num_members); ++member_index) {
-        MemberDefinition *member = members_of_Something + member_index;
+         MemberDefinition *member = members_of_Something + member_index;
 
          void *member_ptr = (char *)var + member->offset;
          switch(member->type) {

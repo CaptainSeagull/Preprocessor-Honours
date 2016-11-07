@@ -27,7 +27,7 @@ static size_t const num_members_for_base_class = 1;
 
 /* Meta Data for: V2 */
 extern MemberDefinition members_of_V2[];
-static size_t const num_members_for_V2 = 2;
+static size_t const num_members_for_V2 = 3;
 
 /* Meta Data for: Transform */
 extern MemberDefinition members_of_Transform[];

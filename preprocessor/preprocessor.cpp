@@ -347,6 +347,27 @@ string_compare(Char *a, Char *b, Int len)
     return(res);
 }
 
+internal Bool
+string_compare(String a, String b)
+{
+    assert((a.len) && (b.len));
+
+    Bool res = false;
+
+    if(a.len == b.len) {
+        res = true;
+
+        for(Int string_index = 0; (string_index < a.len); ++string_index) {
+            if(a.e[string_index] != b.e[string_index]) {
+                res = false;
+                break; // for
+            }
+        }
+    }
+
+    return(res);
+}
+
 internal Void
 eat_whitespace(Tokenizer *tokenizer)
 {
@@ -1015,7 +1036,7 @@ get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
                       "    }\n"
                       "\n"
                       "    for(member_index = 0; (member_index < num_members); ++member_index) {\n"
-                      "        MemberDefinition *member = members_of_Something + member_index;\n"
+                      "         MemberDefinition *member = members_of_Something + member_index;\n"
                       "\n"
                       "         void *member_ptr = (char *)var + member->offset;\n"
                       "         switch(member->type) {\n"
@@ -1320,6 +1341,25 @@ attempt_to_parse_function(Tokenizer *tokenizer, Token token)
     return(res);
 }
 
+internal StructData *
+find_struct(String str, StructData *structs, Int struct_count)
+{
+    StructData *res = {};
+
+    if(str.len) {
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = structs + struct_index;
+
+            if(string_compare(str, sd->name)) {
+                res = sd;
+                break; // for
+            }
+        }
+    }
+
+    return(res);
+}
+
 internal StuffToWrite
 write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count,
            EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
@@ -1368,18 +1408,34 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "\n/* Struct meta data. */\n\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
+
         write_to_output_buffer(&source_output, "/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
         write_to_output_buffer(&source_output, "MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
         for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
-            write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+            write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
                                    md->type.len, md->type.e,
                                    md->name.len, md->name.e,
-                                   sd->inherited.len, sd->inherited.e,
                                    sd->name.len, sd->name.e,
                                    md->name.len, md->name.e,
                                    md->is_ptr,
                                    md->array_count);
+        }
+        if(sd->inherited.len) {
+            StructData *base_class = find_struct(sd->inherited, struct_data, struct_count);
+            assert(base_class);
+
+            for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
+                Variable *base_class_var = base_class->members + member_index;
+
+                write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+                                       base_class_var->type.len, base_class_var->type.e,
+                                       base_class_var->name.len, base_class_var->name.e,
+                                       sd->name.len, sd->name.e,
+                                       base_class_var->name.len, base_class_var->name.e,
+                                       base_class_var->is_ptr,
+                                       base_class_var->array_count);
+            }
         }
 
         write_to_output_buffer(&source_output, "};\n");
@@ -1582,8 +1638,15 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                sd->name.len, sd->name.e);
         write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n",
                                sd->name.len, sd->name.e);
+
+        Int member_count = sd->member_count;
+        StructData *inherited = find_struct(sd->inherited, struct_data, struct_count);
+        if(inherited) {
+            member_count += inherited->member_count;
+        }
+
         write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n",
-                               sd->name.len, sd->name.e, sd->member_count);
+                               sd->name.len, sd->name.e, member_count);
     }
 #if 0
     // Function meta data.
