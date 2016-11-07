@@ -1262,8 +1262,8 @@ attempt_to_parse_function(Tokenizer *tokenizer, Token token)
                                 // If there aren't any parameters then just skip them.
                                 {
                                     Tokenizer copy = *tokenizer;
-                                    Token token = get_token(&copy);
-                                    if(token_equals(token, "void")) {
+                                    Token temp_token = get_token(&copy);
+                                    if(token_equals(temp_token, "void")) {
                                         Token next = get_token(&copy);
                                         if(next.type == TokenType_close_param) {
                                             parsing = false;
@@ -1273,8 +1273,8 @@ attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 
                                 // Parse the parameters.
                                 while(parsing) {
-                                    Token token = get_token(tokenizer);
-                                    switch(token.type) {
+                                    Token temp_token = get_token(tokenizer);
+                                    switch(temp_token.type) {
                                         case TokenType_asterisk: {
                                             var->is_ptr = true;
                                         } break;
@@ -1293,9 +1293,9 @@ attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 
                                         case TokenType_identifier: {
                                             if(var->type.len == 0) {
-                                                var->type = token_to_string(token);
+                                                var->type = token_to_string(temp_token);
                                             } else {
-                                                var->name = token_to_string(token);
+                                                var->name = token_to_string(temp_token);
                                                 ++res.func_data.param_count;
                                             }
                                         } break;
