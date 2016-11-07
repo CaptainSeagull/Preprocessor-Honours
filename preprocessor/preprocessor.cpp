@@ -1339,7 +1339,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "/* Recreated structs. */\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = struct_data + struct_index;
-        write_to_output_buffer(&source_output, "typedef struct %S %S; struct %S", sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+        write_to_output_buffer(&source_output, "typedef struct %S %S;\nstruct %S", sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
         if(sd->inherited.len) {
             write_to_output_buffer(&source_output, " : public %S", sd->inherited.len, sd->inherited.e);
         }
@@ -1372,9 +1372,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
         write_to_output_buffer(&source_output, "MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
         for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
             Variable *md = sd->members + member_index;
-            write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+            write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
                                    md->type.len, md->type.e,
                                    md->name.len, md->name.e,
+                                   sd->inherited.len, sd->inherited.e,
                                    sd->name.len, sd->name.e,
                                    md->name.len, md->name.e,
                                    md->is_ptr,
@@ -1385,6 +1386,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     }
 
     // Function meta data.
+#if 0
     write_to_output_buffer(&source_output, "\n\n/* Function meta data. */\n");
     for(Int func_index = 0; (func_index < func_count); ++func_index) {
         FunctionData *fd = func_data + func_index;
@@ -1479,7 +1481,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
             }
         }
     }
-
+#endif
     // Serialize func stuff.
     write_to_output_buffer(&source_output, "\n\n");
 
@@ -1501,7 +1503,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 
     Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code, memory);
     write_to_output_buffer(&source_output, "%s", serialize_struct_implementation);
-
+#if 0
     // Serialize func.
     Char *serialize_func_implementation = "\n"
                                           "\n"
@@ -1525,6 +1527,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
                                           "    return(bytes_written);\n"
                                           "}\n";
     write_to_output_buffer(&source_output, serialize_func_implementation);
+#endif
 
     // # Guard stuff
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
@@ -1575,11 +1578,14 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&header_output, "/* Struct meta data. */\n\n");
     for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
         StructData *sd = &struct_data[struct_index];
-        write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n", sd->name.len, sd->name.e);
-        write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n", sd->name.len, sd->name.e);
-        write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n", sd->name.len, sd->name.e, sd->member_count);
+        write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n",
+                               sd->name.len, sd->name.e);
+        write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n",
+                               sd->name.len, sd->name.e);
+        write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n",
+                               sd->name.len, sd->name.e, sd->member_count);
     }
-
+#if 0
     // Function meta data.
     write_to_output_buffer(&header_output, "\n/* Function meta data. */\n\n");
 
@@ -1624,7 +1630,7 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
             }
         }
     }
-
+#endif
     // # Guard macro.
     write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
 

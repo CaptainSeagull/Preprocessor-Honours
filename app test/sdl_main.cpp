@@ -13,7 +13,12 @@
 int window_width = 640;
 int window_height = 480;
 
-struct V2 {
+class base_class
+{
+    int i = 0;
+};
+
+struct V2 : public base_class {
     int x;
     int y;
 };

@@ -5,17 +5,25 @@
 #include <assert.h>
 
 /* Recreated structs. */
-typedef struct V2 V2; struct V2 {
+typedef struct base_class base_class;
+struct base_class {
+    int i;
+};
+
+typedef struct V2 V2;
+struct V2 : public base_class {
     int x;
     int y;
 };
 
-typedef struct Transform Transform; struct Transform {
+typedef struct Transform Transform;
+struct Transform {
     V2 pos;
     V2 size;
 };
 
-typedef struct Ball Ball; struct Ball {
+typedef struct Ball Ball;
+struct Ball {
     char *name;
     V2 pos;
     int radius;
@@ -23,13 +31,15 @@ typedef struct Ball Ball; struct Ball {
     int direction;
 };
 
-typedef struct Paddle Paddle; struct Paddle {
+typedef struct Paddle Paddle;
+struct Paddle {
     char *name;
     Transform trans;
     int score;
 };
 
-typedef struct GameState GameState; struct GameState {
+typedef struct GameState GameState;
+struct GameState {
     Paddle right;
     Paddle left;
     Ball ball;
@@ -38,114 +48,40 @@ typedef struct GameState GameState; struct GameState {
 
 /* Struct meta data. */
 
+/* Meta data for: base_class. */
+MemberDefinition members_of_base_class[] = {
+    {meta_type_int, "i", "", (size_t)&((base_class *)0)->i, 0, 1},
+};
 /* Meta data for: V2. */
 MemberDefinition members_of_V2[] = {
-    {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
-    {meta_type_int, "y", (size_t)&((V2 *)0)->y, 0, 1},
+    {meta_type_int, "x", "base_class", (size_t)&((V2 *)0)->x, 0, 1},
+    {meta_type_int, "y", "base_class", (size_t)&((V2 *)0)->y, 0, 1},
 };
 /* Meta data for: Transform. */
 MemberDefinition members_of_Transform[] = {
-    {meta_type_V2, "pos", (size_t)&((Transform *)0)->pos, 0, 1},
-    {meta_type_V2, "size", (size_t)&((Transform *)0)->size, 0, 1},
+    {meta_type_V2, "pos", "", (size_t)&((Transform *)0)->pos, 0, 1},
+    {meta_type_V2, "size", "", (size_t)&((Transform *)0)->size, 0, 1},
 };
 /* Meta data for: Ball. */
 MemberDefinition members_of_Ball[] = {
-    {meta_type_char, "name", (size_t)&((Ball *)0)->name, 1, 1},
-    {meta_type_V2, "pos", (size_t)&((Ball *)0)->pos, 0, 1},
-    {meta_type_int, "radius", (size_t)&((Ball *)0)->radius, 0, 1},
-    {meta_type_int, "speed", (size_t)&((Ball *)0)->speed, 0, 1},
-    {meta_type_int, "direction", (size_t)&((Ball *)0)->direction, 0, 1},
+    {meta_type_char, "name", "", (size_t)&((Ball *)0)->name, 1, 1},
+    {meta_type_V2, "pos", "", (size_t)&((Ball *)0)->pos, 0, 1},
+    {meta_type_int, "radius", "", (size_t)&((Ball *)0)->radius, 0, 1},
+    {meta_type_int, "speed", "", (size_t)&((Ball *)0)->speed, 0, 1},
+    {meta_type_int, "direction", "", (size_t)&((Ball *)0)->direction, 0, 1},
 };
 /* Meta data for: Paddle. */
 MemberDefinition members_of_Paddle[] = {
-    {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
-    {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
-    {meta_type_int, "score", (size_t)&((Paddle *)0)->score, 0, 1},
+    {meta_type_char, "name", "", (size_t)&((Paddle *)0)->name, 1, 1},
+    {meta_type_Transform, "trans", "", (size_t)&((Paddle *)0)->trans, 0, 1},
+    {meta_type_int, "score", "", (size_t)&((Paddle *)0)->score, 0, 1},
 };
 /* Meta data for: GameState. */
 MemberDefinition members_of_GameState[] = {
-    {meta_type_Paddle, "right", (size_t)&((GameState *)0)->right, 0, 1},
-    {meta_type_Paddle, "left", (size_t)&((GameState *)0)->left, 0, 1},
-    {meta_type_Ball, "ball", (size_t)&((GameState *)0)->ball, 0, 1},
+    {meta_type_Paddle, "right", "", (size_t)&((GameState *)0)->right, 0, 1},
+    {meta_type_Paddle, "left", "", (size_t)&((GameState *)0)->left, 0, 1},
+    {meta_type_Ball, "ball", "", (size_t)&((GameState *)0)->ball, 0, 1},
 };
-
-
-/* Function meta data. */
-/* Meta data for: create_rect. */
-FunctionMetaData function_data_create_rect = {
-    0,
-    "SDL_Rect",
-    "create_rect",
-    4,
-    {
-        {"int", "x"},
-        {"int", "y"},
-        {"int", "w"},
-        {"int", "h"}
-    }
-};
-
-/* Meta data for: draw_paddle. */
-FunctionMetaData function_data_draw_paddle = {
-    0,
-    "void",
-    "draw_paddle",
-    2,
-    {
-        {"Paddle", "p"},
-        {"SDL_Surface", "surface"}
-    }
-};
-
-/* Meta data for: draw_ball. */
-FunctionMetaData function_data_draw_ball = {
-    0,
-    "void",
-    "draw_ball",
-    2,
-    {
-        {"Ball", "b"},
-        {"SDL_Surface", "surface"}
-    }
-};
-
-/* Meta data for: paddle_clicked. */
-FunctionMetaData function_data_paddle_clicked = {
-    0,
-    "bool",
-    "paddle_clicked",
-    3,
-    {
-        {"int", "x"},
-        {"int", "y"},
-        {"Paddle", "p"}
-    }
-};
-
-/* Meta data for: ball_clicked. */
-FunctionMetaData function_data_ball_clicked = {
-    0,
-    "bool",
-    "ball_clicked",
-    3,
-    {
-        {"int", "x"},
-        {"int", "y"},
-        {"Ball", "b"}
-    }
-};
-
-/* Meta data for: create_ball. */
-FunctionMetaData function_data_create_ball = {
-    0,
-    "Ball",
-    "create_ball",
-    0,
-    {
-
-    }
-};
-
 
 
 /* Function to serialize a struct to a char array buffer. */
@@ -219,6 +155,14 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
             default: {
                 switch(member->type) {
+                    case meta_type_base_class: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, base_class, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, base_class, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+
                     case meta_type_V2: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
@@ -266,26 +210,6 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
     return(bytes_written);
 }
-
-/* Function to serialize a function into a char buffer. */
-size_t
-serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)
-{
-    size_t bytes_written = 0;
-    int param_index = 0;
-
-    bytes_written = sprintf(buf, "Function %s\n    Linkage: %s\n    Return Type: %s\n    Param Count: %u\n",
-                            func.name, (func.linkage) ? func.linkage : "normal", func.ret_type, func.param_count);
-
-    for(param_index = 0; (param_index < func.param_count); ++param_index) {
-        Variable *param = func.params + param_index;
-        bytes_written += sprintf(buf + bytes_written, "        Param %u : %s %s\n", param_index + 1, param->ret_type, param->name);
-    }
-
-    assert(bytes_written <  buf_size);
-    return(bytes_written);
-}
-
 
 #define GENERATED_CPP
 #endif /* #if !defined(GENERATED_CPP) */

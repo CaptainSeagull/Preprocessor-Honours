@@ -11,6 +11,7 @@ typedef enum MetaType {
     meta_type_long,
     meta_type_float,
     meta_type_double,
+    meta_type_base_class,
     meta_type_V2,
     meta_type_Transform,
     meta_type_Ball,
@@ -19,6 +20,10 @@ typedef enum MetaType {
 } MetaType;
 
 /* Struct meta data. */
+
+/* Meta Data for: base_class */
+extern MemberDefinition members_of_base_class[];
+static size_t const num_members_for_base_class = 1;
 
 /* Meta Data for: V2 */
 extern MemberDefinition members_of_V2[];
@@ -40,21 +45,6 @@ static size_t const num_members_for_Paddle = 3;
 extern MemberDefinition members_of_GameState[];
 static size_t const num_members_for_GameState = 3;
 
-
-/* Function meta data. */
-
-/* Meta Data for: create_rect */
-extern FunctionMetaData function_data_create_rect;
-/* Meta Data for: draw_paddle */
-extern FunctionMetaData function_data_draw_paddle;
-/* Meta Data for: draw_ball */
-extern FunctionMetaData function_data_draw_ball;
-/* Meta Data for: paddle_clicked */
-extern FunctionMetaData function_data_paddle_clicked;
-/* Meta Data for: ball_clicked */
-extern FunctionMetaData function_data_ball_clicked;
-/* Meta Data for: create_ball */
-extern FunctionMetaData function_data_create_ball;
 
 
 #define GENERATED_H

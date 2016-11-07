@@ -5,6 +5,7 @@
 typedef struct MemberDefinition {
     int/*MetaType*/ type;
     char const *name;
+    char const *base_class; /* May be null. */
     size_t offset;
     int is_ptr;
     int arr_size;
@@ -22,25 +23,7 @@ typedef struct Variable {
 #define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)
 size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);
 
-#define MAX_NUMBER_OF_PARAMS (32)
-typedef struct FunctionMetaData {
-    char const *linkage;
-    char const *ret_type;
-    char const *name;
-    int param_count;
-    Variable params[MAX_NUMBER_OF_PARAMS];
-} FunctionMetaData;
 
-/* FunctionMetaData get_func_meta_data(function_name); */
-#define get_func_meta_data(func) function_data_##func
-#define get_method_meta_data__(macro, method) macro##method
-
-#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)
-size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);
-
-#define get_method_meta_data__(macro, method) macro##method
-#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)
-#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)
 
 #define STATIC_GENERATED
 #endif

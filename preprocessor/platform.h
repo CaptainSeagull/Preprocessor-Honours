@@ -305,6 +305,7 @@ get_static_file(void)
                 "typedef struct MemberDefinition {\n"
                 "    int/*MetaType*/ type;\n"
                 "    char const *name;\n"
+                "    char const *base_class; /* May be null. */\n"
                 "    size_t offset;\n"
                 "    int is_ptr;\n"
                 "    int arr_size;\n"
@@ -322,6 +323,7 @@ get_static_file(void)
                 "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
                 "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "\n"
+#if 0
                 "#define MAX_NUMBER_OF_PARAMS (32)\n"
                 "typedef struct FunctionMetaData {\n"
                 "    char const *linkage;\n"
@@ -330,7 +332,9 @@ get_static_file(void)
                 "    int param_count;\n"
                 "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
                 "} FunctionMetaData;\n"
+#endif
                 "\n"
+#if 0
                 "/* FunctionMetaData get_func_meta_data(function_name); */\n"
                 "#define get_func_meta_data(func) function_data_##func\n"
                 "#define get_method_meta_data__(macro, method) macro##method\n"
@@ -341,6 +345,7 @@ get_static_file(void)
                 "#define get_method_meta_data__(macro, method) macro##method\n"
                 "#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)\n"
                 "#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)\n"
+#endif
                 "\n"
                 "#define STATIC_GENERATED\n"
                 "#endif";
