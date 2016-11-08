@@ -221,22 +221,6 @@ pop_temp_memory(TempMemory *temp_memory)
     zero_memory_block(temp_memory, sizeof(*temp_memory));
 }
 
-#define push_struct_off_temp_memory(temp_memory, Type, ...) cast(Type *)push_off_temp_memory(temp_memory, sizeof(Type), ##__VA_ARGS__)
-#define push_array_off_temp_memory(temp_memory, Type, len, ...) cast(Type *)push_off_temp_memory(temp_memory, sizeof(Type) * len, ##__VA_ARGS__)
-internal Void *
-push_off_temp_memory(TempMemory *temp_memory, Int size, Int alignment = default_memory_alignment)
-{
-    assert((temp_memory) && (size));
-
-    Int alignment_offset = get_alignment_offset(temp_memory->block, temp_memory->used, alignment);
-    Void *res = temp_memory->block + temp_memory->used + alignment_offset;
-    assert(temp_memory->used + alignment_offset <= temp_memory->size);
-
-    temp_memory->used += size + alignment_offset;
-
-    return(res);
-}
-
 //
 // Utils.
 //
