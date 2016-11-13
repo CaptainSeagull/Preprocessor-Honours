@@ -140,7 +140,14 @@ main(Int argc, Char **argv)
     } else {
         PtrSize tot_size_of_all_files = 0;
 
-        for(Int file_index = 1; (file_index < argc); ++file_index) {
+        Bool write_to_file = true;
+        Int number_of_files = argc;
+        if(string_compare(argv[0], "-s")) {
+            write_to_file = false;
+            --number_of_files;
+        }
+
+        for(Int file_index = 1; (file_index < number_of_files); ++file_index) {
             tot_size_of_all_files += win32_get_file_size(argv[file_index]);
             ExtensionType type = get_extension_from_str(argv[file_index]);
             assert(type);
@@ -160,19 +167,21 @@ main(Int argc, Char **argv)
             Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
             AllFiles all_files = {};
-            for(Int file_index = 1; (file_index < argc); ++file_index) {
+            for(Int file_index = 1; (file_index < number_of_files); ++file_index) {
                 all_files.file[all_files.count++] = win32_read_entire_file_and_null_terminate(argv[file_index], &memory);
             }
 
             StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
 
-            char *static_file_data = get_static_file();
-            Int static_file_len = string_length(static_file_data);
-            Bool static_success = win32_write_to_file("static_generated.h", static_file_data, static_file_len);
+            if(write_to_file) {
+                char *static_file_data = get_static_file();
+                Int static_file_len = string_length(static_file_data);
+                Bool static_success = win32_write_to_file("static_generated.h", static_file_data, static_file_len);
 
-            Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
-            Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
-            assert((header_success) && (source_success));
+                Bool header_success = win32_write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
+                Bool source_success = win32_write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
+                assert((header_success) && (source_success));
+            }
 
             Bool mem_freed = VirtualFree(all_memory, 0, MEM_RELEASE) != 0;
             assert(mem_freed);

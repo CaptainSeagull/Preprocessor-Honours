@@ -255,6 +255,28 @@ string_length(Char *str)
     return(res);
 }
 
+internal Bool
+string_compare(Char *a, Char *b, Int len = 0)
+{
+    assert((a) && (b));
+
+    Bool res = true;
+
+    // TODO(Jonny): Hacky.
+    if(!len) {
+        len = string_length(a);
+    }
+
+    for(Int string_index = 0; (string_index < len); ++string_index) {
+        if(a[string_index] != b[string_index]) {
+            res = false;
+            break; // while
+        }
+    }
+
+    return(res);
+}
+
 enum ExtensionType {
     ExtensionType_unknown,
     ExtensionType_cpp,

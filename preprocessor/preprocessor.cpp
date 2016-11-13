@@ -331,23 +331,6 @@ token_to_string(Token token, Char *buffer, Int size)
 }
 
 internal Bool
-string_compare(Char *a, Char *b, Int len)
-{
-    assert((a) && (b) && (len > 0));
-
-    Bool res = true;
-
-    for(Int string_index = 0; (string_index < len); ++string_index) {
-        if(a[string_index] != b[string_index]) {
-            res = false;
-            break; // while
-        }
-    }
-
-    return(res);
-}
-
-internal Bool
 string_compare(String a, String b)
 {
     assert((a.len) && (b.len));
