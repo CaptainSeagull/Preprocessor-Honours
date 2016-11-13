@@ -275,6 +275,8 @@ enum TokenType {
     TokenType_close_bracket,
     TokenType_open_brace,
     TokenType_close_brace,
+    TokenType_open_angle_bracket,
+    TokenType_close_angle_bracket,
     TokenType_hash,
     TokenType_equals,
     TokenType_comma,
@@ -328,6 +330,27 @@ token_to_string(Token token, Char *buffer, Int size)
     }
 
     return(buffer);
+}
+
+internal Bool
+token_compare(Token a, Token b)
+{
+    assert((a.len) && (b.len));
+
+    Bool res = false;
+
+    if(a.len == b.len) {
+        res = true;
+
+        for(Int string_index = 0; (string_index < a.len); ++string_index) {
+            if(a.e[string_index] != b.e[string_index]) {
+                res = false;
+                break; // for
+            }
+        }
+    }
+
+    return(res);
 }
 
 internal Bool
@@ -517,21 +540,23 @@ get_token(Tokenizer *tokenizer)
     ++tokenizer->at;
 
     switch(c) {
-        case '\0': { res.type = TokenType_end_of_stream;  } break;
+        case '\0': { res.type = TokenType_end_of_stream;      } break;
 
-        case '(':  { res.type = TokenType_open_paren;     } break;
-        case ')':  { res.type = TokenType_close_param;    } break;
-        case ':':  { res.type = TokenType_colon;          } break;
-        case ';':  { res.type = TokenType_semi_colon;     } break;
-        case '*':  { res.type = TokenType_asterisk;       } break;
-        case '[':  { res.type = TokenType_open_bracket;   } break;
-        case ']':  { res.type = TokenType_close_bracket;  } break;
-        case '{':  { res.type = TokenType_open_brace;     } break;
-        case '}':  { res.type = TokenType_close_brace;    } break;
-        case '=':  { res.type = TokenType_equals;         } break;
-        case ',':  { res.type = TokenType_comma;          } break;
-        case '~':  { res.type = TokenType_tilde;          } break;
-        case '#':  { res.type = TokenType_hash;           } break;
+        case '(':  { res.type = TokenType_open_paren;          } break;
+        case ')':  { res.type = TokenType_close_param;         } break;
+        case ':':  { res.type = TokenType_colon;               } break;
+        case ';':  { res.type = TokenType_semi_colon;          } break;
+        case '*':  { res.type = TokenType_asterisk;            } break;
+        case '[':  { res.type = TokenType_open_bracket;        } break;
+        case ']':  { res.type = TokenType_close_bracket;       } break;
+        case '{':  { res.type = TokenType_open_brace;          } break;
+        case '}':  { res.type = TokenType_close_brace;         } break;
+        case '<':  { res.type = TokenType_open_angle_bracket;  } break;
+        case '>':  { res.type = TokenType_close_angle_bracket; } break;
+        case '=':  { res.type = TokenType_equals;              } break;
+        case ',':  { res.type = TokenType_comma;               } break;
+        case '~':  { res.type = TokenType_tilde;               } break;
+        case '#':  { res.type = TokenType_hash;                } break;
 
         case '.':  {
             Bool var_args = false;
@@ -634,7 +659,7 @@ token_equals(Token token, Char *str)
 
     Char *at = str;
     for(Int str_index = 0; (str_index < token.len); ++str_index, ++at) {
-        if((*at == '\0') == (*at == token.e[str_index])) {
+        if((*at == 0) == (*at == token.e[str_index])) {
             goto exit_func;
         }
     }
@@ -835,6 +860,33 @@ skip_to_matching_bracket(Tokenizer *tokenizer)
     }
 }
 
+internal Void
+parse_template(Tokenizer *tokenizer)
+{
+    assert(tokenizer);
+
+    {
+        Int brace_count = 1;
+        Token token = {};
+        Bool should_loop = true;
+        while(should_loop) {
+            token = get_token(tokenizer);
+            switch(token.type) {
+                case TokenType_close_angle_bracket: {
+                    --brace_count;
+                    if(!brace_count) {
+                        should_loop = false;
+                    }
+                } break;
+
+                case TokenType_open_angle_bracket: {
+                    ++brace_count;
+                } break;
+            }
+        }
+    }
+}
+
 internal Variable
 parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_token_type_2 = TokenType_unknown)
 {
@@ -872,6 +924,10 @@ parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_t
         }
     } else {
         res.array_count = 1;
+    }
+
+    if(token.type == TokenType_equals) {
+        eat_token(tokenizer); // TODO(Jonny): This won't work if a variable is assigned to a function.
     }
 
     return(res);
@@ -939,34 +995,39 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                             if(!is_func) {
                                 member_pos[res.member_count++] = token.e;
                             } else {
+                                // This is commented out because I'm not sure I really _need_ member functions...
+#if 0
                                 // TODO(Jonny): This fails for constructors (and probably destructors).
                                 if(inline_func) {
                                     skip_to_matching_bracket(&tokenizer_copy);
                                 }
 
-                                // Get member function name and return type.
-                                Tokenizer second_copy = *tokenizer;
-                                FunctionData fd = {};
-                                //fd.linkage = ;
-                                fd.ret_type = token_to_string(token);
-                                fd.name = token_to_string(get_token(&second_copy));
+                                if(!token_compare(token, name)) {
+                                    // Get member function name and return type.
+                                    Tokenizer second_copy = *tokenizer;
+                                    FunctionData fd = {};
+                                    //fd.linkage = ;
+                                    fd.ret_type = token_to_string(token);
+                                    fd.name = token_to_string(get_token(&second_copy));
 
-                                eat_token(&second_copy);
+                                    eat_token(&second_copy);
 
-                                // Parse the parameters.
-                                Token next = {};
-                                while(next.type != TokenType_close_param) {
-                                    fd.params[fd.param_count++] = parse_variable(&second_copy, TokenType_comma, TokenType_close_param);
+                                    // Parse the parameters.
+                                    Token next = peak_token(&second_copy);
+                                    while(next.type != TokenType_close_param) {
+                                        fd.params[fd.param_count++] = parse_variable(&second_copy, TokenType_comma, TokenType_close_param);
 
-                                    next = peak_token(&second_copy);
-                                    assert((next.type == TokenType_comma) || (next.type == TokenType_close_param));
-                                    if(next.type == TokenType_comma) {
-                                        eat_token(&second_copy);
+                                        next = peak_token(&second_copy);
+                                        assert((next.type == TokenType_comma) || (next.type == TokenType_close_param));
+                                        if(next.type == TokenType_comma) {
+                                            eat_token(&second_copy);
+                                        }
                                     }
-                                }
 
-                                // Now store the function data.
-                                res.func_data[res.func_count++] = fd;
+                                    // Now store the function data.
+                                    res.func_data[res.func_count++] = fd;
+                                }
+#endif
                             }
 
                             *tokenizer = tokenizer_copy;
@@ -975,10 +1036,12 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
                 }
             }
 
-            res.members = push_permanent_array(memory, Variable, res.member_count);
-            for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
-                Tokenizer fake_tokenizer = { member_pos[member_index] };
-                res.members[member_index] = parse_member(&fake_tokenizer);
+            if(res.member_count > 0) {
+                res.members = push_permanent_array(memory, Variable, res.member_count);
+                for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
+                    Tokenizer fake_tokenizer = { member_pos[member_index] };
+                    res.members[member_index] = parse_member(&fake_tokenizer);
+                }
             }
         }
     }
@@ -1564,53 +1627,55 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n#include <stdio.h>\n\n");
 
     // Write out meta types
-    TempMemory types_memory = push_temp_arr(memory, String, 256);
-    {
-        String *types = cast(String *)types_memory.block;
-        Int type_count = set_primitive_type(types);
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+    if(struct_count) {
+        TempMemory types_memory = push_temp_arr(memory, String, 256);
+        {
+            String *types = cast(String *)types_memory.block;
+            Int type_count = set_primitive_type(types);
+            for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+                StructData *sd = struct_data + struct_index;
 
-            if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
-                types[type_count++] = sd->name;
-            }
+                if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
+                    types[type_count++] = sd->name;
+                }
 
-            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                Variable *md = sd->members + member_index;
+                for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                    Variable *md = sd->members + member_index;
 
-                if(!is_meta_type_already_in_array(types, type_count, md->type)) {
-                    types[type_count++] = md->type;
+                    if(!is_meta_type_already_in_array(types, type_count, md->type)) {
+                        types[type_count++] = md->type;
+                    }
                 }
             }
+
+            write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
+            write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
+            for(Int type_index = 0; (type_index < type_count); ++type_index) {
+                String *type = types + type_index;
+                write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
+            }
+            write_to_output_buffer(&header_output, "} MetaType;\n\n");
         }
+        pop_temp_memory(&types_memory);
 
-        write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
-        write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
-        for(Int type_index = 0; (type_index < type_count); ++type_index) {
-            String *type = types + type_index;
-            write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
+        // Struct meta data.
+        write_to_output_buffer(&header_output, "/* Struct meta data. */\n\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = &struct_data[struct_index];
+            write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n",
+                                   sd->name.len, sd->name.e);
+            write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n",
+                                   sd->name.len, sd->name.e);
+
+            Int member_count = sd->member_count;
+            StructData *inherited = find_struct(sd->inherited, struct_data, struct_count);
+            if(inherited) {
+                member_count += inherited->member_count;
+            }
+
+            write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n",
+                                   sd->name.len, sd->name.e, member_count);
         }
-        write_to_output_buffer(&header_output, "} MetaType;\n\n");
-    }
-    pop_temp_memory(&types_memory);
-
-    // Struct meta data.
-    write_to_output_buffer(&header_output, "/* Struct meta data. */\n\n");
-    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-        StructData *sd = &struct_data[struct_index];
-        write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n",
-                               sd->name.len, sd->name.e);
-        write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n",
-                               sd->name.len, sd->name.e);
-
-        Int member_count = sd->member_count;
-        StructData *inherited = find_struct(sd->inherited, struct_data, struct_count);
-        if(inherited) {
-            member_count += inherited->member_count;
-        }
-
-        write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n",
-                               sd->name.len, sd->name.e, member_count);
     }
 #if 0
     // Function meta data.
@@ -1703,7 +1768,10 @@ start_parsing(AllFiles all_files, Memory *memory)
                     }
 
                     case TokenType_identifier: {
-                        if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
+                        if(token_equals(token, "template")) {
+                            eat_token(&tokenizer);
+                            parse_template(&tokenizer);
+                        } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
                             struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
 
                         } else if((token_equals(token, "union"))) {

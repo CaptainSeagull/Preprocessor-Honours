@@ -37,34 +37,48 @@ if "%TESTS%"=="true" (
     IF NOT EXIST "builds/win32_msvc" mkdir "builds/win32_msvc"
     pushd "builds/win32_msvc"            
     
-    if 1==0 (
-        rem Call preprocessor.
-        pushd "../../test_cpp"
-        "../builds/win32_msvc/preprocessor.exe" test_main.cpp test_file.cpp
-        popd
-        
-        REM Build test code.
-        cl -FeTestCPP -MTd %COMMON_COMPILER_FLAGS% -Wall "../../test_cpp/test_main.cpp" "../../test_cpp/test_file.cpp" "../../test_cpp/generated.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
-        
-        
-        rem Test code C
-        
-        rem Call preprocessor.
-        pushd "../../test_c"
-        "../builds/win32_msvc/preprocessor.exe" test_main.c
-        popd
-        
-        REM Build test code.
-        cl -TC -FeTestC -MTd %COMMON_COMPILER_FLAGS% -Wall "../../test_c/test_main.c" "../../test_c/generated.c" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
-    )
-
-    rem Test SDL.
-    
     rem Call preprocessor.
-    pushd "../../app test"
-    "../builds/win32_msvc/preprocessor.exe" sdl_main.cpp
-    popd
+    pushd "../../tests"
     
-    REM Build test code.
-    cl -FeTestSDL -MDd %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" "../../app test/generated.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib
+    "../builds/win32_msvc/preprocessor.exe" -s test0.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test1.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test2.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test3.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test4.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test5.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test6.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test7.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test8.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test9.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test10.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test11.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test12.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test13.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test14.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test15.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test16.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test17.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test18.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test19.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test20.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test21.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test22.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test23.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test24.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test25.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test26.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test27.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test28.cpp
+    
+    popd
 )
+
+rem Test SDL.
+
+rem Call preprocessor.
+pushd "../../app test"
+"../builds/win32_msvc/preprocessor.exe" sdl_main.cpp
+popd
+    
+REM Build test code.
+cl -FeTestSDL -MDd %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" "../../app test/generated.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib

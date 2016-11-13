@@ -141,19 +141,19 @@ main(Int argc, Char **argv)
         PtrSize tot_size_of_all_files = 0;
 
         Bool write_to_file = true;
-        Int number_of_files = argc;
-        if(string_compare(argv[0], "-s")) {
+        Int start_index = 1;
+        if(string_compare(argv[1], "-s")) {
             write_to_file = false;
-            --number_of_files;
+            ++start_index;
         }
 
-        for(Int file_index = 1; (file_index < number_of_files); ++file_index) {
+        for(Int file_index = start_index; (file_index < argc); ++file_index) {
             tot_size_of_all_files += win32_get_file_size(argv[file_index]);
             ExtensionType type = get_extension_from_str(argv[file_index]);
             assert(type);
         }
 
-        ExtensionType type = get_extension_from_str(argv[1]); // TODO(Jonny): Hacky, should probably pass it in.
+        ExtensionType type = get_extension_from_str(argv[start_index]); // TODO(Jonny): Hacky, should probably pass it in.
         assert(type);
 
         Int permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
@@ -167,7 +167,7 @@ main(Int argc, Char **argv)
             Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
             AllFiles all_files = {};
-            for(Int file_index = 1; (file_index < number_of_files); ++file_index) {
+            for(Int file_index = 1; (file_index < argc); ++file_index) {
                 all_files.file[all_files.count++] = win32_read_entire_file_and_null_terminate(argv[file_index], &memory);
             }
 
