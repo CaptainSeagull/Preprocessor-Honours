@@ -1102,31 +1102,12 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct)
 }
 
 internal Bool
-str_compare(String a, String b)
-{
-    Bool res = false;
-
-    if(a.len == b.len) {
-        res = true;
-
-        for(Int str_index = 0; (str_index < a.len); ++str_index) {
-            if(a.e[str_index] != b.e[str_index]) {
-                res = false;
-                break; // for
-            }
-        }
-    }
-
-    return(res);
-}
-
-internal Bool
 is_meta_type_already_in_array(String *array, Int len, String test)
 {
     Bool res = false;
 
     for(Int arr_index = 0; (arr_index < len); ++arr_index) {
-        if(str_compare(array[arr_index], test)) {
+        if(string_compare(array[arr_index], test)) {
             res = true;
             break; // for
         }
