@@ -19,7 +19,6 @@ struct Transform {
 
 typedef struct Ball Ball;
 struct Ball {
-    char *name;
     V2 pos;
     int radius;
     int speed;
@@ -28,7 +27,6 @@ struct Ball {
 
 typedef struct Paddle Paddle;
 struct Paddle : public Transform {
-    char *name;
     int score;
 };
 
@@ -54,7 +52,6 @@ MemberDefinition members_of_Transform[] = {
 };
 /* Meta data for: Ball. */
 MemberDefinition members_of_Ball[] = {
-    {meta_type_char, "name", (size_t)&((Ball *)0)->name, 1, 1},
     {meta_type_V2, "pos", (size_t)&((Ball *)0)->pos, 0, 1},
     {meta_type_int, "radius", (size_t)&((Ball *)0)->radius, 0, 1},
     {meta_type_int, "speed", (size_t)&((Ball *)0)->speed, 0, 1},
@@ -62,7 +59,6 @@ MemberDefinition members_of_Ball[] = {
 };
 /* Meta data for: Paddle. */
 MemberDefinition members_of_Paddle[] = {
-    {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
     {meta_type_int, "score", (size_t)&((Paddle *)0)->score, 0, 1},
     {meta_type_V2, "pos", (size_t)&((Paddle *)0)->pos, 0, 1},
     {meta_type_V2, "size", (size_t)&((Paddle *)0)->size, 0, 1},

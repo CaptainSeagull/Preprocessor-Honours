@@ -30,11 +30,11 @@ static size_t const num_members_for_Transform = 2;
 
 /* Meta Data for: Ball */
 extern MemberDefinition members_of_Ball[];
-static size_t const num_members_for_Ball = 5;
+static size_t const num_members_for_Ball = 4;
 
 /* Meta Data for: Paddle */
 extern MemberDefinition members_of_Paddle[];
-static size_t const num_members_for_Paddle = 4;
+static size_t const num_members_for_Paddle = 3;
 
 /* Meta Data for: GameState */
 extern MemberDefinition members_of_GameState[];

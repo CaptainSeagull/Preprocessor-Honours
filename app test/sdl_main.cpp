@@ -24,7 +24,6 @@ struct Transform {
 };
 
 struct Ball {
-    char const *name;
     V2 pos;
     int radius;
     int speed;
@@ -32,7 +31,6 @@ struct Ball {
 };
 
 struct Paddle : public Transform {
-    char const *name;
     int score;
 };
 
@@ -41,17 +39,6 @@ struct GameState {
     Paddle left;
     Ball ball;
 };
-
-SDL_Rect create_rect(int x, int y, int w, int h)
-{
-    SDL_Rect res;
-    res.x = x;
-    res.y = y;
-    res.w = w;
-    res.h = h;
-
-    return(res);
-}
 
 void draw_paddle(Paddle p, SDL_Surface *surface)
 {
@@ -103,7 +90,6 @@ Ball create_ball(void)
 {
     Ball res = {};
 
-    res.name = "Ball";
     res.radius = 40;
     res.speed = 0;
     res.direction = 0;
@@ -124,13 +110,11 @@ main(int argc, char **argv)
             if(surface) {
                 GameState game_state = {};
 
-                game_state.right.name = "Right";
                 game_state.right.pos.x = 600;
                 game_state.right.pos.y = 20;
                 game_state.right.size.x = 20;
                 game_state.right.size.y = 100;
 
-                game_state.left.name = "Left";
                 game_state.left.pos.x = 20;
                 game_state.left.pos.y = 20;
                 game_state.left.size.x = 20;
@@ -138,7 +122,7 @@ main(int argc, char **argv)
 
                 game_state.ball = create_ball();
 
-                SDL_Rect back = create_rect(0, 0, window_width, window_height);
+                SDL_Rect back = { 0, 0, window_width, window_height };
 
                 bool running = true;
                 SDL_Event event = {};

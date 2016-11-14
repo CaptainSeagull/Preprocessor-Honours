@@ -1752,61 +1752,60 @@ start_parsing(AllFiles all_files, Memory *memory)
     for(Int file_index = 0; (file_index < all_files.count); ++file_index) {
         Char *file = all_files.file[file_index];
 
-        if(file) {
-            Tokenizer tokenizer = { file };
+        Tokenizer tokenizer = { file };
 
-            Bool parsing = true;
-            while(parsing) {
-                Token token = get_token(&tokenizer);
-                switch(token.type) {
-                    case TokenType_end_of_stream: {
-                        parsing = false;
-                    } break;
+        Bool parsing = true;
+        while(parsing) {
+            Token token = get_token(&tokenizer);
+            switch(token.type) {
+                case TokenType_end_of_stream: {
+                    parsing = false;
+                } break;
 
-                    case TokenType_hash: {
-                        skip_to_end_of_line(&tokenizer);
-                    }
+                case TokenType_hash: {
+                    skip_to_end_of_line(&tokenizer);
+                }
 
-                    case TokenType_identifier: {
-                        if(token_equals(token, "template")) {
-                            eat_token(&tokenizer);
-                            parse_template(&tokenizer);
-                        } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
-                            struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
+                case TokenType_identifier: {
+                    // TODO(Jonny): I may need to keep the template header, so that the generated structs still work.
+                    if(token_equals(token, "template")) {
+                        eat_token(&tokenizer);
+                        parse_template(&tokenizer);
+                    } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
+                        struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
 
-                        } else if((token_equals(token, "union"))) {
-                            Token name = get_token(&tokenizer);
-                            union_data[union_count++] = token_to_string(name);
+                    } else if((token_equals(token, "union"))) {
+                        Token name = get_token(&tokenizer);
+                        union_data[union_count++] = token_to_string(name);
 
-                        } else if((token_equals(token, "enum"))) {
-                            Token name = get_token(&tokenizer);
-                            Bool is_enum_struct = false;
-                            if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
-                                is_enum_struct = true;
-                                name = get_token(&tokenizer);
+                    } else if((token_equals(token, "enum"))) {
+                        Token name = get_token(&tokenizer);
+                        Bool is_enum_struct = false;
+                        if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
+                            is_enum_struct = true;
+                            name = get_token(&tokenizer);
+                        }
+
+                        if(name.type == TokenType_identifier) {
+                            // If the enum has an underlying type, get it.
+                            Token underlying_type = {};
+                            Token next = get_token(&tokenizer);
+                            if(next.type == TokenType_colon) {
+                                underlying_type = get_token(&tokenizer);
+                                next = get_token(&tokenizer);
                             }
 
-                            if(name.type == TokenType_identifier) {
-                                // If the enum has an underlying type, get it.
-                                Token underlying_type = {};
-                                Token next = get_token(&tokenizer);
-                                if(next.type == TokenType_colon) {
-                                    underlying_type = get_token(&tokenizer);
-                                    next = get_token(&tokenizer);
-                                }
-
-                                if(next.type == TokenType_open_brace) {
-                                    enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct);
-                                }
-                            }
-                        } else {
-                            ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
-                            if(pfr.success) {
-                                func_data[func_count++] = pfr.func_data;
+                            if(next.type == TokenType_open_brace) {
+                                enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct);
                             }
                         }
-                    } break;
-                }
+                    } else {
+                        ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
+                        if(pfr.success) {
+                            func_data[func_count++] = pfr.func_data;
+                        }
+                    }
+                } break;
             }
         }
     }
