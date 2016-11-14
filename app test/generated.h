@@ -11,7 +11,6 @@ typedef enum MetaType {
     meta_type_long,
     meta_type_float,
     meta_type_double,
-    meta_type_base_class,
     meta_type_V2,
     meta_type_Transform,
     meta_type_Ball,
@@ -21,13 +20,9 @@ typedef enum MetaType {
 
 /* Struct meta data. */
 
-/* Meta Data for: base_class */
-extern MemberDefinition members_of_base_class[];
-static size_t const num_members_for_base_class = 1;
-
 /* Meta Data for: V2 */
 extern MemberDefinition members_of_V2[];
-static size_t const num_members_for_V2 = 3;
+static size_t const num_members_for_V2 = 2;
 
 /* Meta Data for: Transform */
 extern MemberDefinition members_of_Transform[];
@@ -39,7 +34,7 @@ static size_t const num_members_for_Ball = 5;
 
 /* Meta Data for: Paddle */
 extern MemberDefinition members_of_Paddle[];
-static size_t const num_members_for_Paddle = 3;
+static size_t const num_members_for_Paddle = 4;
 
 /* Meta Data for: GameState */
 extern MemberDefinition members_of_GameState[];

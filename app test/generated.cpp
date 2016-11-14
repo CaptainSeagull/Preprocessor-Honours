@@ -5,13 +5,8 @@
 #include <assert.h>
 
 /* Recreated structs. */
-typedef struct base_class base_class;
-struct base_class {
-    int i;
-};
-
 typedef struct V2 V2;
-struct V2 : public base_class {
+struct V2 {
     int x;
     int y;
 };
@@ -32,9 +27,8 @@ struct Ball {
 };
 
 typedef struct Paddle Paddle;
-struct Paddle {
+struct Paddle : public Transform {
     char *name;
-    Transform trans;
     int score;
 };
 
@@ -48,15 +42,10 @@ struct GameState {
 
 /* Struct meta data. */
 
-/* Meta data for: base_class. */
-MemberDefinition members_of_base_class[] = {
-    {meta_type_int, "i", (size_t)&((base_class *)0)->i, 0, 1},
-};
 /* Meta data for: V2. */
 MemberDefinition members_of_V2[] = {
     {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
     {meta_type_int, "y", (size_t)&((V2 *)0)->y, 0, 1},
-    {meta_type_int, "i", (size_t)&((V2 *)0)->i, 0, 1},
 };
 /* Meta data for: Transform. */
 MemberDefinition members_of_Transform[] = {
@@ -74,8 +63,9 @@ MemberDefinition members_of_Ball[] = {
 /* Meta data for: Paddle. */
 MemberDefinition members_of_Paddle[] = {
     {meta_type_char, "name", (size_t)&((Paddle *)0)->name, 1, 1},
-    {meta_type_Transform, "trans", (size_t)&((Paddle *)0)->trans, 0, 1},
     {meta_type_int, "score", (size_t)&((Paddle *)0)->score, 0, 1},
+    {meta_type_V2, "pos", (size_t)&((Paddle *)0)->pos, 0, 1},
+    {meta_type_V2, "size", (size_t)&((Paddle *)0)->size, 0, 1},
 };
 /* Meta data for: GameState. */
 MemberDefinition members_of_GameState[] = {
@@ -156,14 +146,6 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
             default: {
                 switch(member->type) {
-                    case meta_type_base_class: {
-                        if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, base_class, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                        } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, base_class, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                        }
-                    } break;
-
                     case meta_type_V2: {
                         if(member->is_ptr) {
                             bytes_written = serialize_struct_(**(char **)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);

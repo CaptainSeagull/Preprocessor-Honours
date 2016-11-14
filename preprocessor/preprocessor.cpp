@@ -310,7 +310,7 @@ struct String {
 internal String
 token_to_string(Token token)
 {
-    assert(token.type != TokenType_unknown);
+    assert(token.type);
 
     String res = {};
     res.e = token.e;

@@ -13,12 +13,7 @@
 int window_width = 640;
 int window_height = 480;
 
-class base_class
-{
-    int i = 0;
-};
-
-struct V2 : public base_class {
+struct V2 {
     int x;
     int y;
 };
@@ -36,9 +31,8 @@ struct Ball {
     int direction;
 };
 
-struct Paddle {
+struct Paddle : public Transform {
     char const *name;
-    Transform trans;
     int score;
 };
 
@@ -62,10 +56,10 @@ SDL_Rect create_rect(int x, int y, int w, int h)
 void draw_paddle(Paddle p, SDL_Surface *surface)
 {
     SDL_Rect rect = {};
-    rect.x = p.trans.pos.x;
-    rect.y = p.trans.pos.y;
-    rect.w = p.trans.size.x;
-    rect.h = p.trans.size.y;
+    rect.x = p.pos.x;
+    rect.y = p.pos.y;
+    rect.w = p.size.x;
+    rect.h = p.size.y;
 
     SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 255, 255, 255));
 }
@@ -84,8 +78,8 @@ void draw_ball(Ball b, SDL_Surface *surface)
 bool paddle_clicked(int x, int y, Paddle p)
 {
     bool res = false;
-    if((p.trans.pos.x < x) && (p.trans.pos.x + p.trans.size.x > x)) {
-        if ((p.trans.pos.y < y) && (p.trans.pos.y + p.trans.size.y > y)) {
+    if((p.pos.x < x) && (p.pos.x + p.size.x > x)) {
+        if ((p.pos.y < y) && (p.pos.y + p.size.y > y)) {
             res = true;
         }
     }
@@ -131,16 +125,16 @@ main(int argc, char **argv)
                 GameState game_state = {};
 
                 game_state.right.name = "Right";
-                game_state.right.trans.pos.x = 600;
-                game_state.right.trans.pos.y = 20;
-                game_state.right.trans.size.x = 20;
-                game_state.right.trans.size.y = 100;
+                game_state.right.pos.x = 600;
+                game_state.right.pos.y = 20;
+                game_state.right.size.x = 20;
+                game_state.right.size.y = 100;
 
                 game_state.left.name = "Left";
-                game_state.left.trans.pos.x = 20;
-                game_state.left.trans.pos.y = 20;
-                game_state.left.trans.size.x = 20;
-                game_state.left.trans.size.y = 100;
+                game_state.left.pos.x = 20;
+                game_state.left.pos.y = 20;
+                game_state.left.size.x = 20;
+                game_state.left.size.y = 100;
 
                 game_state.ball = create_ball();
 
@@ -186,6 +180,9 @@ main(int argc, char **argv)
                             }
                         }
 
+                        //
+                        // Serialize part.
+                        //
                         if(display_game_state) {
                             serialize_struct(game_state, GameState, buf, buf_size);
                         } else if(clicked) {
@@ -202,18 +199,21 @@ main(int argc, char **argv)
                             printf("\n%s\n", buf);
                             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Serialized", buf, 0);
                         }
+                        //
+                        //
+                        //
 
                         if(right_up) {
-                            game_state.right.trans.pos.y -= movement_speed;
+                            game_state.right.pos.y -= movement_speed;
                         }
                         if(right_down) {
-                            game_state.right.trans.pos.y += movement_speed;
+                            game_state.right.pos.y += movement_speed;
                         }
                         if(left_up) {
-                            game_state.left.trans.pos.y -= movement_speed;
+                            game_state.left.pos.y -= movement_speed;
                         }
                         if(left_down) {
-                            game_state.left.trans.pos.y += movement_speed;
+                            game_state.left.pos.y += movement_speed;
                         }
 
                         SDL_FillRect(surface, &back, SDL_MapRGB(surface->format, 0, 0, 0));
