@@ -253,7 +253,7 @@ write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
 internal OutputBuffer
 create_output_buffer(Int size, Memory *memory)
 {
-    assert((size > 0) && (memory));
+    assert((size) && (memory));
 
     OutputBuffer res = {};
     res.buffer = cast(Char *)push_permanent_memory(memory, size);
@@ -288,6 +288,8 @@ enum TokenType {
     TokenType_identifier,
     TokenType_string,
 
+    TokenType_error,
+
     TokenType_end_of_stream,
 };
 
@@ -312,9 +314,7 @@ token_to_string(Token token)
 {
     assert(token.type);
 
-    String res = {};
-    res.e = token.e;
-    res.len = token.len;
+    String res = { .e = token.e, .len = token.len }; // TODO(Jonny): Does this work in MSVC?
 
     return(res);
 }
@@ -389,7 +389,7 @@ eat_whitespace(Tokenizer *tokenizer)
             }
         } else if((tokenizer->at[0] == '/') && (tokenizer->at[1] == '*')) { // C comments.
             tokenizer->at += 2;
-            while((tokenizer->at[0] != '\0') && !((tokenizer->at[0] == '*') && (tokenizer->at[1] == '/'))) {
+            while((tokenizer->at[0]) && !((tokenizer->at[0] == '*') && (tokenizer->at[1] == '/'))) {
                 ++tokenizer->at;
             }
 
@@ -524,8 +524,6 @@ eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
     }
 }
 
-// TODO(Jonny): Parse var_args (...) as it's own Token.
-// TODO(Jonny): Parse #if 0 blocks as whitespace. Also the #else of #if 1 blocks should also be whitespace.
 internal Token
 get_token(Tokenizer *tokenizer)
 {
@@ -540,7 +538,7 @@ get_token(Tokenizer *tokenizer)
     ++tokenizer->at;
 
     switch(c) {
-        case '\0': { res.type = TokenType_end_of_stream;      } break;
+        case 0: { res.type = TokenType_end_of_stream;      } break;
 
         case '(':  { res.type = TokenType_open_paren;          } break;
         case ')':  { res.type = TokenType_close_param;         } break;
@@ -733,7 +731,7 @@ token_to_int(Token t)
 internal ResultInt
 string_to_int(Char *str)
 {
-    String string = {};
+    String string;
     string.e = str;
     string.len = string_length(str);
     ResultInt res = string_to_int(string);
@@ -807,7 +805,7 @@ is_stupid_class_keyword(Token t)
     assert(t.type != TokenType_unknown);
     Bool result = false;
 
-    Char *keywords[] = {"private", "public", "protected"};
+    Char *keywords[] = { "private", "public", "protected" };
     for(Int keyword_index = 0, num_keywords = array_count(keywords); (keyword_index < num_keywords); ++keyword_index) {
         if(string_compare(keywords[keyword_index], t.e, t.len)) {
             result = true;
@@ -865,24 +863,22 @@ parse_template(Tokenizer *tokenizer)
 {
     assert(tokenizer);
 
-    {
-        Int brace_count = 1;
-        Token token = {};
-        Bool should_loop = true;
-        while(should_loop) {
-            token = get_token(tokenizer);
-            switch(token.type) {
-                case TokenType_close_angle_bracket: {
-                    --brace_count;
-                    if(!brace_count) {
-                        should_loop = false;
-                    }
-                } break;
+    Int angle_bracket_count = 1;
+    Token token;
+    Bool should_loop = true;
+    while(should_loop) {
+        token = get_token(tokenizer);
+        switch(token.type) {
+            case TokenType_close_angle_bracket: {
+                --angle_bracket_count;
+                if(!angle_bracket_count) {
+                    should_loop = false;
+                }
+            } break;
 
-                case TokenType_open_angle_bracket: {
-                    ++brace_count;
-                } break;
-            }
+            case TokenType_open_angle_bracket: {
+                ++angle_bracket_count;
+            } break;
         }
     }
 }
@@ -926,6 +922,7 @@ parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_t
         res.array_count = 1;
     }
 
+    // Skip over any assignment at the end.
     if(token.type == TokenType_equals) {
         eat_token(tokenizer); // TODO(Jonny): This won't work if a variable is assigned to a function.
     }
@@ -1388,16 +1385,14 @@ find_struct(String str, StructData *structs, Int struct_count)
 }
 
 internal StuffToWrite
-write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count,
-           EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
+write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data,
+           Int func_count, EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
 {
     assert((memory) && (struct_data) && (func_data) && (enum_data) && (union_data));
 
     //
     // Source file.
     //
-    StuffToWrite res = {};
-
     OutputBuffer source_output = create_output_buffer(256 * 256, memory); // TODO(Jonny): Random size...
 
     write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <string.h>\n#include <assert.h>\n\n");
@@ -1616,9 +1611,6 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
     write_to_output_buffer(&source_output, "#endif /* #if !defined(GENERATED_CPP) */\n");
 
-    res.source_size = source_output.index;
-    res.source_data = source_output.buffer;
-
     //
     // Header file.
     //
@@ -1725,6 +1717,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 #endif
     // # Guard macro.
     write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
+
+    StuffToWrite res;
+    res.source_size = source_output.index;
+    res.source_data = source_output.buffer;
 
     res.header_size = header_output.index;
     res.header_data = header_output.buffer;
