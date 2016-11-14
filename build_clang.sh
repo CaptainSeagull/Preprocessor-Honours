@@ -9,8 +9,40 @@ clang++ -Wall "../../preprocessor/platform_linux.cpp" "../../preprocessor/prepro
 
 
 # Build CPP test.
-#pushd "../../test_cpp"
-#"../builds/linux_clang/preprocessor" test_main.cpp test_file.cpp
+pushd "../../tests"
+
+"../builds/linux_clang/preprocessor" -s test0.cpp
+"../builds/linux_clang/preprocessor" -s test1.cpp
+"../builds/linux_clang/preprocessor" -s test2.cpp
+"../builds/linux_clang/preprocessor" -s test3.cpp
+"../builds/linux_clang/preprocessor" -s test4.cpp
+"../builds/linux_clang/preprocessor" -s test5.cpp
+"../builds/linux_clang/preprocessor" -s test6.cpp
+"../builds/linux_clang/preprocessor" -s test7.cpp
+"../builds/linux_clang/preprocessor" -s test8.cpp
+"../builds/linux_clang/preprocessor" -s test9.cpp
+"../builds/linux_clang/preprocessor" -s test10.cpp
+"../builds/linux_clang/preprocessor" -s test11.cpp
+"../builds/linux_clang/preprocessor" -s test12.cpp
+"../builds/linux_clang/preprocessor" -s test13.cpp
+"../builds/linux_clang/preprocessor" -s test14.cpp
+"../builds/linux_clang/preprocessor" -s test15.cpp
+"../builds/linux_clang/preprocessor" -s test16.cpp
+"../builds/linux_clang/preprocessor" -s test17.cpp
+"../builds/linux_clang/preprocessor" -s test18.cpp
+"../builds/linux_clang/preprocessor" -s test19.cpp
+"../builds/linux_clang/preprocessor" -s test20.cpp
+"../builds/linux_clang/preprocessor" -s test21.cpp
+"../builds/linux_clang/preprocessor" -s test22.cpp
+"../builds/linux_clang/preprocessor" -s test23.cpp
+"../builds/linux_clang/preprocessor" -s test24.cpp
+"../builds/linux_clang/preprocessor" -s test25.cpp
+"../builds/linux_clang/preprocessor" -s test26.cpp
+"../builds/linux_clang/preprocessor" -s test27.cpp
+"../builds/linux_clang/preprocessor" -s test28.cpp
+
+popd
+
 #
 #clang++ -Wall "test_main.cpp" "test_file.cpp" "generated.cpp" -std=c++1y -o preprocessor_test_cpp -Wno-unused-variable -Wno-unused-function -Wno-switch -g
 #mv "./preprocessor_test_cpp" "../builds/linux_clang/preprocessor_test_cpp"

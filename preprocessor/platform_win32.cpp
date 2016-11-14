@@ -122,7 +122,7 @@ win32_write_to_file(Char *filename, Void *data, PtrSize data_size)
 }
 
 internal void
-write_to_console(char *str)
+win32_write_to_console(char *str)
 {
     HANDLE console_window = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD chars_written = 0;
@@ -136,10 +136,8 @@ int
 main(Int argc, Char **argv)
 {
     if(argc <= 1) {
-        write_to_console("Error: No parameters");
+        win32_write_to_console("Error: No parameters");
     } else {
-        PtrSize tot_size_of_all_files = 0;
-
         Bool write_to_file = true;
         Int start_index = 1;
         if(string_compare(argv[1], "-s")) {
@@ -147,6 +145,7 @@ main(Int argc, Char **argv)
             ++start_index;
         }
 
+        PtrSize tot_size_of_all_files = 0;
         for(Int file_index = start_index; (file_index < argc); ++file_index) {
             tot_size_of_all_files += win32_get_file_size(argv[file_index]);
             ExtensionType type = get_extension_from_str(argv[file_index]);
@@ -167,7 +166,7 @@ main(Int argc, Char **argv)
             Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
 
             AllFiles all_files = {};
-            for(Int file_index = 1; (file_index < argc); ++file_index) {
+            for(Int file_index = start_index; (file_index < argc); ++file_index) {
                 all_files.file[all_files.count++] = win32_read_entire_file_and_null_terminate(argv[file_index], &memory);
             }
 
