@@ -132,6 +132,7 @@ win32_write_to_console(char *str)
     assert((success) && (chars_written == len));
 }
 
+// TODO(Jonny): Copy Linux, and support passing invalid parameters.
 int
 main(Int argc, Char **argv)
 {
