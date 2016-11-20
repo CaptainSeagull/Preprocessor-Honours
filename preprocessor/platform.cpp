@@ -32,8 +32,7 @@ read_entire_file_and_null_terminate(Char *filename, Memory *memory)
         fseek(file, 0, SEEK_SET);
 
         res = push_file_memory(memory, size + 1);
-        PtrSize bytes_read = fread(res, 1, size, file);
-        //assert(bytes_read == size); // TODO(Jonny): Why does this fail on Windows??
+        fread(res, 1, size, file);
         fclose(file);
     }
 
