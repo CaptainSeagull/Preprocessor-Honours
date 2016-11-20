@@ -314,7 +314,7 @@ token_to_string(Token token)
 {
     assert(token.type);
 
-    String res = { .e = token.e, .len = token.len }; // TODO(Jonny): Does this work in MSVC?
+    String res = { token.e, token.len };
 
     return(res);
 }

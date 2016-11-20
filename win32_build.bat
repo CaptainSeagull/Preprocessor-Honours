@@ -21,54 +21,53 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %ENV
 rem Preprocessor.
 
 setlocal EnableDelayedExpansion
-set COMMON_COMPILER_FLAGS=-nologo -Gm- -GR- -EHa- -Od -Oi %COMMON_WARNINGS% -DINTERNAL=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
+set COMMON_COMPILER_FLAGS=-nologo -MDd -Gm- -GR- -EHa- -Od -Oi %COMMON_WARNINGS% -DINTERNAL=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 if "%RELEASE%"=="true" (
-    set COMMON_COMPILER_FLAGS=-nologo -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DINTERNAL=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
+    set COMMON_COMPILER_FLAGS=-nologo -MD -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DINTERNAL=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 )
 
 IF NOT EXIST "builds/win32_msvc" mkdir "builds/win32_msvc"
 pushd "builds/win32_msvc"
-cl -FePreprocessor %COMMON_COMPILER_FLAGS% -Wall "../../preprocessor/platform_win32.cpp" "../../preprocessor/preprocessor.cpp" -link -subsystem:console,5.2 -NODEFAULTLIB kernel32.lib
+cl -FePreprocessor %COMMON_COMPILER_FLAGS% -Wall "../../preprocessor/platform.cpp" "../../preprocessor/preprocessor.cpp" -link -subsystem:console,5.2 kernel32.lib
 popd
 
 rem Tests.
 if "%TESTS%"=="true" (
     rem Test code C++
     IF NOT EXIST "builds/win32_msvc" mkdir "builds/win32_msvc"
-    pushd "builds/win32_msvc"            
     
     rem Call preprocessor.
-    pushd "../../tests"
+    pushd "tests"
     
     "../builds/win32_msvc/preprocessor.exe" -s test0.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test1.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test2.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test3.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test4.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test5.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test6.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test7.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test8.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test9.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test10.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test11.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test12.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test13.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test14.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test15.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test16.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test17.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test18.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test19.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test20.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test21.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test22.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test23.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test24.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test25.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test26.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test27.cpp
-    "../builds/win32_msvc/preprocessor.exe" -s test28.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test1.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test2.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test3.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test4.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test5.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test6.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test7.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test8.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test9.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test10.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test11.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test12.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test13.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test14.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test15.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test16.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test17.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test18.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test19.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test20.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test21.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test22.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test23.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test24.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test25.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test26.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test27.cpp
+    rem "../builds/win32_msvc/preprocessor.exe" -s test28.cpp
     
     popd
 )
@@ -76,9 +75,9 @@ if "%TESTS%"=="true" (
 rem Test SDL.
 
 rem Call preprocessor.
-pushd "../../app test"
+pushd "app test"
 "../builds/win32_msvc/preprocessor.exe" sdl_main.cpp
 popd
     
 REM Build test code.
-cl -FeTestSDL -MDd %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" "../../app test/generated.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib
+rem cl -FeTestSDL %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" "../../app test/generated.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib
