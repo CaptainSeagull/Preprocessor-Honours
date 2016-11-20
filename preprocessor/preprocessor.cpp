@@ -1368,7 +1368,7 @@ attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 internal StructData *
 find_struct(String str, StructData *structs, Int struct_count)
 {
-    StructData *res = {};
+    StructData *res = 0;
 
     if(str.len) {
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
