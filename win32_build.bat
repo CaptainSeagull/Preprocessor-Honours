@@ -40,34 +40,34 @@ if "%TESTS%"=="true" (
     pushd "tests"
     
     "../builds/win32_msvc/preprocessor.exe" -s test0.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test1.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test2.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test3.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test4.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test5.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test6.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test7.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test8.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test9.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test10.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test11.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test12.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test13.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test14.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test15.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test16.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test17.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test18.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test19.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test20.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test21.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test22.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test23.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test24.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test25.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test26.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test27.cpp
-    rem "../builds/win32_msvc/preprocessor.exe" -s test28.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test1.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test2.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test3.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test4.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test5.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test6.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test7.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test8.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test9.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test10.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test11.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test12.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test13.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test14.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test15.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test16.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test17.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test18.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test19.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test20.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test21.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test22.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test23.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test24.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test25.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test26.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test27.cpp
+    "../builds/win32_msvc/preprocessor.exe" -s test28.cpp
     
     popd
 )
