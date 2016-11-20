@@ -1,6 +1,10 @@
 @echo off
 
 rem Variables to set.
+
+rem Version of Visual Studio to use.
+set VISUAL_STUDIO_VERSION=10.0
+
 rem Can be x86 or x64.
 set ENVIRONMENT=x86
 
@@ -16,7 +20,7 @@ set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4
 rem Build stuff.
 
 rem 32/64 bit builds.
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %ENVIRONMENT%
+call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%\VC\vcvarsall.bat" %ENVIRONMENT%
 
 rem Preprocessor.
 
