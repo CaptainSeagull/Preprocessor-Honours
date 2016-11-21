@@ -121,6 +121,35 @@ safe_free(Void *ptr)
     }
 }
 
+// TODO(Jonny): Not sure how much I like the template here...
+template <typename Type>
+struct Realloc {
+    Type *ptr;
+    Bool success;
+};
+
+#define safe_realloc(ptr, size, Type) safe_realloc_<Type>(ptr, size * sizeof(Type))
+
+template <typename Type>
+internal Realloc<Type>
+safe_realloc_(Void *ptr, PtrSize size)
+{
+    assert((ptr) && (size));
+
+    Realloc<Type> res = {};
+
+    res.ptr = cast(Type *)realloc(ptr, size);
+    if(res.ptr) {
+        res.success = true;
+    } else {
+        res.ptr = cast(Type *)ptr;
+        // Ran out of memory!
+    }
+
+    return(res);
+}
+
+
 // These are overloaded so I can mix and match malloc/new and free/delete.
 Void *operator new(size_t size)   { return(alloc(size)); }
 Void *operator new[](size_t size) { return(alloc(size)); }
@@ -2130,9 +2159,9 @@ start_parsing(AllFiles all_files)
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
                         if(struct_count + 1 >= struct_max) {
                             struct_max *= 2;
-                            StructData *p = cast(StructData *)realloc(struct_data, sizeof(StructData) * struct_max);
-                            if(p) {
-                                struct_data = p;
+                            auto r = safe_realloc(struct_data, struct_max, StructData);
+                            if(r.success) {
+                                struct_data = r.ptr;
                             } else {
                                 // Ran out of memory!
                             }
@@ -2145,12 +2174,18 @@ start_parsing(AllFiles all_files)
 
                         if(union_count + 1 >= union_max) {
                             union_max *= 2;
+                            auto r = safe_realloc(union_data, union_max, String);
+                            if(r.success) {
+                                union_data = r.ptr;
+                            }
+#if 0
                             String *p = cast(String *)realloc(union_data, sizeof(String) * union_max);
                             if(p) {
                                 union_data = p;
                             } else {
                                 // Ran out of memory!
                             }
+#endif
                         }
 
                         union_data[union_count++] = token_to_string(name);
