@@ -32,7 +32,7 @@ if "%RELEASE%"=="true" (
 
 IF NOT EXIST "builds/win32_msvc" mkdir "builds/win32_msvc"
 pushd "builds/win32_msvc"
-cl -FePreprocessor %COMMON_COMPILER_FLAGS% -Wall "../../preprocessor/platform.cpp" "../../preprocessor/preprocessor.cpp" -link -subsystem:console,5.2 kernel32.lib
+cl -FePreprocessor %COMMON_COMPILER_FLAGS% -Wall "../../preprocessor/preprocessor.cpp" -link -subsystem:console,5.2 kernel32.lib
 popd
 
 rem Tests.
