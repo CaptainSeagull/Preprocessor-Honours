@@ -56,13 +56,69 @@ typedef double Float64;
 
 #define cast(type) (type)
 
-#if INTERNAL
-    #define assert(Expression) do { persist Bool Ignore = false; if(!Ignore) { if(!(Expression)) { *cast(int volatile *)0 = 0; } } } while(0)
+#define array_count(arr) (sizeof(arr) / (sizeof((arr)[0])))
+
+//
+// Error stuff.
+//
+enum ErrorType {
+    ErrorType_ran_out_of_memory,
+    ErrorType_assert_failed,
+
+    ErrorType_count,
+};
+internal Char *
+ErrorTypeToString(ErrorType e)
+{
+#define error_case(_error) case _error: { res = #_error; } break;
+
+    Char *res = 0;
+    switch(e) {
+            error_case(ErrorType_ran_out_of_memory)
+            error_case(ErrorType_assert_failed)
+    }
+
+#undef error_case
+
+    return(res);
+}
+
+struct Error {
+    ErrorType type;
+    Char *file;
+    Char *func;
+    Int line;
+};
+
+global Int const error_max = 256;
+global Error global_errors[error_max] = {};
+global Int global_error_count = 0;
+
+#if ERROR_LOGGING
+    #define push_error(type) push_error_(type, cast(Char *)__FILE__, cast(Char *)__FUNCTION__, __LINE__)
 #else
-    #define assert(Expression) { /*Empty*/ }
+    #define push_error(type) {}
 #endif
 
-#define array_count(arr) (sizeof(arr) / (sizeof((arr)[0])))
+internal Void
+push_error_(ErrorType type, Char *file, Char *func, Int line)
+{
+    if(global_error_count + 1 < error_max) {
+        Error *e = global_errors + global_error_count;
+        e->type = type;
+        e->file = file;
+        e->func = func;
+        e->line = line;
+
+        ++global_error_count;
+    }
+}
+
+#if INTERNAL
+    #define assert(Expression, ...) do { persist Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
+#else
+    #define assert(Expression, ...) { if(!(Expression)) { push_error(ErrorType_assert_failed); } }
+#endif
 
 internal Uint32
 safe_truncate_size_64(Uint64 value)
@@ -106,8 +162,6 @@ alloc(PtrSize size)
     Void *res = malloc(size);
     if(res) {
         zero_memory_block(res, size);
-    } else {
-        // Ran out of memory!
     }
 
     return(res);
@@ -121,29 +175,19 @@ safe_free(Void *ptr)
     }
 }
 
-// TODO(Jonny): Not sure how much I like the template here...
-template <typename Type>
-struct Realloc {
-    Type *ptr;
-    Bool success;
-};
-
-#define safe_realloc(ptr, size, Type) safe_realloc_<Type>(ptr, size * sizeof(Type))
-
-template <typename Type>
-internal Realloc<Type>
-safe_realloc_(Void *ptr, PtrSize size)
+struct Realloc { Void *ptr; Bool success; };
+internal Realloc
+safe_realloc(Void *ptr, PtrSize size)
 {
     assert((ptr) && (size));
 
-    Realloc<Type> res = {};
+    Realloc res = {};
 
-    res.ptr = cast(Type *)realloc(ptr, size);
+    res.ptr = realloc(ptr, size);
     if(res.ptr) {
         res.success = true;
     } else {
-        res.ptr = cast(Type *)ptr;
-        // Ran out of memory!
+        res.ptr = ptr;
     }
 
     return(res);
@@ -449,6 +493,7 @@ float_to_string(Float value, Int dec_accuracy, Char *buf)
     return(buf);
 }
 
+
 internal Char *
 bool_to_string(Bool b)
 {
@@ -600,7 +645,7 @@ struct OutputBuffer {
 internal Void
 write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
 {
-    assert((ob) && (ob->buffer) && (ob->size > 0) && (ob->index < ob->size));
+    assert((ob) && (ob->buffer) && (ob->size) && (ob->index < ob->size));
     assert(format);
 
     va_list args;
@@ -617,9 +662,10 @@ create_output_buffer(Int size)
     OutputBuffer res = {};
     res.buffer = cast(Char *)alloc(size);
     if(!res.buffer) {
-        // Ran out of memory!
+        push_error(ErrorType_ran_out_of_memory);
+    } else {
+        res.size = size;
     }
-    res.size = size;
 
     return(res);
 }
@@ -1324,7 +1370,7 @@ parse_struct(Tokenizer *tokenizer)
             Int func_max = 256;
             res.func_data = new FunctionData[func_max];
             if(!res.func_data) {
-                // Ran out of memory!
+                push_error(ErrorType_ran_out_of_memory);
             }
 
             for(;;) {
@@ -1403,7 +1449,7 @@ parse_struct(Tokenizer *tokenizer)
             if(res.member_count > 0) {
                 res.members = new Variable[res.member_count];
                 if(!res.members) {
-                    // Ran out of memory!
+                    push_error(ErrorType_ran_out_of_memory);
                 }
 
                 for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
@@ -1749,6 +1795,9 @@ write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, I
     // Source file.
     //
     OutputBuffer source_output = create_output_buffer(256 * 256); // TODO(Jonny): Random size...
+    if(!source_output.buffer) {
+        // Error.
+    }
 
     write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <string.h>\n#include <assert.h>\n\n");
 
@@ -1921,7 +1970,7 @@ write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, I
     Int def_struct_code_size = 256 * 256;
     Char *def_struct_code = new Char[def_struct_code_size];
     if(!def_struct_code) {
-        // Ran out of memory!
+        push_error(ErrorType_ran_out_of_memory);
     } else {
         Int index = 0;
         index = copy_literal_to_char_buffer(def_struct_code, index, "switch(member->type) {\n");
@@ -1974,6 +2023,9 @@ write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, I
     // Header file.
     //
     OutputBuffer header_output = create_output_buffer(256 * 256);
+    if(!header_output.buffer) {
+        // Error
+    }
 
     write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n#include <stdio.h>\n\n");
 
@@ -1994,7 +2046,7 @@ write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, I
 
         String *types = new String[max_type_count];
         if(!types) {
-            // Ran out of memory!
+            push_error(ErrorType_ran_out_of_memory);
         }
 
         Int type_count = set_primitive_type(types);
@@ -2113,25 +2165,25 @@ start_parsing(AllFiles all_files)
     Int enum_max = 256, enum_count = 0;
     EnumData *enum_data = new EnumData[enum_max];
     if(!enum_data) {
-        // Ran out of memory!
+        push_error(ErrorType_ran_out_of_memory);
     }
 
     Int struct_max = 256, struct_count = 0;
     StructData *struct_data = new StructData[256];
     if(!struct_data) {
-        // Ran out of memory!
+        push_error(ErrorType_ran_out_of_memory);
     }
 
     Int union_max = 256, union_count = 0;
     String *union_data = new String[union_max];
     if(!union_data) {
-        // Ran out of memory!
+        push_error(ErrorType_ran_out_of_memory);
     }
 
     Int func_max = 256, func_count = 0;
     FunctionData *func_data = new FunctionData[func_max];
     if(!func_data) {
-        // Ran out of memory!
+        push_error(ErrorType_ran_out_of_memory);
     }
 
     for(Int file_index = 0; (file_index < all_files.count); ++file_index) {
@@ -2159,11 +2211,11 @@ start_parsing(AllFiles all_files)
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
                         if(struct_count + 1 >= struct_max) {
                             struct_max *= 2;
-                            auto r = safe_realloc(struct_data, struct_max, StructData);
+                            Realloc r = safe_realloc(struct_data, struct_max * sizeof(StructData));
                             if(r.success) {
-                                struct_data = r.ptr;
+                                struct_data = cast(StructData *)r.ptr;
                             } else {
-                                // Ran out of memory!
+                                push_error(ErrorType_ran_out_of_memory);
                             }
                         }
 
@@ -2174,18 +2226,12 @@ start_parsing(AllFiles all_files)
 
                         if(union_count + 1 >= union_max) {
                             union_max *= 2;
-                            auto r = safe_realloc(union_data, union_max, String);
+                            auto r = safe_realloc(union_data, union_max * sizeof(String));
                             if(r.success) {
-                                union_data = r.ptr;
-                            }
-#if 0
-                            String *p = cast(String *)realloc(union_data, sizeof(String) * union_max);
-                            if(p) {
-                                union_data = p;
+                                union_data = cast(String *)r.ptr;
                             } else {
-                                // Ran out of memory!
+                                push_error(ErrorType_ran_out_of_memory);
                             }
-#endif
                         }
 
                         union_data[union_count++] = token_to_string(name);
@@ -2214,7 +2260,7 @@ start_parsing(AllFiles all_files)
                                     if(p) {
                                         enum_data = p;
                                     } else {
-                                        // Ran out of memory!
+                                        push_error(ErrorType_ran_out_of_memory);
                                     }
                                 }
 
@@ -2231,7 +2277,7 @@ start_parsing(AllFiles all_files)
                                 if(p) {
                                     func_data = p;
                                 } else {
-                                    // Ran out of memory!
+                                    push_error(ErrorType_ran_out_of_memory);
                                 }
                             }
 
@@ -2252,6 +2298,8 @@ start_parsing(AllFiles all_files)
     return(res);
 }
 
+// TODO(Jonny): Allow the user to pass "-e" in, which means errors will be written to disk
+//              somewhere.
 Int
 main(Int argc, Char **argv)
 {
@@ -2317,6 +2365,22 @@ main(Int argc, Char **argv)
         }
     }
 
-    return(0);
+    Int res = 0;
+    if(global_error_count) {
+        res = 255;
+
+        printf("\n\nList of errors:\n");
+        for(Int error_index = 0; (error_index < global_error_count); ++error_index) {
+            Error *e = global_errors + error_index;
+
+            Char *error_type = ErrorTypeToString(e->type);
+
+            // TODO(Jonny): Write errors to disk.
+            printf("    Error %d:\n        Type = %s\n        File = %s\n        Function = %s\n        Line = %d\n",
+                   error_index, error_type, e->file, e->func, e->line);
+        }
+    }
+
+    return(res);
 }
 
