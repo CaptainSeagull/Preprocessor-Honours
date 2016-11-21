@@ -5,7 +5,7 @@ pushd "builds/linux_clang"
 
 
 # Build preprocessor
-clang++ -Wall "../../preprocessor/platform.cpp" "../../preprocessor/preprocessor.cpp" -std=c++1y -o preprocessor -DINTERNAL -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -g -ldl
+clang++ -Wall "../../preprocessor/preprocessor.cpp" -std=c++1y -o preprocessor -DINTERNAL -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -g -ldl
 
 
 # Tests.
