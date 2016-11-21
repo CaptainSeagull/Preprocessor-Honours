@@ -64,6 +64,7 @@ typedef double Float64;
 enum ErrorType {
     ErrorType_ran_out_of_memory,
     ErrorType_assert_failed,
+    ErrorType_no_parameters,
 
     ErrorType_count,
 };
@@ -74,8 +75,9 @@ ErrorTypeToString(ErrorType e)
 
     Char *res = 0;
     switch(e) {
-            error_case(ErrorType_ran_out_of_memory)
-            error_case(ErrorType_assert_failed)
+            error_case(ErrorType_ran_out_of_memory);
+            error_case(ErrorType_assert_failed);
+            error_case(ErrorType_no_parameters);
     }
 
 #undef error_case
@@ -2313,8 +2315,10 @@ start_parsing(AllFiles all_files)
 Int
 main(Int argc, Char **argv)
 {
+    Int res = 0;
+
     if(argc <= 1) {
-        printf("\nError: No parameters");
+        push_error(ErrorType_no_parameters);
     } else {
         Bool should_write_to_file = true;
         Bool should_log_errors = false;
@@ -2340,17 +2344,7 @@ main(Int argc, Char **argv)
                     }
                 } break;
             }
-#if 0
-            Int file_size = get_file_size(argv[file_index]);
-            if(file_size) {
-                tot_size_of_all_files += file_size;
-            } else {
-                printf("\nCould not find file: \"%s\"", argv[file_index]);
-            }
-#endif
         }
-
-
 
         if(tot_size_of_all_files) {
             Char *header_name = "generated.h";
@@ -2391,21 +2385,23 @@ main(Int argc, Char **argv)
                 }
             }
         }
-    }
 
-    Int res = 0;
-    if(global_error_count) {
-        res = 255;
+        if(global_error_count) {
+            res = 255;
 
-        printf("\n\nList of errors:\n");
-        for(Int error_index = 0; (error_index < global_error_count); ++error_index) {
-            Error *e = global_errors + error_index;
+            // TODO(Jonny): Maybe have 2 modes for logging errors. A more pedantic one for me (developer) and a simpler one for user?
+            if(should_log_errors) {
+                // TODO(Jonny): Write errors to disk.
+                printf("\n\nList of errors:\n");
+                for(Int error_index = 0; (error_index < global_error_count); ++error_index) {
+                    Error *e = global_errors + error_index;
 
-            Char *error_type = ErrorTypeToString(e->type);
+                    Char *error_type = ErrorTypeToString(e->type);
 
-            // TODO(Jonny): Write errors to disk.
-            printf("    Error %d:\n        Type = %s\n        File = %s\n        Function = %s\n        Line = %d\n",
-                   error_index, error_type, e->file, e->func, e->line);
+                    printf("    Error %d:\n        Type = %s\n        File = %s\n        Function = %s\n        Line = %d\n",
+                           error_index, error_type, e->file, e->func, e->line);
+                }
+            }
         }
     }
 
