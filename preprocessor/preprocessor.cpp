@@ -22,12 +22,10 @@
     #define _GNU_SOURCE
 #endif
 
-#include "stdio.h"
-#include "stdlib.h"
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <string.h>
 
 typedef uint64_t Uint64;
 typedef uint32_t Uint32;
@@ -102,136 +100,36 @@ zero_memory_block(Void *dest, PtrSize size)
     }
 }
 
-struct Memory {
-    Void *file_memory;
-    PtrSize file_index;
-    PtrSize file_size;
-
-    Void *permanent_memory;
-    PtrSize permanent_index;
-    PtrSize permanent_size;
-
-    Void *temp_memory;
-    PtrSize temp_index;
-    PtrSize temp_size;
-};
-
-internal Memory
-create_memory(Void *all_memory, PtrSize file_size, PtrSize permanent_size, PtrSize temp_size)
+internal Void *
+alloc(PtrSize size)
 {
-    assert((all_memory) && (file_size) && (permanent_size) && (temp_size));
-
-    zero_memory_block(all_memory, file_size + permanent_size + temp_size);
-
-    Memory res = {};
-    res.file_memory = all_memory;
-    res.file_size = file_size;
-
-    res.permanent_memory = cast(Char *)all_memory + file_size;
-    res.permanent_size = permanent_size;
-
-    res.temp_memory = cast(Char *)all_memory + file_size + permanent_size;
-    res.temp_size = temp_size;
-
-    return(res);
-}
-
-global Int default_memory_alignment = 4;
-
-internal Int
-get_alignment_offset(Void *memory, PtrSize index, Int desired_alignment = default_memory_alignment)
-{
-    assert(memory);
-
-    Int res = 0;
-
-    PtrSize result_pointer = cast(PtrSize)(cast(Char *)memory + index);
-    Int alignment_mask = desired_alignment - 1;
-    if(result_pointer & alignment_mask) {
-        res = desired_alignment - (result_pointer & alignment_mask);
+    Void *res = malloc(size);
+    if(res) {
+        zero_memory_block(res, size);
+    } else {
+        // Ran out of memory!
     }
 
     return(res);
 }
 
-internal Char *
-push_file_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
-{
-    assert((memory) && (size));
-
-    Int alignment_offset = get_alignment_offset(memory->file_memory, memory->file_index, alignment);
-    assert(memory->file_index + alignment_offset + size <= memory->file_size);
-
-    Char *res = cast(Char *)memory->file_memory + (memory->file_index + alignment_offset);
-
-    memory->file_index += size + alignment_offset;
-
-    return(res);
-}
-
-#define push_permanent_struct(memory, type, ...) cast(type *)push_permanent_memory(memory, sizeof(type), ##__VA_ARGS__)
-#define push_permanent_array(memory, type, len, ...) cast(type *)push_permanent_memory(memory, sizeof(type) * len, ##__VA_ARGS__)
-internal Void *
-push_permanent_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
-{
-    assert((memory) && (size));
-
-    Int alignment_offset = get_alignment_offset(memory->permanent_memory, memory->permanent_index, alignment);
-    assert(memory->permanent_index + alignment_offset + size <= memory->permanent_size);
-
-    Void *res = cast(Char *)memory->permanent_memory + (memory->permanent_index + alignment_offset);
-
-    memory->permanent_index += size + alignment_offset;
-
-    return(res);
-}
-
-struct TempMemory {
-    Memory *full_memory_block;
-    Char *block;
-    Int size;
-    Int used;
-    Int alignment_offset;
-};
-
-// Temp memory.
-#define push_temp_struct(memory, Type, ...) push_temp_memory(memory, sizeof(Type), ##__VA_ARGS__)
-#define push_temp_arr(memory, Type, len, ...) push_temp_memory(memory, sizeof(Type) * len, ##__VA_ARGS__)
-internal TempMemory
-push_temp_memory(Memory *memory, Int size, Int alignment = default_memory_alignment)
-{
-    assert((memory) && (size));
-
-    Int alignment_offset = get_alignment_offset(memory->temp_memory, memory->temp_index, alignment);
-    assert(memory->temp_index + alignment_offset + size <= memory->temp_size);
-
-    TempMemory res = {};
-    res.full_memory_block = memory;
-    res.alignment_offset = alignment_offset;
-    res.block = cast(Char *)memory->temp_memory + (memory->temp_index + res.alignment_offset);
-
-    res.size = size;
-    res.used = 0;
-    memory->temp_index += size + res.alignment_offset;
-    zero_memory_block(res.block, res.size);
-
-    return(res);
-}
-
 internal Void
-pop_temp_memory(TempMemory *temp_memory)
+safe_free(Void *ptr)
 {
-    assert(temp_memory);
-    assert((temp_memory->full_memory_block) && (temp_memory->block) && (temp_memory->size));
-
-    temp_memory->full_memory_block->temp_index -= temp_memory->size + temp_memory->alignment_offset;
-    zero_memory_block(temp_memory, sizeof(*temp_memory));
+    if(ptr) {
+        free(ptr);
+    }
 }
+
+// These are overloaded so I can mix and match malloc/new and free/delete.
+Void *operator new(size_t size)   { return(alloc(size)); }
+Void *operator new[](size_t size) { return(alloc(size)); }
+Void operator delete(Void *ptr)   { safe_free(ptr);      }
+Void operator delete[](Void *ptr) { safe_free(ptr);      }
 
 //
 // Utils.
 //
-
 internal Bool
 is_end_of_line(Char c)
 {
@@ -382,21 +280,26 @@ struct StuffToWrite {
     Void *source_data;
 };
 
-internal Char *
-read_entire_file_and_null_terminate(Char *filename, Memory *memory)
+struct File {
+    Char *data;
+    Int size;
+};
+
+internal File
+read_entire_file_and_null_terminate(Char *filename, Void *memory, Int index)
 {
     assert((filename) &&(memory));
 
-    Char *res = 0;
+    File res = {};
 
     FILE *file = fopen(filename, "r");
     if(file) {
         fseek(file, 0, SEEK_END);
-        PtrSize size = ftell(file);
+        res.size = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        res = push_file_memory(memory, size + 1);
-        fread(res, 1, size, file);
+        res.data = cast(Char *)memory + index;
+        fread(res.data, 1, res.size, file);
         fclose(file);
     }
 
@@ -678,12 +581,15 @@ write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
 }
 
 internal OutputBuffer
-create_output_buffer(Int size, Memory *memory)
+create_output_buffer(Int size)
 {
-    assert((size) && (memory));
+    assert(size);
 
     OutputBuffer res = {};
-    res.buffer = cast(Char *)push_permanent_memory(memory, size);
+    res.buffer = cast(Char *)alloc(size);
+    if(!res.buffer) {
+        // Ran out of memory!
+    }
     res.size = size;
 
     return(res);
@@ -1359,9 +1265,9 @@ parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_t
 
 // TODO(Jonny): This needs some way to ignore member functions.
 internal StructData
-parse_struct(Tokenizer *tokenizer, Memory *memory)
+parse_struct(Tokenizer *tokenizer)
 {
-    assert((tokenizer) && (memory));
+    assert(tokenizer);
 
     StructData res = {};
 
@@ -1386,7 +1292,12 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
 
             res.member_count = 0;
             Char *member_pos[256] = {};
-            res.func_data = push_permanent_array(memory, FunctionData, 32);
+            Int func_max = 256;
+            res.func_data = new FunctionData[func_max];
+            if(!res.func_data) {
+                // Ran out of memory!
+            }
+
             for(;;) {
                 Token token = get_token(tokenizer);
                 if((!is_stupid_class_keyword(token))) {
@@ -1461,7 +1372,11 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
             }
 
             if(res.member_count > 0) {
-                res.members = push_permanent_array(memory, Variable, res.member_count);
+                res.members = new Variable[res.member_count];
+                if(!res.members) {
+                    // Ran out of memory!
+                }
+
                 for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
                     Tokenizer fake_tokenizer = { member_pos[member_index] };
                     res.members[member_index] = parse_member(&fake_tokenizer);
@@ -1474,12 +1389,12 @@ parse_struct(Tokenizer *tokenizer, Memory *memory)
 }
 
 internal Char *
-get_serialize_struct_implementation(Char *def_struct_code, Memory *mem)
+get_serialize_struct_implementation(Char *def_struct_code)
 {
-    assert((def_struct_code) && (mem));
+    assert(def_struct_code);
 
-    Int res_size = 10000;
-    Char *res = cast(Char *)push_permanent_memory(mem, res_size);
+    Int res_size = 10000; // TODO(Jonny): Arbitrary size!
+    Char *res = new Char[res_size];
     if(res) {
         format_string(res, res_size,
                       "/* Function to serialize a struct to a char array buffer. */\n"
@@ -1591,6 +1506,8 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct)
 internal Bool
 is_meta_type_already_in_array(String *array, Int len, String test)
 {
+    assert(array);
+
     Bool res = false;
 
     for(Int arr_index = 0; (arr_index < len); ++arr_index) {
@@ -1603,36 +1520,21 @@ is_meta_type_already_in_array(String *array, Int len, String test)
     return(res);
 }
 
+char *primitive_types[] = {"char", "short", "int", "long", "float", "double"};
+
+#define get_num_of_primitive_types() array_count(primitive_types)
+
 internal Int
 set_primitive_type(String *array)
 {
     assert(array);
 
-    Int res = 0;
+    Int res = array_count(primitive_types);
 
-    array[res].e = "char";
-    array[res].len = string_length(array[res].e);
-    ++res;
-
-    array[res].e = "short";
-    array[res].len = string_length(array[res].e);
-    ++res;
-
-    array[res].e = "int";
-    array[res].len = string_length(array[res].e);
-    ++res;
-
-    array[res].e = "long";
-    array[res].len = string_length(array[res].e);
-    ++res;
-
-    array[res].e = "float";
-    array[res].len = string_length(array[res].e);
-    ++res;
-
-    array[res].e = "double";
-    array[res].len = string_length(array[res].e);
-    ++res;
+    for(int index = 0; (index < res); ++index) {
+        array[index].e = primitive_types[index];
+        array[index].len = string_length(primitive_types[index]);
+    }
 
     return(res);
 }
@@ -1641,8 +1543,7 @@ set_primitive_type(String *array)
 internal Int
 copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len)
 {
-    assert(buf);
-    assert((literal) && (literal_len));
+    assert((buf) && (literal) && (literal_len));
 
     buf += index;
 
@@ -1668,7 +1569,6 @@ get_default_struct_string(void)
 
     return(res);
 }
-
 
 internal void
 skip_to_end_of_line(Tokenizer *tokenizer)
@@ -1812,15 +1712,14 @@ find_struct(String str, StructData *structs, Int struct_count)
 }
 
 internal StuffToWrite
-write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionData *func_data,
-           Int func_count, EnumData *enum_data, Int enum_count, String *union_data, Int union_count)
+write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count)
 {
-    assert((memory) && (struct_data) && (func_data) && (enum_data) && (union_data));
+    assert((struct_data) && (func_data));
 
     //
     // Source file.
     //
-    OutputBuffer source_output = create_output_buffer(256 * 256, memory); // TODO(Jonny): Random size...
+    OutputBuffer source_output = create_output_buffer(256 * 256); // TODO(Jonny): Random size...
 
     write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <string.h>\n#include <assert.h>\n\n");
 
@@ -1991,8 +1890,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     write_to_output_buffer(&source_output, "\n\n");
 
     Int def_struct_code_size = 256 * 256;
-    Char *def_struct_code = cast(Char *)push_permanent_memory(memory, def_struct_code_size);
-    if(def_struct_code) {
+    Char *def_struct_code = new Char[def_struct_code_size];
+    if(!def_struct_code) {
+        // Ran out of memory!
+    } else {
         Int index = 0;
         index = copy_literal_to_char_buffer(def_struct_code, index, "switch(member->type) {\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -2006,8 +1907,10 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
         index = copy_literal_to_char_buffer(def_struct_code, index, "                }");
     }
 
-    Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code, memory);
+    Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code);
     write_to_output_buffer(&source_output, "%s", serialize_struct_implementation);
+    delete serialize_struct_implementation;
+
 #if 0
     // Serialize func.
     Char *serialize_func_implementation = "\n"
@@ -2041,43 +1944,63 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
     //
     // Header file.
     //
-    OutputBuffer header_output = create_output_buffer(256 * 256, memory);
+    OutputBuffer header_output = create_output_buffer(256 * 256);
 
     write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n#include <stdio.h>\n\n");
 
-    // Write out meta types
+    //
+    // MetaTypes enum.
+    //
     if(struct_count) {
-        TempMemory types_memory = push_temp_arr(memory, String, 256);
-        {
-            String *types = cast(String *)types_memory.block;
-            Int type_count = set_primitive_type(types);
-            for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-                StructData *sd = struct_data + struct_index;
+        // Get the absolute max number of meta types. This will be significantly bigger than the
+        // actual number of unique types...
+        Int max_type_count = get_num_of_primitive_types();
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            ++max_type_count;
 
-                if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
-                    types[type_count++] = sd->name;
-                }
-
-                for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                    Variable *md = sd->members + member_index;
-
-                    if(!is_meta_type_already_in_array(types, type_count, md->type)) {
-                        types[type_count++] = md->type;
-                    }
-                }
+            for(Int member_index = 0; (member_index < struct_data[struct_index].member_count); ++member_index) {
+                ++max_type_count;
             }
-
-            write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
-            write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
-            for(Int type_index = 0; (type_index < type_count); ++type_index) {
-                String *type = types + type_index;
-                write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
-            }
-            write_to_output_buffer(&header_output, "} MetaType;\n\n");
         }
-        pop_temp_memory(&types_memory);
 
+        String *types = new String[max_type_count];
+        if(!types) {
+            // Ran out of memory!
+        }
+
+        Int type_count = set_primitive_type(types);
+
+        // Fill out the enum meta type enum.
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
+                types[type_count++] = sd->name;
+            }
+
+            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                Variable *md = sd->members + member_index;
+
+                if(!is_meta_type_already_in_array(types, type_count, md->type)) {
+                    types[type_count++] = md->type;
+                }
+            }
+        }
+
+        // Write the meta type enum to file.
+        write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
+        write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
+        for(Int type_index = 0; (type_index < type_count); ++type_index) {
+            String *type = types + type_index;
+            write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
+        }
+        write_to_output_buffer(&header_output, "} MetaType;\n\n");
+
+        delete types;
+
+        //
         // Struct meta data.
+        //
         write_to_output_buffer(&header_output, "/* Struct meta data. */\n\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = &struct_data[struct_index];
@@ -2156,21 +2079,31 @@ write_data(Memory *memory, StructData *struct_data, Int struct_count, FunctionDa
 }
 
 StuffToWrite
-start_parsing(AllFiles all_files, Memory *memory)
+start_parsing(AllFiles all_files)
 {
-    assert(memory);
+    Int enum_max = 256, enum_count = 0;
+    EnumData *enum_data = new EnumData[enum_max];
+    if(!enum_data) {
+        // Ran out of memory!
+    }
 
-    EnumData *enum_data = push_permanent_array(memory, EnumData, 256);
-    Int enum_count = 0;
+    Int struct_max = 256, struct_count = 0;
+    StructData *struct_data = new StructData[256];
+    if(!struct_data) {
+        // Ran out of memory!
+    }
 
-    StructData *struct_data = push_permanent_array(memory, StructData, 256);
-    Int struct_count = 0;
+    Int union_max = 256, union_count = 0;
+    String *union_data = new String[union_max];
+    if(!union_data) {
+        // Ran out of memory!
+    }
 
-    String *union_data = push_permanent_array(memory, String,  256);
-    Int union_count = 0;
-
-    FunctionData *func_data = push_permanent_array(memory, FunctionData, 256);
-    Int func_count = 0;
+    Int func_max = 256, func_count = 0;
+    FunctionData *func_data = new FunctionData[func_max];
+    if(!func_data) {
+        // Ran out of memory!
+    }
 
     for(Int file_index = 0; (file_index < all_files.count); ++file_index) {
         Char *file = all_files.file[file_index];
@@ -2195,10 +2128,31 @@ start_parsing(AllFiles all_files, Memory *memory)
                         eat_token(&tokenizer);
                         parse_template(&tokenizer);
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
-                        struct_data[struct_count++] = parse_struct(&tokenizer, memory); // TODO(Jonny): This fails at a struct declared within a struct/union.
+                        if(struct_count + 1 >= struct_max) {
+                            struct_max *= 2;
+                            StructData *p = cast(StructData *)realloc(struct_data, sizeof(StructData) * struct_max);
+                            if(p) {
+                                struct_data = p;
+                            } else {
+                                // Ran out of memory!
+                            }
+                        }
+
+                        struct_data[struct_count++] = parse_struct(&tokenizer); // TODO(Jonny): This fails at a struct declared within a struct/union.
 
                     } else if((token_equals(token, "union"))) {
                         Token name = get_token(&tokenizer);
+
+                        if(union_count + 1 >= union_max) {
+                            union_max *= 2;
+                            String *p = cast(String *)realloc(union_data, sizeof(String) * union_max);
+                            if(p) {
+                                union_data = p;
+                            } else {
+                                // Ran out of memory!
+                            }
+                        }
+
                         union_data[union_count++] = token_to_string(name);
 
                     } else if((token_equals(token, "enum"))) {
@@ -2219,12 +2173,33 @@ start_parsing(AllFiles all_files, Memory *memory)
                             }
 
                             if(next.type == TokenType_open_brace) {
+                                if(enum_count + 1 >= enum_max) {
+                                    enum_max *= 2;
+                                    EnumData *p = cast(EnumData *)realloc(enum_data, sizeof(enum_data) * enum_max);
+                                    if(p) {
+                                        enum_data = p;
+                                    } else {
+                                        // Ran out of memory!
+                                    }
+                                }
+
                                 enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct);
                             }
                         }
                     } else {
+                        // This is a bit funny because functions don't have keyword to look for, like structs.
                         ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
                         if(pfr.success) {
+                            if(func_count + 1 > func_max) {
+                                func_max *= 2;
+                                FunctionData *p = cast(FunctionData *)realloc(func_data, sizeof(FunctionData) * func_max);
+                                if(p) {
+                                    func_data = p;
+                                } else {
+                                    // Ran out of memory!
+                                }
+                            }
+
                             func_data[func_count++] = pfr.func_data;
                         }
                     }
@@ -2233,9 +2208,11 @@ start_parsing(AllFiles all_files, Memory *memory)
         }
     }
 
-    StuffToWrite res = write_data(memory, struct_data, struct_count, func_data, func_count, enum_data, enum_count,
-                                  union_data, union_count);
+    StuffToWrite res = write_data(struct_data, struct_count, func_data, func_count);
 
+    delete union_data;
+    delete struct_data;
+    delete enum_data;
 
     return(res);
 }
@@ -2253,6 +2230,7 @@ main(Int argc, Char **argv)
             ++start_index;
         }
 
+        // Get the total amount of memory needed to store all files.
         PtrSize tot_size_of_all_files = 0;
         for(Int file_index = start_index; (file_index < argc); ++file_index) {
             Int file_size = get_file_size(argv[file_index]);
@@ -2271,21 +2249,23 @@ main(Int argc, Char **argv)
                 Char *header_name = "generated.h";
                 Char *source_name = cast(Char *)((type == ExtensionType_cpp) ? "generated.cpp" : "generated.c");
 
-                PtrSize permanent_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
-                PtrSize temp_size = 1024 * 1024; // TODO(Jonny): Arbitrary size.
-                Void *all_memory = malloc(permanent_size + temp_size + tot_size_of_all_files);
-                if(all_memory) {
-                    Memory memory = create_memory(all_memory, tot_size_of_all_files, permanent_size, temp_size);
-
+                Byte *file_memory = cast(Byte *)alloc(tot_size_of_all_files);
+                if(!file_memory) {
+                    // Ran out of memory!
+                } else {
                     AllFiles all_files = {};
+                    Int file_memory_index = 0;
                     for(Int file_index = start_index; (file_index < argc); ++file_index) {
-                        Char *file = read_entire_file_and_null_terminate(argv[file_index], &memory);
-                        if(file) {
-                            all_files.file[all_files.count++] = file;
+                        File file = read_entire_file_and_null_terminate(argv[file_index], cast(Byte *)file_memory, file_memory_index);
+                        if(file.data) {
+                            file_memory_index += file.size;
+                            all_files.file[all_files.count++] = file.data;
                         }
                     }
 
-                    StuffToWrite stuff_to_write = start_parsing(all_files, &memory);
+                    StuffToWrite stuff_to_write = start_parsing(all_files);
+
+                    delete file_memory;
 
                     char *static_file_data = get_static_file();
                     Int static_file_len = string_length(static_file_data);
@@ -2297,8 +2277,6 @@ main(Int argc, Char **argv)
                         Bool source_success = write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
                         assert((header_success) && (source_success));
                     }
-
-                    // TODO(Jonny): Unmap memory.
                 }
             }
         }
