@@ -255,25 +255,35 @@ string_compare(Char *a, Char *b, Int len = 0)
     return(res);
 }
 
-enum ExtensionType {
-    ExtensionType_unknown,
-    ExtensionType_cpp,
-    ExtensionType_c,
+enum SwitchType {
+    SwitchType_unknown,
+
+    SwitchType_silent,
+    SwitchType_log_errors,
+    SwitchType_source_file,
+
+    SwitchType_count,
 };
 
-internal ExtensionType
-get_extension_from_str(Char *str)
+internal SwitchType
+get_switch_type(Char *str)
 {
     assert(str);
 
-    ExtensionType res = ExtensionType_unknown;
+    SwitchType res = SwitchType_unknown;
 
     Int len = string_length(str);
     // TODO(Jonny): Do this properly...
-    if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
-        res = ExtensionType_c;
+    if(str[0] == '-') {
+        if(str[1] == 's') {
+            res = SwitchType_silent;
+        } else if(str[1] == 'e') {
+            res = SwitchType_log_errors;
+        }
+    } else if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
+        res = SwitchType_source_file;
     } else if((str[len - 1] == 'p') && (str[len - 2] == 'p') && (str[len - 3] == 'c') && (str[len - 4] == '.') ) {
-        res = ExtensionType_cpp;
+        res = SwitchType_source_file;
     }
 
     return(res);
@@ -2307,59 +2317,77 @@ main(Int argc, Char **argv)
         printf("\nError: No parameters");
     } else {
         Bool should_write_to_file = true;
-        Int start_index = 1;
-        if(string_compare(argv[1], "-s")) {
-            should_write_to_file = false;
-            ++start_index;
-        }
+        Bool should_log_errors = false;
 
         // Get the total amount of memory needed to store all files.
         PtrSize tot_size_of_all_files = 0;
-        for(Int file_index = start_index; (file_index < argc); ++file_index) {
+        Int number_of_files = 0;
+        for(Int file_index = 1; (file_index < argc); ++file_index) {
+            char *switch_name = argv[file_index];
+
+            SwitchType type = get_switch_type(switch_name);
+            switch(type) {
+                case SwitchType_silent:     { should_write_to_file = false; } break;
+                case SwitchType_log_errors: { should_log_errors = true;     } break;
+
+                case SwitchType_source_file: {
+                    Int file_size = get_file_size(switch_name);
+                    if(file_size) {
+                        tot_size_of_all_files += file_size;
+                        ++number_of_files;
+                    } else {
+                        // Error, couldn't find file.
+                    }
+                } break;
+            }
+#if 0
             Int file_size = get_file_size(argv[file_index]);
             if(file_size) {
                 tot_size_of_all_files += file_size;
             } else {
                 printf("\nCould not find file: \"%s\"", argv[file_index]);
             }
+#endif
         }
 
-        if(tot_size_of_all_files) {
-            ExtensionType type = get_extension_from_str(argv[start_index]); // TODO(Jonny): Hacky.
-            if(!type) {
-                printf("Error: Unknown file type for file \"%s\"", argv[start_index]);
-            } else {
-                Char *header_name = "generated.h";
-                Char *source_name = cast(Char *)((type == ExtensionType_cpp) ? "generated.cpp" : "generated.c");
 
-                Byte *file_memory = cast(Byte *)alloc(tot_size_of_all_files);
-                if(!file_memory) {
-                    // Ran out of memory!
-                } else {
-                    AllFiles all_files = {};
-                    Int file_memory_index = 0;
-                    for(Int file_index = start_index; (file_index < argc); ++file_index) {
-                        File file = read_entire_file_and_null_terminate(argv[file_index], cast(Byte *)file_memory, file_memory_index);
+
+        if(tot_size_of_all_files) {
+            Char *header_name = "generated.h";
+            Char *source_name = "generated.cpp";
+
+            Byte *file_memory = cast(Byte *)alloc(tot_size_of_all_files);
+            if(!file_memory) {
+                push_error(ErrorType_ran_out_of_memory);
+            } else {
+                AllFiles all_files = {};
+                Int file_memory_index = 0;
+                for(Int file_index = 1; (file_index < argc); ++file_index) {
+                    char *file_name = argv[file_index];
+
+                    SwitchType type = get_switch_type(file_name);
+                    if(type == SwitchType_source_file) {
+                        File file = read_entire_file_and_null_terminate(file_name, cast(Byte *)file_memory, file_memory_index);
                         if(file.data) {
                             file_memory_index += file.size;
                             all_files.file[all_files.count++] = file.data;
                         }
                     }
+                }
 
-                    StuffToWrite stuff_to_write = start_parsing(all_files);
+                StuffToWrite stuff_to_write = start_parsing(all_files);
 
-                    delete file_memory;
+                delete file_memory;
 
-                    char *static_file_data = get_static_file();
-                    Int static_file_len = string_length(static_file_data);
-                    if(should_write_to_file) {
-                        Bool static_success = write_to_file("static_generated.h", static_file_data, static_file_len);
-                        assert(static_success);
+                char *static_file_data = get_static_file();
+                Int static_file_len = string_length(static_file_data);
+                if(should_write_to_file) {
+                    Bool static_success = write_to_file("static_generated.h", static_file_data, static_file_len);
+                    assert(static_success);
 
-                        Bool header_success = write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
-                        Bool source_success = write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
-                        assert((header_success) && (source_success));
-                    }
+                    Bool header_success = write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
+                    Bool source_success = write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
+                    assert((header_success) && (source_success));
                 }
             }
         }
