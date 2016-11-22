@@ -23,6 +23,12 @@ typedef struct Variable {
 size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);
 
 
+/* char const *enum_to_string(EnumType, EnumType value); */
+#define enum_to_string(Type, v) enum_to_string_##Type(v)
+
+/* size_t get_number_of_enum_elements(EnumType); */
+#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
+
 
 #define STATIC_GENERATED
 #endif

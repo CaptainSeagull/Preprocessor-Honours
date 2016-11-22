@@ -190,5 +190,25 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
     return(bytes_written);
 }
 
+
+/* Enum meta data. */
+
+/* Meta Data for: Letters. */
+char const *
+enum_to_string_Letters(int v)
+{
+    char const *res = 0;
+    switch(v) {
+        case 0: { res = "letter_a"; } break;
+        case 1: { res = "letter_b"; } break;
+        case 2: { res = "letter_c"; } break;
+
+        default: { /* v is out of bounds. */ } break;
+    }
+
+    return(res);
+}
+
+
 #define GENERATED_CPP
 #endif /* #if !defined(GENERATED_CPP) */

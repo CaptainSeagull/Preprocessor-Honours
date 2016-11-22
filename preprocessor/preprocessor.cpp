@@ -9,18 +9,21 @@
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
 
-// TODO(Jonny):
-// Generate metadata for enums so they can be converted to strings.
-// Rewrite the union parser. I'm not sure if metadata for a union could really be generated, but possibly?
-// Build without crt and only link to kernel32.
-// Convert all the Char * string stuff to use the string struct.
-// I'll need some way to track overloaded functions, because this'll flop right now with them...
-// Make a slots/signal system.
-// Make a "lose" keyword. The use-case for this is write_to_output_buffer in preprocessor.cpp.
-
-#if !defined(_GNU_SOURCE)
-    #define _GNU_SOURCE
-#endif
+/* TODO(Jonny):
+    - Struct meta data.
+        - Multiple inheritance.
+    - Enum meta data.
+        - Way to find count.
+        - string_to_enum and enum_to_string functions.
+    - Union meta data.
+        - Similar to struct.
+    - Function meta data.
+        - Get param type as typedef and string.
+        - Get return type as typedef and string.
+    - References.
+    - Templates.
+    - Macros.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +45,6 @@ typedef void Void;
 typedef char Char;
 
 typedef Int32 Int; // Int guaranteed to be 32-bits.
-typedef Uint32 Uint;
 
 typedef Uint8 Byte;
 typedef intptr_t PtrSize;
@@ -65,22 +67,23 @@ enum ErrorType {
     ErrorType_ran_out_of_memory,
     ErrorType_assert_failed,
     ErrorType_no_parameters,
+    ErrorType_cannot_find_file,
 
     ErrorType_count,
 };
 internal Char *
 ErrorTypeToString(ErrorType e)
 {
-#define error_case(_error) case _error: { res = #_error; } break;
+#define error_macro(_error) _error: { res = #_error; }
 
     Char *res = 0;
     switch(e) {
-            error_case(ErrorType_ran_out_of_memory);
-            error_case(ErrorType_assert_failed);
-            error_case(ErrorType_no_parameters);
+        case error_macro(ErrorType_ran_out_of_memory) break;
+        case error_macro(ErrorType_assert_failed)     break;
+        case error_macro(ErrorType_no_parameters)     break;
     }
 
-#undef error_case
+#undef error_macro
 
     return(res);
 }
@@ -195,7 +198,6 @@ safe_realloc(Void *ptr, PtrSize size)
     return(res);
 }
 
-
 // These are overloaded so I can mix and match malloc/new and free/delete.
 Void *operator new(size_t size)   { return(alloc(size)); }
 Void *operator new[](size_t size) { return(alloc(size)); }
@@ -291,10 +293,10 @@ get_switch_type(Char *str)
     return(res);
 }
 
-internal char *
-get_static_file(void)
+internal Char *
+get_static_file(Void)
 {
-    char *res = "#if !defined(STATIC_GENERATED)\n"
+    Char *res = "#if !defined(STATIC_GENERATED)\n"
                 "\n"
                 "#include <stdio.h>\n"
                 "\n"
@@ -319,6 +321,12 @@ get_static_file(void)
                 "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
                 "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "\n"
+                "\n"
+                "/* char const *enum_to_string(EnumType, EnumType value); */\n"
+                "#define enum_to_string(Type, v) enum_to_string_##Type(v)\n"
+                "\n"
+                "/* size_t get_number_of_enum_elements(EnumType); */\n"
+                "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
 #if 0
                 "#define MAX_NUMBER_OF_PARAMS (32)\n"
                 "typedef struct FunctionMetaData {\n"
@@ -572,7 +580,7 @@ format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
                     } break;
 
                     case 'u': {
-                        Uint unsigned_int = va_arg(args, Uint);
+                        Uint32 unsigned_int = va_arg(args, Uint32);
                         Char temp_buffer_2[1024] = {};
                         replacement = int_to_string(unsigned_int, temp_buffer_2);
                     } break;
@@ -836,7 +844,7 @@ eat_whitespace(Tokenizer *tokenizer)
                             ++level;
 
                         } else if(string_compare(tokenizer->at, hash_end_if, hash_end_if_length)) {
-                            if(level != 0) {
+                            if(level) {
                                 --level;
                             } else {
                                 tokenizer->at += hash_end_if_length;
@@ -944,6 +952,28 @@ eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
     }
 }
 
+#if DO_NO_COMPILE
+
+enum Letters {
+    Letters_a,
+    Letters_b,
+    Letters_c,
+};
+
+char const *enum_to_string_Lettets(int value)
+{
+    char const *res = 0;
+    switch(value) {
+        case 0: { res = "Letters_a"; } break;
+        case 1: { res = "Letters_a"; } break;
+        case 2: { res = "Letters_a"; } break;
+    }
+
+    return(res);
+}
+
+#endif
+
 internal Token
 get_token(Tokenizer *tokenizer)
 {
@@ -958,7 +988,7 @@ get_token(Tokenizer *tokenizer)
     ++tokenizer->at;
 
     switch(c) {
-        case 0: { res.type = TokenType_end_of_stream;      } break;
+        case 0:    { res.type = TokenType_end_of_stream;       } break;
 
         case '(':  { res.type = TokenType_open_paren;          } break;
         case ')':  { res.type = TokenType_close_param;         } break;
@@ -1568,23 +1598,66 @@ get_serialize_struct_implementation(Char *def_struct_code)
     return(res);
 }
 
+struct EnumValue {
+    String name;
+    Int value;
+};
+
 struct EnumData {
     String name;
     String type;
     Bool is_struct;
+
+    EnumValue *values; // TODO(Jonny): Memory leak.
+    Int no_of_values;
 };
 
 internal EnumData
-add_token_to_enum(Token name, Token type, Bool is_enum_struct)
+add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokenizer)
 {
     assert(name.type == TokenType_identifier);
     assert((type.type == TokenType_identifier) || (type.type == TokenType_unknown));
+    assert(tokenizer);
 
+    Token token = {};
     EnumData res = {};
+
     res.is_struct = is_enum_struct;
     res.name = token_to_string(name);
     if(type.type == TokenType_identifier) {
         res.type = token_to_string(type);
+    }
+
+    Tokenizer copy = *tokenizer;
+    token = get_token(&copy);
+    while(token.type != TokenType_close_brace) {
+        if(token.type == TokenType_comma) {
+            ++res.no_of_values;
+        }
+
+        token = get_token(&copy);
+    }
+
+    if(res.no_of_values) {
+        ++res.no_of_values;
+    }
+
+
+    res.values = new EnumValue[res.no_of_values];
+    if(!res.values) {
+        push_error(ErrorType_ran_out_of_memory);
+    } else {
+        for(Int index = 0; (index < res.no_of_values); ++index) {
+            EnumValue *ev = res.values + index;
+
+            Token token = {};
+            while(token.type != TokenType_identifier) {
+                token = get_token(tokenizer);
+            }
+
+            ev->name = token_to_string(token);
+            ev->value = index; // TODO(Jonny): Doesn't work for enums with an assignment in them.
+        }
     }
 
     return(res);
@@ -1607,7 +1680,7 @@ is_meta_type_already_in_array(String *array, Int len, String test)
     return(res);
 }
 
-char *primitive_types[] = {"char", "short", "int", "long", "float", "double"};
+global Char *primitive_types[] = {"char", "short", "int", "long", "float", "double"};
 
 #define get_num_of_primitive_types() array_count(primitive_types)
 
@@ -1643,7 +1716,7 @@ copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_le
 }
 
 internal Char *
-get_default_struct_string(void)
+get_default_struct_string(Void)
 {
     Char *res = "                    case meta_type_%S: {\n"
                 "                        if(member->is_ptr) {\n"
@@ -1657,7 +1730,7 @@ get_default_struct_string(void)
     return(res);
 }
 
-internal void
+internal Void
 skip_to_end_of_line(Tokenizer *tokenizer)
 {
     while(*tokenizer->at != '\n') {
@@ -1799,7 +1872,7 @@ find_struct(String str, StructData *structs, Int struct_count)
 }
 
 internal StuffToWrite
-write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, Int func_count)
+write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count, FunctionData *func_data, Int func_count)
 {
     assert((struct_data) && (func_data));
 
@@ -2027,6 +2100,55 @@ write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, I
     write_to_output_buffer(&source_output, serialize_func_implementation);
 #endif
 
+    if(enum_count) {
+        write_to_output_buffer(&source_output, "\n\n\n/* Enum meta data. */");
+
+        Int buf_size = 255 * 255;
+        Char *buf = new Char[buf_size]; // Random size;
+        if(!buf) {
+            push_error(ErrorType_ran_out_of_memory);
+        } else {
+            for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
+                EnumData *ed = enum_data + enum_index;
+                zero_memory_block(buf, buf_size);
+
+                write_to_output_buffer(&source_output, "\n\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
+
+                char small_buf[1024] = {};
+                Int index = 0;
+
+                for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                    index += format_string(small_buf + index, array_count(small_buf) - index,
+                                           "        case %d: { res = \"%S\"; } break;\n",
+                                           ed->values[enum_value_index].value,
+                                           ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e);
+                }
+
+
+
+                Char *enum_to_string_base = "char const *\n"
+                                            "enum_to_string_%S(int v)\n"
+                                            "{\n"
+                                            "    char const *res = 0;\n"
+                                            "    switch(v) {\n"
+                                            "%s"
+                                            "\n"
+                                            "        default: { /* v is out of bounds. */ } break;\n"
+                                            "    }\n"
+                                            "\n"
+                                            "    return(res);\n"
+                                            "}\n";
+                Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
+                                                  ed->name.len, ed->name.e, small_buf);
+
+                write_to_output_buffer(&source_output, buf);
+
+            }
+
+            delete buf;
+        }
+    }
+
     // # Guard stuff
     write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
     write_to_output_buffer(&source_output, "#endif /* #if !defined(GENERATED_CPP) */\n");
@@ -2112,6 +2234,48 @@ write_data(StructData *struct_data, Int struct_count, FunctionData *func_data, I
                                    sd->name.len, sd->name.e, member_count);
         }
     }
+
+    //
+    // Enum meta data.
+    //
+    if(enum_count) {
+        write_to_output_buffer(&header_output, "\n\n/* Enum meta data. */\n");
+
+        for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
+            EnumData *ed = enum_data + enum_index;
+
+            char buf[1024] = {};
+            int bytes_written = format_string(buf, array_count(buf),
+                                              "\n/* Meta data for enum: %S. */\n",
+                                              ed->name.len, ed->name.e);
+            assert(bytes_written < array_count(buf));
+            write_to_output_buffer(&header_output, buf);
+
+
+            // Enum size.
+            {
+                zero_memory_block(buf, array_count(buf));
+                int bytes_written = format_string(buf, array_count(buf),
+                                                  "static size_t number_of_elements_in_enum_%S = %d;",
+                                                  ed->name.len, ed->name.e, ed->no_of_values);
+                assert(bytes_written < array_count(buf));
+
+                write_to_output_buffer(&header_output, buf);
+            }
+
+            // Enum to string.
+            {
+                zero_memory_block(buf, array_count(buf));
+                int bytes_written = format_string(buf, array_count(buf),
+                                                  "\nchar const *enum_to_string_%S(int v);\n",
+                                                  ed->name.len, ed->name.e);
+                assert(bytes_written < array_count(buf));
+
+                write_to_output_buffer(&header_output, buf);
+            }
+        }
+    }
+
 #if 0
     // Function meta data.
     write_to_output_buffer(&header_output, "\n/* Function meta data. */\n\n");
@@ -2276,7 +2440,7 @@ start_parsing(AllFiles all_files)
                                     }
                                 }
 
-                                enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct);
+                                enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
                             }
                         }
                     } else {
@@ -2301,7 +2465,7 @@ start_parsing(AllFiles all_files)
         }
     }
 
-    StuffToWrite res = write_data(struct_data, struct_count, func_data, func_count);
+    StuffToWrite res = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
 
     delete union_data;
     delete struct_data;
@@ -2327,7 +2491,7 @@ main(Int argc, Char **argv)
         PtrSize tot_size_of_all_files = 0;
         Int number_of_files = 0;
         for(Int file_index = 1; (file_index < argc); ++file_index) {
-            char *switch_name = argv[file_index];
+            Char *switch_name = argv[file_index];
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
@@ -2340,7 +2504,7 @@ main(Int argc, Char **argv)
                         tot_size_of_all_files += file_size;
                         ++number_of_files;
                     } else {
-                        // Error, couldn't find file.
+                        push_error(ErrorType_cannot_find_file);
                     }
                 } break;
             }
@@ -2357,7 +2521,7 @@ main(Int argc, Char **argv)
                 AllFiles all_files = {};
                 Int file_memory_index = 0;
                 for(Int file_index = 1; (file_index < argc); ++file_index) {
-                    char *file_name = argv[file_index];
+                    Char *file_name = argv[file_index];
 
                     SwitchType type = get_switch_type(file_name);
                     if(type == SwitchType_source_file) {
@@ -2373,7 +2537,7 @@ main(Int argc, Char **argv)
 
                 delete file_memory;
 
-                char *static_file_data = get_static_file();
+                Char *static_file_data = get_static_file();
                 Int static_file_len = string_length(static_file_data);
                 if(should_write_to_file) {
                     Bool static_success = write_to_file("static_generated.h", static_file_data, static_file_len);

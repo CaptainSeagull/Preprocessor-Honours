@@ -99,9 +99,21 @@ Ball create_ball(void)
     return(res);
 }
 
+enum Letters {
+    letter_a,
+    letter_b,
+    letter_c
+};
+
 int
 main(int argc, char **argv)
 {
+    char const *a = enum_to_string(Letters, letter_a);
+    char const *b = enum_to_string(Letters, letter_b);
+    char const *c = enum_to_string(Letters, letter_c);
+
+    int number_of_elements = get_number_of_enum_elements(Letters);
+
     if(SDL_Init(SDL_INIT_VIDEO) >= 0) {
         SDL_Window *win = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                            window_width, window_height, SDL_WINDOW_SHOWN);
