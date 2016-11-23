@@ -3,12 +3,13 @@
 
 #Overview
 
-This is a simple project in order to allow more complex meta programming in C/C++. The utility generates code, which should be included in the relavent .cpp file, which will allow more advanced introspection than C/C++ currently allows.
-Build instructions
+This is a simple project which aims to provide some meta programming functionality not currently in C++. The utility generates code, which should be included in the relevant .cpp file.
 
-Windows: Simple call the build.bat file from the command line (after calling vcvarsall.bat). This will generate the .exe, which should be completely portable (not even requiring the win32 crt).
+#Build instructions
 
-Linux: Instructions are very similar, but sadly I haven't had time to properly test them yet.
+Windows: Call win32_build.bat from the command line, which should generate the exe inside /builds/win32_msvc/.
+
+Linux: Call build_clang.sh from the command line This should generate the app file inside /builds/linux_clang/.
 
 Mac: N/A.
 
@@ -20,29 +21,22 @@ Any bugs, suggestions, complaints, or just general feedback, should be emailed t
 
 This software is dual-licensed to the public domain and under the following license: you are granted a perpetual, irrevocable license to copy, modify, publish, and distribute this file as you see fit.
 
-#Example
+#Examples
 
-Simply call the application with all the relevant files eg:
-```bash
-preprocessor main_file.cpp other_file.cpp
-```
-and that will generate 3 files, generated.h, generated.cpp, and static_generated.h.
-
-You should add generated.cpp into the list of files build, and in all the source files you should include generated.h. Then you can do something like the following:
-
+##Struct serialization
 ```C++
 #include "generated.h"
 
-struct Two {
+typedef struct Two {
     int c;
     int d;
-};
+} Two;
 
-struct One {
+typedef struct One {
     int a;
     int b;
     Two two;
-};
+} One;
 
 int main(int argc, char **argv)
 {
@@ -70,7 +64,56 @@ one
         int d = 4
 ```
 
-# Current Limitations
+##Enums
+```
+#include "generated.h"
+
+typedef enum Letters { Letter_a, Letter_b, Letter_c } Letters;
+
+int main(int argc, char **argv)
+{
+    Letters a = Letter_a;
+    Letters b = Letter_b;
+    Letters c = Letter_c;
+
+    /* Convert all the enum values to a string. */
+    char const *a_as_string = enum_to_string(Letters, a);
+    char const *b_as_string = enum_to_string(Letters, Letter_b);
+    char const *c_as_string = enum_to_string(Letters, 2);
+
+    printf("a = %s\n", a_as_string);
+    printf("b = %s\n", b_as_string);
+    printf("c = %s\n", c_as_string);
+
+    /* Print out the number of items in the enum. */
+    if(get_number_of_enum_elements(Letters) == 3) { printf("\nThe number of elements is 3!\n"); }
+
+    /* Convert the string back to a enum index. */
+    int num_a = string_to_enum(Letters, a_as_string);
+    int num_b = string_to_enum(Letters, "Letter_b");
+    int num_c = string_to_enum(Letters, c_as_string);
+
+    if(num_a == Letter_a) { printf("\nnum_a == Letter_a"); }
+    if(num_b == Letter_b) { printf("\nnum_b == Letter_b"); }
+    if(num_c == Letter_c) { printf("\nnum_c == Letter_c"); }
+
+    return(0);
+}
+```
+And the output would be:
+```
+a = Letter_a
+b = Letter_b
+c = Letter_c
+
+The number of elements is 3!
+
+num_a == Letter_a
+num_b == Letter_b
+num_c == Letter_c
+```
+
+#Current Limitations
 - Overloaded functions.
 - Structs with the same name (even in different files).
 - Inheritance.
