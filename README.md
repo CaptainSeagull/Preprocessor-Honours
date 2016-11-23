@@ -65,7 +65,7 @@ one
 ```
 
 ##Enums
-```
+```C++
 #include "generated.h"
 
 typedef enum Letters { Letter_a, Letter_b, Letter_c } Letters;
