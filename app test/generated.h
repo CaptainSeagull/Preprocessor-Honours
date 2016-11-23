@@ -47,6 +47,7 @@ static size_t const num_members_for_GameState = 3;
 /* Meta data for enum: Letters. */
 static size_t number_of_elements_in_enum_Letters = 3;
 char const *enum_to_string_Letters(int v);
+int string_to_enum_Letters(char const *str);
 
 
 #define GENERATED_H

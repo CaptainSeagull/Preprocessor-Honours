@@ -209,6 +209,16 @@ enum_to_string_Letters(int v)
     return(res);
 }
 
+int
+string_to_enum_Letters(char const *str)
+{
+    if(0) {}
+    else if(strcmp(str, "letter_a") == 0) { return(0); }
+    else if(strcmp(str, "letter_b") == 0) { return(1); }
+    else if(strcmp(str, "letter_c") == 0) { return(2); }
+    return(0);
+}
+
 
 #define GENERATED_CPP
 #endif /* #if !defined(GENERATED_CPP) */

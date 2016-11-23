@@ -325,6 +325,9 @@ get_static_file(Void)
                 "/* char const *enum_to_string(EnumType, EnumType value); */\n"
                 "#define enum_to_string(Type, v) enum_to_string_##Type(v)\n"
                 "\n"
+                "/* int string_to_enum(EnumType, char const *str); */\n"
+                "#define string_to_enum(Type, str) string_to_enum_##Type(str)\n"
+                "\n"
                 "/* size_t get_number_of_enum_elements(EnumType); */\n"
                 "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
 #if 0
@@ -960,7 +963,7 @@ enum Letters {
     Letters_c,
 };
 
-char const *enum_to_string_Lettets(int value)
+char const *enum_to_string_Letters(int value)
 {
     char const *res = 0;
     switch(value) {
@@ -968,6 +971,19 @@ char const *enum_to_string_Lettets(int value)
         case 1: { res = "Letters_a"; } break;
         case 2: { res = "Letters_a"; } break;
     }
+
+    return(res);
+}
+
+int
+string_to_enum_Letters(char const *str)
+{
+    int res = 0;
+    if(0) {}
+    else if(stncmp(str, "Letters_a") == 0) { res = 0; }
+    else if(stncmp(str, "Letters_b") == 0) { res = 1; }
+    else if(stncmp(str, "Letters_c") == 0) { res = 2; }
+
 
     return(res);
 }
@@ -2110,38 +2126,69 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         } else {
             for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
                 EnumData *ed = enum_data + enum_index;
-                zero_memory_block(buf, buf_size);
-
                 write_to_output_buffer(&source_output, "\n\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
 
-                char small_buf[1024] = {};
-                Int index = 0;
+                // enum_to_string.
+                {
+                    zero_memory_block(buf, buf_size);
+                    Char small_buf[1024] = {};
+                    Int index = 0;
 
-                for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
-                    index += format_string(small_buf + index, array_count(small_buf) - index,
-                                           "        case %d: { res = \"%S\"; } break;\n",
-                                           ed->values[enum_value_index].value,
-                                           ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e);
+                    for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                        index += format_string(small_buf + index, array_count(small_buf) - index,
+                                               "        case %d: { res = \"%S\"; } break;\n",
+                                               ed->values[enum_value_index].value,
+                                               ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e);
+                    }
+
+
+
+                    Char *enum_to_string_base = "char const *\n"
+                                                "enum_to_string_%S(int v)\n"
+                                                "{\n"
+                                                "    char const *res = 0;\n"
+                                                "    switch(v) {\n"
+                                                "%s"
+                                                "\n"
+                                                "        default: { /* v is out of bounds. */ } break;\n"
+                                                "    }\n"
+                                                "\n"
+                                                "    return(res);\n"
+                                                "}\n";
+                    Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
+                                                      ed->name.len, ed->name.e, small_buf);
+
+                    write_to_output_buffer(&source_output, buf);
                 }
 
+                write_to_output_buffer(&source_output, "\n");
 
+                // string_to_enum.
+                {
+                    zero_memory_block(buf, buf_size);
+                    Char small_buf[1024] = {};
+                    Int index = 0;
 
-                Char *enum_to_string_base = "char const *\n"
-                                            "enum_to_string_%S(int v)\n"
-                                            "{\n"
-                                            "    char const *res = 0;\n"
-                                            "    switch(v) {\n"
-                                            "%s"
-                                            "\n"
-                                            "        default: { /* v is out of bounds. */ } break;\n"
-                                            "    }\n"
-                                            "\n"
-                                            "    return(res);\n"
-                                            "}\n";
-                Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
-                                                  ed->name.len, ed->name.e, small_buf);
+                    for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                        index += format_string(small_buf + index, array_count(small_buf) - index,
+                                               "    else if(strcmp(str, \"%S\") == 0) { return(%d); }\n",
+                                               ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e,
+                                               ed->values[enum_value_index].value);
+                    }
 
-                write_to_output_buffer(&source_output, buf);
+                    Char *string_to_enum_base = "int\n"
+                                                "string_to_enum_%S(char const *str)\n"
+                                                "{\n"
+                                                "    if(0) {}\n"
+                                                "%s"
+                                                "    return(0);\n"
+                                                "}\n";
+
+                    Int bytes_written = format_string(buf, buf_size, string_to_enum_base,
+                                                      ed->name.len, ed->name.e, small_buf);
+
+                    write_to_output_buffer(&source_output, buf);
+                }
 
             }
 
@@ -2263,11 +2310,22 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 write_to_output_buffer(&header_output, buf);
             }
 
-            // Enum to string.
+            // enum_to_string.
             {
                 zero_memory_block(buf, array_count(buf));
                 int bytes_written = format_string(buf, array_count(buf),
                                                   "\nchar const *enum_to_string_%S(int v);\n",
+                                                  ed->name.len, ed->name.e);
+                assert(bytes_written < array_count(buf));
+
+                write_to_output_buffer(&header_output, buf);
+            }
+
+            // string_to_enum.
+            {
+                zero_memory_block(buf, array_count(buf));
+                int bytes_written = format_string(buf, array_count(buf),
+                                                  "int string_to_enum_%S(char const *str);\n",
                                                   ed->name.len, ed->name.e);
                 assert(bytes_written < array_count(buf));
 

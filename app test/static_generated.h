@@ -26,6 +26,9 @@ size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], ch
 /* char const *enum_to_string(EnumType, EnumType value); */
 #define enum_to_string(Type, v) enum_to_string_##Type(v)
 
+/* int string_to_enum(EnumType, char const *str); */
+#define string_to_enum(Type, str) string_to_enum_##Type(str)
+
 /* size_t get_number_of_enum_elements(EnumType); */
 #define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
 

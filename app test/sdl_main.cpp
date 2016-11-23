@@ -112,6 +112,11 @@ main(int argc, char **argv)
     char const *b = enum_to_string(Letters, letter_b);
     char const *c = enum_to_string(Letters, letter_c);
 
+    int num_a = string_to_enum(Letters, a);
+    int num_b = string_to_enum(Letters, b);
+    int num_c = string_to_enum(Letters, c);
+
+
     int number_of_elements = get_number_of_enum_elements(Letters);
 
     if(SDL_Init(SDL_INIT_VIDEO) >= 0) {
