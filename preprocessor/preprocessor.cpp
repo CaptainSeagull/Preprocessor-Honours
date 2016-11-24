@@ -294,7 +294,7 @@ get_switch_type(Char *str)
 }
 
 internal Char *
-get_static_file(Void)
+get_static_file()
 {
     Char *res = "#if !defined(STATIC_GENERATED)\n"
                 "\n"
@@ -1647,6 +1647,8 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
     Tokenizer copy = *tokenizer;
     token = get_token(&copy);
     while(token.type != TokenType_close_brace) {
+        // TODO(Jonny): It was stupid to count the number of commas. Instead, actually count
+        //              the number of enums.
         if(token.type == TokenType_comma) {
             ++res.no_of_values;
         }
@@ -1657,7 +1659,6 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
     if(res.no_of_values) {
         ++res.no_of_values;
     }
-
 
     res.values = new EnumValue[res.no_of_values];
     if(!res.values) {
@@ -1732,7 +1733,7 @@ copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_le
 }
 
 internal Char *
-get_default_struct_string(Void)
+get_default_struct_string()
 {
     Char *res = "                    case meta_type_%S: {\n"
                 "                        if(member->is_ptr) {\n"
@@ -2157,6 +2158,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                                 "}\n";
                     Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
                                                       ed->name.len, ed->name.e, small_buf);
+                    assert(bytes_written < buf_size);
 
                     write_to_output_buffer(&source_output, buf);
                 }
@@ -2184,8 +2186,8 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                                 "    return(0);\n"
                                                 "}\n";
 
-                    Int bytes_written = format_string(buf, buf_size, string_to_enum_base,
-                                                      ed->name.len, ed->name.e, small_buf);
+                    format_string(buf, buf_size, string_to_enum_base,
+                                  ed->name.len, ed->name.e, small_buf);
 
                     write_to_output_buffer(&source_output, buf);
                 }
