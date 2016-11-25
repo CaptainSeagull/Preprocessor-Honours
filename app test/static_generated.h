@@ -1,6 +1,8 @@
 #if !defined(STATIC_GENERATED)
 
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 typedef struct MemberDefinition {
     int/*MetaType*/ type;
@@ -19,8 +21,8 @@ typedef struct Variable {
 
 /* size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size); */
 #define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, #var, 0, buffer, buf_size, 0)
-#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)
-size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);
+#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, get_members_of_##type(), name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)
+static size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);
 
 
 /* char const *enum_to_string(EnumType, EnumType value); */
@@ -31,7 +33,6 @@ size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], ch
 
 /* size_t get_number_of_enum_elements(EnumType); */
 #define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
-
 
 #define STATIC_GENERATED
 #endif

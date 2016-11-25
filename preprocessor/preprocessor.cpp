@@ -299,6 +299,8 @@ get_static_file()
     Char *res = "#if !defined(STATIC_GENERATED)\n"
                 "\n"
                 "#include <stdio.h>\n"
+                "#include <string.h>\n"
+                "#include <assert.h>\n"
                 "\n"
                 "typedef struct MemberDefinition {\n"
                 "    int/*MetaType*/ type;\n"
@@ -318,8 +320,8 @@ get_static_file()
                 "\n"
                 "/* size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size); */\n"
                 "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, #var, 0, buffer, buf_size, 0)\n"
-                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
-                "size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
+                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, get_members_of_##type(), name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
+                "static size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "\n"
                 "\n"
                 "/* char const *enum_to_string(EnumType, EnumType value); */\n"
@@ -330,29 +332,6 @@ get_static_file()
                 "\n"
                 "/* size_t get_number_of_enum_elements(EnumType); */\n"
                 "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
-#if 0
-                "#define MAX_NUMBER_OF_PARAMS (32)\n"
-                "typedef struct FunctionMetaData {\n"
-                "    char const *linkage;\n"
-                "    char const *ret_type;\n"
-                "    char const *name;\n"
-                "    int param_count;\n"
-                "    Variable params[MAX_NUMBER_OF_PARAMS];\n"
-                "} FunctionMetaData;\n"
-#endif
-                "\n"
-#if 0
-                "/* FunctionMetaData get_func_meta_data(function_name); */\n"
-                "#define get_func_meta_data(func) function_data_##func\n"
-                "#define get_method_meta_data__(macro, method) macro##method\n"
-                "\n"
-                "#define serialize_function(func, buf, buf_size) serialize_function_(get_func_meta_data(func), buf, buf_size)\n"
-                "size_t serialize_function_(FunctionMetaData func, char *buf, size_t buf_size);\n"
-                "\n"
-                "#define get_method_meta_data__(macro, method) macro##method\n"
-                "#define get_method_meta_data_(macro, StructType, method) get_method_meta_data__(macro##StructType, method)\n"
-                "#define get_method_meta_data(StructType, method) get_method_meta_data_(method_data_, StructType, method)\n"
-#endif
                 "\n"
                 "#define STATIC_GENERATED\n"
                 "#endif";
@@ -1531,7 +1510,7 @@ get_serialize_struct_implementation(Char *def_struct_code)
     if(res) {
         format_string(res, res_size,
                       "/* Function to serialize a struct to a char array buffer. */\n"
-                      "size_t\n"
+                      "static size_t\n"
                       "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                       "{\n"
                       "    char indent_buf[256];\n"
@@ -1893,504 +1872,275 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 {
     assert((struct_data) && (func_data));
 
-    //
-    // Source file.
-    //
-    OutputBuffer source_output = create_output_buffer(256 * 256); // TODO(Jonny): Random size...
-    if(!source_output.buffer) {
-        // Error.
-    }
+    StuffToWrite res = {};
 
-    write_to_output_buffer(&source_output, "#if !defined(GENERATED_CPP)\n\n#include \"generated.h\"\n#include <string.h>\n#include <assert.h>\n\n");
-
-    // Recreated Structs.
-    write_to_output_buffer(&source_output, "/* Recreated structs. */\n");
-    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-        StructData *sd = struct_data + struct_index;
-        write_to_output_buffer(&source_output, "typedef struct %S %S;\nstruct %S", sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-        if(sd->inherited.len) {
-            write_to_output_buffer(&source_output, " : public %S", sd->inherited.len, sd->inherited.e);
-        }
-        write_to_output_buffer(&source_output, " {\n");
-
-        for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-            Variable *md = sd->members + member_index;
-            Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
-            Char arr_buffer[256] = {};
-            if(md->array_count > 1) {
-                format_string(arr_buffer, 256, arr, md->array_count);
-            }
-
-            write_to_output_buffer(&source_output, "    %S %s%S%s;\n",
-                                   md->type.len, md->type.e,
-                                   (md->is_ptr) ? "*" : "",
-                                   md->name.len, md->name.e,
-                                   (md->array_count > 1) ? arr_buffer : arr);
-
-        }
-
-        write_to_output_buffer(&source_output, "};\n\n", sd->name.len, sd->name.e);
-    }
-
-    // Struct Meta Data
-    write_to_output_buffer(&source_output, "\n/* Struct meta data. */\n\n");
-    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-        StructData *sd = struct_data + struct_index;
-
-        write_to_output_buffer(&source_output, "/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
-        write_to_output_buffer(&source_output, "MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
-        for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-            Variable *md = sd->members + member_index;
-            write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
-                                   md->type.len, md->type.e,
-                                   md->name.len, md->name.e,
-                                   sd->name.len, sd->name.e,
-                                   md->name.len, md->name.e,
-                                   md->is_ptr,
-                                   md->array_count);
-        }
-        if(sd->inherited.len) {
-            StructData *base_class = find_struct(sd->inherited, struct_data, struct_count);
-            assert(base_class);
-
-            for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
-                Variable *base_class_var = base_class->members + member_index;
-
-                write_to_output_buffer(&source_output, "    {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
-                                       base_class_var->type.len, base_class_var->type.e,
-                                       base_class_var->name.len, base_class_var->name.e,
-                                       sd->name.len, sd->name.e,
-                                       base_class_var->name.len, base_class_var->name.e,
-                                       base_class_var->is_ptr,
-                                       base_class_var->array_count);
-            }
-        }
-
-        write_to_output_buffer(&source_output, "};\n");
-    }
-
-    // Function meta data.
-#if 0
-    write_to_output_buffer(&source_output, "\n\n/* Function meta data. */\n");
-    for(Int func_index = 0; (func_index < func_count); ++func_index) {
-        FunctionData *fd = func_data + func_index;
-        write_to_output_buffer(&source_output, "/* Meta data for: %S. */\nFunctionMetaData function_data_%S = {\n",
-                               fd->name.len, fd->name.e, fd->name.len, fd->name.e);
-
-        Char buf[256] = {};
-
-        if(fd->linkage.len > 0) {
-            Char *meta_data = "    \"%S\",\n"
-                              "    \"%S\",\n"
-                              "    \"%S\",\n"
-                              "    %u,\n";
-            format_string(buf, array_count(buf), meta_data,
-                          fd->linkage.len, fd->linkage.e,
-                          fd->ret_type.len, fd->ret_type.e,
-                          fd->name.len, fd->name.e,
-                          fd->param_count);
-        } else {
-            Char *meta_data = "    0,\n"
-                              "    \"%S\",\n"
-                              "    \"%S\",\n"
-                              "    %u,\n";
-            format_string(buf, array_count(buf), meta_data,
-                          fd->ret_type.len, fd->ret_type.e,
-                          fd->name.len, fd->name.e,
-                          fd->param_count);
-        }
-
-        write_to_output_buffer(&source_output, buf);
-
-        write_to_output_buffer(&source_output, "    {\n");
-        for(Int param_index = 0; (param_index < fd->param_count); ++param_index) {
-            Variable *param = fd->params + param_index;
-            write_to_output_buffer(&source_output, "        {\"%S\", \"%S\"}", param->type.len, param->type.e, param->name.len, param->name.e);
-            if(param_index != fd->param_count - 1) {
-                write_to_output_buffer(&source_output, ",\n");
-            }
-        }
-
-        write_to_output_buffer(&source_output, "\n    }\n};\n\n");
-    }
-
-    // Method meta data.
-    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-        StructData *sd = struct_data + struct_index;
-
-        if(sd->func_count) {
-            write_to_output_buffer(&source_output, "// %S's methods.", sd->name.len, sd->name.e);
-
-            for(Int method_index = 0; (method_index < sd->func_count); ++method_index) {
-                FunctionData *md = sd->func_data + method_index;
-
-                write_to_output_buffer(&source_output, "\nFunctionMetaData method_data_%S%S = {\n",
-                                       sd->name.len, sd->name.e,
-                                       md->name.len, md->name.e);
-                Char buf[1024] = {};
-                if(md->linkage.len) {
-                    Char *meta_data = "    \"%S\",\n"
-                                      "    \"%S\",\n"
-                                      "    \"%S\",\n"
-                                      "    %u,\n";
-                    format_string(buf, array_count(buf), meta_data,
-                                  md->linkage.len, md->linkage.e,
-                                  md->ret_type.len, md->ret_type.e,
-                                  md->name.len, md->name.e,
-                                  md->param_count);
-                } else {
-                    Char *meta_data = "    0,\n"
-                                      "    \"%S\",\n"
-                                      "    \"%S\",\n"
-                                      "    %u,\n";
-                    format_string(buf, array_count(buf), meta_data,
-                                  md->ret_type.len, md->ret_type.e,
-                                  md->name.len, md->name.e,
-                                  md->param_count);
-                }
-
-                write_to_output_buffer(&source_output, buf);
-
-                write_to_output_buffer(&source_output, "    {\n");
-                for(Int param_index = 0; (param_index < md->param_count); ++param_index) {
-                    Variable *param = md->params + param_index;
-
-                    write_to_output_buffer(&source_output, "        {\"%S\", \"%S\"}", param->type.len, param->type.e, param->name.len, param->name.e);
-                    if(param_index != md->param_count - 1) {
-                        write_to_output_buffer(&source_output, ",\n");
-                    }
-                }
-
-                write_to_output_buffer(&source_output, "\n    }\n};\n\n");
-            }
-        }
-    }
-#endif
-    // Serialize func stuff.
-    write_to_output_buffer(&source_output, "\n\n");
-
-    Int def_struct_code_size = 256 * 256;
-    Char *def_struct_code = new Char[def_struct_code_size];
-    if(!def_struct_code) {
-        push_error(ErrorType_ran_out_of_memory);
-    } else {
-        Int index = 0;
-        index = copy_literal_to_char_buffer(def_struct_code, index, "switch(member->type) {\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
-            Char *DefaultStructString = get_default_struct_string();
-            index += format_string(def_struct_code + index, def_struct_code_size, DefaultStructString,
-                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-        }
-
-        index = copy_literal_to_char_buffer(def_struct_code, index, "                }");
-    }
-
-    Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code);
-    write_to_output_buffer(&source_output, "%s", serialize_struct_implementation);
-    delete serialize_struct_implementation;
-
-#if 0
-    // Serialize func.
-    Char *serialize_func_implementation = "\n"
-                                          "\n"
-                                          "/* Function to serialize a function into a char buffer. */\n"
-                                          "size_t\n"
-                                          "serialize_function_(FunctionMetaData func, char *buf, size_t buf_size)\n"
-                                          "{\n"
-                                          "    size_t bytes_written = 0;\n"
-                                          "    int param_index = 0;\n"
-                                          "\n"
-                                          "    bytes_written = sprintf(buf, \"Function %%s\\n    Linkage: %%s\\n    Return Type: %%s\\n    Param Count: %%u\\n\",\n"
-                                          "                            func.name, (func.linkage) ? func.linkage : \"normal\", func.ret_type, func.param_count);\n"
-                                          "\n"
-                                          "    for(param_index = 0; (param_index < func.param_count); ++param_index) {\n"
-                                          "        Variable *param = func.params + param_index;\n"
-                                          ""
-                                          "        bytes_written += sprintf(buf + bytes_written, \"        Param %%u : %%s %%s\\n\", param_index + 1, param->ret_type, param->name);\n"
-                                          "    }\n"
-                                          "\n"
-                                          "    assert(bytes_written <  buf_size);\n"
-                                          "    return(bytes_written);\n"
-                                          "}\n";
-    write_to_output_buffer(&source_output, serialize_func_implementation);
-#endif
-
-    if(enum_count) {
-        write_to_output_buffer(&source_output, "\n\n\n/* Enum meta data. */");
-
-        Int buf_size = 255 * 255;
-        Char *buf = new Char[buf_size]; // Random size;
-        if(!buf) {
-            push_error(ErrorType_ran_out_of_memory);
-        } else {
-            for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
-                EnumData *ed = enum_data + enum_index;
-                write_to_output_buffer(&source_output, "\n\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
-
-                // enum_to_string.
-                {
-                    zero_memory_block(buf, buf_size);
-                    Char small_buf[1024] = {};
-                    Int index = 0;
-
-                    for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
-                        index += format_string(small_buf + index, array_count(small_buf) - index,
-                                               "        case %d: { res = \"%S\"; } break;\n",
-                                               ed->values[enum_value_index].value,
-                                               ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e);
-                    }
-
-
-
-                    Char *enum_to_string_base = "char const *\n"
-                                                "enum_to_string_%S(int v)\n"
-                                                "{\n"
-                                                "    char const *res = 0;\n"
-                                                "    switch(v) {\n"
-                                                "%s"
-                                                "\n"
-                                                "        default: { /* v is out of bounds. */ } break;\n"
-                                                "    }\n"
-                                                "\n"
-                                                "    return(res);\n"
-                                                "}\n";
-                    Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
-                                                      ed->name.len, ed->name.e, small_buf);
-                    assert(bytes_written < buf_size);
-
-                    write_to_output_buffer(&source_output, buf);
-                }
-
-                write_to_output_buffer(&source_output, "\n");
-
-                // string_to_enum.
-                {
-                    zero_memory_block(buf, buf_size);
-                    Char small_buf[1024] = {};
-                    Int index = 0;
-
-                    for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
-                        index += format_string(small_buf + index, array_count(small_buf) - index,
-                                               "    else if(strcmp(str, \"%S\") == 0) { return(%d); }\n",
-                                               ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e,
-                                               ed->values[enum_value_index].value);
-                    }
-
-                    Char *string_to_enum_base = "int\n"
-                                                "string_to_enum_%S(char const *str)\n"
-                                                "{\n"
-                                                "    if(0) {}\n"
-                                                "%s"
-                                                "    return(0);\n"
-                                                "}\n";
-
-                    format_string(buf, buf_size, string_to_enum_base,
-                                  ed->name.len, ed->name.e, small_buf);
-
-                    write_to_output_buffer(&source_output, buf);
-                }
-
-            }
-
-            delete buf;
-        }
-    }
-
-    // # Guard stuff
-    write_to_output_buffer(&source_output, "\n\n#define GENERATED_CPP\n");
-    write_to_output_buffer(&source_output, "#endif /* #if !defined(GENERATED_CPP) */\n");
-
-    //
-    // Header file.
-    //
     OutputBuffer header_output = create_output_buffer(256 * 256);
     if(!header_output.buffer) {
         // Error
-    }
+    } else {
+        //
+        // Header Info.
+        //
+        write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n\n");
 
-    write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n#include <stdio.h>\n\n");
-
-    //
-    // MetaTypes enum.
-    //
-    if(struct_count) {
-        // Get the absolute max number of meta types. This will be significantly bigger than the
-        // actual number of unique types...
-        Int max_type_count = get_num_of_primitive_types();
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            ++max_type_count;
-
-            for(Int member_index = 0; (member_index < struct_data[struct_index].member_count); ++member_index) {
+        //
+        // MetaTypes enum.
+        //
+        if(struct_count) {
+            // Get the absolute max number of meta types. This will be significantly bigger than the
+            // actual number of unique types...
+            Int max_type_count = get_num_of_primitive_types();
+            for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
                 ++max_type_count;
+
+                for(Int member_index = 0; (member_index < struct_data[struct_index].member_count); ++member_index) {
+                    ++max_type_count;
+                }
+            }
+
+            String *types = new String[max_type_count];
+            if(!types) {
+                push_error(ErrorType_ran_out_of_memory);
+            } else {
+
+                Int type_count = set_primitive_type(types);
+
+                // Fill out the enum meta type enum.
+                for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+                    StructData *sd = struct_data + struct_index;
+
+                    if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
+                        types[type_count++] = sd->name;
+                    }
+
+                    for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                        Variable *md = sd->members + member_index;
+
+                        if(!is_meta_type_already_in_array(types, type_count, md->type)) {
+                            types[type_count++] = md->type;
+                        }
+                    }
+                }
+
+                // Write the meta type enum to file.
+                write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
+                write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
+                for(Int type_index = 0; (type_index < type_count); ++type_index) {
+                    String *type = types + type_index;
+                    write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
+                }
+                write_to_output_buffer(&header_output, "} MetaType;\n\n");
+
+                delete types;
             }
         }
 
-        String *types = new String[max_type_count];
-        if(!types) {
-            push_error(ErrorType_ran_out_of_memory);
-        }
-
-        Int type_count = set_primitive_type(types);
-
-        // Fill out the enum meta type enum.
+        //
+        // Struct Meta Data
+        //
+        write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
 
-            if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
-                types[type_count++] = sd->name;
-            }
-
-            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                Variable *md = sd->members + member_index;
-
-                if(!is_meta_type_already_in_array(types, type_count, md->type)) {
-                    types[type_count++] = md->type;
-                }
-            }
-        }
-
-        // Write the meta type enum to file.
-        write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
-        write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
-        for(Int type_index = 0; (type_index < type_count); ++type_index) {
-            String *type = types + type_index;
-            write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
-        }
-        write_to_output_buffer(&header_output, "} MetaType;\n\n");
-
-        delete types;
-
-        //
-        // Struct meta data.
-        //
-        write_to_output_buffer(&header_output, "/* Struct meta data. */\n\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = &struct_data[struct_index];
-            write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n",
-                                   sd->name.len, sd->name.e);
-            write_to_output_buffer(&header_output, "extern MemberDefinition members_of_%S[];\n",
-                                   sd->name.len, sd->name.e);
+            write_to_output_buffer(&header_output, "\n/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
 
             Int member_count = sd->member_count;
             StructData *inherited = find_struct(sd->inherited, struct_data, struct_count);
             if(inherited) {
                 member_count += inherited->member_count;
             }
-
-            write_to_output_buffer(&header_output, "static size_t const num_members_for_%S = %u;\n\n",
+            write_to_output_buffer(&header_output, "static int const num_members_for_%S = %u;\n",
                                    sd->name.len, sd->name.e, member_count);
-        }
-    }
 
-    //
-    // Enum meta data.
-    //
-    if(enum_count) {
-        write_to_output_buffer(&header_output, "\n\n/* Enum meta data. */\n");
+            write_to_output_buffer(&header_output, "static MemberDefinition *\nget_members_of_%S(void)\n{\n", sd->name.len, sd->name.e);
 
-        for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
-            EnumData *ed = enum_data + enum_index;
+            for(Int struct_index2 = 0; (struct_index2 < struct_count); ++struct_index2) {
+                StructData *sd2 = struct_data + struct_index2;
 
-            char buf[1024] = {};
-            int bytes_written = format_string(buf, array_count(buf),
-                                              "\n/* Meta data for enum: %S. */\n",
-                                              ed->name.len, ed->name.e);
-            assert(bytes_written < array_count(buf));
-            write_to_output_buffer(&header_output, buf);
+                write_to_output_buffer(&header_output, "    typedef struct %S", sd2->name.len, sd2->name.e);
+                if(sd2->inherited.len) {
+                    write_to_output_buffer(&header_output, " : public %S", sd2->inherited.len, sd2->inherited.e);
+                }
+                write_to_output_buffer(&header_output, " { ");
 
+                for(Int member_index = 0; (member_index < sd2->member_count); ++member_index) {
+                    Variable *md = sd2->members + member_index;
+                    Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
+                    Char arr_buffer[256] = {};
+                    if(md->array_count > 1) {
+                        format_string(arr_buffer, 256, arr, md->array_count);
+                    }
 
-            // Enum size.
-            {
-                zero_memory_block(buf, array_count(buf));
-                int bytes_written = format_string(buf, array_count(buf),
-                                                  "static size_t number_of_elements_in_enum_%S = %d;",
-                                                  ed->name.len, ed->name.e, ed->no_of_values);
-                assert(bytes_written < array_count(buf));
+                    write_to_output_buffer(&header_output, " %S %s%S%s; ",
+                                           md->type.len, md->type.e,
+                                           (md->is_ptr) ? "*" : "",
+                                           md->name.len, md->name.e,
+                                           (md->array_count > 1) ? arr_buffer : arr);
 
-                write_to_output_buffer(&header_output, buf);
-            }
-
-            // enum_to_string.
-            {
-                zero_memory_block(buf, array_count(buf));
-                int bytes_written = format_string(buf, array_count(buf),
-                                                  "\nchar const *enum_to_string_%S(int v);\n",
-                                                  ed->name.len, ed->name.e);
-                assert(bytes_written < array_count(buf));
-
-                write_to_output_buffer(&header_output, buf);
-            }
-
-            // string_to_enum.
-            {
-                zero_memory_block(buf, array_count(buf));
-                int bytes_written = format_string(buf, array_count(buf),
-                                                  "int string_to_enum_%S(char const *str);\n",
-                                                  ed->name.len, ed->name.e);
-                assert(bytes_written < array_count(buf));
-
-                write_to_output_buffer(&header_output, buf);
-            }
-        }
-    }
-
-#if 0
-    // Function meta data.
-    write_to_output_buffer(&header_output, "\n/* Function meta data. */\n\n");
-
-    for(Int func_index = 0; (func_index < func_count); ++func_index) {
-        FunctionData *fd = func_data + func_index;
-
-        write_to_output_buffer(&header_output, "/* Meta Data for: %S */\n", fd->name.len, fd->name.e);
-
-        Char buf[256] = {};
-        if(fd->linkage.len > 0) {
-            Char *meta_data = "extern FunctionMetaData function_data_%S;\n";
-            format_string(buf, array_count(buf), meta_data,
-                          fd->name.len, fd->name.e);
-        } else {
-            Char *meta_data = "extern FunctionMetaData function_data_%S;\n";
-            format_string(buf, array_count(buf), meta_data,
-                          fd->name.len, fd->name.e);
-        }
-
-        write_to_output_buffer(&header_output, buf);
-    }
-
-    for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-        StructData *sd = struct_data + struct_index;
-
-        if(sd->func_count) {
-            write_to_output_buffer(&header_output, "\n// %S's methods.\n", sd->name.len, sd->name.e);
-            for(Int method_index = 0; (method_index < sd->func_count); ++method_index) {
-                FunctionData *md = sd->func_data + method_index;
-
-                Char buf[256] = {};
-                if(md->linkage.len) {
-                    // TODO(Jonny): Implement.
-                } else {
-                    Char *meta_data = "extern FunctionMetaData method_data_%S%S;\n";
-                    format_string(buf, array_count(buf), meta_data,
-                                  sd->name.len, sd->name.e,
-                                  md->name.len, md->name.e);
                 }
 
-                write_to_output_buffer(&header_output, buf);
+                write_to_output_buffer(&header_output, " } %S;\n", sd2->name.len, sd2->name.e);
+            }
+
+            write_to_output_buffer(&header_output, "\n    static MemberDefinition res[] = {\n", sd->name.len, sd->name.e);
+            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                Variable *md = sd->members + member_index;
+                write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+                                       md->type.len, md->type.e,
+                                       md->name.len, md->name.e,
+                                       sd->name.len, sd->name.e,
+                                       md->name.len, md->name.e,
+                                       md->is_ptr,
+                                       md->array_count);
+            }
+            if(sd->inherited.len) {
+                StructData *base_class = find_struct(sd->inherited, struct_data, struct_count);
+                assert(base_class);
+
+                for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
+                    Variable *base_class_var = base_class->members + member_index;
+
+                    write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+                                           base_class_var->type.len, base_class_var->type.e,
+                                           base_class_var->name.len, base_class_var->name.e,
+                                           sd->name.len, sd->name.e,
+                                           base_class_var->name.len, base_class_var->name.e,
+                                           base_class_var->is_ptr,
+                                           base_class_var->array_count);
+                }
+            }
+
+            write_to_output_buffer(&header_output, "    };\n\n    return(res);\n}\n");
+        }
+
+        // Recursive part for calling on members of structs.
+        write_to_output_buffer(&header_output, "\n\n");
+
+        Int def_struct_code_size = 256 * 256;
+        Char *def_struct_code = new Char[def_struct_code_size];
+        if(!def_struct_code) {
+            push_error(ErrorType_ran_out_of_memory);
+        } else {
+            Int index = 0;
+            index = copy_literal_to_char_buffer(def_struct_code, index, "switch(member->type) {\n");
+            for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+                StructData *sd = struct_data + struct_index;
+                Char *DefaultStructString = get_default_struct_string();
+                index += format_string(def_struct_code + index, def_struct_code_size, DefaultStructString,
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+            }
+
+            index = copy_literal_to_char_buffer(def_struct_code, index, "                }");
+        }
+
+
+
+        Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code);
+        write_to_output_buffer(&header_output, "%s", serialize_struct_implementation);
+        delete serialize_struct_implementation;
+
+        //
+        // Enum Meta data.
+        //
+        if(enum_count) {
+            write_to_output_buffer(&header_output, "\n\n\n/* Enum meta data. */\n");
+
+            Int buf_size = 255 * 255;
+            Char *buf = new Char[buf_size]; // Random size;
+            if(!buf) {
+                push_error(ErrorType_ran_out_of_memory);
+            } else {
+                for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
+                    EnumData *ed = enum_data + enum_index;
+                    write_to_output_buffer(&header_output, "\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
+
+                    // Enum size.
+                    {
+                        zero_memory_block(buf, buf_size);
+                        int bytes_written = format_string(buf, buf_size,
+                                                          "static size_t number_of_elements_in_enum_%S = %d;",
+                                                          ed->name.len, ed->name.e, ed->no_of_values);
+                        assert(bytes_written < buf_size);
+
+                        write_to_output_buffer(&header_output, buf);
+                    }
+
+                    // enum_to_string.
+                    {
+                        zero_memory_block(buf, buf_size);
+                        Char small_buf[1024] = {};
+                        Int index = 0;
+
+                        for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                            index += format_string(small_buf + index, array_count(small_buf) - index,
+                                                   "        case %d: { return(\"%S\"); } break;\n",
+                                                   ed->values[enum_value_index].value,
+                                                   ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e);
+                        }
+
+
+
+                        Char *enum_to_string_base = "\nstatic char const *\n"
+                                                    "enum_to_string_%S(int v)\n"
+                                                    "{\n"
+                                                    "    switch(v) {\n"
+                                                    "%s"
+                                                    "\n"
+                                                    "        default: { return(0); } break; /* v is out of bounds. */\n"
+                                                    "    }\n"
+                                                    "}\n";
+                        Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
+                                                          ed->name.len, ed->name.e, small_buf);
+                        assert(bytes_written < buf_size);
+
+                        write_to_output_buffer(&header_output, buf);
+                    }
+
+                    write_to_output_buffer(&header_output, "\n");
+
+                    // string_to_enum.
+                    {
+                        zero_memory_block(buf, buf_size);
+                        Char small_buf[1024] = {};
+                        Int index = 0;
+
+                        for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                            index += format_string(small_buf + index, array_count(small_buf) - index,
+                                                   "    else if(strcmp(str, \"%S\") == 0) { return(%d); }\n",
+                                                   ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e,
+                                                   ed->values[enum_value_index].value);
+                        }
+
+                        Char *string_to_enum_base = "static int\n"
+                                                    "string_to_enum_%S(char const *str)\n"
+                                                    "{\n"
+                                                    "    if(0) {}\n"
+                                                    "%s"
+                                                    "\n"
+                                                    "    else { return(0); }\n"
+                                                    "}\n";
+
+                        format_string(buf, buf_size, string_to_enum_base,
+                                      ed->name.len, ed->name.e, small_buf);
+
+                        write_to_output_buffer(&header_output, buf);
+                    }
+
+                }
+
+                delete buf;
             }
         }
+
+        //
+        // # Guard macro.
+        //
+        write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
+
+        res.header_size = header_output.index;
+        res.header_data = header_output.buffer;
     }
-#endif
-    // # Guard macro.
-    write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
-
-    StuffToWrite res;
-    res.source_size = source_output.index;
-    res.source_data = source_output.buffer;
-
-    res.header_size = header_output.index;
-    res.header_data = header_output.buffer;
 
     return(res);
 }
@@ -2604,8 +2354,8 @@ main(Int argc, Char **argv)
                     assert(static_success);
 
                     Bool header_success = write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
-                    Bool source_success = write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
-                    assert((header_success) && (source_success));
+                    //Bool source_success = write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
+                    assert(header_success);
                 }
             }
         }
