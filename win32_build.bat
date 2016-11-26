@@ -16,7 +16,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\V
 set COMMON_COMPILER_FLAGS=-nologo -MDd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DINTERNAL=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 
 setlocal EnableDelayedExpansion
-set FILES="../../preprocessor/preprocessor.cpp" "../../preprocessor/gtest-all.cc"
+set FILES="../../preprocessor/preprocessor.cpp" "../../preprocessor/google_test/gtest-all.cc"
 if "%RELEASE%"=="true" (
     set COMMON_COMPILER_FLAGS=-nologo -MD -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DINTERNAL=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
     set FILES="../../preprocessor/preprocessor.cpp"
