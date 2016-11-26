@@ -48,7 +48,7 @@ popd
 pushd "../../app test"
 "../builds/linux_clang/preprocessor" sdl_main.cpp
 
-clang -Wall "sdl_main.cpp" -std=c++1y -o sdl_test generated.cpp -Wno-switch -g -lSDL2
+clang -Wall "sdl_main.cpp" -std=c++1y -o sdl_test -Wno-switch -g -lSDL2
 mv "./sdl_test" "../builds/linux_clang/app_test"
 popd
 

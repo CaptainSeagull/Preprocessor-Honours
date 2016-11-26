@@ -2360,9 +2360,6 @@ main(Int argc, Char **argv)
         }
 
         if(tot_size_of_all_files) {
-            Char *header_name = "generated.h";
-            Char *source_name = "generated.cpp";
-
             Byte *file_memory = cast(Byte *)alloc(tot_size_of_all_files);
             if(!file_memory) {
                 push_error(ErrorType_ran_out_of_memory);
@@ -2392,9 +2389,8 @@ main(Int argc, Char **argv)
                     Bool static_success = write_to_file("static_generated.h", static_file_data, static_file_len);
                     assert(static_success);
 
-                    Bool header_success = write_to_file(header_name, stuff_to_write.header_data, stuff_to_write.header_size);
-                    //Bool source_success = write_to_file(source_name, stuff_to_write.source_data, stuff_to_write.source_size);
-                    assert(header_success);
+                    Bool write_success = write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
+                    assert(write_success);
                 }
             }
         }
