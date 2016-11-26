@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <string.h>
-#include "generated.h"
+#include "sdl_main_generated.h"
 
 #if WIN32
     #include "C:\dev\SDL2-2.0.0\include\SDL.h"

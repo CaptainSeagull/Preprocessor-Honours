@@ -34,11 +34,11 @@ if "%RUN_CODE_AFTER_BUILDING%"=="true" (
 if "%ENVIRONMENT%"=="x86" (
     if "%RUN_SDL_CODE%"=="true" (
         pushd "app test"
-        "../builds/win32_msvc/preprocessor.exe" sdl_main.cpp
+        "../builds/win32_msvc/preprocessor.exe" sdl_main.cpp sdl_other.cpp
         popd
         
         pushd "builds/win32_msvc"
-        cl -FeTestSDL %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib
+        cl -FeTestSDL %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" "../../app test/sdl_other.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib
         popd
     )
 )
