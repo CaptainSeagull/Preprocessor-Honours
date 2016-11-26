@@ -2299,7 +2299,8 @@ start_parsing(AllFiles all_files)
 #if defined(global)
     #undef global
 #endif
-#include "gtest/gtest.h"
+
+#include "google_test/gtest.h"
 
 int add(int a, int b) { return(a + b); }
 
@@ -2320,7 +2321,7 @@ run_google_tests(void)
     testing::InitGoogleTest(&number_of_flags, flags);
     Int fail = RUN_ALL_TESTS();
     if(fail) {
-        *(Int *)0 = 0; // Fake assert.
+        // TODO(Jonny): Do something.
     }
 }
 #else
