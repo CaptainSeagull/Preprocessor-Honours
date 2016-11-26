@@ -3,8 +3,8 @@
 rem Variables to set.
 set VISUAL_STUDIO_VERSION=12
 set ENVIRONMENT=x86
-set RELEASE=true
-set RUN_SDL_CODE=true
+set RELEASE=false
+set RUN_SDL_CODE=false
 
 
 rem Warnings to ignore.

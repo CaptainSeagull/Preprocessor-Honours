@@ -68,6 +68,7 @@ enum ErrorType {
     ErrorType_assert_failed,
     ErrorType_no_parameters,
     ErrorType_cannot_find_file,
+    ErrorType_could_not_write_to_disk,
 
     ErrorType_count,
 };
@@ -2307,7 +2308,7 @@ TEST(AddTest, Test)
     EXPECT_EQ(4, add(2, 2));
     EXPECT_EQ(8, add(7, 1));
     EXPECT_EQ(10, add(4, 6));
-    EXPECT_EQ(2, add(2, 0));
+    EXPECT_EQ(2, add(2, 1));
 }
 
 Void
@@ -2316,13 +2317,17 @@ run_google_tests(void)
     Char *flags[] = {"--gtest_list_tests", "--gtest_repeat=3", "--gtest_break_on_failure"};
     Int number_of_flags = array_count(flags);
 
-    ::testing::InitGoogleTest(&number_of_flags, flags);
-    RUN_ALL_TESTS();
+    testing::InitGoogleTest(&number_of_flags, flags);
+    Int fail = RUN_ALL_TESTS();
+    if(fail) {
+        *(Int *)0 = 0; // Fake assert.
+    }
 }
 #else
 #define run_google_tests() {}
 #endif
 
+// TODO(Jonny): Generate one.h file per file put in.
 Int
 main(Int argc, Char **argv)
 {
@@ -2386,11 +2391,15 @@ main(Int argc, Char **argv)
                 Char *static_file_data = get_static_file();
                 Int static_file_len = string_length(static_file_data);
                 if(should_write_to_file) {
-                    Bool static_success = write_to_file("static_generated.h", static_file_data, static_file_len);
-                    assert(static_success);
+                    Bool static_write_success = write_to_file("static_generated.h", static_file_data, static_file_len);
+                    if(!static_write_success) {
+                        push_error(ErrorType_could_not_write_to_disk);
+                    }
 
-                    Bool write_success = write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
-                    assert(write_success);
+                    Bool header_write_success = write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
+                    if(!header_write_success) {
+                        push_error(ErrorType_could_not_write_to_disk);
+                    }
                 }
             }
         }
