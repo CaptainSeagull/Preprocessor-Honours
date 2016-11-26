@@ -4,8 +4,8 @@ rem Variables to set.
 set VISUAL_STUDIO_VERSION=12
 set ENVIRONMENT=x86
 set RELEASE=false
-set RUN_SDL_CODE=false
-
+set RUN_SDL_CODE=true
+set RUN_CODE_AFTER_BUILDING=true
 
 rem Warnings to ignore.
 set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4820 -wd4365 -wd4514 -wd4062 -wd4061 -wd4668 -wd4389 -wd4018 -wd4711
@@ -27,6 +27,9 @@ pushd "builds/win32_msvc"
 cl -FePreprocessor %COMMON_COMPILER_FLAGS% -W4 %FILES% -link -subsystem:console,5.2 kernel32.lib
 popd
 
+if "%RUN_CODE_AFTER_BUILDING%"=="true" (
+    "builds/win32_msvc/preprocessor.exe" -t
+)
 
 if "%ENVIRONMENT%"=="x86" (
     if "%RUN_SDL_CODE%"=="true" (

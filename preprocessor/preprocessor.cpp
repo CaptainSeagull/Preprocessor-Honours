@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef uint64_t Uint64;
 typedef uint32_t Uint32;
@@ -141,50 +142,19 @@ safe_truncate_size_64(Uint64 value)
 //
 // Memory stuff.
 //
-internal Void
-copy_memory_block(Void *dest, Void *source, PtrSize size)
-{
-    assert((dest) && (source) && (size));
+#define copy_memory_block(dest, source, size) memcpy(dest, source, size)
+#define zero_memory_block(dest, size) memset(dest, 0, size)
 
-    Byte *dest8 = cast(Byte *)dest, *source8 = cast(Byte *)source;
+// These are overloaded so I can realloc new'd memory.
+Void *operator new(size_t size)   { return(calloc(size, 1)); }
+Void *operator new[](size_t size) { return(calloc(size, 1)); }
+Void operator delete(Void *ptr)   { if(ptr) {free(ptr);}     }
+Void operator delete[](Void *ptr) { if(ptr) {free(ptr);}     }
 
-    while(size-- > 0) {
-        *dest8++ = *source8++;
-    }
-}
-
-internal Void
-zero_memory_block(Void *dest, PtrSize size)
-{
-    assert((dest) && (size));
-
-    Byte *dest8 = cast(Byte *)dest;
-
-    while(size-- > 0) {
-        *dest8++ = 0;
-    }
-}
-
-internal Void *
-alloc(PtrSize size)
-{
-    Void *res = malloc(size);
-    if(res) {
-        zero_memory_block(res, size);
-    }
-
-    return(res);
-}
-
-internal Void
-safe_free(Void *ptr)
-{
-    if(ptr) {
-        free(ptr);
-    }
-}
-
-struct Realloc { Void *ptr; Bool success; };
+struct Realloc {
+    Void *ptr;
+    Bool success;
+};
 internal Realloc
 safe_realloc(Void *ptr, PtrSize size)
 {
@@ -201,12 +171,6 @@ safe_realloc(Void *ptr, PtrSize size)
 
     return(res);
 }
-
-// These are overloaded so I can mix and match malloc/new and free/delete.
-Void *operator new(size_t size)   { return(alloc(size)); }
-Void *operator new[](size_t size) { return(alloc(size)); }
-Void operator delete(Void *ptr)   { safe_free(ptr);      }
-Void operator delete[](Void *ptr) { safe_free(ptr);      }
 
 //
 // Utils.
@@ -268,6 +232,7 @@ enum SwitchType {
 
     SwitchType_silent,
     SwitchType_log_errors,
+    SwitchType_run_tests,
     SwitchType_source_file,
 
     SwitchType_count,
@@ -283,10 +248,14 @@ get_switch_type(Char *str)
     Int len = string_length(str);
     // TODO(Jonny): Do this properly...
     if(str[0] == '-') {
-        if(str[1] == 's') {
-            res = SwitchType_silent;
-        } else if(str[1] == 'e') {
-            res = SwitchType_log_errors;
+        switch(str[1]) {
+            case 's': { res = SwitchType_silent;     } break;
+            case 'e': { res = SwitchType_log_errors; } break;
+#if INTERNAL
+            case 't': { res = SwitchType_run_tests;  } break;
+#endif
+
+            default: { assert(0); } break;
         }
     } else if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
         res = SwitchType_source_file;
@@ -666,7 +635,7 @@ create_output_buffer(Int size)
     assert(size);
 
     OutputBuffer res = {};
-    res.buffer = cast(Char *)alloc(size);
+    res.buffer = new Char[size];
     if(!res.buffer) {
         push_error(ErrorType_ran_out_of_memory);
     } else {
@@ -1650,12 +1619,12 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
         for(Int index = 0; (index < res.no_of_values); ++index) {
             EnumValue *ev = res.values + index;
 
-            Token token = {};
-            while(token.type != TokenType_identifier) {
-                token = get_token(tokenizer);
+            Token temp_token = {};
+            while(temp_token.type != TokenType_identifier) {
+                temp_token = get_token(tokenizer);
             }
 
-            ev->name = token_to_string(token);
+            ev->name = token_to_string(temp_token);
             ev->value = index; // TODO(Jonny): Doesn't work for enums with an assignment in them.
         }
     }
@@ -2246,9 +2215,9 @@ start_parsing(AllFiles all_files)
                             if(next.type == TokenType_open_brace) {
                                 if(enum_count + 1 >= enum_max) {
                                     enum_max *= 2;
-                                    EnumData *p = cast(EnumData *)realloc(enum_data, sizeof(enum_data) * enum_max);
-                                    if(p) {
-                                        enum_data = p;
+                                    Realloc r = safe_realloc(enum_data, sizeof(enum_data) * enum_max);
+                                    if(r.success) {
+                                        enum_data = cast(EnumData *)r.ptr;
                                     } else {
                                         push_error(ErrorType_ran_out_of_memory);
                                     }
@@ -2263,9 +2232,9 @@ start_parsing(AllFiles all_files)
                         if(pfr.success) {
                             if(func_count + 1 > func_max) {
                                 func_max *= 2;
-                                FunctionData *p = cast(FunctionData *)realloc(func_data, sizeof(FunctionData) * func_max);
-                                if(p) {
-                                    func_data = p;
+                                Realloc r = safe_realloc(func_data, sizeof(FunctionData) * func_max);
+                                if(r.success) {
+                                    func_data = (FunctionData *)r.ptr;
                                 } else {
                                     push_error(ErrorType_ran_out_of_memory);
                                 }
@@ -2288,51 +2257,12 @@ start_parsing(AllFiles all_files)
     return(res);
 }
 
-//
-// Google tests.
-//
-#if INTERNAL
-
-#if defined(internal)
-    #undef internal
-#endif
-#if defined(global)
-    #undef global
-#endif
-
-#include "google_test/gtest.h"
-
-int add(int a, int b) { return(a + b); }
-
-TEST(AddTest, Test)
-{
-    EXPECT_EQ(4, add(2, 2));
-    EXPECT_EQ(8, add(7, 1));
-    EXPECT_EQ(10, add(4, 6));
-    EXPECT_EQ(2, add(2, 1));
-}
-
-Void
-run_google_tests(void)
-{
-    Char *flags[] = {"--gtest_list_tests", "--gtest_repeat=3", "--gtest_break_on_failure"};
-    Int number_of_flags = array_count(flags);
-
-    testing::InitGoogleTest(&number_of_flags, flags);
-    Int fail = RUN_ALL_TESTS();
-    if(fail) {
-        // TODO(Jonny): Do something.
-    }
-}
-#else
-#define run_google_tests() {}
-#endif
-
-// TODO(Jonny): Generate one.h file per file put in.
+#include "tests.h"
+// TODO(Jonny): Generate one .h file per file put in.
 Int
 main(Int argc, Char **argv)
 {
-    run_google_tests();
+    int *i = new int;
 
     Int res = 0;
 
@@ -2341,6 +2271,7 @@ main(Int argc, Char **argv)
     } else {
         Bool should_write_to_file = true;
         Bool should_log_errors = false;
+        Bool should_run_tests = false;
 
         // Get the total amount of memory needed to store all files.
         PtrSize tot_size_of_all_files = 0;
@@ -2352,6 +2283,7 @@ main(Int argc, Char **argv)
             switch(type) {
                 case SwitchType_silent:     { should_write_to_file = false; } break;
                 case SwitchType_log_errors: { should_log_errors = true;     } break;
+                case SwitchType_run_tests:  { should_run_tests = true;      } break;
 
                 case SwitchType_source_file: {
                     PtrSize file_size = get_file_size(switch_name);
@@ -2365,60 +2297,67 @@ main(Int argc, Char **argv)
             }
         }
 
-        if(tot_size_of_all_files) {
-            Byte *file_memory = cast(Byte *)alloc(tot_size_of_all_files);
-            if(!file_memory) {
-                push_error(ErrorType_ran_out_of_memory);
-            } else {
-                AllFiles all_files = {};
-                Int file_memory_index = 0;
-                for(Int file_index = 1; (file_index < argc); ++file_index) {
-                    Char *file_name = argv[file_index];
+        if(should_run_tests) {
+            res = run_tests();
+        } else {
+            if(tot_size_of_all_files) {
+                Byte *file_memory = new Byte[tot_size_of_all_files];
+                if(!file_memory) {
+                    push_error(ErrorType_ran_out_of_memory);
+                } else {
+                    // Write static file to disk.
+                    if(should_write_to_file) {
+                        Char *static_file_data = get_static_file();
+                        Int static_file_len = string_length(static_file_data);
+                        Bool static_write_success = write_to_file("static_generated.h", static_file_data, static_file_len);
+                        if(!static_write_success) {
+                            push_error(ErrorType_could_not_write_to_disk);
+                        }
+                    }
 
-                    SwitchType type = get_switch_type(file_name);
-                    if(type == SwitchType_source_file) {
-                        File file = read_entire_file_and_null_terminate(file_name, cast(Byte *)file_memory, file_memory_index);
-                        if(file.data) {
-                            file_memory_index += file.size;
-                            all_files.file[all_files.count++] = file.data;
+                    AllFiles all_files = {};
+                    Int file_memory_index = 0;
+                    for(Int file_index = 1; (file_index < argc); ++file_index) {
+                        Char *file_name = argv[file_index];
+
+                        SwitchType type = get_switch_type(file_name);
+                        if(type == SwitchType_source_file) {
+                            File file = read_entire_file_and_null_terminate(file_name, file_memory, file_memory_index);
+                            if(file.data) {
+                                file_memory_index += file.size;
+                                all_files.file[all_files.count++] = file.data;
+                            }
+                        }
+                    }
+
+                    StuffToWrite stuff_to_write = start_parsing(all_files);
+
+                    delete file_memory;
+
+                    if(should_write_to_file) {
+                        Bool header_write_success = write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
+                        if(!header_write_success) {
+                            push_error(ErrorType_could_not_write_to_disk);
                         }
                     }
                 }
-
-                StuffToWrite stuff_to_write = start_parsing(all_files);
-
-                delete file_memory;
-
-                Char *static_file_data = get_static_file();
-                Int static_file_len = string_length(static_file_data);
-                if(should_write_to_file) {
-                    Bool static_write_success = write_to_file("static_generated.h", static_file_data, static_file_len);
-                    if(!static_write_success) {
-                        push_error(ErrorType_could_not_write_to_disk);
-                    }
-
-                    Bool header_write_success = write_to_file("generated.h", stuff_to_write.header_data, stuff_to_write.header_size);
-                    if(!header_write_success) {
-                        push_error(ErrorType_could_not_write_to_disk);
-                    }
-                }
             }
-        }
 
-        if(global_error_count) {
-            res = 255;
+            if(global_error_count) {
+                res = 255;
 
-            // TODO(Jonny): Maybe have 2 modes for logging errors. A more pedantic one for me (developer) and a simpler one for user?
-            if(should_log_errors) {
-                // TODO(Jonny): Write errors to disk.
-                printf("\n\nList of errors:\n");
-                for(Int error_index = 0; (error_index < global_error_count); ++error_index) {
-                    Error *e = global_errors + error_index;
+                // TODO(Jonny): Maybe have 2 modes for logging errors. A more pedantic one for me (developer) and a simpler one for user?
+                if(should_log_errors) {
+                    // TODO(Jonny): Write errors to disk.
+                    printf("\n\nList of errors:\n");
+                    for(Int error_index = 0; (error_index < global_error_count); ++error_index) {
+                        Error *e = global_errors + error_index;
 
-                    Char *error_type = ErrorTypeToString(e->type);
+                        Char *error_type = ErrorTypeToString(e->type);
 
-                    printf("    Error %d:\n        Type = %s\n        File = %s\n        Function = %s\n        Line = %d\n",
-                           error_index, error_type, e->file, e->func, e->line);
+                        printf("    Error %d:\n        Type = %s\n        File = %s\n        Function = %s\n        Line = %d\n",
+                               error_index, error_type, e->file, e->func, e->line);
+                    }
                 }
             }
         }
