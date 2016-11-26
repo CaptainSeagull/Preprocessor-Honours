@@ -119,6 +119,9 @@ push_error_(ErrorType type, Char *file, Char *func, Int line)
     }
 }
 
+#if defined(assert)
+    #undef assert
+#endif
 #if INTERNAL
     #define assert(Expression, ...) do { persist Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
@@ -2284,11 +2287,47 @@ start_parsing(AllFiles all_files)
     return(res);
 }
 
-// TODO(Jonny): Allow the user to pass "-e" in, which means errors will be written to disk
-//              somewhere.
+//
+// Google tests.
+//
+#if INTERNAL
+
+#if defined(internal)
+    #undef internal
+#endif
+#if defined(global)
+    #undef global
+#endif
+#include "gtest/gtest.h"
+
+int add(int a, int b) { return(a + b); }
+
+TEST(AddTest, Test)
+{
+    EXPECT_EQ(4, add(2, 2));
+    EXPECT_EQ(8, add(7, 1));
+    EXPECT_EQ(10, add(4, 6));
+    EXPECT_EQ(2, add(2, 0));
+}
+
+Void
+run_google_tests(void)
+{
+    Char *flags[] = {"--gtest_list_tests", "--gtest_repeat=3", "--gtest_break_on_failure"};
+    Int number_of_flags = array_count(flags);
+
+    ::testing::InitGoogleTest(&number_of_flags, flags);
+    RUN_ALL_TESTS();
+}
+#else
+#define run_google_tests() {}
+#endif
+
 Int
 main(Int argc, Char **argv)
 {
+    run_google_tests();
+
     Int res = 0;
 
     if(argc <= 1) {
@@ -2309,7 +2348,7 @@ main(Int argc, Char **argv)
                 case SwitchType_log_errors: { should_log_errors = true;     } break;
 
                 case SwitchType_source_file: {
-                    Int file_size = get_file_size(switch_name);
+                    PtrSize file_size = get_file_size(switch_name);
                     if(file_size) {
                         tot_size_of_all_files += file_size;
                         ++number_of_files;
