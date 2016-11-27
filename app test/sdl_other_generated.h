@@ -10,6 +10,7 @@ typedef enum MetaType {
     meta_type_long,
     meta_type_float,
     meta_type_double,
+    meta_type_bool,
     meta_type_foo,
 } MetaType;
 
@@ -78,6 +79,17 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s[%d] = %d", indent_buf, member->name, arr_index, value[arr_index]);
                     } else {
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s = %d", indent_buf, member->name, value[arr_index]);
+                    }
+                }
+            } break;
+
+            case meta_type_bool: {
+                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
+                    if(member->arr_size > 1) {
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s[%d] = %s", indent_buf, member->name, arr_index, (value[arr_index]) ? "true" : "false");
+                    } else {
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s = %s", indent_buf, member->name, (value[arr_index]) ? "true" : "false");
                     }
                 }
             } break;
