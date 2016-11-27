@@ -1,15 +1,16 @@
 @echo off
 
 rem Variables to set.
-set VISUAL_STUDIO_VERSION=12
+set VISUAL_STUDIO_VERSION=14
 set ENVIRONMENT=x86
 set RELEASE=false
 set RUN_SDL_CODE=true
 set RUN_CODE_AFTER_BUILDING=true
+set RUN_LAUREN_TEST=false
 
 rem Warnings to ignore.
-set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4820 -wd4365 -wd4514 -wd4062 -wd4061 -wd4668 -wd4389 -wd4018 -wd4711
-
+set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4820 -wd4365 -wd4514 -wd4062 -wd4061 -wd4668 -wd4389 -wd4018 -wd4711 -wd4987 -wd4710
+ 
 rem 32/64 bit builds.
 call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\VC\vcvarsall.bat" %ENVIRONMENT%
 
@@ -24,6 +25,7 @@ if "%RELEASE%"=="true" (
 
 IF NOT EXIST "builds/win32_msvc" mkdir "builds/win32_msvc"
 pushd "builds/win32_msvc"
+
 cl -FePreprocessor %COMMON_COMPILER_FLAGS% -W4 %FILES% -link -subsystem:console,5.2 kernel32.lib
 popd
 
@@ -41,4 +43,13 @@ if "%ENVIRONMENT%"=="x86" (
         cl -FeTestSDL %COMMON_COMPILER_FLAGS% -wd4098 -Wall "../../app test/sdl_main.cpp" "../../app test/sdl_other.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib SDL2.lib SDL2main.lib
         popd
     )
+)
+
+if "%RUN_LAUREN_TEST%"=="true" (
+    pushd "../../lauren_test"
+    "../builds/win32_msvc/preprocessor.exe" test.cpp
+    popd
+
+    cl -FeTestLauren %COMMON_COMPILER_FLAGS% -wd4098 -W1 "../../lauren_test/test.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
+    popd
 )
