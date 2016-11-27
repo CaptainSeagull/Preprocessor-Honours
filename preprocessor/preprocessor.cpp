@@ -10,6 +10,8 @@
   ===================================================================================================*/
 
 /* TODO(Jonny):
+    - Complete skip over member functions!
+    - Add booleans to primitive type!
     - Struct meta data.
         - Multiple inheritance.
     - Enum meta data.
@@ -1545,6 +1547,17 @@ get_serialize_struct_implementation(Char *def_struct_code)
                       "                }\n"
                       "            } break;\n"
                       "\n"
+                      "            case meta_type_bool: {\n"
+                      "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                      "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
+                      "                    if(member->arr_size > 1) {\n"
+                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s[%%d] = %%s\", indent_buf, member->name, arr_index, (value[arr_index]) ? \"true\" : \"false\");\n"
+                      "                    } else {\n"
+                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s = %%s\", indent_buf, member->name, (value[arr_index]) ? \"true\" : \"false\");\n"
+                      "                    }\n"
+                      "                }\n"
+                      "            } break;\n"
+                      "\n"
                       "            case meta_type_char: {\n"
                       "                if(member->is_ptr) {\n"
                       "                    bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar * %%s = \\\"%%s\\\"\", indent_buf, member->name, *(char **)member_ptr);\n"
@@ -1662,7 +1675,7 @@ is_meta_type_already_in_array(String *array, Int len, String test)
     return(res);
 }
 
-global Char *primitive_types[] = {"char", "short", "int", "long", "float", "double"};
+global Char *primitive_types[] = {"char", "short", "int", "long", "float", "double", "bool"};
 
 #define get_num_of_primitive_types() array_count(primitive_types)
 
