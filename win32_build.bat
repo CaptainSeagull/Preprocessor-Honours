@@ -1,7 +1,7 @@
 @echo off
 
 rem Variables to set.
-set VISUAL_STUDIO_VERSION=14
+set VISUAL_STUDIO_VERSION=10
 set ENVIRONMENT=x86
 set RELEASE=false
 set RUN_SDL_CODE=true

@@ -287,9 +287,101 @@ get_switch_type(Char *str)
 }
 
 internal Char *
-get_static_file()
+get_static_file(void)
 {
-    Char *res = "#if !defined(STATIC_GENERATED)\n"
+    Char *res = "/*\n"
+                "    Preprocessor API.\n"
+                "*/\n"
+                "\n"
+                "/*  Quick Reference.\n"
+                "\n"
+                "    - Serialize a struct for output.\n"
+                "    size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size);\n"
+                "\n"
+                "    - Get the number of members of a struct/class.\n"
+                "    int get_num_of_members(TYPE type);\n"
+                "\n"
+                "    - Convert an enum index to a string.\n"
+                "    char const *enum_to_string(EnumType, EnumType value);\n"
+                "\n"
+                "    - Convert a string to an enum index.\n"
+                "    int string_to_enum(EnumType, char const *str);\n"
+                "\n"
+                "    - Get the total number of elements for an enum.\n"
+                "    size_t get_number_of_enum_elements(EnumType);\n"
+                "*/\n"
+                "\n"
+                "\n"
+                "/*  Detailed Reference.\n"
+                "\n"
+                "    ================================================================================\n"
+                "\n"
+                "    size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size);\n"
+                "     - Serialize a struct for outputting. This is more for debugging data in real time,\n"
+                "       rather writing data to disk.\n"
+                "\n"
+                "    Parameters\n"
+                "     - void *var       - The variable to be serialized.\n"
+                "     - TYPE var_type   - The literal type of the variable to be serialized. NOTE - Does not work with decltype\n"
+                "     - char *buffer    - The buffer to write the serialized data into.\n"
+                "     - size_t buf_size - The size of the butt to write the data into.\n"
+                "\n"
+                "    Return Value\n"
+                "     - size_t - The number of bytes written into buffer.\n"
+                "\n"
+                "    ================================================================================\n"
+                "\n"
+                "    int get_num_of_members(TYPE type);\n"
+                "     - Get the number of member variables in a struct/class.\n"
+                "\n"
+                "    Parameters\n"
+                "     - TYPE type - The type of the struct/class you want to get the members for.\n"
+                "\n"
+                "    Return Value\n"
+                "     - int - The number of member variables in the stuct/class.\n"
+                "\n"
+                "    ================================================================================\n"
+                "\n"
+                "    char const *enum_to_string(EnumType, EnumType value);\n"
+                "     - Convert an enum value into a string.\n"
+                "\n"
+                "    Parameters\n"
+                "    - EnumType       - The type of the enum.\n"
+                "    - EnumType value - The value of the enum.\n"
+                "\n"
+                "\n"
+                "    Return Value\n"
+                "     - char const * - A string literal of the enum index name.\n"
+                "\n"
+                "    ================================================================================\n"
+                "\n"
+                "    int string_to_enum(EnumType, char const *str);\n"
+                "    - Convert a string to an enum value.\n"
+                "\n"
+                "    Parameters\n"
+                "     - EnumType        - The type of the enum.\n"
+                "     - char const *str - A string version of the enum index.\n"
+                "\n"
+                "    Return Value\n"
+                "    - int - The index version of the string passed in.\n"
+                "\n"
+                "    ================================================================================\n"
+                "\n"
+                "    size_t get_number_of_enum_elements(EnumType);\n"
+                "    - Get the total number of elements in an enum.\n"
+                "\n"
+                "    Parameters\n"
+                "    - EnumType - The type of the enum you want.\n"
+                "\n"
+                "    Return Value\n"
+                "     - size_t - The total number of elements in the enum.\n"
+                "\n"
+                "    ================================================================================\n"
+                "*/\n"
+                "\n"
+                "\n"
+                "\n"
+                "#if !defined(STATIC_GENERATED)\n"
                 "\n"
                 "#include <stdio.h>\n"
                 "#include <string.h>\n"
@@ -298,7 +390,6 @@ get_static_file()
                 "typedef struct MemberDefinition {\n"
                 "    int/*MetaType*/ type;\n"
                 "    char const *name;\n"
-                //"    char const *base_class; /* This doesn't _really_ belong here... */\n"
                 "    size_t offset;\n"
                 "    int is_ptr;\n"
                 "    int arr_size;\n"
@@ -309,13 +400,13 @@ get_static_file()
                 "    char const *name;\n"
                 "} Variable;\n"
                 "\n"
+                "/* get_num_of_members(TYPE type); */\n"
                 "#define get_num_of_members(type) num_members_for_##type\n"
                 "\n"
                 "/* size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size); */\n"
                 "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, #var, 0, buffer, buf_size, 0)\n"
-                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, get_members_of_##type(), name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
+                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
                 "static size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
-                "\n"
                 "\n"
                 "/* char const *enum_to_string(EnumType, EnumType value); */\n"
                 "#define enum_to_string(Type, v) enum_to_string_##Type(v)\n"
@@ -327,7 +418,8 @@ get_static_file()
                 "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
                 "\n"
                 "#define STATIC_GENERATED\n"
-                "#endif";
+                "#endif /* !defined(STATIC_GENERATED) */"
+                "\n";
 
     return(res);
 }
@@ -1686,9 +1778,9 @@ set_primitive_type(String *array)
 
     Int res = array_count(primitive_types);
 
-    for(int index = 0; (index < res); ++index) {
-        array[index].e = primitive_types[index];
-        array[index].len = string_length(primitive_types[index]);
+    for(int i = 0; (i < res); ++i) {
+        array[i].e = primitive_types[i];
+        array[i].len = string_length(primitive_types[i]);
     }
 
     return(res);
@@ -1901,8 +1993,14 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
             if(!types) {
                 push_error(ErrorType_ran_out_of_memory);
             } else {
-
                 Int type_count = set_primitive_type(types);
+
+                write_to_output_buffer(&header_output, "/* Primitive types typedef'd, to avoid compile errors. */;\n");
+                for(Int primitive_index = 0; (primitive_index < type_count); ++primitive_index) {
+                    String *type = types + primitive_index;
+                    write_to_output_buffer(&header_output, "typedef %S _%S;\n",
+                                           type->len, type->e, type->len, type->e);
+                }
 
                 // Fill out the enum meta type enum.
                 for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -1922,7 +2020,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
 
                 // Write the meta type enum to file.
-                write_to_output_buffer(&header_output, "/* Enum with field for every type detected. */\n");
+                write_to_output_buffer(&header_output, "\n/* Enum with field for every type detected. */\n");
                 write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
                 for(Int type_index = 0; (type_index < type_count); ++type_index) {
                     String *type = types + type_index;
@@ -1938,6 +2036,34 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         // Struct Meta Data
         //
         write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n");
+        for(Int struct_index2 = 0; (struct_index2 < struct_count); ++struct_index2) {
+            StructData *sd2 = struct_data + struct_index2;
+
+            write_to_output_buffer(&header_output, "typedef struct _%S", sd2->name.len, sd2->name.e);
+            if(sd2->inherited.len) {
+                write_to_output_buffer(&header_output, " : public _%S", sd2->inherited.len, sd2->inherited.e);
+            }
+            write_to_output_buffer(&header_output, " { ");
+
+            for(Int member_index = 0; (member_index < sd2->member_count); ++member_index) {
+                Variable *md = sd2->members + member_index;
+                Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
+                Char arr_buffer[256] = {};
+                if(md->array_count > 1) {
+                    format_string(arr_buffer, 256, arr, md->array_count);
+                }
+
+                write_to_output_buffer(&header_output, " _%S %s%S%s; ",
+                                       md->type.len, md->type.e,
+                                       (md->is_ptr) ? "*" : "",
+                                       md->name.len, md->name.e,
+                                       (md->array_count > 1) ? arr_buffer : arr);
+
+            }
+
+            write_to_output_buffer(&header_output, " } _%S;\n", sd2->name.len, sd2->name.e);
+        }
+
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
 
@@ -1951,40 +2077,10 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
             write_to_output_buffer(&header_output, "static int const num_members_for_%S = %u;\n",
                                    sd->name.len, sd->name.e, member_count);
 
-            write_to_output_buffer(&header_output, "static MemberDefinition *\nget_members_of_%S(void)\n{\n", sd->name.len, sd->name.e);
-
-            for(Int struct_index2 = 0; (struct_index2 < struct_count); ++struct_index2) {
-                StructData *sd2 = struct_data + struct_index2;
-
-                write_to_output_buffer(&header_output, "    typedef struct %S", sd2->name.len, sd2->name.e);
-                if(sd2->inherited.len) {
-                    write_to_output_buffer(&header_output, " : public %S", sd2->inherited.len, sd2->inherited.e);
-                }
-                write_to_output_buffer(&header_output, " { ");
-
-                for(Int member_index = 0; (member_index < sd2->member_count); ++member_index) {
-                    Variable *md = sd2->members + member_index;
-                    Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
-                    Char arr_buffer[256] = {};
-                    if(md->array_count > 1) {
-                        format_string(arr_buffer, 256, arr, md->array_count);
-                    }
-
-                    write_to_output_buffer(&header_output, " %S %s%S%s; ",
-                                           md->type.len, md->type.e,
-                                           (md->is_ptr) ? "*" : "",
-                                           md->name.len, md->name.e,
-                                           (md->array_count > 1) ? arr_buffer : arr);
-
-                }
-
-                write_to_output_buffer(&header_output, " } %S;\n", sd2->name.len, sd2->name.e);
-            }
-
-            write_to_output_buffer(&header_output, "\n    static MemberDefinition res[] = {\n", sd->name.len, sd->name.e);
+            write_to_output_buffer(&header_output, "\n    static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
             for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
-                write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+                write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
                                        sd->name.len, sd->name.e,
@@ -1999,7 +2095,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
                     Variable *base_class_var = base_class->members + member_index;
 
-                    write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((%S *)0)->%S, %d, %d},\n",
+                    write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
                                            base_class_var->type.len, base_class_var->type.e,
                                            base_class_var->name.len, base_class_var->name.e,
                                            sd->name.len, sd->name.e,
@@ -2009,7 +2105,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
             }
 
-            write_to_output_buffer(&header_output, "    };\n\n    return(res);\n}\n");
+            write_to_output_buffer(&header_output, "};");
         }
 
         // Recursive part for calling on members of structs.
@@ -2237,7 +2333,7 @@ start_parsing(Char *file)
                         }
                     }
                 } else {
-                    // This is a bit funny because functions don't have keyword to look for, like structs.
+                    // This is a bit funny looking because functions don't have keyword to look for, like structs.
                     ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
                     if(pfr.success) {
                         if(func_count + 1 > func_max) {
@@ -2267,7 +2363,7 @@ start_parsing(Char *file)
 }
 
 #include "tests.h"
-// TODO(Jonny): Generate one .h file per file put in.
+
 Int
 main(Int argc, Char **argv)
 {

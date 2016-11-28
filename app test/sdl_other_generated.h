@@ -2,6 +2,15 @@
 
 #include "static_generated.h"
 
+/* Primitive types typedef'd, to avoid compile errors. */;
+typedef char _char;
+typedef short _short;
+typedef int _int;
+typedef long _long;
+typedef float _float;
+typedef double _double;
+typedef bool _bool;
+
 /* Enum with field for every type detected. */
 typedef enum MetaType {
     meta_type_char,
@@ -16,22 +25,15 @@ typedef enum MetaType {
 
 
 /* Struct meta data. */
+typedef struct _foo {  _int x;  _int y;  } _foo;
 
 /* Meta data for: foo. */
 static int const num_members_for_foo = 2;
-static MemberDefinition *
-get_members_of_foo(void)
-{
-    typedef struct foo {  int x;  int y;  } foo;
 
-    static MemberDefinition res[] = {
-        {meta_type_int, "x", (size_t)&((foo *)0)->x, 0, 1},
-        {meta_type_int, "y", (size_t)&((foo *)0)->y, 0, 1},
-    };
-
-    return(res);
-}
-
+    static MemberDefinition members_of_foo[] = {
+        {meta_type_int, "x", (size_t)&((_foo *)0)->x, 0, 1},
+        {meta_type_int, "y", (size_t)&((_foo *)0)->y, 0, 1},
+};
 
 /* Function to serialize a struct to a char array buffer. */
 static size_t

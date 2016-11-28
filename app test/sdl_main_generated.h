@@ -2,6 +2,15 @@
 
 #include "static_generated.h"
 
+/* Primitive types typedef'd, to avoid compile errors. */;
+typedef char _char;
+typedef short _short;
+typedef int _int;
+typedef long _long;
+typedef float _float;
+typedef double _double;
+typedef bool _bool;
+
 /* Enum with field for every type detected. */
 typedef enum MetaType {
     meta_type_char,
@@ -20,106 +29,51 @@ typedef enum MetaType {
 
 
 /* Struct meta data. */
+typedef struct _V2 {  _int x;  _int y;  } _V2;
+typedef struct _Transform {  _V2 pos;  _V2 size;  } _Transform;
+typedef struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  } _Ball;
+typedef struct _Paddle : public _Transform {  _int score;  } _Paddle;
+typedef struct _GameState {  _Paddle right;  _Paddle left;  _Ball ball;  } _GameState;
 
 /* Meta data for: V2. */
 static int const num_members_for_V2 = 2;
-static MemberDefinition *
-get_members_of_V2(void)
-{
-    typedef struct V2 {  int x;  int y;  } V2;
-    typedef struct Transform {  V2 pos;  V2 size;  } Transform;
-    typedef struct Ball {  V2 pos;  int radius;  int speed;  int direction;  } Ball;
-    typedef struct Paddle : public Transform {  int score;  } Paddle;
-    typedef struct GameState {  Paddle right;  Paddle left;  Ball ball;  } GameState;
 
-    static MemberDefinition res[] = {
-        {meta_type_int, "x", (size_t)&((V2 *)0)->x, 0, 1},
-        {meta_type_int, "y", (size_t)&((V2 *)0)->y, 0, 1},
-    };
-
-    return(res);
-}
-
+    static MemberDefinition members_of_V2[] = {
+        {meta_type_int, "x", (size_t)&((_V2 *)0)->x, 0, 1},
+        {meta_type_int, "y", (size_t)&((_V2 *)0)->y, 0, 1},
+};
 /* Meta data for: Transform. */
 static int const num_members_for_Transform = 2;
-static MemberDefinition *
-get_members_of_Transform(void)
-{
-    typedef struct V2 {  int x;  int y;  } V2;
-    typedef struct Transform {  V2 pos;  V2 size;  } Transform;
-    typedef struct Ball {  V2 pos;  int radius;  int speed;  int direction;  } Ball;
-    typedef struct Paddle : public Transform {  int score;  } Paddle;
-    typedef struct GameState {  Paddle right;  Paddle left;  Ball ball;  } GameState;
 
-    static MemberDefinition res[] = {
-        {meta_type_V2, "pos", (size_t)&((Transform *)0)->pos, 0, 1},
-        {meta_type_V2, "size", (size_t)&((Transform *)0)->size, 0, 1},
-    };
-
-    return(res);
-}
-
+    static MemberDefinition members_of_Transform[] = {
+        {meta_type_V2, "pos", (size_t)&((_Transform *)0)->pos, 0, 1},
+        {meta_type_V2, "size", (size_t)&((_Transform *)0)->size, 0, 1},
+};
 /* Meta data for: Ball. */
 static int const num_members_for_Ball = 4;
-static MemberDefinition *
-get_members_of_Ball(void)
-{
-    typedef struct V2 {  int x;  int y;  } V2;
-    typedef struct Transform {  V2 pos;  V2 size;  } Transform;
-    typedef struct Ball {  V2 pos;  int radius;  int speed;  int direction;  } Ball;
-    typedef struct Paddle : public Transform {  int score;  } Paddle;
-    typedef struct GameState {  Paddle right;  Paddle left;  Ball ball;  } GameState;
 
-    static MemberDefinition res[] = {
-        {meta_type_V2, "pos", (size_t)&((Ball *)0)->pos, 0, 1},
-        {meta_type_int, "radius", (size_t)&((Ball *)0)->radius, 0, 1},
-        {meta_type_int, "speed", (size_t)&((Ball *)0)->speed, 0, 1},
-        {meta_type_int, "direction", (size_t)&((Ball *)0)->direction, 0, 1},
-    };
-
-    return(res);
-}
-
+    static MemberDefinition members_of_Ball[] = {
+        {meta_type_V2, "pos", (size_t)&((_Ball *)0)->pos, 0, 1},
+        {meta_type_int, "radius", (size_t)&((_Ball *)0)->radius, 0, 1},
+        {meta_type_int, "speed", (size_t)&((_Ball *)0)->speed, 0, 1},
+        {meta_type_int, "direction", (size_t)&((_Ball *)0)->direction, 0, 1},
+};
 /* Meta data for: Paddle. */
 static int const num_members_for_Paddle = 3;
-static MemberDefinition *
-get_members_of_Paddle(void)
-{
-    typedef struct V2 {  int x;  int y;  } V2;
-    typedef struct Transform {  V2 pos;  V2 size;  } Transform;
-    typedef struct Ball {  V2 pos;  int radius;  int speed;  int direction;  } Ball;
-    typedef struct Paddle : public Transform {  int score;  } Paddle;
-    typedef struct GameState {  Paddle right;  Paddle left;  Ball ball;  } GameState;
 
-    static MemberDefinition res[] = {
-        {meta_type_int, "score", (size_t)&((Paddle *)0)->score, 0, 1},
-        {meta_type_V2, "pos", (size_t)&((Paddle *)0)->pos, 0, 1},
-        {meta_type_V2, "size", (size_t)&((Paddle *)0)->size, 0, 1},
-    };
-
-    return(res);
-}
-
+    static MemberDefinition members_of_Paddle[] = {
+        {meta_type_int, "score", (size_t)&((_Paddle *)0)->score, 0, 1},
+        {meta_type_V2, "pos", (size_t)&((_Paddle *)0)->pos, 0, 1},
+        {meta_type_V2, "size", (size_t)&((_Paddle *)0)->size, 0, 1},
+};
 /* Meta data for: GameState. */
 static int const num_members_for_GameState = 3;
-static MemberDefinition *
-get_members_of_GameState(void)
-{
-    typedef struct V2 {  int x;  int y;  } V2;
-    typedef struct Transform {  V2 pos;  V2 size;  } Transform;
-    typedef struct Ball {  V2 pos;  int radius;  int speed;  int direction;  } Ball;
-    typedef struct Paddle : public Transform {  int score;  } Paddle;
-    typedef struct GameState {  Paddle right;  Paddle left;  Ball ball;  } GameState;
 
-    static MemberDefinition res[] = {
-        {meta_type_Paddle, "right", (size_t)&((GameState *)0)->right, 0, 1},
-        {meta_type_Paddle, "left", (size_t)&((GameState *)0)->left, 0, 1},
-        {meta_type_Ball, "ball", (size_t)&((GameState *)0)->ball, 0, 1},
-    };
-
-    return(res);
-}
-
+    static MemberDefinition members_of_GameState[] = {
+        {meta_type_Paddle, "right", (size_t)&((_GameState *)0)->right, 0, 1},
+        {meta_type_Paddle, "left", (size_t)&((_GameState *)0)->left, 0, 1},
+        {meta_type_Ball, "ball", (size_t)&((_GameState *)0)->ball, 0, 1},
+};
 
 /* Function to serialize a struct to a char array buffer. */
 static size_t
