@@ -10,7 +10,7 @@
   ===================================================================================================*/
 
 /* TODO(Jonny):
-    - Complete skip over member functions!
+    - Completly skip over member functions!
     - Add booleans to primitive type!
     - Struct meta data.
         - Multiple inheritance.
@@ -149,10 +149,10 @@ safe_truncate_size_64(Uint64 value)
 #define zero_memory_block(dest, size) memset(dest, 0, size)
 
 // These are overloaded so I can realloc new'd memory.
-Void *operator new(size_t size)   { return(calloc(size, 1)); }
-Void *operator new[](size_t size) { return(calloc(size, 1)); }
-Void operator delete(Void *ptr)   { if(ptr) {free(ptr);}     }
-Void operator delete[](Void *ptr) { if(ptr) {free(ptr);}     }
+Void *operator new(size_t size)   { return(malloc(size)); }
+Void *operator new[](size_t size) { return(malloc(size)); }
+Void operator delete(Void *ptr)   { if(ptr) {free(ptr);}  }
+Void operator delete[](Void *ptr) { if(ptr) {free(ptr);}  }
 
 struct Realloc {
     Void *ptr;
@@ -752,6 +752,7 @@ create_output_buffer(Int size)
     return(res);
 }
 
+// TODO(Jonny): Rename some of these so they're more clear.
 enum TokenType {
     TokenType_unknown,
 
@@ -800,14 +801,16 @@ struct String {
 };
 
 internal String
-token_to_string(Token token)
+create_string(Char *str, Int len = 0)
 {
-    assert(token.type);
+    if(!len) { len = string_length(str); }
 
-    String res = { token.e, token.len };
+    String res = { str, len };
 
     return(res);
 }
+
+internal String token_to_string(Token token) { return(create_string(token.e, token.len)); }
 
 internal Char *
 token_to_string(Token token, Char *buffer, Int size)
@@ -846,8 +849,6 @@ token_compare(Token a, Token b)
 internal Bool
 string_compare(String a, String b)
 {
-    assert((a.len) && (b.len));
-
     Bool res = false;
 
     if(a.len == b.len) {
@@ -1272,6 +1273,46 @@ struct Variable {
 };
 
 internal Variable
+create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1)
+{
+    Variable res;
+    res.type = create_string(type);
+    res.name = create_string(name);
+    res.is_ptr = is_ptr;
+    res.array_count = array_count;
+
+    return(res);
+}
+
+internal Bool
+compare_variable(Variable a, Variable b)
+{
+    Bool res = true;
+
+    if(0) {}
+    else if(!string_compare(a.type, b.type)) { res = false; }
+    else if(!string_compare(a.name, b.name)) { res = false; }
+    else if(a.is_ptr != b.is_ptr)            { res = false; }
+    else if(a.array_count != b.array_count)  { res = false; }
+
+    return(res);
+}
+
+internal Bool
+compare_variable_array(Variable *a, Variable *b, Int count)
+{
+    assert((a) && (b) && (count));
+
+    for(Int array_index = 0; (array_index < count); ++array_index) {
+        if(!compare_variable(a[array_index], b[array_index])) {
+            return(false);
+        }
+    }
+
+    return(true);
+}
+
+internal Variable
 parse_member(Tokenizer *tokenizer)
 {
     assert(tokenizer);
@@ -1484,7 +1525,7 @@ parse_struct(Tokenizer *tokenizer)
 
             res.member_count = 0;
             Char *member_pos[256] = {};
-            Int func_max = 256;
+            Int func_max = 8;
             res.func_data = new FunctionData[func_max];
             if(!res.func_data) {
                 push_error(ErrorType_ran_out_of_memory);
@@ -1567,11 +1608,11 @@ parse_struct(Tokenizer *tokenizer)
                 res.members = new Variable[res.member_count];
                 if(!res.members) {
                     push_error(ErrorType_ran_out_of_memory);
-                }
-
-                for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
-                    Tokenizer fake_tokenizer = { member_pos[member_index] };
-                    res.members[member_index] = parse_member(&fake_tokenizer);
+                } else {
+                    for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
+                        Tokenizer fake_tokenizer = { member_pos[member_index] };
+                        res.members[member_index] = parse_member(&fake_tokenizer);
+                    }
                 }
             }
         }
@@ -1585,100 +1626,100 @@ get_serialize_struct_implementation(Char *def_struct_code)
 {
     assert(def_struct_code);
 
-    Int res_size = 10000; // TODO(Jonny): Arbitrary size!
-    Char *res = new Char[res_size];
-    if(res) {
-        format_string(res, res_size,
-                      "/* Function to serialize a struct to a char array buffer. */\n"
-                      "static size_t\n"
-                      "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
-                      "{\n"
-                      "    char indent_buf[256];\n"
-                      "    unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
-                      "\n"
-                      "    memset(indent_buf, 0, 256);\n"
-                      "\n"
-                      "\n"
-                      "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
-                      "    memset(buffer + bytes_written, 0, buf_size - bytes_written);\n"
-                      "    for(indent_index = 0; (indent_index < indent); ++indent_index) {\n"
-                      "        indent_buf[indent_index] = ' ';\n"
-                      "    }\n"
-                      "\n"
-                      "    bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%s%%s\", indent_buf, name);\n"
-                      "    indent += 4;\n"
-                      "\n"
-                      "    for(indent_index = 0; (indent_index < indent); ++indent_index) {\n"
-                      "        indent_buf[indent_index] = ' ';\n"
-                      "    }\n"
-                      "\n"
-                      "    for(member_index = 0; (member_index < num_members); ++member_index) {\n"
-                      "         MemberDefinition *member = members_of_Something + member_index;\n"
-                      "\n"
-                      "         void *member_ptr = (char *)var + member->offset;\n"
-                      "         switch(member->type) {\n"
-                      "            case meta_type_float: {\n"
-                      "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                      "                    float *value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;\n"
-                      "                    if(member->arr_size > 1) {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s[%%d] = %%f\", indent_buf, member->name, arr_index, value[arr_index]);\n"
-                      "                    } else {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s = %%f\", indent_buf, member->name, value[arr_index]);\n"
-                      "                    }\n"
-                      "                }\n"
-                      "            } break;\n"
-                      "\n"
-                      "            case meta_type_short: case meta_type_int: case meta_type_long: {\n"
-                      "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                      "                    int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;\n"
-                      "                    if(member->arr_size > 1) {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s[%%d] = %%d\", indent_buf, member->name, arr_index, value[arr_index]);\n"
-                      "                    } else {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s = %%d\", indent_buf, member->name, value[arr_index]);\n"
-                      "                    }\n"
-                      "                }\n"
-                      "            } break;\n"
-                      "\n"
-                      "            case meta_type_bool: {\n"
-                      "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                      "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
-                      "                    if(member->arr_size > 1) {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s[%%d] = %%s\", indent_buf, member->name, arr_index, (value[arr_index]) ? \"true\" : \"false\");\n"
-                      "                    } else {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s = %%s\", indent_buf, member->name, (value[arr_index]) ? \"true\" : \"false\");\n"
-                      "                    }\n"
-                      "                }\n"
-                      "            } break;\n"
-                      "\n"
-                      "            case meta_type_char: {\n"
-                      "                if(member->is_ptr) {\n"
-                      "                    bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar * %%s = \\\"%%s\\\"\", indent_buf, member->name, *(char **)member_ptr);\n"
-                      "                } else {\n"
-                      "                    bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar %%s = %%c\", indent_buf, member->name, *(char *)member_ptr);\n"
-                      "                }\n"
-                      "            } break;\n"
-                      "\n"
-                      "            case meta_type_double: {\n"
-                      "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                      "                    double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;\n"
-                      "                    if(member->arr_size > 1) {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s[%%d] = %%f\", indent_buf, member->name, arr_index, value[arr_index]);\n"
-                      "                    } else {\n"
-                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s = %%f\", indent_buf, member->name, value[arr_index]);\n"
-                      "                    }\n"
-                      "                }\n"
-                      "            } break;\n"
-                      "\n"
-                      "            default: {\n"
-                      "                %s\n"
-                      "            } break; /* default */\n"
-                      "        }\n"
-                      "    }\n"
-                      "\n"
-                      "    return(bytes_written);\n"
-                      "}\0",
-                      def_struct_code
-                     );
+    Char *string_template = "/* Function to serialize a struct to a char array buffer. */\n"
+                            "static size_t\n"
+                            "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
+                            "{\n"
+                            "    char indent_buf[256];\n"
+                            "    unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
+                            "\n"
+                            "    memset(indent_buf, 0, 256);\n"
+                            "\n"
+                            "\n"
+                            "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
+                            "    memset(buffer + bytes_written, 0, buf_size - bytes_written);\n"
+                            "    for(indent_index = 0; (indent_index < indent); ++indent_index) {\n"
+                            "        indent_buf[indent_index] = ' ';\n"
+                            "    }\n"
+                            "\n"
+                            "    bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%s%%s\", indent_buf, name);\n"
+                            "    indent += 4;\n"
+                            "\n"
+                            "    for(indent_index = 0; (indent_index < indent); ++indent_index) {\n"
+                            "        indent_buf[indent_index] = ' ';\n"
+                            "    }\n"
+                            "\n"
+                            "    for(member_index = 0; (member_index < num_members); ++member_index) {\n"
+                            "         MemberDefinition *member = members_of_Something + member_index;\n"
+                            "\n"
+                            "         void *member_ptr = (char *)var + member->offset;\n"
+                            "         switch(member->type) {\n"
+                            "            case meta_type_float: {\n"
+                            "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                            "                    float *value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;\n"
+                            "                    if(member->arr_size > 1) {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s[%%d] = %%f\", indent_buf, member->name, arr_index, value[arr_index]);\n"
+                            "                    } else {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s = %%f\", indent_buf, member->name, value[arr_index]);\n"
+                            "                    }\n"
+                            "                }\n"
+                            "            } break;\n"
+                            "\n"
+                            "            case meta_type_short: case meta_type_int: case meta_type_long: {\n"
+
+                            "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                            "                    int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;\n"
+                            "                    if(member->arr_size > 1) {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s[%%d] = %%d\", indent_buf, member->name, arr_index, value[arr_index]);\n"
+                            "                    } else {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s = %%d\", indent_buf, member->name, value[arr_index]);\n"
+                            "                    }\n"
+                            "                }\n"
+                            "            } break;\n"
+                            "\n"
+                            "            case meta_type_bool: {\n"
+                            "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                            "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
+                            "                    if(member->arr_size > 1) {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s[%%d] = %%s\", indent_buf, member->name, arr_index, (value[arr_index]) ? \"true\" : \"false\");\n"
+                            "                    } else {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s = %%s\", indent_buf, member->name, (value[arr_index]) ? \"true\" : \"false\");\n"
+                            "                    }\n"
+                            "                }\n"
+                            "            } break;\n"
+                            "\n"
+                            "            case meta_type_char: {\n"
+                            "                if(member->is_ptr) {\n"
+                            "                    bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar * %%s = \\\"%%s\\\"\", indent_buf, member->name, *(char **)member_ptr);\n"
+                            "                } else {\n"
+                            "                    bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar %%s = %%c\", indent_buf, member->name, *(char *)member_ptr);\n"
+                            "                }\n"
+                            "            } break;\n"
+                            "\n"
+                            "            case meta_type_double: {\n"
+                            "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                            "                    double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;\n"
+                            "                    if(member->arr_size > 1) {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s[%%d] = %%f\", indent_buf, member->name, arr_index, value[arr_index]);\n"
+                            "                    } else {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s = %%f\", indent_buf, member->name, value[arr_index]);\n"
+                            "                    }\n"
+                            "                }\n"
+                            "            } break;\n"
+                            "\n"
+                            "            default: {\n"
+                            "                %s\n"
+                            "            } break; /* default */\n"
+                            "        }\n"
+                            "    }\n"
+                            "\n";
+
+    Int len = string_length(string_template) * 2;
+    Char *res = new Char[len];
+    if(!res) {
+        push_error(ErrorType_ran_out_of_memory);
+    } else {
+        format_string(res, len, string_template, def_struct_code);
     }
 
     return(res);
@@ -2243,19 +2284,19 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 StuffToWrite
 start_parsing(Char *file)
 {
-    Int enum_max = 256, enum_count = 0;
+    Int enum_max = 32, enum_count = 0;
     EnumData *enum_data = new EnumData[enum_max];
     if(!enum_data) push_error(ErrorType_ran_out_of_memory);
 
-    Int struct_max = 256, struct_count = 0;
-    StructData *struct_data = new StructData[256];
+    Int struct_max = 32, struct_count = 0;
+    StructData *struct_data = new StructData[struct_max];
     if(!struct_data) push_error(ErrorType_ran_out_of_memory);
 
-    Int union_max = 256, union_count = 0;
+    Int union_max = 32, union_count = 0;
     String *union_data = new String[union_max];
     if(!union_data) push_error(ErrorType_ran_out_of_memory);
 
-    Int func_max = 256, func_count = 0;
+    Int func_max = 32, func_count = 0;
     FunctionData *func_data = new FunctionData[func_max];
     if(!func_data) push_error(ErrorType_ran_out_of_memory);
 
