@@ -218,8 +218,8 @@ string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len)
     Bool res = false;
 
     if(len > a_len + b_len) {
-        for(Int a_index = 0; (a_index < a_len); ++a_index)    *dest++ = *a++;
-        for(Int b_index = 0; (b_index < b_len); ++b_index)    *dest++ = *b++;
+        for(Int a_index = 0; (a_index < a_len); ++a_index) { *dest++ = *a++; }
+        for(Int b_index = 0; (b_index < b_len); ++b_index) { *dest++ = *b++; }
 
         res = true;
     }
@@ -441,7 +441,7 @@ get_static_file(void)
 //
 struct StuffToWrite {
     Int header_size;
-    Void *header_data;
+    Char *header_data;
 };
 
 struct File {
@@ -2327,19 +2327,19 @@ start_parsing(Char *filename, Char *file)
 {
     Int enum_max = 32, enum_count = 0;
     EnumData *enum_data = new EnumData[enum_max];
-    if(!enum_data) push_error(ErrorType_ran_out_of_memory);
+    if(!enum_data) { push_error(ErrorType_ran_out_of_memory); }
 
     Int struct_max = 32, struct_count = 0;
     StructData *struct_data = new StructData[struct_max];
-    if(!struct_data) push_error(ErrorType_ran_out_of_memory);
+    if(!struct_data) { push_error(ErrorType_ran_out_of_memory); }
 
     Int union_max = 32, union_count = 0;
     String *union_data = new String[union_max];
-    if(!union_data) push_error(ErrorType_ran_out_of_memory);
+    if(!union_data) { push_error(ErrorType_ran_out_of_memory); }
 
     Int func_max = 32, func_count = 0;
     FunctionData *func_data = new FunctionData[func_max];
-    if(!func_data) push_error(ErrorType_ran_out_of_memory);
+    if(!func_data) { push_error(ErrorType_ran_out_of_memory); }
 
     Tokenizer tokenizer = { file };
 
