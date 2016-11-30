@@ -66,21 +66,30 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
             case meta_type_float: {
                 for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
                     float *value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;
-                    if(member->arr_size > 1) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s[%d] = %f", indent_buf, member->name, arr_index, value[arr_index]);
+                    if(value) {
+                        if(member->arr_size > 1) {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, value[arr_index]);
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, value[arr_index]);
+                        }
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s = %f", indent_buf, member->name, value[arr_index]);
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
 
             case meta_type_short: case meta_type_int: case meta_type_long: {
-                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                if(member->arr_size > 1) {
+                    int *value = (int *)member_ptr;
+                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : value[arr_index]);
+                    }
+                } else {
                     int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;
-                    if(member->arr_size > 1) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s[%d] = %d", indent_buf, member->name, arr_index, value[arr_index]);
+                    if(value) {
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, value[arr_index]);
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s = %d", indent_buf, member->name, value[arr_index]);
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -88,29 +97,41 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
             case meta_type_bool: {
                 for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
                     bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
-                    if(member->arr_size > 1) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s[%d] = %s", indent_buf, member->name, arr_index, (value[arr_index]) ? "true" : "false");
+                    if(value) {
+                        if(member->arr_size > 1) {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "",member->name, arr_index, (value[arr_index]) ? "true" : "false");
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s = %s", indent_buf, (member->is_ptr) ? "*" : "",member->name, (value[arr_index]) ? "true" : "false");
+                        }
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s = %s", indent_buf, member->name, (value[arr_index]) ? "true" : "false");
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
 
             case meta_type_char: {
-                if(member->is_ptr) {
-                    bytes_written += sprintf(buffer + bytes_written, "\n%schar * %s = \"%s\"", indent_buf, member->name, *(char **)member_ptr);
+                char *value = (member->is_ptr) ? *(char **)member_ptr : (char *)member_ptr;
+                if(value) {                    if(member->is_ptr) {
+                        bytes_written += sprintf(buffer + bytes_written, "\n%schar *%s = \"%s\"", indent_buf, member->name, *(char **)value);
+                    } else {
+                        bytes_written += sprintf(buffer + bytes_written, "\n%schar %s = %c", indent_buf, member->name, *(char *)value);
+                    }
                 } else {
-                    bytes_written += sprintf(buffer + bytes_written, "\n%schar %s = %c", indent_buf, member->name, *(char *)member_ptr);
+                    bytes_written += sprintf((char *)buffer + bytes_written, "\n%schar *%s = (null)", indent_buf, member->name);
                 }
             } break;
 
             case meta_type_double: {
                 for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
                     double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;
-                    if(member->arr_size > 1) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s[%d] = %f", indent_buf, member->name, arr_index, value[arr_index]);
+                    if(value) {
+                        if(member->arr_size > 1) {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s[%d] = %f", indent_buf, member->name, arr_index, value[arr_index]);
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s = %f", indent_buf, member->name, value[arr_index]);
+                        }
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s = %f", indent_buf, member->name, value[arr_index]);
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -130,8 +151,10 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
         }
     }
 
+
     return(bytes_written);
 }
+
 
 #define GENERATED_H
 #endif /* !defined(GENERATED_H) */

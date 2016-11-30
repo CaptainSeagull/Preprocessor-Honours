@@ -105,12 +105,14 @@ Int
 run_tests(void)
 {
     Int res = 0;
+#if 0
 #if INTERNAL
     Char *flags[] = {"--gtest_list_tests", "--gtest_repeat=1", "--gtest_break_on_failure"};
     Int number_of_flags = array_count(flags);
 
     testing::InitGoogleTest(&number_of_flags, flags);
     res = RUN_ALL_TESTS();
+#endif
 #endif
     return(res);
 }

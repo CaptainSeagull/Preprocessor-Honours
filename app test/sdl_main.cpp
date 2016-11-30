@@ -28,6 +28,7 @@ struct Ball {
     int radius;
     int speed;
     int direction;
+    int *i[4];
 };
 
 struct Paddle : public Transform {
@@ -95,6 +96,15 @@ Ball create_ball(void)
     res.direction = 0;
     res.pos.x = window_width / 2;
     res.pos.y = window_height / 2;
+    static int a = 0;
+    static int b = 1;
+    static int c = 2;
+    static int d = 3;
+    
+    res.i[0] = &a;
+    res.i[1] = &b;
+    res.i[2] = &c;
+    res.i[3] = &d;
 
     return(res);
 }
