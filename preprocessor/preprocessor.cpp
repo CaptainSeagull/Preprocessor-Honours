@@ -380,12 +380,22 @@ get_static_file(void)
                 "*/\n"
                 "\n"
                 "\n"
-                "\n"
+                "/* Code shared between generated files. */\n"
                 "#if !defined(STATIC_GENERATED)\n"
                 "\n"
                 "#include <stdio.h>\n"
                 "#include <string.h>\n"
                 "#include <assert.h>\n"
+                "\n"
+                "typedef char _char;\n"
+                "typedef short _short;\n"
+                "typedef int _int;\n"
+                "typedef long _long;\n"
+                "typedef float _float;\n"
+                "typedef double _double;\n"
+                "#if defined(__cplusplus)\n"
+                "    typedef bool _bool;\n"
+                "#endif\n"
                 "\n"
                 "typedef struct MemberDefinition {\n"
                 "    int/*MetaType*/ type;\n"
@@ -750,6 +760,14 @@ create_output_buffer(Int size)
     }
 
     return(res);
+}
+
+internal Void
+free_output_buffer(OutputBuffer *ob)
+{
+    if(ob) {
+        delete ob->buffer;
+    }
 }
 
 // TODO(Jonny): Rename some of these so they're more clear.
@@ -1632,7 +1650,7 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                             "{\n"
                             "    char indent_buf[256];\n"
-                            "    unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
+                            "    int unsigned indent_index = 0, member_index = 0, arr_index = 0;\n"
                             "\n"
                             "    memset(indent_buf, 0, 256);\n"
                             "\n"
@@ -1690,11 +1708,11 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                if(member->arr_size > 1) {\n"
                             "                    size_t *value = (size_t *)member_ptr;\n"
                             "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                        int value_to_print = (member->is_ptr) ? **(bool **)(value + arr_index) : value[arr_index];\n"
+                            "                        int value_to_print = (member->is_ptr) ? **(_bool **)(value + arr_index) : value[arr_index];\n"
                             "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (value_to_print) ? \"true\" : \"false\");\n"
                             "                    }\n"
                             "                } else {\n"
-                            "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
+                            "                    _bool *value = (member->is_ptr) ? *(_bool **)member_ptr : (_bool *)member_ptr;\n"
                             "                    if(value) {\n"
                             "                        int value_to_print = value[arr_index];\n"
                             "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, (value[arr_index]) ? \"true\" : \"false\");\n"
@@ -1738,7 +1756,6 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "            } break; /* default */\n"
                             "        }\n"
                             "    }\n"
-                            "\n"
                             "\n"
                             "    return(bytes_written);\n"
                             "}\n";
@@ -2037,12 +2054,12 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
     OutputBuffer header_output = create_output_buffer(256 * 256);
     if(!header_output.buffer) {
-        // Error
+        push_error(ErrorType_ran_out_of_memory);
     } else {
         //
         // Header Info.
         //
-        write_to_output_buffer(&header_output, "#if !defined(GENERATED_H)\n\n#include \"static_generated.h\"\n\n");
+        write_to_output_buffer(&header_output, "#if !defined(GENERATED_H) /* TODO(Jonny): Add the actual filename in here? */\n\n#include \"static_generated.h\"\n");
 
         //
         // MetaTypes enum.
@@ -2064,13 +2081,6 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 push_error(ErrorType_ran_out_of_memory);
             } else {
                 Int type_count = set_primitive_type(types);
-
-                write_to_output_buffer(&header_output, "/* Primitive types typedef'd, to avoid compile errors. */;\n");
-                for(Int primitive_index = 0; (primitive_index < type_count); ++primitive_index) {
-                    String *type = types + primitive_index;
-                    write_to_output_buffer(&header_output, "typedef %S _%S;\n",
-                                           type->len, type->e, type->len, type->e);
-                }
 
                 // Fill out the enum meta type enum.
                 for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -2096,7 +2106,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                     String *type = types + type_index;
                     write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
                 }
-                write_to_output_buffer(&header_output, "} MetaType;\n\n");
+                write_to_output_buffer(&header_output, "} MetaType;\n");
 
                 delete types;
             }
@@ -2105,7 +2115,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         //
         // Struct Meta Data
         //
-        write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n");
+        write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n\n/* Recreated structs. */\n");
         for(Int struct_index2 = 0; (struct_index2 < struct_count); ++struct_index2) {
             StructData *sd2 = struct_data + struct_index2;
 
@@ -2209,7 +2219,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         // Enum Meta data.
         //
         if(enum_count) {
-            write_to_output_buffer(&header_output, "\n\n\n/* Enum meta data. */\n");
+            write_to_output_buffer(&header_output, "\n/* Enum meta data. */\n");
 
             Int buf_size = 255 * 255;
             Char *buf = new Char[buf_size]; // Random size;
@@ -2277,16 +2287,16 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                                    ed->values[enum_value_index].value);
                         }
 
-                        Char *string_to_enum_base = "static int\n"
-                                                    "string_to_enum_%S(char const *str)\n"
-                                                    "{\n"
-                                                    "    if(0) {}\n"
-                                                    "%s"
-                                                    "\n"
-                                                    "    else { return(0); }\n"
-                                                    "}\n";
 
-                        format_string(buf, buf_size, string_to_enum_base,
+                        format_string(buf, buf_size,
+                                      "static int\n"
+                                      "string_to_enum_%S(char const *str)\n"
+                                      "{\n"
+                                      "    if(0) {}\n"
+                                      "%s"
+                                      "\n"
+                                      "    else { return(0); } /* str didn't match. TODO(Jonny): Throw an error here? */\n"
+                                      "}\n",
                                       ed->name.len, ed->name.e, small_buf);
 
                         write_to_output_buffer(&header_output, buf);
@@ -2296,15 +2306,18 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
                 delete buf;
             }
+
         }
 
         //
         // # Guard macro.
         //
-        write_to_output_buffer(&header_output, "\n\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
+        write_to_output_buffer(&header_output, "\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
 
         res.header_size = header_output.index;
         res.header_data = header_output.buffer;
+
+        //delete header_output.buffer; // TODO(Jonny): Causes visual studio to crash...
     }
 
     return(res);

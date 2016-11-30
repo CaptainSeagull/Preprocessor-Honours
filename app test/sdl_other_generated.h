@@ -1,15 +1,6 @@
-#if !defined(GENERATED_H)
+#if !defined(GENERATED_H) /* TODO(Jonny): Add the actual filename in here? */
 
 #include "static_generated.h"
-
-/* Primitive types typedef'd, to avoid compile errors. */;
-typedef char _char;
-typedef short _short;
-typedef int _int;
-typedef long _long;
-typedef float _float;
-typedef double _double;
-typedef bool _bool;
 
 /* Enum with field for every type detected. */
 typedef enum MetaType {
@@ -23,8 +14,9 @@ typedef enum MetaType {
     meta_type_foo,
 } MetaType;
 
-
 /* Struct meta data. */
+
+/* Recreated structs. */
 typedef struct _foo {  _int x;  _int y;  } _foo;
 
 /* Meta data for: foo. */
@@ -39,7 +31,7 @@ static size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
     char indent_buf[256];
-    unsigned indent_index = 0, member_index = 0, arr_index = 0;
+    int unsigned indent_index = 0, member_index = 0, arr_index = 0;
 
     memset(indent_buf, 0, 256);
 
@@ -97,11 +89,11 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 if(member->arr_size > 1) {
                     size_t *value = (size_t *)member_ptr;
                     for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
-                        int value_to_print = (member->is_ptr) ? **(bool **)(value + arr_index) : value[arr_index];
+                        int value_to_print = (member->is_ptr) ? **(_bool **)(value + arr_index) : value[arr_index];
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (value_to_print) ? "true" : "false");
                     }
                 } else {
-                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
+                    _bool *value = (member->is_ptr) ? *(_bool **)member_ptr : (_bool *)member_ptr;
                     if(value) {
                         int value_to_print = value[arr_index];
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, (value[arr_index]) ? "true" : "false");
@@ -154,10 +146,8 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
         }
     }
 
-
     return(bytes_written);
 }
-
 
 #define GENERATED_H
 #endif /* !defined(GENERATED_H) */

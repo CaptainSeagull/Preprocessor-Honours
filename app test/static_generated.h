@@ -89,12 +89,22 @@
 */
 
 
-
+/* Code shared between generated files. */
 #if !defined(STATIC_GENERATED)
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+
+typedef char _char;
+typedef short _short;
+typedef int _int;
+typedef long _long;
+typedef float _float;
+typedef double _double;
+#if defined(__cplusplus)
+    typedef bool _bool;
+#endif
 
 typedef struct MemberDefinition {
     int/*MetaType*/ type;
