@@ -149,8 +149,8 @@ safe_truncate_size_64(Uint64 value)
 #define zero_memory_block(dest, size) memset(dest, 0, size)
 
 // These are overloaded so I can realloc new'd memory.
-Void *operator new(size_t size)   { return(malloc(size)); }
-Void *operator new[](size_t size) { return(malloc(size)); }
+Void *operator new(size_t size)   { return(calloc(size, 1)); }
+Void *operator new[](size_t size) { return(calloc(size, 1)); }
 Void operator delete(Void *ptr)   { if(ptr) {free(ptr);}  }
 Void operator delete[](Void *ptr) { if(ptr) {free(ptr);}  }
 
@@ -1704,7 +1704,7 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                    }\n"
                             "                }\n"
                             "            } break;\n"
-                            #if 0
+#if 0
                             "            case meta_type_bool: {\n"
                             "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
                             "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
@@ -1719,7 +1719,7 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                    }\n"
                             "                }\n"
                             "            } break;\n"
-                            #endif
+#endif
                             "\n"
                             "            case meta_type_char: {\n"
                             "                char *value = (member->is_ptr) ? *(char **)member_ptr : (char *)member_ptr;\n"

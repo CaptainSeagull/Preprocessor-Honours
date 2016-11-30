@@ -28,7 +28,7 @@ struct Ball {
     int radius;
     int speed;
     int direction;
-    bool *i[4];
+    float *i[4];
 };
 
 struct Paddle : public Transform {
@@ -96,11 +96,11 @@ Ball create_ball(void)
     res.direction = 0;
     res.pos.x = window_width / 2;
     res.pos.y = window_height / 2;
-    static bool a = true;
-    static bool b = false;
-    static bool c = true;
-    static bool d = false;
-    
+    static float a = 1.1f;
+    static float b = 2.2f;
+    static float c = 3.3f;
+    static float d = 4.4f;
+
     res.i[0] = &a;
     res.i[1] = &b;
     res.i[2] = &c;

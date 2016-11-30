@@ -31,7 +31,7 @@ typedef enum MetaType {
 /* Struct meta data. */
 typedef struct _V2 {  _int x;  _int y;  } _V2;
 typedef struct _Transform {  _V2 pos;  _V2 size;  } _Transform;
-typedef struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  _bool *i[4];  } _Ball;
+typedef struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  _float *i[4];  } _Ball;
 typedef struct _Paddle : public _Transform {  _int score;  } _Paddle;
 typedef struct _GameState {  _Paddle right;  _Paddle left;  _Ball ball;  } _GameState;
 
@@ -57,7 +57,7 @@ static int const num_members_for_Ball = 5;
         {meta_type_int, "radius", (size_t)&((_Ball *)0)->radius, 0, 1},
         {meta_type_int, "speed", (size_t)&((_Ball *)0)->speed, 0, 1},
         {meta_type_int, "direction", (size_t)&((_Ball *)0)->direction, 0, 1},
-        {meta_type_bool, "i", (size_t)&((_Ball *)0)->i, 1, 4},
+        {meta_type_float, "i", (size_t)&((_Ball *)0)->i, 1, 4},
 };
 /* Meta data for: Paddle. */
 static int const num_members_for_Paddle = 3;
