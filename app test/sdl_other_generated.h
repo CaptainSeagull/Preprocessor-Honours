@@ -73,7 +73,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 if(member->arr_size > 1) {
                     size_t *value = (size_t *)member_ptr;
                     for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : value[arr_index]);
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : (int)value[arr_index]);
                     }
                 } else {
                     int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;

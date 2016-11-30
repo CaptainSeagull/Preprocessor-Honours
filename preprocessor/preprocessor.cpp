@@ -142,6 +142,8 @@ safe_truncate_size_64(Uint64 value)
     return(res);
 }
 
+global Bool should_write_to_file;
+
 //
 // Memory stuff.
 //
@@ -440,9 +442,6 @@ get_static_file(void)
 struct StuffToWrite {
     Int header_size;
     Void *header_data;
-
-    Int source_size;
-    Void *source_data;
 };
 
 struct File {
@@ -1692,7 +1691,7 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                if(member->arr_size > 1) {\n"
                             "                    size_t *value = (size_t *)member_ptr;\n"
                             "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : value[arr_index]);\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : (int)value[arr_index]);\n"
                             "                    }\n"
                             "                } else {\n"
                             "                    int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;\n"
@@ -2323,8 +2322,8 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
     return(res);
 }
 
-StuffToWrite
-start_parsing(Char *file)
+internal Bool
+start_parsing(Char *filename, Char *file)
 {
     Int enum_max = 32, enum_count = 0;
     EnumData *enum_data = new EnumData[enum_max];
@@ -2436,7 +2435,28 @@ start_parsing(Char *file)
         }
     }
 
-    StuffToWrite res = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
+    StuffToWrite stuff_to_write = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
+
+    Bool res = false;
+    if(should_write_to_file) {
+        Char generated_file_name[256] = {};
+        Char *generated_extension = "_generated.h";
+
+        if(string_concat(generated_file_name, array_count(generated_file_name),
+                         filename, string_length(filename) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
+                         generated_extension, string_length(generated_extension))) {
+
+            Bool header_write_success = write_to_file(generated_file_name, stuff_to_write.header_data, stuff_to_write.header_size);
+            if(!header_write_success) {
+                push_error(ErrorType_could_not_write_to_disk);
+            } else {
+                res = true;
+
+            }
+
+            delete stuff_to_write.header_data;
+        }
+    }
 
     delete union_data;
     delete struct_data;
@@ -2455,9 +2475,9 @@ main(Int argc, Char **argv)
     if(argc <= 1) {
         push_error(ErrorType_no_parameters);
     } else {
-        Bool should_write_to_file = true;
         Bool should_log_errors = false;
         Bool should_run_tests = false;
+        should_write_to_file = true;
 
         // Get the total amount of memory needed to store all files.
         PtrSize largest_source_file_size = 0;
@@ -2515,26 +2535,12 @@ main(Int argc, Char **argv)
                         if(type == SwitchType_source_file) {
                             File file = read_entire_file_and_null_terminate(file_name, file_memory);
                             if(file.data) {
-                                StuffToWrite stuff_to_write = start_parsing(file.data);
-                                if(should_write_to_file) {
-                                    Char generated_file_name[256] = {};
-                                    Char *generated_extension = "_generated.h";
-
-                                    if(string_concat(generated_file_name, array_count(generated_file_name),
-                                                     file_name, string_length(file_name) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
-                                                     generated_extension, string_length(generated_extension))) {
-
-                                        Bool header_write_success = write_to_file(generated_file_name, stuff_to_write.header_data, stuff_to_write.header_size);
-                                        if(!header_write_success) {
-                                            push_error(ErrorType_could_not_write_to_disk);
-                                        }
-                                    }
+                                Bool success = start_parsing(file_name, file.data);
+                                if(!success) {
+                                    // Error.
                                 }
                             }
                         }
-
-
-
                     }
 
                     delete file_memory;
