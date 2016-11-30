@@ -107,7 +107,7 @@ run_tests(void)
     Int res = 0;
 #if INTERNAL
     // Google test uses so much memory, it's difficult to run in x86.
-    if(sizeof PtrSize == 8) {
+    if(sizeof(PtrSize) == 8) {
         Char *flags[] = {"--gtest_list_tests", "--gtest_repeat=1", "--gtest_break_on_failure"};
         Int number_of_flags = array_count(flags);
 

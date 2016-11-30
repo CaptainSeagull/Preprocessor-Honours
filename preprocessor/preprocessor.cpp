@@ -1636,7 +1636,6 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "\n"
                             "    memset(indent_buf, 0, 256);\n"
                             "\n"
-                            "\n"
                             "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
                             "    memset(buffer + bytes_written, 0, buf_size - bytes_written);\n"
                             "    for(indent_index = 0; (indent_index < indent); ++indent_index) {\n"
@@ -1704,22 +1703,6 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                    }\n"
                             "                }\n"
                             "            } break;\n"
-#if 0
-                            "            case meta_type_bool: {\n"
-                            "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
-                            "                    if(value) {\n"
-                            "                        if(member->arr_size > 1) {\n"
-                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\",member->name, arr_index, (value[arr_index]) ? \"true\" : \"false\");\n"
-                            "                        } else {\n"
-                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\",member->name, (value[arr_index]) ? \"true\" : \"false\");\n"
-                            "                        }\n"
-                            "                    } else {\n"
-                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool *%%s = (null)\", indent_buf, member->name);\n"
-                            "                    }\n"
-                            "                }\n"
-                            "            } break;\n"
-#endif
                             "\n"
                             "            case meta_type_char: {\n"
                             "                char *value = (member->is_ptr) ? *(char **)member_ptr : (char *)member_ptr;\n"
@@ -1735,14 +1718,15 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "            } break;\n"
                             "\n"
                             "            case meta_type_double: {\n"
-                            "                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                            "                if(member->arr_size > 1) {\n"
+                            "                    size_t *value = (size_t *)member_ptr;\n"
+                            "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? **(double **)(value + arr_index) : value[arr_index]);\n"
+                            "                    }\n"
+                            "                } else {\n"
                             "                    double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;\n"
                             "                    if(value) {\n"
-                            "                        if(member->arr_size > 1) {\n"
-                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s[%%d] = %%f\", indent_buf, member->name, arr_index, value[arr_index]);\n"
-                            "                        } else {\n"
-                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s = %%f\", indent_buf, member->name, value[arr_index]);\n"
-                            "                        }\n"
+                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sdouble %%s%%s = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, value[arr_index]);\n"
                             "                    } else {\n"
                             "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sdouble *%%s = (null)\", indent_buf, member->name);\n"
                             "                    }\n"
@@ -2160,13 +2144,13 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
             if(inherited) {
                 member_count += inherited->member_count;
             }
-            write_to_output_buffer(&header_output, "static int const num_members_for_%S = %u;\n",
+            write_to_output_buffer(&header_output, "static int num_members_for_%S = %u;\n",
                                    sd->name.len, sd->name.e, member_count);
 
-            write_to_output_buffer(&header_output, "\n    static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
+            write_to_output_buffer(&header_output, "static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
             for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
-                write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
+                write_to_output_buffer(&header_output, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
                                        sd->name.len, sd->name.e,

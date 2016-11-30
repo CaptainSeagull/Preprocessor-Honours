@@ -31,49 +31,44 @@ typedef enum MetaType {
 /* Struct meta data. */
 typedef struct _V2 {  _int x;  _int y;  } _V2;
 typedef struct _Transform {  _V2 pos;  _V2 size;  } _Transform;
-typedef struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  _float *i[4];  } _Ball;
+typedef struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  _double *i[4];  } _Ball;
 typedef struct _Paddle : public _Transform {  _int score;  } _Paddle;
 typedef struct _GameState {  _Paddle right;  _Paddle left;  _Ball ball;  } _GameState;
 
 /* Meta data for: V2. */
-static int const num_members_for_V2 = 2;
-
-    static MemberDefinition members_of_V2[] = {
-        {meta_type_int, "x", (size_t)&((_V2 *)0)->x, 0, 1},
-        {meta_type_int, "y", (size_t)&((_V2 *)0)->y, 0, 1},
+static int num_members_for_V2 = 2;
+static MemberDefinition members_of_V2[] = {
+    {meta_type_int, "x", (size_t)&((_V2 *)0)->x, 0, 1},
+    {meta_type_int, "y", (size_t)&((_V2 *)0)->y, 0, 1},
 };
 /* Meta data for: Transform. */
-static int const num_members_for_Transform = 2;
-
-    static MemberDefinition members_of_Transform[] = {
-        {meta_type_V2, "pos", (size_t)&((_Transform *)0)->pos, 0, 1},
-        {meta_type_V2, "size", (size_t)&((_Transform *)0)->size, 0, 1},
+static int num_members_for_Transform = 2;
+static MemberDefinition members_of_Transform[] = {
+    {meta_type_V2, "pos", (size_t)&((_Transform *)0)->pos, 0, 1},
+    {meta_type_V2, "size", (size_t)&((_Transform *)0)->size, 0, 1},
 };
 /* Meta data for: Ball. */
-static int const num_members_for_Ball = 5;
-
-    static MemberDefinition members_of_Ball[] = {
-        {meta_type_V2, "pos", (size_t)&((_Ball *)0)->pos, 0, 1},
-        {meta_type_int, "radius", (size_t)&((_Ball *)0)->radius, 0, 1},
-        {meta_type_int, "speed", (size_t)&((_Ball *)0)->speed, 0, 1},
-        {meta_type_int, "direction", (size_t)&((_Ball *)0)->direction, 0, 1},
-        {meta_type_float, "i", (size_t)&((_Ball *)0)->i, 1, 4},
+static int num_members_for_Ball = 5;
+static MemberDefinition members_of_Ball[] = {
+    {meta_type_V2, "pos", (size_t)&((_Ball *)0)->pos, 0, 1},
+    {meta_type_int, "radius", (size_t)&((_Ball *)0)->radius, 0, 1},
+    {meta_type_int, "speed", (size_t)&((_Ball *)0)->speed, 0, 1},
+    {meta_type_int, "direction", (size_t)&((_Ball *)0)->direction, 0, 1},
+    {meta_type_double, "i", (size_t)&((_Ball *)0)->i, 1, 4},
 };
 /* Meta data for: Paddle. */
-static int const num_members_for_Paddle = 3;
-
-    static MemberDefinition members_of_Paddle[] = {
-        {meta_type_int, "score", (size_t)&((_Paddle *)0)->score, 0, 1},
+static int num_members_for_Paddle = 3;
+static MemberDefinition members_of_Paddle[] = {
+    {meta_type_int, "score", (size_t)&((_Paddle *)0)->score, 0, 1},
         {meta_type_V2, "pos", (size_t)&((_Paddle *)0)->pos, 0, 1},
         {meta_type_V2, "size", (size_t)&((_Paddle *)0)->size, 0, 1},
 };
 /* Meta data for: GameState. */
-static int const num_members_for_GameState = 3;
-
-    static MemberDefinition members_of_GameState[] = {
-        {meta_type_Paddle, "right", (size_t)&((_GameState *)0)->right, 0, 1},
-        {meta_type_Paddle, "left", (size_t)&((_GameState *)0)->left, 0, 1},
-        {meta_type_Ball, "ball", (size_t)&((_GameState *)0)->ball, 0, 1},
+static int num_members_for_GameState = 3;
+static MemberDefinition members_of_GameState[] = {
+    {meta_type_Paddle, "right", (size_t)&((_GameState *)0)->right, 0, 1},
+    {meta_type_Paddle, "left", (size_t)&((_GameState *)0)->left, 0, 1},
+    {meta_type_Ball, "ball", (size_t)&((_GameState *)0)->ball, 0, 1},
 };
 
 /* Function to serialize a struct to a char array buffer. */
@@ -84,7 +79,6 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
     unsigned indent_index = 0, member_index = 0, arr_index = 0;
 
     memset(indent_buf, 0, 256);
-
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
     memset(buffer + bytes_written, 0, buf_size - bytes_written);
@@ -167,14 +161,15 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
             } break;
 
             case meta_type_double: {
-                for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                if(member->arr_size > 1) {
+                    size_t *value = (size_t *)member_ptr;
+                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? **(double **)(value + arr_index) : value[arr_index]);
+                    }
+                } else {
                     double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;
                     if(value) {
-                        if(member->arr_size > 1) {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s[%d] = %f", indent_buf, member->name, arr_index, value[arr_index]);
-                        } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s = %f", indent_buf, member->name, value[arr_index]);
-                        }
+                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, value[arr_index]);
                     } else {
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble *%s = (null)", indent_buf, member->name);
                     }
