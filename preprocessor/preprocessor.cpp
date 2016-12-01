@@ -1675,7 +1675,12 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                if(member->arr_size > 1) {\n"
                             "                    size_t *value = (size_t *)member_ptr;\n"
                             "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? **(float **)(value + arr_index) : value[arr_index]);\n"
+                            "                        int is_null = (member->is_ptr) ? !(*(float **)(value + arr_index)) : 0;\n"
+                            "                        if(!is_null) {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? **(float **)(value + arr_index) : value[arr_index]);\n"
+                            "                        } else {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index);\n"
+                            "                        }\n"
                             "                    }\n"
                             "                } else {\n"
                             "                    float *value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;\n"
@@ -1691,7 +1696,12 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                if(member->arr_size > 1) {\n"
                             "                    size_t *value = (size_t *)member_ptr;\n"
                             "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : (int)value[arr_index]);\n"
+                            "                        int is_null = (member->is_ptr) ? !(*(int **)(value + arr_index)) : 0;\n"
+                            "                        if(!is_null) {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : (int)value[arr_index]);\n"
+                            "                        } else {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index);\n"
+                            "                        }\n"
                             "                    }\n"
                             "                } else {\n"
                             "                    int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;\n"
@@ -1703,15 +1713,21 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                }\n"
                             "            } break;\n"
                             "\n"
+                            "#if defined(__cplusplus)\n"
                             "            case meta_type_bool: {\n"
                             "                if(member->arr_size > 1) {\n"
                             "                    size_t *value = (size_t *)member_ptr;\n"
                             "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                        int value_to_print = (member->is_ptr) ? **(_bool **)(value + arr_index) : value[arr_index];\n"
-                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (value_to_print) ? \"true\" : \"false\");\n"
+                            "                        int is_null = (member->is_ptr) ? !(*(bool **)(value + arr_index)) : 0;\n"
+                            "                        if(is_null) {\n"
+                            "                            int value_to_print = (member->is_ptr) ? **(bool **)(value + arr_index) : value[arr_index];\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (value_to_print) ? \"true\" : \"false\");\n"
+                            "                        } else {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index);\n"
+                            "                        }\n"
                             "                    }\n"
                             "                } else {\n"
-                            "                    _bool *value = (member->is_ptr) ? *(_bool **)member_ptr : (_bool *)member_ptr;\n"
+                            "                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;\n"
                             "                    if(value) {\n"
                             "                        int value_to_print = value[arr_index];\n"
                             "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sbool %%s%%s = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, (value[arr_index]) ? \"true\" : \"false\");\n"
@@ -1720,14 +1736,15 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                    }\n"
                             "                }\n"
                             "            } break;\n"
+                            "#endif /* #if defined(__cplusplus) */\n"
                             "\n"
                             "            case meta_type_char: {\n"
                             "                char *value = (member->is_ptr) ? *(char **)member_ptr : (char *)member_ptr;\n"
-                            "                if(value) {"
+                            "                if(value) {\n"
                             "                    if(member->is_ptr) {\n"
-                            "                        bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar *%%s = \\\"%%s\\\"\", indent_buf, member->name, *(char **)value);\n"
+                            "                        bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar *%%s = \\\"%%s\\\"\", indent_buf, member->name, value);\n"
                             "                    } else {\n"
-                            "                        bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar %%s = %%c\", indent_buf, member->name, *(char *)value);\n"
+                            "                        bytes_written += sprintf(buffer + bytes_written, \"\\n%%schar %%s = %%c\", indent_buf, member->name, *value);\n"
                             "                    }\n"
                             "                } else {\n"
                             "                    bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%schar *%%s = (null)\", indent_buf, member->name);\n"
@@ -1738,7 +1755,12 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "                if(member->arr_size > 1) {\n"
                             "                    size_t *value = (size_t *)member_ptr;\n"
                             "                    for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {\n"
-                            "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? **(double **)(value + arr_index) : value[arr_index]);\n"
+                            "                        int is_null = (member->is_ptr) ? !(*(double **)(value + arr_index)) : 0;\n"
+                            "                        if(!is_null) {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index, (member->is_ptr) ? **(double **)(value + arr_index) : value[arr_index]);\n"
+                            "                        } else {\n"
+                            "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sdouble %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, arr_index);\n"
+                            "                        }\n"
                             "                    }\n"
                             "                } else {\n"
                             "                    double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;\n"
@@ -2114,11 +2136,19 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         //
         // Struct Meta Data
         //
-        write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n\n/* Recreated structs. */\n");
-        for(Int struct_index2 = 0; (struct_index2 < struct_count); ++struct_index2) {
-            StructData *sd2 = struct_data + struct_index2;
+        write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n\n/* Struct typedefs. */\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd2 = struct_data + struct_index;
 
-            write_to_output_buffer(&header_output, "typedef struct _%S", sd2->name.len, sd2->name.e);
+            write_to_output_buffer(&header_output, "typedef struct _%S _%S;\n",
+                                   sd2->name.len, sd2->name.e, sd2->name.len, sd2->name.e);
+        }
+
+        write_to_output_buffer(&header_output, "\n/* Recreated structs. */\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd2 = struct_data + struct_index;
+
+            write_to_output_buffer(&header_output, "struct _%S", sd2->name.len, sd2->name.e);
             if(sd2->inherited.len) {
                 write_to_output_buffer(&header_output, " : public _%S", sd2->inherited.len, sd2->inherited.e);
             }
@@ -2140,7 +2170,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
             }
 
-            write_to_output_buffer(&header_output, " } _%S;\n", sd2->name.len, sd2->name.e);
+            write_to_output_buffer(&header_output, " };\n");
         }
 
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -2157,6 +2187,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                    sd->name.len, sd->name.e, member_count);
 
             write_to_output_buffer(&header_output, "static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
+            write_to_output_buffer(&header_output, "    /* Members. */\n");
             for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
                 write_to_output_buffer(&header_output, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
@@ -2171,10 +2202,11 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 StructData *base_class = find_struct(sd->inherited, struct_data, struct_count);
                 assert(base_class);
 
+                write_to_output_buffer(&header_output, "\n    /* Inherited Members. */\n");
                 for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
                     Variable *base_class_var = base_class->members + member_index;
 
-                    write_to_output_buffer(&header_output, "        {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
+                    write_to_output_buffer(&header_output, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
                                            base_class_var->type.len, base_class_var->type.e,
                                            base_class_var->name.len, base_class_var->name.e,
                                            sd->name.len, sd->name.e,
