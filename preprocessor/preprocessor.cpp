@@ -142,19 +142,32 @@ safe_truncate_size_64(Uint64 value)
     return(res);
 }
 
-global Bool should_write_to_file;
-
 //
 // Memory stuff.
 //
-#define copy_memory_block(dest, source, size) memcpy(dest, source, size)
-#define zero_memory_block(dest, size) memset(dest, 0, size)
 
-// These are overloaded so I can realloc new'd memory.
-Void *operator new(size_t size)   { return(calloc(size, 1)); }
-Void *operator new[](size_t size) { return(calloc(size, 1)); }
-Void operator delete(Void *ptr)   { if(ptr) {free(ptr);}  }
-Void operator delete[](Void *ptr) { if(ptr) {free(ptr);}  }
+// Type *alloc_type(Type, array_length = 1);
+#define alloc_type(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
+#define alloc(size) alloc_(size, __FILE__, __LINE__, ##__VA_ARGS__)
+internal Void *
+alloc_(PtrSize size, Char *file, Int line, PtrSize num_of_elements = 1)
+{
+    Void *res = calloc(size, num_of_elements);
+    if(!res) {
+        push_error(ErrorType_ran_out_of_memory); // TODO(Jonny): Allow extra parameters when pushing error types.
+    }
+
+    return(res);
+}
+
+#define dealloc(ptr) dealloc_(ptr, __FILE__, __LINE__)
+internal Void
+dealloc_(Void *ptr, Char *file, Int line)
+{
+    if(ptr) {
+        free(ptr);
+    }
+}
 
 struct Realloc {
     Void *ptr;
@@ -751,10 +764,8 @@ create_output_buffer(Int size)
     assert(size);
 
     OutputBuffer res = {};
-    res.buffer = new Char[size];
-    if(!res.buffer) {
-        push_error(ErrorType_ran_out_of_memory);
-    } else {
+    res.buffer = alloc_type(Char, size);
+    if(res.buffer) {
         res.size = size;
     }
 
@@ -764,9 +775,7 @@ create_output_buffer(Int size)
 internal Void
 free_output_buffer(OutputBuffer *ob)
 {
-    if(ob) {
-        delete ob->buffer;
-    }
+    dealloc(ob->buffer);
 }
 
 // TODO(Jonny): Rename some of these so they're more clear.
@@ -834,7 +843,7 @@ token_to_string(Token token, Char *buffer, Int size)
 {
     assert((token.type) && (buffer) && (size >= token.len));
 
-    zero_memory_block(buffer, size);
+    memset(buffer, 0, size);
     for(Int str_index = 0; (str_index < token.len); ++str_index) {
         buffer[str_index] = token.e[str_index];
     }
@@ -1031,41 +1040,6 @@ eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
         get_token(tokenizer);
     }
 }
-
-#if DO_NO_COMPILE
-
-enum Letters {
-    Letters_a,
-    Letters_b,
-    Letters_c,
-};
-
-char const *enum_to_string_Letters(int value)
-{
-    char const *res = 0;
-    switch(value) {
-        case 0: { res = "Letters_a"; } break;
-        case 1: { res = "Letters_a"; } break;
-        case 2: { res = "Letters_a"; } break;
-    }
-
-    return(res);
-}
-
-int
-string_to_enum_Letters(char const *str)
-{
-    int res = 0;
-    if(0) {}
-    else if(stncmp(str, "Letters_a") == 0) { res = 0; }
-    else if(stncmp(str, "Letters_b") == 0) { res = 1; }
-    else if(stncmp(str, "Letters_c") == 0) { res = 2; }
-
-
-    return(res);
-}
-
-#endif
 
 internal Token
 get_token(Tokenizer *tokenizer)
@@ -1543,11 +1517,12 @@ parse_struct(Tokenizer *tokenizer)
             res.member_count = 0;
             Char *member_pos[256] = {};
             Int func_max = 8;
-            res.func_data = new FunctionData[func_max];
+#if 0
+            res.func_data = alloc_type(base_type(res.func_data), func_max);
             if(!res.func_data) {
                 push_error(ErrorType_ran_out_of_memory);
             }
-
+#endif
             for(;;) {
                 Token token = get_token(tokenizer);
                 if((!is_stupid_class_keyword(token))) {
@@ -1622,10 +1597,8 @@ parse_struct(Tokenizer *tokenizer)
             }
 
             if(res.member_count > 0) {
-                res.members = new Variable[res.member_count];
-                if(!res.members) {
-                    push_error(ErrorType_ran_out_of_memory);
-                } else {
+                res.members = alloc_type(Variable, res.member_count);
+                if(res.members) {
                     for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
                         Tokenizer fake_tokenizer = { member_pos[member_index] };
                         res.members[member_index] = parse_member(&fake_tokenizer);
@@ -1782,10 +1755,8 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "}\n";
 
     Int len = string_length(string_template) * 2;
-    Char *res = new Char[len];
-    if(!res) {
-        push_error(ErrorType_ran_out_of_memory);
-    } else {
+    Char *res = alloc_type(Char, len);
+    if(res) {
         format_string(res, len, string_template, def_struct_code);
     }
 
@@ -1838,10 +1809,8 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
         ++res.no_of_values;
     }
 
-    res.values = new EnumValue[res.no_of_values];
-    if(!res.values) {
-        push_error(ErrorType_ran_out_of_memory);
-    } else {
+    res.values = alloc_type(EnumValue, res.no_of_values);
+    if(res.values) {
         for(Int index = 0; (index < res.no_of_values); ++index) {
             EnumValue *ev = res.values + index;
 
@@ -2097,10 +2066,8 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
             }
 
-            String *types = new String[max_type_count];
-            if(!types) {
-                push_error(ErrorType_ran_out_of_memory);
-            } else {
+            String *types = alloc_type(String, max_type_count);
+            if(types) {
                 Int type_count = set_primitive_type(types);
 
                 // Fill out the enum meta type enum.
@@ -2129,7 +2096,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
                 write_to_output_buffer(&header_output, "} MetaType;\n");
 
-                delete types;
+                dealloc(types);
             }
         }
 
@@ -2223,7 +2190,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         write_to_output_buffer(&header_output, "\n\n");
 
         Int def_struct_code_size = 256 * 256;
-        Char *def_struct_code = new Char[def_struct_code_size];
+        Char *def_struct_code = alloc_type(Char, def_struct_code_size);
         if(!def_struct_code) {
             push_error(ErrorType_ran_out_of_memory);
         } else {
@@ -2244,7 +2211,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
         Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code);
         write_to_output_buffer(&header_output, "%s", serialize_struct_implementation);
-        delete serialize_struct_implementation;
+        dealloc(serialize_struct_implementation);
 
         //
         // Enum Meta data.
@@ -2253,17 +2220,15 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
             write_to_output_buffer(&header_output, "\n/* Enum meta data. */\n");
 
             Int buf_size = 255 * 255;
-            Char *buf = new Char[buf_size]; // Random size;
-            if(!buf) {
-                push_error(ErrorType_ran_out_of_memory);
-            } else {
+            Char *buf = alloc_type(Char, buf_size); // Random size;
+            if(buf) {
                 for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
                     EnumData *ed = enum_data + enum_index;
                     write_to_output_buffer(&header_output, "\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
 
                     // Enum size.
                     {
-                        zero_memory_block(buf, buf_size);
+                        memset(buf, 0, buf_size);
                         int bytes_written = format_string(buf, buf_size,
                                                           "static size_t number_of_elements_in_enum_%S = %d;",
                                                           ed->name.len, ed->name.e, ed->no_of_values);
@@ -2274,7 +2239,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
                     // enum_to_string.
                     {
-                        zero_memory_block(buf, buf_size);
+                        memset(buf, 0, buf_size);
                         Char small_buf[1024] = {};
                         Int index = 0;
 
@@ -2307,7 +2272,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
                     // string_to_enum.
                     {
-                        zero_memory_block(buf, buf_size);
+                        memset(buf, 0, buf_size);
                         Char small_buf[1024] = {};
                         Int index = 0;
 
@@ -2335,7 +2300,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
                 }
 
-                delete buf;
+                dealloc(buf);
             }
 
         }
@@ -2348,151 +2313,146 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         res.header_size = header_output.index;
         res.header_data = header_output.buffer;
 
-        //delete header_output.buffer; // TODO(Jonny): Causes visual studio to crash...
+        //dealloc(header_output.buffer; // TODO(Jonny): Causes visual studio to crash..).
     }
 
     return(res);
 }
 
+global Bool should_write_to_file;
+
 internal Bool
 start_parsing(Char *filename, Char *file)
 {
+    Bool res = false;
+
     Int enum_max = 32, enum_count = 0;
-    EnumData *enum_data = new EnumData[enum_max];
-    if(!enum_data) { push_error(ErrorType_ran_out_of_memory); }
+    EnumData *enum_data = alloc_type(EnumData, enum_max);
 
     Int struct_max = 32, struct_count = 0;
-    StructData *struct_data = new StructData[struct_max];
-    if(!struct_data) { push_error(ErrorType_ran_out_of_memory); }
+    StructData *struct_data = alloc_type(StructData, struct_max);
 
     Int union_max = 32, union_count = 0;
-    String *union_data = new String[union_max];
-    if(!union_data) { push_error(ErrorType_ran_out_of_memory); }
+    String *union_data = alloc_type(String, union_max);
 
     Int func_max = 32, func_count = 0;
-    FunctionData *func_data = new FunctionData[func_max];
-    if(!func_data) { push_error(ErrorType_ran_out_of_memory); }
+    FunctionData *func_data = alloc_type(FunctionData, func_max);
 
-    Tokenizer tokenizer = { file };
+    if((enum_data)  && (struct_data) && (union_data) && (func_data)) {
+        Tokenizer tokenizer = { file };
 
-    Bool parsing = true;
-    while(parsing) {
-        Token token = get_token(&tokenizer);
-        switch(token.type) {
-            case TokenType_end_of_stream: { parsing = false;                 } break;
-            case TokenType_hash:          { skip_to_end_of_line(&tokenizer); } break;
+        Bool parsing = true;
+        while(parsing) {
+            Token token = get_token(&tokenizer);
+            switch(token.type) {
+                case TokenType_end_of_stream: { parsing = false;                 } break;
+                case TokenType_hash:          { skip_to_end_of_line(&tokenizer); } break;
 
-            case TokenType_identifier: {
-                // TODO(Jonny): I may need to keep the template header, so that the generated structs still work.
-                if(token_equals(token, "template")) {
-                    eat_token(&tokenizer);
-                    parse_template(&tokenizer);
-                } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
-                    if(struct_count + 1 >= struct_max) {
-                        struct_max *= 2;
-                        Realloc r = safe_realloc(struct_data, struct_max * sizeof(StructData));
-                        if(r.success) {
-                            struct_data = cast(StructData *)r.ptr;
-                        } else {
-                            push_error(ErrorType_ran_out_of_memory);
-                        }
-                    }
-
-                    struct_data[struct_count++] = parse_struct(&tokenizer); // TODO(Jonny): This fails at a struct declared within a struct/union.
-
-                } else if((token_equals(token, "union"))) {
-                    Token name = get_token(&tokenizer);
-
-                    if(union_count + 1 >= union_max) {
-                        union_max *= 2;
-                        auto r = safe_realloc(union_data, union_max * sizeof(String));
-                        if(r.success) {
-                            union_data = cast(String *)r.ptr;
-                        } else {
-                            push_error(ErrorType_ran_out_of_memory);
-                        }
-                    }
-
-                    union_data[union_count++] = token_to_string(name);
-
-                } else if((token_equals(token, "enum"))) {
-                    Token name = get_token(&tokenizer);
-                    Bool is_enum_struct = false;
-                    if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
-                        is_enum_struct = true;
-                        name = get_token(&tokenizer);
-                    }
-
-                    if(name.type == TokenType_identifier) {
-                        // If the enum has an underlying type, get it.
-                        Token underlying_type = {};
-                        Token next = get_token(&tokenizer);
-                        if(next.type == TokenType_colon) {
-                            underlying_type = get_token(&tokenizer);
-                            next = get_token(&tokenizer);
-                        }
-
-                        if(next.type == TokenType_open_brace) {
-                            if(enum_count + 1 >= enum_max) {
-                                enum_max *= 2;
-                                Realloc r = safe_realloc(enum_data, sizeof(enum_data) * enum_max);
-                                if(r.success) {
-                                    enum_data = cast(EnumData *)r.ptr;
-                                } else {
-                                    push_error(ErrorType_ran_out_of_memory);
-                                }
-                            }
-
-                            enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
-                        }
-                    }
-                } else {
-                    // This is a bit funny looking because functions don't have keyword to look for, like structs.
-                    ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
-                    if(pfr.success) {
-                        if(func_count + 1 > func_max) {
-                            func_max *= 2;
-                            Realloc r = safe_realloc(func_data, sizeof(FunctionData) * func_max);
+                case TokenType_identifier: {
+                    // TODO(Jonny): I may need to keep the template header, so that the generated structs still work.
+                    if(token_equals(token, "template")) {
+                        eat_token(&tokenizer);
+                        parse_template(&tokenizer);
+                    } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
+                        if(struct_count + 1 >= struct_max) {
+                            struct_max *= 2;
+                            Realloc r = safe_realloc(struct_data, struct_max * sizeof(StructData));
                             if(r.success) {
-                                func_data = (FunctionData *)r.ptr;
+                                struct_data = cast(StructData *)r.ptr;
                             } else {
                                 push_error(ErrorType_ran_out_of_memory);
                             }
                         }
 
-                        func_data[func_count++] = pfr.func_data;
+                        struct_data[struct_count++] = parse_struct(&tokenizer); // TODO(Jonny): This fails at a struct declared within a struct/union.
+
+                    } else if((token_equals(token, "union"))) {
+                        Token name = get_token(&tokenizer);
+
+                        if(union_count + 1 >= union_max) {
+                            union_max *= 2;
+                            auto r = safe_realloc(union_data, union_max * sizeof(String));
+                            if(r.success) {
+                                union_data = cast(String *)r.ptr;
+                            }
+                        }
+
+                        union_data[union_count++] = token_to_string(name);
+
+                    } else if((token_equals(token, "enum"))) {
+                        Token name = get_token(&tokenizer);
+                        Bool is_enum_struct = false;
+                        if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
+                            is_enum_struct = true;
+                            name = get_token(&tokenizer);
+                        }
+
+                        if(name.type == TokenType_identifier) {
+                            // If the enum has an underlying type, get it.
+                            Token underlying_type = {};
+                            Token next = get_token(&tokenizer);
+                            if(next.type == TokenType_colon) {
+                                underlying_type = get_token(&tokenizer);
+                                next = get_token(&tokenizer);
+                            }
+
+                            if(next.type == TokenType_open_brace) {
+                                if(enum_count + 1 >= enum_max) {
+                                    enum_max *= 2;
+                                    Realloc r = safe_realloc(enum_data, sizeof(enum_data) * enum_max);
+                                    if(r.success) {
+                                        enum_data = cast(EnumData *)r.ptr;
+                                    }
+                                }
+
+                                enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
+                            }
+                        }
+                    } else {
+                        // This is a bit funny looking because functions don't have keyword to look for, like structs.
+                        ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
+                        if(pfr.success) {
+                            if(func_count + 1 > func_max) {
+                                func_max *= 2;
+                                Realloc r = safe_realloc(func_data, sizeof(FunctionData) * func_max);
+                                if(r.success) {
+                                    func_data = (FunctionData *)r.ptr;
+                                }
+                            }
+
+                            func_data[func_count++] = pfr.func_data;
+                        }
                     }
-                }
-            } break;
-        }
-    }
-
-    StuffToWrite stuff_to_write = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
-
-    Bool res = false;
-    if(should_write_to_file) {
-        Char generated_file_name[256] = {};
-        Char *generated_extension = "_generated.h";
-
-        if(string_concat(generated_file_name, array_count(generated_file_name),
-                         filename, string_length(filename) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
-                         generated_extension, string_length(generated_extension))) {
-
-            Bool header_write_success = write_to_file(generated_file_name, stuff_to_write.header_data, stuff_to_write.header_size);
-            if(!header_write_success) {
-                push_error(ErrorType_could_not_write_to_disk);
-            } else {
-                res = true;
-
+                } break;
             }
-
-            delete stuff_to_write.header_data;
         }
-    }
 
-    delete union_data;
-    delete struct_data;
-    delete enum_data;
+        StuffToWrite stuff_to_write = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
+
+        if(should_write_to_file) {
+            Char generated_file_name[256] = {};
+            Char *generated_extension = "_generated.h";
+
+            if(string_concat(generated_file_name, array_count(generated_file_name),
+                             filename, string_length(filename) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
+                             generated_extension, string_length(generated_extension))) {
+
+                Bool header_write_success = write_to_file(generated_file_name, stuff_to_write.header_data, stuff_to_write.header_size);
+                if(!header_write_success) {
+                    push_error(ErrorType_could_not_write_to_disk);
+                } else {
+                    res = true;
+
+                }
+
+                dealloc(stuff_to_write.header_data);
+            }
+        }
+
+        dealloc(union_data);
+        dealloc(struct_data);
+        dealloc(enum_data);
+    }
 
     return(res);
 }
@@ -2543,10 +2503,8 @@ main(Int argc, Char **argv)
             if(!number_of_files) {
                 push_error(ErrorType_no_files_pass_in);
             } else {
-                Byte *file_memory = new Byte[largest_source_file_size];
-                if(!file_memory) {
-                    push_error(ErrorType_ran_out_of_memory);
-                } else {
+                Byte *file_memory = alloc_type(Byte, largest_source_file_size);
+                if(file_memory) {
                     // Write static file to disk.
                     if(should_write_to_file) {
                         Char *static_file_data = get_static_file();
@@ -2559,7 +2517,7 @@ main(Int argc, Char **argv)
 
                     // Parse files
                     for(Int file_index = 1; (file_index < argc); ++file_index) {
-                        zero_memory_block(file_memory, largest_source_file_size);
+                        memset(file_memory, 0, largest_source_file_size);
 
                         Char *file_name = argv[file_index];
 
@@ -2575,7 +2533,7 @@ main(Int argc, Char **argv)
                         }
                     }
 
-                    delete file_memory;
+                    dealloc(file_memory);
                 }
             }
 
@@ -2601,4 +2559,3 @@ main(Int argc, Char **argv)
 
     return(res);
 }
-

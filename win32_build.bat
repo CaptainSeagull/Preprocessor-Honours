@@ -2,7 +2,7 @@
 
 rem Variables to set. NOTE - Google Test uses _a lot_ of memory, so it's advised to run tests in 64-bit.
 set VISUAL_STUDIO_VERSION=10
-set ENVIRONMENT=x86
+set ENVIRONMENT=x64
 set RELEASE=false
 set RUN_SDL_CODE=true
 set RUN_CODE_AFTER_BUILDING=true
