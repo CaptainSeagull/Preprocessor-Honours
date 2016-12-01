@@ -146,6 +146,8 @@ safe_truncate_size_64(Uint64 value)
 // Memory stuff.
 //
 
+// TODO(Jonny): Use this to find memory leaks.
+
 // Type *alloc_type(Type, array_length = 1);
 #define alloc_type(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
 #define alloc(size) alloc_(size, __FILE__, __LINE__, ##__VA_ARGS__)
@@ -829,14 +831,20 @@ struct String {
 internal String
 create_string(Char *str, Int len = 0)
 {
-    if(!len) { len = string_length(str); }
-
-    String res = { str, len };
+    String res;
+    res.e = str;
+    res.len = (len) ? len : string_length(str);
 
     return(res);
 }
 
-internal String token_to_string(Token token) { return(create_string(token.e, token.len)); }
+internal String
+token_to_string(Token token)
+{
+    String res = create_string(token.e, token.len);
+
+    return(res);
+}
 
 internal Char *
 token_to_string(Token token, Char *buffer, Int size)
@@ -1863,6 +1871,7 @@ set_primitive_type(String *array)
     return(res);
 }
 
+// TODO(Jonny): I don't like this...
 #define copy_literal_to_char_buffer(buf, index, lit) copy_literal_to_char_buffer_(buf, index, lit, sizeof(lit) - 1)
 internal Int
 copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len)
@@ -1880,7 +1889,7 @@ copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_le
 }
 
 internal Char *
-get_default_struct_string()
+get_default_struct_string(void)
 {
     Char *res = "                    case meta_type_%S: {\n"
                 "                        if(member->is_ptr) {\n"
@@ -1906,7 +1915,6 @@ struct ParseFunctionResult {
     FunctionData func_data;
     Bool success;
 };
-
 internal ParseFunctionResult
 attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 {
@@ -2038,7 +2046,7 @@ find_struct(String str, StructData *structs, Int struct_count)
 internal StuffToWrite
 write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count, FunctionData *func_data, Int func_count)
 {
-    assert((struct_data) && (func_data));
+    assert((struct_data) && (enum_data) && (func_data));
 
     StuffToWrite res = {};
 
