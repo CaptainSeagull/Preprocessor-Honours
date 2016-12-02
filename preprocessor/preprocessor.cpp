@@ -96,7 +96,6 @@ ErrorTypeToString(ErrorType e)
 struct Error {
     ErrorType type;
     Char *file;
-    Char *func;
     Int line;
 };
 
@@ -105,19 +104,18 @@ global Error global_errors[error_max] = {};
 global Int global_error_count = 0;
 
 #if ERROR_LOGGING
-    #define push_error(type) push_error_(type, cast(Char *)__FILE__, cast(Char *)__FUNCTION__, __LINE__)
+    #define push_error(type) push_error_(type, __FILE__, __LINE__)
 #else
     #define push_error(type) {}
 #endif
 
 internal Void
-push_error_(ErrorType type, Char *file, Char *func, Int line)
+push_error_(ErrorType type, Char *file, Int line)
 {
     if(global_error_count + 1 < error_max) {
         Error *e = global_errors + global_error_count;
         e->type = type;
         e->file = file;
-        e->func = func;
         e->line = line;
 
         ++global_error_count;
@@ -136,8 +134,10 @@ push_error_(ErrorType type, Char *file, Char *func, Int line)
 internal Uint32
 safe_truncate_size_64(Uint64 value)
 {
+    Uint32 res;
+
     assert(value <= 0xFFFFFFFF);
-    Uint32 res = cast(Uint32)value;
+    res = cast(Uint32)value;
 
     return(res);
 }
@@ -148,39 +148,46 @@ safe_truncate_size_64(Uint64 value)
 
 // TODO(Jonny): Use this to find memory leaks.
 
-// Type *alloc_type(Type, array_length = 1);
-#define alloc_type(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
-#define alloc(size) alloc_(size, __FILE__, __LINE__, ##__VA_ARGS__)
 internal Void *
-alloc_(PtrSize size, Char *file, Int line, PtrSize num_of_elements = 1)
+malloc_(PtrSize size, Char *file, Int line)
 {
-    Void *res = calloc(size, num_of_elements);
+    Void *res = calloc(size, 1);
     if(!res) {
-        push_error(ErrorType_ran_out_of_memory); // TODO(Jonny): Allow extra parameters when pushing error types.
+        push_error_(ErrorType_ran_out_of_memory, file, line);
     }
 
     return(res);
 }
+#if defined(malloc)
+    #undef malloc
+#endif
+#define malloc(size) malloc_(size, __FILE__, __LINE__)
+#define malloc_array(Type, size) cast(Type *)malloc_(sizeof(Type) * size, __FILE__, __LINE__)
+#define malloc_type(Type) cast(Type *)malloc_(sizeof(Type), __FILE__, __LINE__)
 
-#define dealloc(ptr) dealloc_(ptr, __FILE__, __LINE__)
 internal Void
-dealloc_(Void *ptr, Char *file, Int line)
+free_(Void *ptr, Char *file, Int line)
 {
     if(ptr) {
         free(ptr);
     }
 }
+#if defined(free)
+    #undef free
+#endif
+#define free(ptr) free_(ptr, __FILE__, __LINE__)
 
 struct Realloc {
     Void *ptr;
     Bool success;
 };
+#define safe_realloc(ptr, size) safe_realloc_(ptr, size, __FILE__, __LINE__)
 internal Realloc
-safe_realloc(Void *ptr, PtrSize size)
+safe_realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 {
-    assert((ptr) && (size));
+    Realloc res = {0};
 
-    Realloc res = {};
+    assert((ptr) && (size));
 
     res.ptr = realloc(ptr, size);
     if(res.ptr) {
@@ -766,7 +773,7 @@ create_output_buffer(Int size)
     assert(size);
 
     OutputBuffer res = {};
-    res.buffer = alloc_type(Char, size);
+    res.buffer = malloc_array(Char, size);
     if(res.buffer) {
         res.size = size;
     }
@@ -777,7 +784,7 @@ create_output_buffer(Int size)
 internal Void
 free_output_buffer(OutputBuffer *ob)
 {
-    dealloc(ob->buffer);
+    free(ob->buffer);
 }
 
 // TODO(Jonny): Rename some of these so they're more clear.
@@ -1524,9 +1531,9 @@ parse_struct(Tokenizer *tokenizer)
 
             res.member_count = 0;
             Char *member_pos[256] = {};
-            Int func_max = 8;
 #if 0
-            res.func_data = alloc_type(base_type(res.func_data), func_max);
+            Int func_max = 8;
+            res.func_data = malloc_array(base_type(res.func_data), func_max);
             if(!res.func_data) {
                 push_error(ErrorType_ran_out_of_memory);
             }
@@ -1605,7 +1612,7 @@ parse_struct(Tokenizer *tokenizer)
             }
 
             if(res.member_count > 0) {
-                res.members = alloc_type(Variable, res.member_count);
+                res.members = malloc_array(Variable, res.member_count);
                 if(res.members) {
                     for(Int member_index = 0; (member_index < res.member_count); ++member_index) {
                         Tokenizer fake_tokenizer = { member_pos[member_index] };
@@ -1763,7 +1770,7 @@ get_serialize_struct_implementation(Char *def_struct_code)
                             "}\n";
 
     Int len = string_length(string_template) * 2;
-    Char *res = alloc_type(Char, len);
+    Char *res = malloc_array(Char, len);
     if(res) {
         format_string(res, len, string_template, def_struct_code);
     }
@@ -1817,7 +1824,7 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
         ++res.no_of_values;
     }
 
-    res.values = alloc_type(EnumValue, res.no_of_values);
+    res.values = malloc_array(EnumValue, res.no_of_values);
     if(res.values) {
         for(Int index = 0; (index < res.no_of_values); ++index) {
             EnumValue *ev = res.values + index;
@@ -2074,7 +2081,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
             }
 
-            String *types = alloc_type(String, max_type_count);
+            String *types = malloc_array(String, max_type_count);
             if(types) {
                 Int type_count = set_primitive_type(types);
 
@@ -2104,7 +2111,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
                 write_to_output_buffer(&header_output, "} MetaType;\n");
 
-                dealloc(types);
+                free(types);
             }
         }
 
@@ -2198,7 +2205,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         write_to_output_buffer(&header_output, "\n\n");
 
         Int def_struct_code_size = 256 * 256;
-        Char *def_struct_code = alloc_type(Char, def_struct_code_size);
+        Char *def_struct_code = malloc_array(Char, def_struct_code_size);
         if(!def_struct_code) {
             push_error(ErrorType_ran_out_of_memory);
         } else {
@@ -2219,7 +2226,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
         Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code);
         write_to_output_buffer(&header_output, "%s", serialize_struct_implementation);
-        dealloc(serialize_struct_implementation);
+        free(serialize_struct_implementation);
 
         //
         // Enum Meta data.
@@ -2228,7 +2235,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
             write_to_output_buffer(&header_output, "\n/* Enum meta data. */\n");
 
             Int buf_size = 255 * 255;
-            Char *buf = alloc_type(Char, buf_size); // Random size;
+            Char *buf = malloc_array(Char, buf_size); // Random size;
             if(buf) {
                 for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
                     EnumData *ed = enum_data + enum_index;
@@ -2308,7 +2315,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
                 }
 
-                dealloc(buf);
+                free(buf);
             }
 
         }
@@ -2321,7 +2328,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         res.header_size = header_output.index;
         res.header_data = header_output.buffer;
 
-        //dealloc(header_output.buffer; // TODO(Jonny): Causes visual studio to crash..).
+        //free(header_output.buffer; // TODO(Jonny): Causes visual studio to crash..).
     }
 
     return(res);
@@ -2335,16 +2342,16 @@ start_parsing(Char *filename, Char *file)
     Bool res = false;
 
     Int enum_max = 32, enum_count = 0;
-    EnumData *enum_data = alloc_type(EnumData, enum_max);
+    EnumData *enum_data = malloc_array(EnumData, enum_max);
 
     Int struct_max = 32, struct_count = 0;
-    StructData *struct_data = alloc_type(StructData, struct_max);
+    StructData *struct_data = malloc_array(StructData, struct_max);
 
     Int union_max = 32, union_count = 0;
-    String *union_data = alloc_type(String, union_max);
+    String *union_data = malloc_array(String, union_max);
 
     Int func_max = 32, func_count = 0;
-    FunctionData *func_data = alloc_type(FunctionData, func_max);
+    FunctionData *func_data = malloc_array(FunctionData, func_max);
 
     if((enum_data)  && (struct_data) && (union_data) && (func_data)) {
         Tokenizer tokenizer = { file };
@@ -2453,19 +2460,18 @@ start_parsing(Char *filename, Char *file)
 
                 }
 
-                dealloc(stuff_to_write.header_data);
+                free(stuff_to_write.header_data);
             }
         }
 
-        dealloc(union_data);
-        dealloc(struct_data);
-        dealloc(enum_data);
+        free(union_data);
+        free(struct_data);
+        free(enum_data);
     }
 
     return(res);
 }
 
-#include "tests.h"
 
 Int
 main(Int argc, Char **argv)
@@ -2506,12 +2512,13 @@ main(Int argc, Char **argv)
         }
 
         if(should_run_tests) {
+            Int run_tests(void);
             res = run_tests();
         } else {
             if(!number_of_files) {
                 push_error(ErrorType_no_files_pass_in);
             } else {
-                Byte *file_memory = alloc_type(Byte, largest_source_file_size);
+                Byte *file_memory = malloc_array(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
                     if(should_write_to_file) {
@@ -2541,7 +2548,7 @@ main(Int argc, Char **argv)
                         }
                     }
 
-                    dealloc(file_memory);
+                    free(file_memory);
                 }
             }
 
@@ -2557,8 +2564,8 @@ main(Int argc, Char **argv)
 
                         Char *error_type = ErrorTypeToString(e->type);
 
-                        printf("    Error %d:\n        Type = %s\n        File = %s\n        Function = %s\n        Line = %d\n",
-                               error_index, error_type, e->file, e->func, e->line);
+                        printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
+                               error_index, error_type, e->file, e->line);
                     }
                 }
             }
@@ -2567,3 +2574,5 @@ main(Int argc, Char **argv)
 
     return(res);
 }
+
+#include "tests.h"
