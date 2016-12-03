@@ -31,7 +31,7 @@ parse_struct_test(Char *str)
     Tokenizer tokenizer = {str};
     eat_token(&tokenizer);
 
-    return(parse_struct(&tokenizer));
+    return(parse_struct(&tokenizer).sd);
 }
 
 enum StructCompareFailure {

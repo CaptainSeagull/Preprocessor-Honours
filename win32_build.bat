@@ -1,11 +1,13 @@
 @echo off
 
 rem Variables to set. NOTE - Google Test uses _a lot_ of memory, so it's advised to run tests in 64-bit.
-set VISUAL_STUDIO_VERSION=14
-set ENVIRONMENT=x64
+set VISUAL_STUDIO_VERSION=12
+set ENVIRONMENT=x86
 set RELEASE=false
-set RUN_SDL_CODE=true
 set RUN_CODE_AFTER_BUILDING=true
+
+set RUN_SDL_CODE=false
+set RUN_TEST=true
 set RUN_LAUREN_TEST=false
 
 rem Warnings to ignore.
@@ -33,8 +35,8 @@ if "%RUN_CODE_AFTER_BUILDING%"=="true" (
     "builds/win32_msvc/preprocessor.exe" -t
 )
 
-if "%ENVIRONMENT%"=="x86" (
-    if "%RUN_SDL_CODE%"=="true" (
+if "%RUN_SDL_CODE%"=="true" (
+    if "%ENVIRONMENT%"=="x86" (
         pushd "app test"
         "../builds/win32_msvc/preprocessor.exe" sdl_main.cpp sdl_other.cpp
         popd
@@ -46,10 +48,22 @@ if "%ENVIRONMENT%"=="x86" (
 )
 
 if "%RUN_LAUREN_TEST%"=="true" (
-    pushd "../../lauren_test"
+    pushd "lauren_test"
     "../builds/win32_msvc/preprocessor.exe" test.cpp
     popd
 
+    pushd "builds/win32_msvc"
     cl -FeTestLauren %COMMON_COMPILER_FLAGS% -wd4098 -W1 "../../lauren_test/test.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
+    popd
+)
+
+
+if "%RUN_TEST%"=="true" (
+    pushd "test"
+    "../builds/win32_msvc/preprocessor.exe" test_code.cpp
+    popd
+
+    pushd "builds/win32_msvc"
+    cl -FeTestCode %COMMON_COMPILER_FLAGS% -wd4098 -W1 "../../test/test_code.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
     popd
 )

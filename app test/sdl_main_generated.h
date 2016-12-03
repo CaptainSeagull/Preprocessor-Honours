@@ -20,28 +20,38 @@ typedef enum MetaType {
 
 /* Struct meta data. */
 
+/* Struct typedefs. */
+typedef struct _V2 _V2;
+typedef struct _Transform _Transform;
+typedef struct _Ball _Ball;
+typedef struct _Paddle _Paddle;
+typedef struct _GameState _GameState;
+
 /* Recreated structs. */
-typedef struct _V2 {  _int x;  _int y;  } _V2;
-typedef struct _Transform {  _V2 pos;  _V2 size;  } _Transform;
-typedef struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  _double *i[4];  } _Ball;
-typedef struct _Paddle : public _Transform {  _int score;  } _Paddle;
-typedef struct _GameState {  _Paddle right;  _Paddle left;  _Ball ball;  } _GameState;
+struct _V2 {  _int x;  _int y;  };
+struct _Transform {  _V2 pos;  _V2 size;  };
+struct _Ball {  _V2 pos;  _int radius;  _int speed;  _int direction;  _double *i[4];  };
+struct _Paddle : public _Transform {  _int score;  };
+struct _GameState {  _Paddle right;  _Paddle left;  _Ball ball;  };
 
 /* Meta data for: V2. */
 static int num_members_for_V2 = 2;
 static MemberDefinition members_of_V2[] = {
+    /* Members. */
     {meta_type_int, "x", (size_t)&((_V2 *)0)->x, 0, 1},
     {meta_type_int, "y", (size_t)&((_V2 *)0)->y, 0, 1},
 };
 /* Meta data for: Transform. */
 static int num_members_for_Transform = 2;
 static MemberDefinition members_of_Transform[] = {
+    /* Members. */
     {meta_type_V2, "pos", (size_t)&((_Transform *)0)->pos, 0, 1},
     {meta_type_V2, "size", (size_t)&((_Transform *)0)->size, 0, 1},
 };
 /* Meta data for: Ball. */
 static int num_members_for_Ball = 5;
 static MemberDefinition members_of_Ball[] = {
+    /* Members. */
     {meta_type_V2, "pos", (size_t)&((_Ball *)0)->pos, 0, 1},
     {meta_type_int, "radius", (size_t)&((_Ball *)0)->radius, 0, 1},
     {meta_type_int, "speed", (size_t)&((_Ball *)0)->speed, 0, 1},
@@ -51,13 +61,17 @@ static MemberDefinition members_of_Ball[] = {
 /* Meta data for: Paddle. */
 static int num_members_for_Paddle = 3;
 static MemberDefinition members_of_Paddle[] = {
+    /* Members. */
     {meta_type_int, "score", (size_t)&((_Paddle *)0)->score, 0, 1},
-        {meta_type_V2, "pos", (size_t)&((_Paddle *)0)->pos, 0, 1},
-        {meta_type_V2, "size", (size_t)&((_Paddle *)0)->size, 0, 1},
+
+    /* Inherited Members. */
+    {meta_type_V2, "pos", (size_t)&((_Paddle *)0)->pos, 0, 1},
+    {meta_type_V2, "size", (size_t)&((_Paddle *)0)->size, 0, 1},
 };
 /* Meta data for: GameState. */
 static int num_members_for_GameState = 3;
 static MemberDefinition members_of_GameState[] = {
+    /* Members. */
     {meta_type_Paddle, "right", (size_t)&((_GameState *)0)->right, 0, 1},
     {meta_type_Paddle, "left", (size_t)&((_GameState *)0)->left, 0, 1},
     {meta_type_Ball, "ball", (size_t)&((_GameState *)0)->ball, 0, 1},
@@ -94,7 +108,12 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 if(member->arr_size > 1) {
                     size_t *value = (size_t *)member_ptr;
                     for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? **(float **)(value + arr_index) : value[arr_index]);
+                        int is_null = (member->is_ptr) ? !(*(float **)(value + arr_index)) : 0;
+                        if(!is_null) {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? **(float **)(value + arr_index) : value[arr_index]);
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index);
+                        }
                     }
                 } else {
                     float *value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;
@@ -110,7 +129,12 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 if(member->arr_size > 1) {
                     size_t *value = (size_t *)member_ptr;
                     for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : (int)value[arr_index]);
+                        int is_null = (member->is_ptr) ? !(*(int **)(value + arr_index)) : 0;
+                        if(!is_null) {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? *(int *)value[arr_index] : (int)value[arr_index]);
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index);
+                        }
                     }
                 } else {
                     int *value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;
@@ -122,15 +146,21 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 }
             } break;
 
+#if defined(__cplusplus)
             case meta_type_bool: {
                 if(member->arr_size > 1) {
                     size_t *value = (size_t *)member_ptr;
                     for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
-                        int value_to_print = (member->is_ptr) ? **(_bool **)(value + arr_index) : value[arr_index];
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (value_to_print) ? "true" : "false");
+                        int is_null = (member->is_ptr) ? !(*(bool **)(value + arr_index)) : 0;
+                        if(is_null) {
+                            int value_to_print = (member->is_ptr) ? **(bool **)(value + arr_index) : value[arr_index];
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (value_to_print) ? "true" : "false");
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index);
+                        }
                     }
                 } else {
-                    _bool *value = (member->is_ptr) ? *(_bool **)member_ptr : (_bool *)member_ptr;
+                    bool *value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
                     if(value) {
                         int value_to_print = value[arr_index];
                         bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, (value[arr_index]) ? "true" : "false");
@@ -139,13 +169,15 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                     }
                 }
             } break;
+#endif /* #if defined(__cplusplus) */
 
             case meta_type_char: {
                 char *value = (member->is_ptr) ? *(char **)member_ptr : (char *)member_ptr;
-                if(value) {                    if(member->is_ptr) {
-                        bytes_written += sprintf(buffer + bytes_written, "\n%schar *%s = \"%s\"", indent_buf, member->name, *(char **)value);
+                if(value) {
+                    if(member->is_ptr) {
+                        bytes_written += sprintf(buffer + bytes_written, "\n%schar *%s = \"%s\"", indent_buf, member->name, value);
                     } else {
-                        bytes_written += sprintf(buffer + bytes_written, "\n%schar %s = %c", indent_buf, member->name, *(char *)value);
+                        bytes_written += sprintf(buffer + bytes_written, "\n%schar %s = %c", indent_buf, member->name, *value);
                     }
                 } else {
                     bytes_written += sprintf((char *)buffer + bytes_written, "\n%schar *%s = (null)", indent_buf, member->name);
@@ -156,7 +188,12 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 if(member->arr_size > 1) {
                     size_t *value = (size_t *)member_ptr;
                     for(arr_index = 0; (arr_index < member->arr_size); ++arr_index) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? **(double **)(value + arr_index) : value[arr_index]);
+                        int is_null = (member->is_ptr) ? !(*(double **)(value + arr_index)) : 0;
+                        if(!is_null) {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index, (member->is_ptr) ? **(double **)(value + arr_index) : value[arr_index]);
+                        } else {
+                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, arr_index);
+                        }
                     }
                 } else {
                     double *value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;

@@ -104,6 +104,8 @@ typedef float _float;
 typedef double _double;
 #if defined(__cplusplus)
     typedef bool _bool;
+#else
+    typedef int _bool;
 #endif
 
 typedef struct MemberDefinition {

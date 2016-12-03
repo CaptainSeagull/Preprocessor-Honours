@@ -16,6 +16,12 @@
 // struct test.
 //
 
+typedef struct {
+    int x;
+    int y;
+} thingy;
+
+
 struct V2 {int x; int y;};
 struct Bar {
     int i;
@@ -32,22 +38,23 @@ struct Foo : public Bar {
     double *p_array[5];
 };
 
+
 void test_struct(void)
 {
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
     //              struct has been initialized??
-    Foo foo = {};
+    Foo foo;
+    memset(&foo, 0, sizeof(foo));
     foo.str = "Hello World"; // TODO(Jonny): Why does this fail?
     foo.ip = new int; *foo.ip = 10;
     foo.fp = new float; *foo.fp = 10.5f;
     foo.b = new bool; *foo.b = true;
     foo.p_array[0] = new double; *foo.p_array[0] = 1.1;
-    //foo.p_array[1] = new double; *foo.p_array[1] = 2.2;
+    foo.p_array[1] = new double; *foo.p_array[1] = 2.2;
     foo.p_array[2] = new double; *foo.p_array[2] = 3.3;
     foo.p_array[3] = new double; *foo.p_array[3] = 4.4;
     // Leave foo.p_array blank.
-
     foo.i = 3;
     foo.f = 3.14f;
     foo.d = 3.1415;
