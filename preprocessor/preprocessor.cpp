@@ -134,10 +134,8 @@ push_error_(ErrorType type, Char *file, Int line)
 internal Uint32
 safe_truncate_size_64(Uint64 value)
 {
-    Uint32 res;
-
     assert(value <= 0xFFFFFFFF);
-    res = cast(Uint32)value;
+    Uint32 res = cast(Uint32)value;
 
     return(res);
 }
@@ -148,6 +146,7 @@ safe_truncate_size_64(Uint64 value)
 
 // TODO(Jonny): Use this to find memory leaks.
 
+// malloc
 internal Void *
 malloc_(PtrSize size, Char *file, Int line)
 {
@@ -165,6 +164,7 @@ malloc_(PtrSize size, Char *file, Int line)
 #define malloc_array(Type, size) cast(Type *)malloc_(sizeof(Type) * size, __FILE__, __LINE__)
 #define malloc_type(Type) cast(Type *)malloc_(sizeof(Type), __FILE__, __LINE__)
 
+// free
 internal Void
 free_(Void *ptr, Char *file, Int line)
 {
@@ -177,27 +177,37 @@ free_(Void *ptr, Char *file, Int line)
 #endif
 #define free(ptr) free_(ptr, __FILE__, __LINE__)
 
-struct Realloc {
-    Void *ptr;
-    Bool success;
-};
-#define safe_realloc(ptr, size) safe_realloc_(ptr, size, __FILE__, __LINE__)
-internal Realloc
-safe_realloc_(Void *ptr, PtrSize size, Char *file, Int line)
+// realloc
+internal Void *
+realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 {
-    Realloc res = {0};
-
-    assert((ptr) && (size));
-
-    res.ptr = realloc(ptr, size);
-    if(res.ptr) {
-        res.success = true;
-    } else {
-        res.ptr = ptr;
+    Void *res = realloc(ptr, size);
+    if(!res) {
+        push_error(ErrorType_ran_out_of_memory);
     }
 
     return(res);
 }
+#if defined(realloc)
+    #undef realloc
+#endif
+#define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
+
+// calloc
+internal Void *
+calloc_(PtrSize size, PtrSize stride, Char *file, Int line)
+{
+    Void *res = calloc(size, stride);
+    if(!res) {
+        push_error(ErrorType_ran_out_of_memory);
+    }
+
+    return(res);
+}
+#if defined(calloc)
+    #undef calloc
+#endif
+#define calloc(size, stride) calloc_(size, stride, __FILE__, __LINE__)
 
 //
 // Utils.
@@ -461,11 +471,6 @@ get_static_file(void)
 //
 // Start Parsing function.
 //
-struct StuffToWrite {
-    Int header_size;
-    Char *header_data;
-};
-
 struct File {
     Char *data;
     Int size;
@@ -766,7 +771,7 @@ write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
     ob->index += format_string_varargs(ob->buffer + ob->index, ob->size - ob->index, format, args);
     va_end(args);
 }
-
+#if 0
 internal OutputBuffer
 create_output_buffer(Int size)
 {
@@ -786,7 +791,7 @@ free_output_buffer(OutputBuffer *ob)
 {
     free(ob->buffer);
 }
-
+#endif
 // TODO(Jonny): Rename some of these so they're more clear.
 enum TokenType {
     TokenType_unknown,
@@ -2050,21 +2055,21 @@ find_struct(String str, StructData *structs, Int struct_count)
     return(res);
 }
 
-internal StuffToWrite
+internal File
 write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count, FunctionData *func_data, Int func_count)
 {
     assert((struct_data) && (enum_data) && (func_data));
 
-    StuffToWrite res = {};
+    File res = {};
 
-    OutputBuffer header_output = create_output_buffer(256 * 256);
-    if(!header_output.buffer) {
-        push_error(ErrorType_ran_out_of_memory);
-    } else {
+    OutputBuffer ob = {};//create_output_buffer(256 * 256);
+    ob.size = 256 * 256;
+    ob.buffer = malloc_array(Char, ob.size);
+    if(ob.buffer) {
         //
         // Header Info.
         //
-        write_to_output_buffer(&header_output, "#if !defined(GENERATED_H) /* TODO(Jonny): Add the actual filename in here? */\n\n#include \"static_generated.h\"\n");
+        write_to_output_buffer(&ob, "#if !defined(GENERATED_H) /* TODO(Jonny): Add the actual filename in here? */\n\n#include \"static_generated.h\"\n");
 
         //
         // MetaTypes enum.
@@ -2103,13 +2108,13 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
 
                 // Write the meta type enum to file.
-                write_to_output_buffer(&header_output, "\n/* Enum with field for every type detected. */\n");
-                write_to_output_buffer(&header_output, "typedef enum MetaType {\n");
+                write_to_output_buffer(&ob, "\n/* Enum with field for every type detected. */\n");
+                write_to_output_buffer(&ob, "typedef enum MetaType {\n");
                 for(Int type_index = 0; (type_index < type_count); ++type_index) {
                     String *type = types + type_index;
-                    write_to_output_buffer(&header_output, "    meta_type_%S,\n", type->len, type->e);
+                    write_to_output_buffer(&ob, "    meta_type_%S,\n", type->len, type->e);
                 }
-                write_to_output_buffer(&header_output, "} MetaType;\n");
+                write_to_output_buffer(&ob, "} MetaType;\n");
 
                 free(types);
             }
@@ -2118,23 +2123,23 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         //
         // Struct Meta Data
         //
-        write_to_output_buffer(&header_output, "\n/* Struct meta data. */\n\n/* Struct typedefs. */\n");
+        write_to_output_buffer(&ob, "\n/* Struct meta data. */\n\n/* Struct typedefs. */\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd2 = struct_data + struct_index;
 
-            write_to_output_buffer(&header_output, "typedef struct _%S _%S;\n",
+            write_to_output_buffer(&ob, "typedef struct _%S _%S;\n",
                                    sd2->name.len, sd2->name.e, sd2->name.len, sd2->name.e);
         }
 
-        write_to_output_buffer(&header_output, "\n/* Recreated structs. */\n");
+        write_to_output_buffer(&ob, "\n/* Recreated structs. */\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd2 = struct_data + struct_index;
 
-            write_to_output_buffer(&header_output, "struct _%S", sd2->name.len, sd2->name.e);
+            write_to_output_buffer(&ob, "struct _%S", sd2->name.len, sd2->name.e);
             if(sd2->inherited.len) {
-                write_to_output_buffer(&header_output, " : public _%S", sd2->inherited.len, sd2->inherited.e);
+                write_to_output_buffer(&ob, " : public _%S", sd2->inherited.len, sd2->inherited.e);
             }
-            write_to_output_buffer(&header_output, " { ");
+            write_to_output_buffer(&ob, " { ");
 
             for(Int member_index = 0; (member_index < sd2->member_count); ++member_index) {
                 Variable *md = sd2->members + member_index;
@@ -2144,7 +2149,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                     format_string(arr_buffer, 256, arr, md->array_count);
                 }
 
-                write_to_output_buffer(&header_output, " _%S %s%S%s; ",
+                write_to_output_buffer(&ob, " _%S %s%S%s; ",
                                        md->type.len, md->type.e,
                                        (md->is_ptr) ? "*" : "",
                                        md->name.len, md->name.e,
@@ -2152,27 +2157,27 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
             }
 
-            write_to_output_buffer(&header_output, " };\n");
+            write_to_output_buffer(&ob, " };\n");
         }
 
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
 
-            write_to_output_buffer(&header_output, "\n/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
+            write_to_output_buffer(&ob, "\n/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
 
             Int member_count = sd->member_count;
             StructData *inherited = find_struct(sd->inherited, struct_data, struct_count);
             if(inherited) {
                 member_count += inherited->member_count;
             }
-            write_to_output_buffer(&header_output, "static int num_members_for_%S = %u;\n",
+            write_to_output_buffer(&ob, "static int num_members_for_%S = %u;\n",
                                    sd->name.len, sd->name.e, member_count);
 
-            write_to_output_buffer(&header_output, "static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
-            write_to_output_buffer(&header_output, "    /* Members. */\n");
+            write_to_output_buffer(&ob, "static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
+            write_to_output_buffer(&ob, "    /* Members. */\n");
             for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
-                write_to_output_buffer(&header_output, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
+                write_to_output_buffer(&ob, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
                                        sd->name.len, sd->name.e,
@@ -2184,11 +2189,11 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 StructData *base_class = find_struct(sd->inherited, struct_data, struct_count);
                 assert(base_class);
 
-                write_to_output_buffer(&header_output, "\n    /* Inherited Members. */\n");
+                write_to_output_buffer(&ob, "\n    /* Inherited Members. */\n");
                 for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
                     Variable *base_class_var = base_class->members + member_index;
 
-                    write_to_output_buffer(&header_output, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
+                    write_to_output_buffer(&ob, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
                                            base_class_var->type.len, base_class_var->type.e,
                                            base_class_var->name.len, base_class_var->name.e,
                                            sd->name.len, sd->name.e,
@@ -2198,11 +2203,11 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 }
             }
 
-            write_to_output_buffer(&header_output, "};");
+            write_to_output_buffer(&ob, "};");
         }
 
         // Recursive part for calling on members of structs.
-        write_to_output_buffer(&header_output, "\n\n");
+        write_to_output_buffer(&ob, "\n\n");
 
         Int def_struct_code_size = 256 * 256;
         Char *def_struct_code = malloc_array(Char, def_struct_code_size);
@@ -2225,21 +2230,21 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
 
         Char *serialize_struct_implementation = get_serialize_struct_implementation(def_struct_code);
-        write_to_output_buffer(&header_output, "%s", serialize_struct_implementation);
+        write_to_output_buffer(&ob, "%s", serialize_struct_implementation);
         free(serialize_struct_implementation);
 
         //
         // Enum Meta data.
         //
         if(enum_count) {
-            write_to_output_buffer(&header_output, "\n/* Enum meta data. */\n");
+            write_to_output_buffer(&ob, "\n/* Enum meta data. */\n");
 
             Int buf_size = 255 * 255;
             Char *buf = malloc_array(Char, buf_size); // Random size;
             if(buf) {
                 for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
                     EnumData *ed = enum_data + enum_index;
-                    write_to_output_buffer(&header_output, "\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
+                    write_to_output_buffer(&ob, "\n/* Meta Data for: %S. */\n", ed->name.len, ed->name.e);
 
                     // Enum size.
                     {
@@ -2249,7 +2254,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                                           ed->name.len, ed->name.e, ed->no_of_values);
                         assert(bytes_written < buf_size);
 
-                        write_to_output_buffer(&header_output, buf);
+                        write_to_output_buffer(&ob, buf);
                     }
 
                     // enum_to_string.
@@ -2280,10 +2285,10 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                                           ed->name.len, ed->name.e, small_buf);
                         assert(bytes_written < buf_size);
 
-                        write_to_output_buffer(&header_output, buf);
+                        write_to_output_buffer(&ob, buf);
                     }
 
-                    write_to_output_buffer(&header_output, "\n");
+                    write_to_output_buffer(&ob, "\n");
 
                     // string_to_enum.
                     {
@@ -2310,7 +2315,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                                       "}\n",
                                       ed->name.len, ed->name.e, small_buf);
 
-                        write_to_output_buffer(&header_output, buf);
+                        write_to_output_buffer(&ob, buf);
                     }
 
                 }
@@ -2323,12 +2328,10 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         //
         // # Guard macro.
         //
-        write_to_output_buffer(&header_output, "\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
+        write_to_output_buffer(&ob, "\n#define GENERATED_H\n#endif /* !defined(GENERATED_H) */\n");
 
-        res.header_size = header_output.index;
-        res.header_data = header_output.buffer;
-
-        //free(header_output.buffer; // TODO(Jonny): Causes visual studio to crash..).
+        res.size = ob.index;
+        res.data = ob.buffer;
     }
 
     return(res);
@@ -2336,7 +2339,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
 global Bool should_write_to_file;
 
-internal Bool
+internal Void
 start_parsing(Char *filename, Char *file)
 {
     Bool res = false;
@@ -2371,11 +2374,9 @@ start_parsing(Char *filename, Char *file)
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
                         if(struct_count + 1 >= struct_max) {
                             struct_max *= 2;
-                            Realloc r = safe_realloc(struct_data, struct_max * sizeof(StructData));
-                            if(r.success) {
-                                struct_data = cast(StructData *)r.ptr;
-                            } else {
-                                push_error(ErrorType_ran_out_of_memory);
+                            Void *p = realloc(struct_data, struct_max * sizeof(StructData));
+                            if(p) {
+                                struct_data = cast(StructData *)p;
                             }
                         }
 
@@ -2386,9 +2387,9 @@ start_parsing(Char *filename, Char *file)
 
                         if(union_count + 1 >= union_max) {
                             union_max *= 2;
-                            auto r = safe_realloc(union_data, union_max * sizeof(String));
-                            if(r.success) {
-                                union_data = cast(String *)r.ptr;
+                            Void *p = realloc(union_data, union_max * sizeof(String));
+                            if(p) {
+                                union_data = cast(String *)p;
                             }
                         }
 
@@ -2414,9 +2415,9 @@ start_parsing(Char *filename, Char *file)
                             if(next.type == TokenType_open_brace) {
                                 if(enum_count + 1 >= enum_max) {
                                     enum_max *= 2;
-                                    Realloc r = safe_realloc(enum_data, sizeof(enum_data) * enum_max);
-                                    if(r.success) {
-                                        enum_data = cast(EnumData *)r.ptr;
+                                    Void *p = realloc(enum_data, sizeof(enum_data) * enum_max);
+                                    if(p) {
+                                        enum_data = cast(EnumData *)p;
                                     }
                                 }
 
@@ -2429,9 +2430,9 @@ start_parsing(Char *filename, Char *file)
                         if(pfr.success) {
                             if(func_count + 1 > func_max) {
                                 func_max *= 2;
-                                Realloc r = safe_realloc(func_data, sizeof(FunctionData) * func_max);
-                                if(r.success) {
-                                    func_data = (FunctionData *)r.ptr;
+                                Void *p = realloc(func_data, sizeof(FunctionData) * func_max);
+                                if(p) {
+                                    func_data = (FunctionData *)p;
                                 }
                             }
 
@@ -2442,7 +2443,7 @@ start_parsing(Char *filename, Char *file)
             }
         }
 
-        StuffToWrite stuff_to_write = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
+        File file_to_write = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
 
         if(should_write_to_file) {
             Char generated_file_name[256] = {};
@@ -2452,7 +2453,7 @@ start_parsing(Char *filename, Char *file)
                              filename, string_length(filename) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                              generated_extension, string_length(generated_extension))) {
 
-                Bool header_write_success = write_to_file(generated_file_name, stuff_to_write.header_data, stuff_to_write.header_size);
+                Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
                 if(!header_write_success) {
                     push_error(ErrorType_could_not_write_to_disk);
                 } else {
@@ -2460,7 +2461,7 @@ start_parsing(Char *filename, Char *file)
 
                 }
 
-                free(stuff_to_write.header_data);
+                free(file_to_write.data);
             }
         }
 
@@ -2468,8 +2469,6 @@ start_parsing(Char *filename, Char *file)
         free(struct_data);
         free(enum_data);
     }
-
-    return(res);
 }
 
 
@@ -2540,10 +2539,7 @@ main(Int argc, Char **argv)
                         if(type == SwitchType_source_file) {
                             File file = read_entire_file_and_null_terminate(file_name, file_memory);
                             if(file.data) {
-                                Bool success = start_parsing(file_name, file.data);
-                                if(!success) {
-                                    // Error.
-                                }
+                                start_parsing(file_name, file.data);
                             }
                         }
                     }
