@@ -447,8 +447,8 @@ get_static_file(void)
                 "\n"
                 "/* size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size); */\n"
                 "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, #var, 0, buffer, buf_size, 0)\n"
-                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
-                "static size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
+                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, #type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
+                "static size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "\n"
                 "/* char const *enum_to_string(EnumType, EnumType value); */\n"
                 "#define enum_to_string(Type, v) enum_to_string_##Type(v)\n"
@@ -1654,7 +1654,7 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
     // TODO(Jonny): This will currently flop with an array of pointers.
     Char *top_part = "/* Function to serialize a struct to a char array buffer. */\n"
                      "static size_t\n"
-                     "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
+                     "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                      "{\n"
                      "    char indent_buf[256];\n"
                      "    int i = 0, j = 0, is_null = 0;\n"
@@ -1670,7 +1670,7 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
                      "        indent_buf[i] = ' ';\n"
                      "    }\n"
                      "\n"
-                     "    bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%s%%s\", indent_buf, name);\n"
+                     "    bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%s%%s %%s\", indent_buf, type, name);\n"
                      "    indent += 4;\n"
                      "\n"
                      "    for(i = 0; (i < indent); ++i) {\n"
@@ -2267,9 +2267,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
         Int def_struct_code_size = 256 * 256;
         Char *def_struct_code = malloc_array(Char, def_struct_code_size);
-        if(!def_struct_code) {
-            push_error(ErrorType_ran_out_of_memory);
-        } else {
+        if(def_struct_code) {
             Int index = 0;
             index = copy_literal_to_char_buffer(def_struct_code, index, "                switch(member->type) {\n");
             for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {

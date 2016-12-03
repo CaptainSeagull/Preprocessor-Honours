@@ -24,6 +24,7 @@ typedef struct {
 
 struct V2 {int x; int y;};
 struct Bar {
+    short s;
     int i;
     float f;
     double d;
@@ -46,6 +47,7 @@ void test_struct(void)
     //              struct has been initialized??
     Foo foo;
     memset(&foo, 0, sizeof(foo));
+
     foo.str = "Hello World"; // TODO(Jonny): Why does this fail?
     foo.ip = new int; *foo.ip = 10;
     foo.fp = new float; *foo.fp = 10.5f;
@@ -55,6 +57,8 @@ void test_struct(void)
     foo.p_array[2] = new double; *foo.p_array[2] = 3.3;
     foo.p_array[3] = new double; *foo.p_array[3] = 4.4;
     // Leave foo.p_array blank.
+    foo.s = 10;
+
     foo.i = 3;
     foo.f = 3.14f;
     foo.d = 3.1415;

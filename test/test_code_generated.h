@@ -28,7 +28,7 @@ typedef struct _Foo _Foo;
 /* Recreated structs. */
 struct _thingy {  _int x;  _int y;  };
 struct _V2 {  _int x;  _int y;  };
-struct _Bar {  _int i;  _float f;  _double d;  _V2 v2;  };
+struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
 struct _Foo : public _Bar {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
 
 /* Meta data for: thingy. */
@@ -46,16 +46,17 @@ static MemberDefinition members_of_V2[] = {
     {meta_type_int, "y", (size_t)&((_V2 *)0)->y, 0, 1},
 };
 /* Meta data for: Bar. */
-static int num_members_for_Bar = 4;
+static int num_members_for_Bar = 5;
 static MemberDefinition members_of_Bar[] = {
     /* Members. */
+    {meta_type_short, "s", (size_t)&((_Bar *)0)->s, 0, 1},
     {meta_type_int, "i", (size_t)&((_Bar *)0)->i, 0, 1},
     {meta_type_float, "f", (size_t)&((_Bar *)0)->f, 0, 1},
     {meta_type_double, "d", (size_t)&((_Bar *)0)->d, 0, 1},
     {meta_type_V2, "v2", (size_t)&((_Bar *)0)->v2, 0, 1},
 };
 /* Meta data for: Foo. */
-static int num_members_for_Foo = 9;
+static int num_members_for_Foo = 10;
 static MemberDefinition members_of_Foo[] = {
     /* Members. */
     {meta_type_char, "str", (size_t)&((_Foo *)0)->str, 1, 1},
@@ -65,6 +66,7 @@ static MemberDefinition members_of_Foo[] = {
     {meta_type_double, "p_array", (size_t)&((_Foo *)0)->p_array, 1, 5},
 
     /* Inherited Members. */
+    {meta_type_short, "s", (size_t)&((_Foo *)0)->s, 0, 1},
     {meta_type_int, "i", (size_t)&((_Foo *)0)->i, 0, 1},
     {meta_type_float, "f", (size_t)&((_Foo *)0)->f, 0, 1},
     {meta_type_double, "d", (size_t)&((_Foo *)0)->d, 0, 1},
@@ -73,7 +75,7 @@ static MemberDefinition members_of_Foo[] = {
 
 /* Function to serialize a struct to a char array buffer. */
 static size_t
-serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
+serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
     char indent_buf[256];
     int i = 0, j = 0, is_null = 0;
@@ -89,7 +91,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
         indent_buf[i] = ' ';
     }
 
-    bytes_written += sprintf((char *)buffer + bytes_written, "\n%s%s", indent_buf, name);
+    bytes_written += sprintf((char *)buffer + bytes_written, "\n%s%s %s", indent_buf, type, name);
     indent += 4;
 
     for(i = 0; (i < indent); ++i) {
