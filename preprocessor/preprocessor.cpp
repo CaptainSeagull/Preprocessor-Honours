@@ -73,6 +73,8 @@ enum ErrorType {
     ErrorType_cannot_find_file,
     ErrorType_could_not_write_to_disk,
     ErrorType_no_files_pass_in,
+    ErrorType_could_not_find_mallocd_ptr,
+    ErrorType_memory_not_freed,
 
     ErrorType_count,
 };
@@ -81,9 +83,14 @@ ErrorTypeToString(ErrorType e)
 {
     Char *res = 0;
     switch(e) {
-        case ErrorType_ran_out_of_memory: { res = "ErrorType_ran_out_of_memory"; } break;
-        case ErrorType_assert_failed:     { res = "ErrorType_assert_failed";     } break;
-        case ErrorType_no_parameters:     { res = "ErrorType_no_parameters";     } break;
+        case ErrorType_ran_out_of_memory:          { res = "ErrorType_ran_out_of_memory";          } break;
+        case ErrorType_assert_failed:              { res = "ErrorType_assert_failed";              } break;
+        case ErrorType_no_parameters:              { res = "ErrorType_no_parameters";              } break;
+        case ErrorType_cannot_find_file:           { res = "ErrorType_cannot_find_file";           } break;
+        case ErrorType_could_not_write_to_disk:    { res = "ErrorType_could_not_write_to_disk";    } break;
+        case ErrorType_no_files_pass_in:           { res = "ErrorType_no_files_pass_in";           } break;
+        case ErrorType_could_not_find_mallocd_ptr: { res = "ErrorType_could_not_find_mallocd_ptr"; } break;
+        case ErrorType_memory_not_freed:           { res = "ErrorType_memory_not_freed";           } break;
     }
 
     return(res);
@@ -139,8 +146,19 @@ safe_truncate_size_64(Uint64 value)
 //
 // Memory stuff.
 //
+#if INTERNAL
+struct MemList {
+    Void *ptr;
+    PtrSize size;
 
-// TODO(Jonny): Use this to find memory leaks.
+    MemList *next;
+    Bool freed;
+
+    Char *file;
+    Int line;
+};
+global MemList *mem_list_root = 0;
+#endif
 
 // malloc
 internal Void *
@@ -150,60 +168,126 @@ malloc_(PtrSize size, Char *file, Int line)
     if(!res) {
         push_error_(ErrorType_ran_out_of_memory, file, line);
     }
+#if INTERNAL
+    if(res) {
+        MemList *cur = cast(MemList *)calloc(sizeof(MemList), 1);
+
+        cur->ptr = res;
+        cur->size = size;
+        cur->file = file;
+        cur->line = line;
+
+        if(!mem_list_root) {
+            mem_list_root = cur;
+        } else {
+            MemList *next = mem_list_root;
+            while(next->next) {
+                next = next->next;
+            }
+
+            next->next = cur;
+        }
+    }
+#endif
 
     return(res);
 }
-#if defined(malloc)
-    #undef malloc
-#endif
-#define malloc(size) malloc_(size, __FILE__, __LINE__)
-#define malloc_array(Type, size) cast(Type *)malloc_(sizeof(Type) * size, __FILE__, __LINE__)
+#define malloc_array(Type, size) cast(Type *)malloc_(sizeof(Type) * (size), __FILE__, __LINE__)
 #define malloc_type(Type) cast(Type *)malloc_(sizeof(Type), __FILE__, __LINE__)
 
 // free
 internal Void
 free_(Void *ptr, Char *file, Int line)
 {
+#if INTERNAL
+    free(ptr);
+    if(ptr) {
+        Bool found = false;
+        MemList *next = mem_list_root;
+        while(next) {
+            if(next->ptr == ptr) {
+                found = true;
+                //free(ptr);
+                next->freed = true;
+            }
+
+            next = next->next;
+        }
+
+        assert(found);
+    }
+#else
     if(ptr) {
         free(ptr);
     }
-}
-#if defined(free)
-    #undef free
 #endif
-#define free(ptr) free_(ptr, __FILE__, __LINE__)
+}
 
 // realloc
 internal Void *
 realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 {
-    Void *res = realloc(ptr, size);
+    Void *res = 0;
+#if INTERNAL
+    MemList *ml = 0;
+    if(ptr) {
+        MemList *next = mem_list_root;
+        while(next) {
+            if(next->ptr == ptr) {
+                ml = next;
+                break; // while
+            }
+
+            next = next->next;
+        }
+
+        if(!ml) {
+            push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);
+        } else {
+            res = realloc(ptr, size);
+            if(!res) {
+                push_error(ErrorType_ran_out_of_memory);
+            } else {
+                ml->ptr = res;
+                ml->size = size;
+
+                // TODO(Jonny): Should I do this?
+                ml->file = file;
+                ml->line = line;
+            }
+        }
+    } else {
+        res = malloc_(size, file, line);
+    }
+#else
+    res = realloc(ptr, size);
     if(!res) {
         push_error(ErrorType_ran_out_of_memory);
     }
 
+#endif
     return(res);
 }
+
+#if defined(malloc)
+    #undef malloc
+#endif
+#define malloc(size) malloc_(size, __FILE__, __LINE__)
+
+#if defined(free)
+    #undef free
+#endif
+
+#define free(ptr) free_(ptr, __FILE__, __LINE__)
 #if defined(realloc)
     #undef realloc
 #endif
+
 #define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
-
-// calloc
-internal Void *
-calloc_(PtrSize size, PtrSize stride, Char *file, Int line)
-{
-    Void *res = calloc(size, stride);
-    if(!res) {
-        push_error(ErrorType_ran_out_of_memory);
-    }
-
-    return(res);
-}
 #if defined(calloc)
     #undef calloc
 #endif
-#define calloc(size, stride) calloc_(size, stride, __FILE__, __LINE__)
+#define calloc(size, stride) malloc_((size) * (stride), __FILE__, __LINE__)
 
 //
 // Utils.
@@ -2522,12 +2606,17 @@ start_parsing(Char *filename, Char *file)
             }
         }
 
+        free(func_data);
+
         free(union_data);
+
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].members); }
         free(struct_data);
+
+        for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) { free(enum_data[enum_index].values); }
         free(enum_data);
     }
 }
-
 
 Int
 main(Int argc, Char **argv)
@@ -2605,6 +2694,18 @@ main(Int argc, Char **argv)
                 }
             }
 
+            // Check memory leaks.
+#if INTERNAL
+            MemList *next = mem_list_root;
+            while(next) {
+                if(!next->freed) {
+                    push_error_(ErrorType_memory_not_freed, next->file, next->line);
+                }
+
+                next = next->next;
+            }
+#endif
+            // Output errors.
             if(global_error_count) {
                 res = 255;
 
@@ -2624,6 +2725,7 @@ main(Int argc, Char **argv)
             }
         }
     }
+
 
     return(res);
 }
