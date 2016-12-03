@@ -8,7 +8,7 @@ mv "./preprocessor" "../builds/linux_clang/preprocessor"
 
 popd
 
-# SDL
+# SDL.
 #pushd "app test"
 #"../builds/linux_clang/preprocessor" sdl_main.cpp sdl_other.cpp
 #
@@ -17,7 +17,7 @@ popd
 #
 #popd
 
-# SDL
+# Test.
 pushd "test"
 "../builds/linux_clang/preprocessor" test_code.cpp
 
