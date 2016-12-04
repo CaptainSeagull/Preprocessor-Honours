@@ -116,6 +116,7 @@ push_error_(ErrorType type, Char *file, Int line)
 {
     if(global_error_count + 1 < error_max) {
         Error *e = global_errors + global_error_count;
+
         e->type = type;
         e->file = file;
         e->line = line;
@@ -159,13 +160,40 @@ struct MemList {
 global MemList *mem_list_root = 0;
 #endif
 
+internal PtrSize
+get_alloc_size(Void *ptr)
+{
+    PtrSize res = 0;
+    if(ptr) {
+        PtrSize *raw_ptr = cast(PtrSize *)ptr;
+        --raw_ptr;
+        res = *raw_ptr;
+    }
+
+    return(res);
+}
+
+internal Void *
+get_raw_pointer(Void *ptr)
+{
+    PtrSize *raw_ptr = cast(PtrSize *)ptr;
+    --raw_ptr;
+    Void *res = cast(Void *)raw_ptr;
+
+    return(res);
+}
+
 // malloc
 internal Void *
 malloc_(PtrSize size, Char *file, Int line)
 {
-    Void *res = calloc(size, 1);
-    if(!res) {
+    Void *res = 0;
+    PtrSize *raw_ptr = cast(PtrSize *)calloc(size + sizeof(PtrSize), 1);
+    if(!raw_ptr) {
         push_error_(ErrorType_ran_out_of_memory, file, line);
+    } else {
+        *raw_ptr = size;
+        res = ++raw_ptr;
     }
 #if INTERNAL
     if(res) {
@@ -199,14 +227,15 @@ internal Void
 free_(Void *ptr, Char *file, Int line)
 {
 #if INTERNAL
-    free(ptr);
     if(ptr) {
+        Void *raw_ptr = get_raw_pointer(ptr);
+        free(raw_ptr);
+
         Bool found = false;
         MemList *next = mem_list_root;
         while(next) {
             if(next->ptr == ptr) {
                 found = true;
-                //free(ptr);
                 next->freed = true;
             }
 
@@ -217,7 +246,8 @@ free_(Void *ptr, Char *file, Int line)
     }
 #else
     if(ptr) {
-        free(ptr);
+        Void *raw_ptr = get_raw_pointer(ptr);
+        free(raw_ptr);
     }
 #endif
 }
@@ -241,10 +271,17 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
         if(!next) {
             push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);
         } else {
-            res = realloc(ptr, size);
-            if(!res) {
+            PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
+            PtrSize old_size = *old_raw_ptr;
+
+            PtrSize *new_raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size);
+            if(!new_raw_ptr) {
                 push_error(ErrorType_ran_out_of_memory);
             } else {
+                ++new_raw_ptr;
+                res = cast(Void *)new_raw_ptr;
+                memset(new_raw_ptr + old_size, 0, size - old_size);
+
                 next->ptr = res;
                 next->size = size;
 
@@ -2192,9 +2229,9 @@ find_struct(String str, StructData *structs, Int struct_count)
 }
 
 internal File
-write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count, FunctionData *func_data, Int func_count)
+write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count)
 {
-    assert((struct_data) && (enum_data) && (func_data));
+    assert((struct_data) && (enum_data));
 
     File res = {};
 
@@ -2486,10 +2523,10 @@ start_parsing(Char *filename, Char *file)
     Int union_max = 32, union_count = 0;
     String *union_data = malloc_array(String, union_max);
 
-    Int func_max = 32, func_count = 0;
-    FunctionData *func_data = malloc_array(FunctionData, func_max);
+    //Int func_max = 32, func_count = 0;
+    //FunctionData *func_data = malloc_array(FunctionData, func_max);
 
-    if((enum_data)  && (struct_data) && (union_data) && (func_data)) {
+    if((enum_data)  && (struct_data) && (union_data)) {
 
         Tokenizer tokenizer = { file };
 
@@ -2562,6 +2599,7 @@ start_parsing(Char *filename, Char *file)
                         }
                     } else {
                         // This is a bit funny looking because functions don't have keyword to look for, like structs.
+#if 0
                         ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
                         if(pfr.success) {
                             if(func_count + 1 > func_max) {
@@ -2574,12 +2612,13 @@ start_parsing(Char *filename, Char *file)
 
                             func_data[func_count++] = pfr.func_data;
                         }
+#endif
                     }
                 } break;
             }
         }
 
-        File file_to_write = write_data(struct_data, struct_count, enum_data, enum_count,func_data, func_count);
+        File file_to_write = write_data(struct_data, struct_count, enum_data, enum_count);
 
         if(should_write_to_file) {
             Char generated_file_name[256] = {};
@@ -2598,7 +2637,7 @@ start_parsing(Char *filename, Char *file)
             }
         }
 
-        free(func_data);
+        //free(func_data);
 
         free(union_data);
 
@@ -2701,7 +2740,6 @@ main(Int argc, Char **argv)
             if(global_error_count) {
                 res = 255;
 
-                // TODO(Jonny): Maybe have 2 modes for logging errors. A more pedantic one for me (developer) and a simpler one for user?
                 if(should_log_errors) {
                     // TODO(Jonny): Write errors to disk.
                     printf("\n\nList of errors:\n");
@@ -2715,6 +2753,8 @@ main(Int argc, Char **argv)
                                error_index, error_type, e->file, e->line);
                     }
                 }
+
+                assert(0, "Errors Found");
             }
         }
     }
