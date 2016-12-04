@@ -14,6 +14,9 @@ typedef enum MetaType {
     meta_type_thingy,
     meta_type_V2,
     meta_type_Bar,
+    meta_type_A,
+    meta_type_B,
+    meta_type_C,
     meta_type_Foo,
 } MetaType;
 
@@ -23,13 +26,19 @@ typedef enum MetaType {
 typedef struct _thingy _thingy;
 typedef struct _V2 _V2;
 typedef struct _Bar _Bar;
+typedef struct _A _A;
+typedef struct _B _B;
+typedef struct _C _C;
 typedef struct _Foo _Foo;
 
 /* Recreated structs. */
 struct _thingy {  _int x;  _int y;  };
 struct _V2 {  _int x;  _int y;  };
 struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
-struct _Foo : public _Bar {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
+struct _A {  _float dfksjl;  };
+struct _B {  _float dfgkjn;  };
+struct _C {  _float fdskl;  };
+struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
 
 /* Meta data for: thingy. */
 static int num_members_for_thingy = 2;
@@ -55,8 +64,26 @@ static MemberDefinition members_of_Bar[] = {
     {meta_type_double, "d", (size_t)&((_Bar *)0)->d, 0, 1},
     {meta_type_V2, "v2", (size_t)&((_Bar *)0)->v2, 0, 1},
 };
+/* Meta data for: A. */
+static int num_members_for_A = 1;
+static MemberDefinition members_of_A[] = {
+    /* Members. */
+    {meta_type_float, "dfksjl", (size_t)&((_A *)0)->dfksjl, 0, 1},
+};
+/* Meta data for: B. */
+static int num_members_for_B = 1;
+static MemberDefinition members_of_B[] = {
+    /* Members. */
+    {meta_type_float, "dfgkjn", (size_t)&((_B *)0)->dfgkjn, 0, 1},
+};
+/* Meta data for: C. */
+static int num_members_for_C = 1;
+static MemberDefinition members_of_C[] = {
+    /* Members. */
+    {meta_type_float, "fdskl", (size_t)&((_C *)0)->fdskl, 0, 1},
+};
 /* Meta data for: Foo. */
-static int num_members_for_Foo = 10;
+static int num_members_for_Foo = 15;
 static MemberDefinition members_of_Foo[] = {
     /* Members. */
     {meta_type_char, "str", (size_t)&((_Foo *)0)->str, 1, 1},
@@ -65,12 +92,25 @@ static MemberDefinition members_of_Foo[] = {
     {meta_type_bool, "b", (size_t)&((_Foo *)0)->b, 1, 1},
     {meta_type_double, "p_array", (size_t)&((_Foo *)0)->p_array, 1, 5},
 
-    /* Inherited Members. */
+    /* Inherited Members for Bar */
     {meta_type_short, "s", (size_t)&((_Foo *)0)->s, 0, 1},
     {meta_type_int, "i", (size_t)&((_Foo *)0)->i, 0, 1},
     {meta_type_float, "f", (size_t)&((_Foo *)0)->f, 0, 1},
     {meta_type_double, "d", (size_t)&((_Foo *)0)->d, 0, 1},
     {meta_type_V2, "v2", (size_t)&((_Foo *)0)->v2, 0, 1},
+
+    /* Inherited Members for thingy */
+    {meta_type_int, "x", (size_t)&((_Foo *)0)->x, 0, 1},
+    {meta_type_int, "y", (size_t)&((_Foo *)0)->y, 0, 1},
+
+    /* Inherited Members for A */
+    {meta_type_float, "dfksjl", (size_t)&((_Foo *)0)->dfksjl, 0, 1},
+
+    /* Inherited Members for B */
+    {meta_type_float, "dfgkjn", (size_t)&((_Foo *)0)->dfgkjn, 0, 1},
+
+    /* Inherited Members for C */
+    {meta_type_float, "fdskl", (size_t)&((_Foo *)0)->fdskl, 0, 1},
 };
 
 /* Function to serialize a struct to a char array buffer. */
@@ -268,6 +308,30 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                             bytes_written = serialize_struct_(**(char **)member_ptr, Bar, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
                             bytes_written = serialize_struct_(*(char *)member_ptr, Bar, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+
+                    case meta_type_A: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, A, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, A, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+
+                    case meta_type_B: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, B, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, B, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        }
+                    } break;
+
+                    case meta_type_C: {
+                        if(member->is_ptr) {
+                            bytes_written = serialize_struct_(**(char **)member_ptr, C, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            bytes_written = serialize_struct_(*(char *)member_ptr, C, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 

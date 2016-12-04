@@ -13,6 +13,8 @@
     - Completly skip over member functions!
     - Struct meta data.
         - Multiple inheritance.
+        - Right now, it generates invalid code if you make a struct with no members.
+        - It breaks if you use a comma to declare members of the same type.
     - Enum meta data.
         - Way to find count.
         - string_to_enum and enum_to_string functions.
@@ -146,16 +148,14 @@ safe_truncate_size_64(Uint64 value)
 //
 // Memory stuff.
 //
-#if INTERNAL
+#if MEM_CHECK
 struct MemList {
     Void *ptr;
-    PtrSize size;
-
     MemList *next;
-    Bool freed;
-
     Char *file;
+
     Int line;
+    Bool freed;
 };
 global MemList *mem_list_root = 0;
 #endif
@@ -193,27 +193,37 @@ malloc_(PtrSize size, Char *file, Int line)
         push_error_(ErrorType_ran_out_of_memory, file, line);
     } else {
         *raw_ptr = size;
-        res = ++raw_ptr;
+        res = (raw_ptr + 1);
     }
-#if INTERNAL
+#if MEM_CHECK
     if(res) {
-        MemList *cur = cast(MemList *)calloc(sizeof(MemList), 1);
-
-        cur->ptr = res;
-        cur->size = size;
-        cur->file = file;
-        cur->line = line;
-
-        if(!mem_list_root) {
-            mem_list_root = cur;
+        MemList *cur = cast(MemList *)malloc(sizeof(MemList));
+        if(!cur) {
+            push_error(ErrorType_ran_out_of_memory);
         } else {
-            MemList *next = mem_list_root;
-            while(next->next) {
-                next = next->next;
-            }
+            memset(cur, 0, sizeof(*cur));
 
-            next->next = cur;
+            cur->ptr = res;
+            cur->file = file;
+            cur->line = line;
+
+            if(!mem_list_root) {
+                mem_list_root = cur;
+            } else {
+                MemList *next = mem_list_root;
+                while(next->next) {
+                    next = next->next;
+                }
+
+                next->next = cur;
+            }
         }
+    }
+#endif
+
+#if MEM_CHECK
+    if(res) {
+        assert(get_alloc_size(res) == size);
     }
 #endif
 
@@ -226,7 +236,7 @@ malloc_(PtrSize size, Char *file, Int line)
 internal Void
 free_(Void *ptr, Char *file, Int line)
 {
-#if INTERNAL
+#if MEM_CHECK
     if(ptr) {
         Void *raw_ptr = get_raw_pointer(ptr);
         free(raw_ptr);
@@ -253,12 +263,13 @@ free_(Void *ptr, Char *file, Int line)
 }
 
 // realloc
+#define realloc_and_double(ptr) realloc_(ptr, get_alloc_size(ptr) * 2, __FILE__, __LINE__)
 internal Void *
 realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 {
     Void *res = 0;
-#if INTERNAL
     if(ptr) {
+#if MEM_CHECK
         MemList *next = mem_list_root;
         while(next) {
             if(next->ptr == ptr) {
@@ -274,32 +285,42 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
             PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
             PtrSize old_size = *old_raw_ptr;
 
-            PtrSize *new_raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size);
-            if(!new_raw_ptr) {
+            PtrSize *raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size + sizeof(PtrSize));
+            if(!raw_ptr) {
                 push_error(ErrorType_ran_out_of_memory);
             } else {
-                ++new_raw_ptr;
-                res = cast(Void *)new_raw_ptr;
-                memset(new_raw_ptr + old_size, 0, size - old_size);
+                *(PtrSize *)raw_ptr = size;
+                res = (PtrSize *)raw_ptr + 1;
+                memset(cast(Char *)res + old_size, 0, size - old_size);
 
                 next->ptr = res;
-                next->size = size;
 
                 // TODO(Jonny): Should I do this?
-                next->file = file;
-                next->line = line;
+                //next->file = file;
+                //next->line = line;
             }
         }
+#else
+        Void *old_raw_ptr = get_raw_pointer(ptr);
+        PtrSize old_size = *cast(PtrSize *)old_raw_ptr;
+
+        Void *raw_ptr = realloc(old_raw_ptr, size + sizeof(PtrSize));
+        if(!raw_ptr) {
+            push_error(ErrorType_ran_out_of_memory);
+        } else {
+            *(PtrSize *)raw_ptr = size;
+            res = (PtrSize *)raw_ptr + 1;
+            memset(cast(Char *)res + old_size, 0, size - old_size);
+        }
+#endif
     } else {
+        if(!size) {
+            size = sizeof(PtrSize);
+        }
+
         res = malloc_(size, file, line);
     }
-#else
-    res = realloc(ptr, size);
-    if(!res) {
-        push_error(ErrorType_ran_out_of_memory);
-    }
 
-#endif
     return(res);
 }
 
@@ -887,27 +908,7 @@ write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
     ob->index += format_string_varargs(ob->buffer + ob->index, ob->size - ob->index, format, args);
     va_end(args);
 }
-#if 0
-internal OutputBuffer
-create_output_buffer(Int size)
-{
-    assert(size);
 
-    OutputBuffer res = {};
-    res.buffer = malloc_array(Char, size);
-    if(res.buffer) {
-        res.size = size;
-    }
-
-    return(res);
-}
-
-internal Void
-free_output_buffer(OutputBuffer *ob)
-{
-    free(ob->buffer);
-}
-#endif
 // TODO(Jonny): Rename some of these so they're more clear.
 enum TokenType {
     TokenType_unknown,
@@ -1520,7 +1521,9 @@ struct StructData {
     String name;
     Int member_count;
     Variable *members;
-    String inherited;
+
+    Int inherited_count;
+    String *inherited;
 
     FunctionData *func_data;
     Int func_count;
@@ -1644,20 +1647,35 @@ parse_struct(Tokenizer *tokenizer)
         eat_token(tokenizer);
     }
 
-    Bool inherited = false;
-    Token inherited_from = {};
     Token peaked_token = peak_token(tokenizer);
     if(peaked_token.type == TokenType_colon) {
-        eat_tokens(tokenizer, 2);
-        inherited_from = get_token(tokenizer);
-        inherited = true;
+        res.sd.inherited = malloc_array(String, 4);
+
+        eat_tokens(tokenizer, 1);
+
+        Token next = get_token(tokenizer);
+        while(next.type != TokenType_open_brace) {
+            if(!(is_stupid_class_keyword(next)) && (next.type != TokenType_comma)) {
+                Int allocated_mem_size = cast(Int)get_alloc_size(res.sd.inherited);
+                if(res.sd.inherited_count >= cast(Int)(allocated_mem_size / sizeof(String)) - 1) {
+                    Void *p = realloc_and_double(res.sd.inherited);
+                    if(p) {
+                        res.sd.inherited = cast(String *)p;
+                    }
+                }
+
+                res.sd.inherited[res.sd.inherited_count++] = token_to_string(next);
+            }
+
+            next = peak_token(tokenizer);
+            if(next.type != TokenType_open_brace) {
+                eat_token(tokenizer);
+            }
+        }
     }
 
     if(require_token(tokenizer, TokenType_open_brace)) {
         res.success = true;
-        if(inherited) {
-            res.sd.inherited = token_to_string(inherited_from);
-        }
 
         res.sd.member_count = 0;
         Char *member_pos[256] = {};
@@ -2298,24 +2316,34 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         //
         write_to_output_buffer(&ob, "\n/* Struct meta data. */\n\n/* Struct typedefs. */\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd2 = struct_data + struct_index;
+            StructData *sd = struct_data + struct_index;
 
             write_to_output_buffer(&ob, "typedef struct _%S _%S;\n",
-                                   sd2->name.len, sd2->name.e, sd2->name.len, sd2->name.e);
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
         }
 
         write_to_output_buffer(&ob, "\n/* Recreated structs. */\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd2 = struct_data + struct_index;
+            StructData *sd = struct_data + struct_index;
 
-            write_to_output_buffer(&ob, "struct _%S", sd2->name.len, sd2->name.e);
-            if(sd2->inherited.len) {
-                write_to_output_buffer(&ob, " : public _%S", sd2->inherited.len, sd2->inherited.e);
+            write_to_output_buffer(&ob, "struct _%S", sd->name.len, sd->name.e);
+            if(sd->inherited) {
+                write_to_output_buffer(&ob, " :");
+
+                for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
+                    String *i = sd->inherited + inherited_index;
+
+                    if(inherited_index > 0) {
+                        write_to_output_buffer(&ob, ",");
+                    }
+
+                    write_to_output_buffer(&ob, " public _%S", i->len, i->e);
+                }
             }
             write_to_output_buffer(&ob, " { ");
 
-            for(Int member_index = 0; (member_index < sd2->member_count); ++member_index) {
-                Variable *md = sd2->members + member_index;
+            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                Variable *md = sd->members + member_index;
                 Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
                 Char arr_buffer[256] = {};
                 if(md->array_count > 1) {
@@ -2335,48 +2363,62 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
 
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
+            if(sd->members) {
 
-            write_to_output_buffer(&ob, "\n/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
+                write_to_output_buffer(&ob, "\n/* Meta data for: %S. */\n", sd->name.len, sd->name.e);
 
-            Int member_count = sd->member_count;
-            StructData *inherited = find_struct(sd->inherited, struct_data, struct_count);
-            if(inherited) {
-                member_count += inherited->member_count;
-            }
-            write_to_output_buffer(&ob, "static int num_members_for_%S = %u;\n",
-                                   sd->name.len, sd->name.e, member_count);
+                Int member_count = sd->member_count;
 
-            write_to_output_buffer(&ob, "static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
-            write_to_output_buffer(&ob, "    /* Members. */\n");
-            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                Variable *md = sd->members + member_index;
-                write_to_output_buffer(&ob, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
-                                       md->type.len, md->type.e,
-                                       md->name.len, md->name.e,
-                                       sd->name.len, sd->name.e,
-                                       md->name.len, md->name.e,
-                                       md->is_ptr,
-                                       md->array_count);
-            }
-            if(sd->inherited.len) {
-                StructData *base_class = find_struct(sd->inherited, struct_data, struct_count);
-                assert(base_class);
+                // Add inherited struct members onto the member count.
+                for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
+                    StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
 
-                write_to_output_buffer(&ob, "\n    /* Inherited Members. */\n");
-                for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
-                    Variable *base_class_var = base_class->members + member_index;
-
-                    write_to_output_buffer(&ob, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
-                                           base_class_var->type.len, base_class_var->type.e,
-                                           base_class_var->name.len, base_class_var->name.e,
-                                           sd->name.len, sd->name.e,
-                                           base_class_var->name.len, base_class_var->name.e,
-                                           base_class_var->is_ptr,
-                                           base_class_var->array_count);
+                    assert(base_class);
+                    if(base_class) {
+                        member_count += base_class->member_count;
+                    }
                 }
-            }
 
-            write_to_output_buffer(&ob, "};");
+                write_to_output_buffer(&ob, "static int num_members_for_%S = %u;\n",
+                                       sd->name.len, sd->name.e, member_count);
+
+                write_to_output_buffer(&ob, "static MemberDefinition members_of_%S[] = {\n", sd->name.len, sd->name.e);
+                write_to_output_buffer(&ob, "    /* Members. */\n");
+                for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                    Variable *md = sd->members + member_index;
+                    write_to_output_buffer(&ob, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
+                                           md->type.len, md->type.e,
+                                           md->name.len, md->name.e,
+                                           sd->name.len, sd->name.e,
+                                           md->name.len, md->name.e,
+                                           md->is_ptr,
+                                           md->array_count);
+                }
+
+                if(sd->inherited) {
+                    for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
+                        StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
+                        assert(base_class);
+
+                        if(base_class) {
+                            write_to_output_buffer(&ob, "\n    /* Inherited Members for %S */\n", base_class->name.len, base_class->name.e);
+                            for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
+                                Variable *base_class_var = base_class->members + member_index;
+
+                                write_to_output_buffer(&ob, "    {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %d, %d},\n",
+                                                       base_class_var->type.len, base_class_var->type.e,
+                                                       base_class_var->name.len, base_class_var->name.e,
+                                                       sd->name.len, sd->name.e,
+                                                       base_class_var->name.len, base_class_var->name.e,
+                                                       base_class_var->is_ptr,
+                                                       base_class_var->array_count);
+                            }
+                        }
+                    }
+                }
+
+                write_to_output_buffer(&ob, "};");
+            }
         }
 
         // Recursive part for calling on members of structs.
@@ -2642,6 +2684,7 @@ start_parsing(Char *filename, Char *file)
         free(union_data);
 
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].members); }
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].inherited); }
         free(struct_data);
 
         for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) { free(enum_data[enum_index].values); }
@@ -2725,7 +2768,7 @@ main(Int argc, Char **argv)
                 }
             }
 
-#if INTERNAL
+#if MEM_CHECK
             // Check memory leaks.
             MemList *next = mem_list_root;
             while(next) {

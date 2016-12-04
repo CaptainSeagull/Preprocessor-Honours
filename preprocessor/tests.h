@@ -19,6 +19,19 @@
 #if defined(global)
     #undef global
 #endif
+#if defined(malloc)
+    #undef malloc
+#endif
+#if defined(realloc)
+    #undef realloc
+#endif
+#if defined(free)
+    #undef free
+#endif
+#if defined(calloc)
+    #undef calloc
+#endif
+
 
 #include "google_test/gtest.h"
 
@@ -68,7 +81,7 @@ compare_struct_data(StructData a, StructData b)
     else if(!string_compare(a.name, b.name))                               { res = StructCompareFailure_name;         }
     else if(a.member_count != b.member_count)                              { res = StructCompareFailure_member_count; }
     else if(!compare_variable_array(a.members, b.members, a.member_count)) { res = StructCompareFailure_members;      }
-    else if(!string_compare(a.inherited, b.inherited))                     { res = StructCompareFailure_inherited;    }
+    //else if(!string_compare(a.inherited, b.inherited))                     { res = StructCompareFailure_inherited;    }
     else if(a.func_count != b.func_count)                                  { res = StructCompareFailure_func_count;   }
     // TODO(Jonny): Do func_data.
 

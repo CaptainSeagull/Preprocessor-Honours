@@ -15,7 +15,6 @@
 //
 // struct test.
 //
-
 typedef struct {
     int x;
     int y;
@@ -31,14 +30,17 @@ struct Bar {
     V2 v2;
 };
 
-struct Foo : public Bar {
+struct A { float dfksjl; };
+struct B { float dfgkjn; };
+struct C { float fdskl; };
+
+struct Foo : public Bar, public thingy, public A, public B, public C {
     char *str;
     int *ip;
     float *fp;
     bool *b;
     double *p_array[5];
 };
-
 
 void test_struct(void)
 {
@@ -64,6 +66,7 @@ void test_struct(void)
     foo.d = 3.1415;
     foo.v2.x = 0;
     foo.v2.y = 1;
+    foo.x = 101;
 
     size_t size = 256 * 256;
     char *arr = new char[size];
