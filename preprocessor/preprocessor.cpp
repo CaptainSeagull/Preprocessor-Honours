@@ -76,6 +76,7 @@ enum ErrorType {
     ErrorType_no_files_pass_in,
     ErrorType_could_not_find_mallocd_ptr,
     ErrorType_memory_not_freed,
+    ErrorType_could_not_detect_struct_name,
 
     ErrorType_count,
 };
@@ -1887,7 +1888,7 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
                      "                    for(j = 0; (j < member->arr_size); ++j) {\n"
                      "                        is_null = (member->is_ptr) ? !(*(long **)(value + j)) : 0;\n"
                      "                        if(!is_null) {\n"
-                     "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(long *)value[j] : (long)value[j]);\n"
+                     "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = %%ld\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(long *)value[j] : (long)value[j]);\n"
                      "                        } else {\n"
                      "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
                      "                        }\n"
@@ -1895,7 +1896,7 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
                      "                } else {\n"
                      "                    long *long_value = (member->is_ptr) ? *(long **)member_ptr : (long *)member_ptr;\n"
                      "                    if(long_value) {\n"
-                     "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, *long_value);\n"
+                     "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint %%s%%s = %%ld\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, *long_value);\n"
                      "                    } else {\n"
                      "                        bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sint *%%s = (null)\", indent_buf, member->name);\n"
                      "                    }\n"
