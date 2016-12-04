@@ -345,6 +345,33 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 #endif
 #define calloc(size, stride) malloc_((size) * (stride), __FILE__, __LINE__)
 
+// A quick-to-access temp region of memory. Should be frequently cleared.
+global PtrSize scratch_memory_index = 0;
+global Void *global_scratch_memory = 0;
+internal Void *
+push_scratch_memory(PtrSize size)
+{
+    if(!global_scratch_memory) global_scratch_memory = malloc(256 * 256);
+
+    Void *res = 0;
+    if(global_scratch_memory) {
+        assert(get_alloc_size(global_scratch_memory) > scratch_memory_index + size);
+        res = cast(PtrSize *)global_scratch_memory + scratch_memory_index;
+        scratch_memory_index += size;
+    }
+
+    return(res);
+}
+
+internal Void
+clear_scratch_memory(void)
+{
+    if(global_scratch_memory) {
+        memset(global_scratch_memory, 0, scratch_memory_index);
+        scratch_memory_index = 0;
+    }
+}
+
 //
 // Utils.
 //
@@ -2454,7 +2481,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
         if(enum_count) {
             write_to_output_buffer(&ob, "\n/* Enum meta data. */\n");
 
-            Int buf_size = 255 * 255;
+            Int buf_size = 256 * 256;
             Char *buf = malloc_array(Char, buf_size); // Random size;
             if(buf) {
                 for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
@@ -2769,6 +2796,7 @@ main(Int argc, Char **argv)
                 }
             }
 
+            free(global_scratch_memory);
 #if MEM_CHECK
             // Check memory leaks.
             MemList *next = mem_list_root;
