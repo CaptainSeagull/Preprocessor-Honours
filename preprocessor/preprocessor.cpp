@@ -11,7 +11,6 @@
 
 /* TODO(Jonny):
     - Completly skip over member functions!
-    - Add booleans to primitive type!
     - Struct meta data.
         - Multiple inheritance.
     - Enum meta data.
@@ -229,31 +228,29 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 {
     Void *res = 0;
 #if INTERNAL
-    MemList *ml = 0;
     if(ptr) {
         MemList *next = mem_list_root;
         while(next) {
             if(next->ptr == ptr) {
-                ml = next;
                 break; // while
             }
 
             next = next->next;
         }
 
-        if(!ml) {
+        if(!next) {
             push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);
         } else {
             res = realloc(ptr, size);
             if(!res) {
                 push_error(ErrorType_ran_out_of_memory);
             } else {
-                ml->ptr = res;
-                ml->size = size;
+                next->ptr = res;
+                next->size = size;
 
                 // TODO(Jonny): Should I do this?
-                ml->file = file;
-                ml->line = line;
+                next->file = file;
+                next->line = line;
             }
         }
     } else {
@@ -1654,7 +1651,7 @@ parse_struct(Tokenizer *tokenizer)
                             ++tokenizer->at;
                         }
                     } else {
-                        Bool is_func = false, inline_func = false;
+                        Bool is_func = false;
 
                         Tokenizer tokenizer_copy = *tokenizer;
                         Token temp = get_token(&tokenizer_copy);
@@ -1665,7 +1662,6 @@ parse_struct(Tokenizer *tokenizer)
 
                             if(temp.type == TokenType_open_brace) {
                                 is_func = true;
-                                inline_func = true;
                                 break; // while
                             }
 
@@ -1933,7 +1929,7 @@ struct EnumData {
     String type;
     Bool is_struct;
 
-    EnumValue *values; // TODO(Jonny): Memory leak.
+    EnumValue *values;
     Int no_of_values;
 };
 
@@ -2481,8 +2477,6 @@ global Bool should_write_to_file;
 internal Void
 start_parsing(Char *filename, Char *file)
 {
-    Bool res = false;
-
     Int enum_max = 32, enum_count = 0;
     EnumData *enum_data = malloc_array(EnumData, enum_max);
 
@@ -2496,6 +2490,7 @@ start_parsing(Char *filename, Char *file)
     FunctionData *func_data = malloc_array(FunctionData, func_max);
 
     if((enum_data)  && (struct_data) && (union_data) && (func_data)) {
+
         Tokenizer tokenizer = { file };
 
         Bool parsing = true;
@@ -2597,9 +2592,6 @@ start_parsing(Char *filename, Char *file)
                 Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
                 if(!header_write_success) {
                     push_error(ErrorType_could_not_write_to_disk);
-                } else {
-                    res = true;
-
                 }
 
                 free(file_to_write.data);
@@ -2694,8 +2686,8 @@ main(Int argc, Char **argv)
                 }
             }
 
-            // Check memory leaks.
 #if INTERNAL
+            // Check memory leaks.
             MemList *next = mem_list_root;
             while(next) {
                 if(!next->freed) {
@@ -2717,6 +2709,7 @@ main(Int argc, Char **argv)
                         Error *e = global_errors + error_index;
 
                         Char *error_type = ErrorTypeToString(e->type);
+                        assert(error_type);
 
                         printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
                                error_index, error_type, e->file, e->line);
