@@ -264,9 +264,8 @@ free_(Void *ptr, Char *file, Int line)
 }
 
 // realloc
-#define realloc_and_double(ptr) realloc_(ptr, get_alloc_size(ptr) * 2, __FILE__, __LINE__)
 internal Void *
-realloc_(Void *ptr, PtrSize size, Char *file, Int line)
+realloc_(Void *ptr, Char *file, Int line, PtrSize size = 0)
 {
     Void *res = 0;
     if(ptr) {
@@ -282,10 +281,17 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
 
         if(!next) {
             push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);
-        } else {
-            PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
-            PtrSize old_size = *old_raw_ptr;
+        }
+#endif
+        PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
+        PtrSize old_size = *old_raw_ptr;
+        if(!size) {
+            size = old_size * 2;
+        }
 
+        if(size <= old_size) {
+            res = ptr;
+        } else {
             PtrSize *raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size + sizeof(PtrSize));
             if(!raw_ptr) {
                 push_error(ErrorType_ran_out_of_memory);
@@ -293,27 +299,15 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
                 *(PtrSize *)raw_ptr = size;
                 res = (PtrSize *)raw_ptr + 1;
                 memset(cast(Char *)res + old_size, 0, size - old_size);
-
-                next->ptr = res;
-
-                // TODO(Jonny): Should I do this?
-                //next->file = file;
-                //next->line = line;
+#if MEM_CHECK
+                if(next) {
+                    next->ptr = res;
+                    //next->file = file;
+                    //next->line = line;
+                }
+#endif
             }
         }
-#else
-        Void *old_raw_ptr = get_raw_pointer(ptr);
-        PtrSize old_size = *cast(PtrSize *)old_raw_ptr;
-
-        Void *raw_ptr = realloc(old_raw_ptr, size + sizeof(PtrSize));
-        if(!raw_ptr) {
-            push_error(ErrorType_ran_out_of_memory);
-        } else {
-            *(PtrSize *)raw_ptr = size;
-            res = (PtrSize *)raw_ptr + 1;
-            memset(cast(Char *)res + old_size, 0, size - old_size);
-        }
-#endif
     } else {
         if(!size) {
             size = sizeof(PtrSize);
@@ -339,7 +333,7 @@ realloc_(Void *ptr, PtrSize size, Char *file, Int line)
     #undef realloc
 #endif
 
-#define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
+#define realloc(ptr, ...) realloc_(ptr, __FILE__, __LINE__, ##__VA_ARGS__)
 #if defined(calloc)
     #undef calloc
 #endif
@@ -1679,14 +1673,13 @@ parse_struct(Tokenizer *tokenizer)
     if(peaked_token.type == TokenType_colon) {
         res.sd.inherited = malloc_array(String, 4);
 
-        eat_tokens(tokenizer, 1);
+        eat_token(tokenizer);
 
         Token next = get_token(tokenizer);
         while(next.type != TokenType_open_brace) {
             if(!(is_stupid_class_keyword(next)) && (next.type != TokenType_comma)) {
-                Int allocated_mem_size = cast(Int)get_alloc_size(res.sd.inherited);
-                if(res.sd.inherited_count >= cast(Int)(allocated_mem_size / sizeof(String)) - 1) {
-                    Void *p = realloc_and_double(res.sd.inherited);
+                if(res.sd.inherited_count + 1 >= cast(Int)(get_alloc_size(res.sd.inherited) / sizeof(String))) {
+                    Void *p = realloc(res.sd.inherited);
                     if(p) {
                         res.sd.inherited = cast(String *)p;
                     }
