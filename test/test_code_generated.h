@@ -118,7 +118,8 @@ static size_t
 serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
     char indent_buf[256];
-    int i = 0, j = 0, is_null = 0;
+    int i = 0, j = 0;
+    int/*bool*/ is_null = 0;
     MemberDefinition *member = 0;
     void *member_ptr = 0;
     size_t *value = 0;
@@ -127,16 +128,12 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
     assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));
     memset(buffer + bytes_written, 0, buf_size - bytes_written);
-    for(i = 0; (i < indent); ++i) {
-        indent_buf[i] = ' ';
-    }
+    for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
 
     bytes_written += sprintf((char *)buffer + bytes_written, "\n%s%s %s", indent_buf, type, name);
     indent += 4;
 
-    for(i = 0; (i < indent); ++i) {
-        indent_buf[i] = ' ';
-    }
+    for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
 
     for(i = 0; (i < num_members); ++i) {
          member = members_of_Something + i;

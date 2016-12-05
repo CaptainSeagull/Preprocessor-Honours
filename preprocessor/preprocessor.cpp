@@ -161,25 +161,21 @@ struct MemList {
 global MemList *mem_list_root = 0;
 #endif
 
-internal PtrSize
-get_alloc_size(Void *ptr)
+internal Void *
+get_raw_pointer(Void *ptr)
 {
-    PtrSize res = 0;
-    if(ptr) {
-        PtrSize *raw_ptr = cast(PtrSize *)ptr;
-        --raw_ptr;
-        res = *raw_ptr;
-    }
+    assert(ptr);
+
+    Void *res = cast(PtrSize *)ptr - 1;
 
     return(res);
 }
 
-internal Void *
-get_raw_pointer(Void *ptr)
+internal PtrSize
+get_alloc_size(Void *ptr)
 {
-    PtrSize *raw_ptr = cast(PtrSize *)ptr;
-    --raw_ptr;
-    Void *res = cast(Void *)raw_ptr;
+    PtrSize res = 0;
+    if(ptr) { res = *(cast(PtrSize *)ptr - 1); }
 
     return(res);
 }
@@ -198,12 +194,10 @@ malloc_(PtrSize size, Char *file, Int line)
     }
 #if MEM_CHECK
     if(res) {
-        MemList *cur = cast(MemList *)malloc(sizeof(MemList));
+        MemList *cur = cast(MemList *)calloc(sizeof(MemList), 1);
         if(!cur) {
             push_error(ErrorType_ran_out_of_memory);
         } else {
-            memset(cur, 0, sizeof(*cur));
-
             cur->ptr = res;
             cur->file = file;
             cur->line = line;
@@ -212,9 +206,7 @@ malloc_(PtrSize size, Char *file, Int line)
                 mem_list_root = cur;
             } else {
                 MemList *next = mem_list_root;
-                while(next->next) {
-                    next = next->next;
-                }
+                while(next->next) { next = next->next; }
 
                 next->next = cur;
             }
@@ -223,9 +215,7 @@ malloc_(PtrSize size, Char *file, Int line)
 #endif
 
 #if MEM_CHECK
-    if(res) {
-        assert(get_alloc_size(res) == size);
-    }
+    if(res) { assert(get_alloc_size(res) == size); }
 #endif
 
     return(res);
@@ -272,22 +262,15 @@ realloc_(Void *ptr, Char *file, Int line, PtrSize size = 0)
 #if MEM_CHECK
         MemList *next = mem_list_root;
         while(next) {
-            if(next->ptr == ptr) {
-                break; // while
-            }
-
+            if(next->ptr == ptr) { break; } // while
             next = next->next;
         }
 
-        if(!next) {
-            push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);
-        }
+        if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, file, line); }
 #endif
         PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
         PtrSize old_size = *old_raw_ptr;
-        if(!size) {
-            size = old_size * 2;
-        }
+        if(!size) { size = old_size * 2; }
 
         if(size <= old_size) {
             res = ptr;
@@ -300,18 +283,12 @@ realloc_(Void *ptr, Char *file, Int line, PtrSize size = 0)
                 res = (PtrSize *)raw_ptr + 1;
                 memset(cast(Char *)res + old_size, 0, size - old_size);
 #if MEM_CHECK
-                if(next) {
-                    next->ptr = res;
-                    //next->file = file;
-                    //next->line = line;
-                }
+                if(next) { next->ptr = res; }
 #endif
             }
         }
     } else {
-        if(!size) {
-            size = sizeof(PtrSize);
-        }
+        if(!size) { size = sizeof(PtrSize); }
 
         res = malloc_(size, file, line);
     }
@@ -327,13 +304,13 @@ realloc_(Void *ptr, Char *file, Int line, PtrSize size = 0)
 #if defined(free)
     #undef free
 #endif
-
 #define free(ptr) free_(ptr, __FILE__, __LINE__)
+
 #if defined(realloc)
     #undef realloc
 #endif
-
 #define realloc(ptr, ...) realloc_(ptr, __FILE__, __LINE__, ##__VA_ARGS__)
+
 #if defined(calloc)
     #undef calloc
 #endif
@@ -345,7 +322,7 @@ global Void *global_scratch_memory = 0;
 internal Void *
 push_scratch_memory(PtrSize size)
 {
-    if(!global_scratch_memory) global_scratch_memory = malloc(256 * 256);
+    if(!global_scratch_memory) { global_scratch_memory = malloc(256 * 256); }
 
     Void *res = 0;
     if(global_scratch_memory) {
@@ -695,9 +672,7 @@ internal Int
 get_digit_count(Int value)
 {
     Int res = 1;
-    while((value /= 10) > 0) {
-        ++res;
-    }
+    while((value /= 10) > 0) { ++res; }
 
     return(res);
 }
@@ -708,10 +683,7 @@ copy_int(Char *dest, Int value, Int start, Int count)
     assert(dest);
 
     Int end = start + count;
-    for(Int index = end - 1; (index >= start); --index, value /= 10) {
-        *(dest + index) = cast(Char)(value % 10 + 48);
-    }
-
+    for(Int index = end - 1; (index >= start); --index, value /= 10) { *(dest + index) = cast(Char)(value % 10 + 48); }
     dest[end] = 0;
 }
 
@@ -720,17 +692,14 @@ int_to_string(Int value, Char *buf)
 {
     assert(buf);
 
-    Bool is_neg = (value < 0);
-    Int abs_value = (is_neg) ? -value : value;
-    Int num_digits = get_digit_count(abs_value);
-    if(is_neg) {
-        Char *ptr = buf;
-        *ptr = '-';
-        copy_int(ptr, abs_value, 1, num_digits);
-    } else {
-        Char *ptr = buf;
-        copy_int(ptr, abs_value, 0, num_digits);
+    Int index = 0;
+    if(value < 0) {
+        value = -value;
+        index = 1;
+        *buf = '-';
     }
+
+    copy_int(buf, value, index, get_digit_count(value));
 
     return(buf);
 }
@@ -744,9 +713,7 @@ float_to_string(Float value, Int dec_accuracy, Char *buf)
     Float abs_value = (is_neg) ? -value : value;
 
     Int mul = 1;
-    for(Int dec_index = 0; (dec_index < dec_accuracy); ++dec_index) {
-        mul *= 10;
-    }
+    for(Int dec_index = 0; (dec_index < dec_accuracy); ++dec_index) { mul *= 10; }
 
     Int num_as_whole = cast(Int)(abs_value * mul);
     Int num_before_dec = num_as_whole / mul;
@@ -860,9 +827,7 @@ format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 
                         assert(len < array_count(temp_buffer));
                         Char *at = temp_buffer;
-                        for(Int str_index = 0; (str_index < len); ++str_index, ++at) {
-                            *at = str[str_index];
-                        }
+                        for(Int str_index = 0; (str_index < len); ++str_index, ++at) { *at = str[str_index]; }
 
                         *at = 0;
 
@@ -982,10 +947,7 @@ struct String {
 internal String
 create_string(Char *str, Int len = 0)
 {
-    String res;
-    res.e = str;
-    res.len = (len) ? len : string_length(str);
-
+    String res = {str, (len) ? len : string_length(str)};
     return(res);
 }
 
@@ -1195,9 +1157,7 @@ eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
     assert(tokenizer);
 
-    for(Int token_index = 0; (token_index < num_tokens_to_eat); ++token_index) {
-        get_token(tokenizer);
-    }
+    for(Int token_index = 0; (token_index < num_tokens_to_eat); ++token_index) { get_token(tokenizer); }
 }
 
 internal Token
@@ -1256,9 +1216,8 @@ get_token(Tokenizer *tokenizer)
         case '"': {
             res.e = tokenizer->at;
             while((tokenizer->at[0]) && (tokenizer->at[0] != '"')) {
-                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { // TODO(Jonny): Is this right??
-                    ++tokenizer->at;
-                }
+                // TODO(Jonny): Is this right??
+                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { ++tokenizer->at; }
 
                 ++tokenizer->at;
             }
@@ -1273,18 +1232,15 @@ get_token(Tokenizer *tokenizer)
         case '\'': {
             res.e = tokenizer->at;
             while((tokenizer->at[0]) && (tokenizer->at[0] != '\'')) {
-                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { // TODO(Jonny): Is this right??
-                    ++tokenizer->at;
-                }
+                // TODO(Jonny): Is this right??
+                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { ++tokenizer->at; }
 
                 ++tokenizer->at;
             }
 
             res.type = TokenType_string;
             res.len = safe_truncate_size_64(tokenizer->at - res.e);
-            if(tokenizer->at[0] == '\'') {
-                ++tokenizer->at;
-            }
+            if(tokenizer->at[0] == '\'') { ++tokenizer->at; }
         } break;
 
         default: {
@@ -1333,9 +1289,7 @@ token_equals(Token token, Char *str)
 
     Char *at = str;
     for(Int str_index = 0; (str_index < token.len); ++str_index, ++at) {
-        if((*at == 0) == (*at == token.e[str_index])) {
-            goto exit_func;
-        }
+        if((*at == 0) == (*at == token.e[str_index])) { goto exit_func; }
     }
 
     res = (*at == 0);
@@ -1379,16 +1333,12 @@ string_to_int(String str)
 
     for(Int str_index = 0; (str_index < str.len); ++str_index) {
         ResultInt temp_int = char_to_int(str.e[str_index]);
-        if(!temp_int.success) {
-            break; // for
-        }
+        if(!temp_int.success) { break; } // for
 
         res.e *= 10;
         res.e += temp_int.e;
 
-        if(str_index == str.len - 1) {
-            res.success = true;
-        }
+        if(str_index == str.len - 1) { res.success = true; }
     }
 
     assert(res.success);
@@ -1439,8 +1389,7 @@ compare_variable(Variable a, Variable b)
 {
     Bool res = true;
 
-    if(0) {}
-    else if(!string_compare(a.type, b.type)) { res = false; }
+    if(!string_compare(a.type, b.type))      { res = false; }
     else if(!string_compare(a.name, b.name)) { res = false; }
     else if(a.is_ptr != b.is_ptr)            { res = false; }
     else if(a.array_count != b.array_count)  { res = false; }
@@ -1454,9 +1403,7 @@ compare_variable_array(Variable *a, Variable *b, Int count)
     assert((a) && (b) && (count));
 
     for(Int array_index = 0; (array_index < count); ++array_index) {
-        if(!compare_variable(a[array_index], b[array_index])) {
-            return(false);
-        }
+        if(!compare_variable(a[array_index], b[array_index])) { return(false); }
     }
 
     return(true);
@@ -1475,28 +1422,18 @@ parse_member(Tokenizer *tokenizer)
     while(parsing) {
         Token token = get_token(tokenizer);
         switch(token.type) {
-            case TokenType_asterisk: {
-                res.is_ptr = true;
-            } break;
+            case TokenType_asterisk:                                 { res.is_ptr = true;                 } break;
+            case TokenType_identifier:                               { res.name = token_to_string(token); } break;
+            case TokenType_semi_colon: case TokenType_end_of_stream: { parsing = false;                   } break;
 
             case TokenType_open_bracket: {
                 Token size_token = get_token(tokenizer);
                 if(size_token.type == TokenType_number) {
                     Char buffer[256] = {};
                     token_to_string(size_token, buffer, array_count(buffer));
-                    ResultInt arr_coount = string_to_int(buffer);
-                    if(arr_coount.success) {
-                        res.array_count = arr_coount.e;
-                    }
+                    ResultInt arr_count = string_to_int(buffer);
+                    if(arr_count.success) { res.array_count = arr_count.e; }
                 }
-            } break;
-
-            case TokenType_identifier: {
-                res.name = token_to_string(token);
-            } break;
-
-            case TokenType_semi_colon: case TokenType_end_of_stream: {
-                parsing = false;
             } break;
         }
     }
@@ -1523,9 +1460,7 @@ is_stupid_class_keyword(Token t)
 
     Char *keywords[] = { "private", "public", "protected" };
     for(Int keyword_index = 0, num_keywords = array_count(keywords); (keyword_index < num_keywords); ++keyword_index) {
-        if(string_compare(keywords[keyword_index], t.e, t.len)) {
-            result = true;
-        }
+        if(string_compare(keywords[keyword_index], t.e, t.len)) { result = true; }
     }
 
     return(result);
@@ -1562,15 +1497,11 @@ skip_to_matching_bracket(Tokenizer *tokenizer)
     while(should_loop) {
         token = get_token(tokenizer);
         switch(token.type) {
+            case TokenType_open_brace: { ++brace_count; } break;
+
             case TokenType_close_brace: {
                 --brace_count;
-                if(!brace_count) {
-                    should_loop = false;
-                }
-            } break;
-
-            case TokenType_open_brace: {
-                ++brace_count;
+                if(!brace_count) { should_loop = false; }
             } break;
         }
     }
@@ -1587,15 +1518,11 @@ parse_template(Tokenizer *tokenizer)
     while(should_loop) {
         token = get_token(tokenizer);
         switch(token.type) {
+            case TokenType_open_angle_bracket: { ++angle_bracket_count; } break;
+
             case TokenType_close_angle_bracket: {
                 --angle_bracket_count;
-                if(!angle_bracket_count) {
-                    should_loop = false;
-                }
-            } break;
-
-            case TokenType_open_angle_bracket: {
-                ++angle_bracket_count;
+                if(!angle_bracket_count) { should_loop = false; }
             } break;
         }
     }
@@ -1641,9 +1568,7 @@ parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_t
     }
 
     // Skip over any assignment at the end.
-    if(token.type == TokenType_equals) {
-        eat_token(tokenizer); // TODO(Jonny): This won't work if a variable is assigned to a function.
-    }
+    if(token.type == TokenType_equals) { eat_token(tokenizer); } // TODO(Jonny): This won't work if a variable is assigned to a function.
 
     return(res);
 }
@@ -1689,9 +1614,7 @@ parse_struct(Tokenizer *tokenizer)
             }
 
             next = peak_token(tokenizer);
-            if(next.type != TokenType_open_brace) {
-                eat_token(tokenizer);
-            }
+            if(next.type != TokenType_open_brace) { eat_token(tokenizer); }
         }
     }
 
@@ -1714,27 +1637,20 @@ parse_struct(Tokenizer *tokenizer)
                     if(token.type == TokenType_close_brace) {
                         if(!have_name) {
                             name = get_token(tokenizer);
-                            if(name.type == TokenType_identifier) {
-                                res.sd.name = token_to_string(name);
-                            } else {
-                                push_error(ErrorType_could_not_detect_struct_name);
-                            }
+                            if(name.type == TokenType_identifier) { res.sd.name = token_to_string(name);                }
+                            else                                  { push_error(ErrorType_could_not_detect_struct_name); }
                         }
 
                         break; // for
                     } else if(token.type == TokenType_hash) {
-                        while(tokenizer->at[0] != '\n') {
-                            ++tokenizer->at;
-                        }
+                        while(tokenizer->at[0] != '\n') { ++tokenizer->at; }
                     } else {
                         Bool is_func = false;
 
                         Tokenizer tokenizer_copy = *tokenizer;
                         Token temp = get_token(&tokenizer_copy);
                         while(temp.type != TokenType_semi_colon) {
-                            if(temp.type == TokenType_open_paren) {
-                                is_func = true;
-                            }
+                            if(temp.type == TokenType_open_paren) { is_func = true; }
 
                             if(temp.type == TokenType_open_brace) {
                                 is_func = true;
@@ -1744,11 +1660,10 @@ parse_struct(Tokenizer *tokenizer)
                             temp = get_token(&tokenizer_copy);
                         }
 
-                        if(!is_func) {
-                            member_pos[res.sd.member_count++] = token.e;
+                        if(!is_func) {member_pos[res.sd.member_count++] = token.e; }
+                        /*
                         } else {
                             // This is commented out because I'm not sure I really _need_ member functions...
-#if 0
                             // TODO(Jonny): This fails for constructors (and probably destructors).
                             if(inline_func) {
                                 skip_to_matching_bracket(&tokenizer_copy);
@@ -1779,8 +1694,8 @@ parse_struct(Tokenizer *tokenizer)
                                 // Now store the function data.
                                 res.sd.func_data[res.sd.func_count++] = fd;
                             }
-#endif
                         }
+                        */
 
                         *tokenizer = tokenizer_copy;
                     }
@@ -1813,7 +1728,8 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
                      "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                      "{\n"
                      "    char indent_buf[256];\n"
-                     "    int i = 0, j = 0, is_null = 0;\n"
+                     "    int i = 0, j = 0;\n"
+                     "    int/*bool*/ is_null = 0;\n"
                      "    MemberDefinition *member = 0;\n"
                      "    void *member_ptr = 0;\n"
                      "    size_t *value = 0;\n"
@@ -1822,16 +1738,12 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
                      "\n"
                      "    assert((var) && (members_of_Something) && (num_members > 0) && (buffer) && (buf_size > 0));\n"
                      "    memset(buffer + bytes_written, 0, buf_size - bytes_written);\n"
-                     "    for(i = 0; (i < indent); ++i) {\n"
-                     "        indent_buf[i] = ' ';\n"
-                     "    }\n"
+                     "    for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
                      "\n"
                      "    bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%s%%s %%s\", indent_buf, type, name);\n"
                      "    indent += 4;\n"
                      "\n"
-                     "    for(i = 0; (i < indent); ++i) {\n"
-                     "        indent_buf[i] = ' ';\n"
-                     "    }\n"
+                     "    for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
                      "\n"
                      "    for(i = 0; (i < num_members); ++i) {\n"
                      "         member = members_of_Something + i;\n"
@@ -1866,7 +1778,6 @@ write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
                      "                        is_null = (member->is_ptr) ? !(*(float **)(value + j)) : 0;\n"
                      "                        if(!is_null) {\n"
                      "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(float *)value[j] : value[j]);\n"
-
                      "                        } else {\n"
                      "                            bytes_written += sprintf((char *)buffer + bytes_written, \"\\n%%sfloat %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
                      "                        }\n"
@@ -2030,9 +1941,7 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
     while(token.type != TokenType_close_brace) {
         // TODO(Jonny): It was stupid to count the number of commas. Instead, actually count
         //              the number of enums.
-        if(token.type == TokenType_comma) {
-            ++res.no_of_values;
-        }
+        if(token.type == TokenType_comma) { ++res.no_of_values; }
 
         token = get_token(&copy);
     }
@@ -2047,9 +1956,7 @@ add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokeni
             EnumValue *ev = res.values + index;
 
             Token temp_token = {};
-            while(temp_token.type != TokenType_identifier) {
-                temp_token = get_token(tokenizer);
-            }
+            while(temp_token.type != TokenType_identifier) { temp_token = get_token(tokenizer); }
 
             ev->name = token_to_string(temp_token);
             ev->value = index; // TODO(Jonny): Doesn't work for enums with an assignment in them.
@@ -2104,9 +2011,7 @@ copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_le
 
     buf += index;
 
-    for(Int str_index = 0; (str_index < literal_len); ++str_index) {
-        buf[str_index] = literal[str_index];
-    }
+    for(Int str_index = 0; (str_index < literal_len); ++str_index) { buf[str_index] = literal[str_index]; }
 
     Int res = index + literal_len;
     return(res);
@@ -2130,9 +2035,9 @@ get_default_struct_string(void)
 internal Void
 skip_to_end_of_line(Tokenizer *tokenizer)
 {
-    while(*tokenizer->at != '\n') {
-        ++tokenizer->at;
-    }
+    assert(tokenizer);
+
+    while(is_end_of_line(*tokenizer->at)) { ++tokenizer->at; }
 }
 
 struct ParseFunctionResult {
@@ -2354,9 +2259,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                 for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
                     String *i = sd->inherited + inherited_index;
 
-                    if(inherited_index > 0) {
-                        write_to_output_buffer(&ob, ",");
-                    }
+                    if(inherited_index > 0) { write_to_output_buffer(&ob, ","); }
 
                     write_to_output_buffer(&ob, " public _%S", i->len, i->e);
                 }
@@ -2395,9 +2298,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
                     StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
 
                     assert(base_class);
-                    if(base_class) {
-                        member_count += base_class->member_count;
-                    }
+                    if(base_class) { member_count += base_class->member_count; }
                 }
 
                 write_to_output_buffer(&ob, "static int num_members_for_%S = %u;\n",
@@ -2572,7 +2473,7 @@ write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int e
     return(res);
 }
 
-global Bool should_write_to_file;
+global Bool should_write_to_file = false;
 
 internal Void
 start_parsing(Char *filename, Char *file)
@@ -2590,7 +2491,6 @@ start_parsing(Char *filename, Char *file)
     //FunctionData *func_data = malloc_array(FunctionData, func_max);
 
     if((enum_data)  && (struct_data) && (union_data)) {
-
         Tokenizer tokenizer = { file };
 
         Bool parsing = true;
@@ -2605,28 +2505,23 @@ start_parsing(Char *filename, Char *file)
                     if(token_equals(token, "template")) {
                         eat_token(&tokenizer);
                         parse_template(&tokenizer);
-                    } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) { // TODO(Jonny): Support typedef sturcts.
+                    } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
                         if(struct_count + 1 >= struct_max) {
                             struct_max *= 2;
                             Void *p = realloc(struct_data, struct_max * sizeof(StructData));
-                            if(p) {
-                                struct_data = cast(StructData *)p;
-                            }
+                            if(p) { struct_data = cast(StructData *)p; }
                         }
 
                         ParseStructResult r = parse_struct(&tokenizer);
-                        if(r.success) {
-                            struct_data[struct_count++] = r.sd; // TODO(Jonny): This fails at a struct declared within a struct/union.
-                        }
+                        // TODO(Jonny): This fails at a struct declared within a struct/union.
+                        if(r.success) {struct_data[struct_count++] = r.sd; }
                     } else if((token_equals(token, "union"))) {
                         Token name = get_token(&tokenizer);
 
                         if(union_count + 1 >= union_max) {
                             union_max *= 2;
                             Void *p = realloc(union_data, union_max * sizeof(String));
-                            if(p) {
-                                union_data = cast(String *)p;
-                            }
+                            if(p) { union_data = cast(String *)p; }
                         }
 
                         union_data[union_count++] = token_to_string(name);
@@ -2652,9 +2547,7 @@ start_parsing(Char *filename, Char *file)
                                 if(enum_count + 1 >= enum_max) {
                                     enum_max *= 2;
                                     Void *p = realloc(enum_data, sizeof(enum_data) * enum_max);
-                                    if(p) {
-                                        enum_data = cast(EnumData *)p;
-                                    }
+                                    if(p) { enum_data = cast(EnumData *)p; }
                                 }
 
                                 enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
@@ -2692,9 +2585,7 @@ start_parsing(Char *filename, Char *file)
                              generated_extension, string_length(generated_extension))) {
 
                 Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
-                if(!header_write_success) {
-                    push_error(ErrorType_could_not_write_to_disk);
-                }
+                if(!header_write_success) { push_error(ErrorType_could_not_write_to_disk); }
 
                 free(file_to_write.data);
             }
@@ -2704,7 +2595,7 @@ start_parsing(Char *filename, Char *file)
 
         free(union_data);
 
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].members); }
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].members);   }
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].inherited); }
         free(struct_data);
 
@@ -2828,4 +2719,124 @@ main(Int argc, Char **argv)
     return(res);
 }
 
-#include "tests.h"
+//
+// Tests
+//
+#if INTERNAL
+
+#if defined(internal)
+    #undef internal
+#endif
+#if defined(global)
+    #undef global
+#endif
+#if defined(malloc)
+    #undef malloc
+#endif
+#if defined(realloc)
+    #undef realloc
+#endif
+#if defined(free)
+    #undef free
+#endif
+#if defined(calloc)
+    #undef calloc
+#endif
+
+#include "google_test/gtest.h"
+
+//
+// Test Structs.
+//
+StructData
+parse_struct_test(Char *str)
+{
+    Tokenizer tokenizer = {str};
+    eat_token(&tokenizer);
+
+    return(parse_struct(&tokenizer).sd);
+}
+
+enum StructCompareFailure {
+    StructCompareFailure_success,
+
+    StructCompareFailure_name,
+    StructCompareFailure_member_count,
+    StructCompareFailure_members,
+    StructCompareFailure_inherited,
+    StructCompareFailure_func_data,
+    StructCompareFailure_func_count,
+};
+Char *
+struct_compare_failure_to_string(StructCompareFailure scf)
+{
+    Char *res = 0;
+    if(scf == StructCompareFailure_success)       { res = "StructCompareFailure_success";      }
+    if(scf == StructCompareFailure_name)          { res = "StructCompareFailure_name";         }
+    if(scf == StructCompareFailure_member_count)  { res = "StructCompareFailure_member_count"; }
+    if(scf == StructCompareFailure_members)       { res = "StructCompareFailure_members";      }
+    if(scf == StructCompareFailure_inherited)     { res = "StructCompareFailure_inherited";    }
+    if(scf == StructCompareFailure_func_data)     { res = "StructCompareFailure_func_data";    }
+    if(scf == StructCompareFailure_func_count)    { res = "StructCompareFailure_func_count";   }
+
+    return(res);
+};
+
+StructCompareFailure
+compare_struct_data(StructData a, StructData b)
+{
+    StructCompareFailure res = StructCompareFailure_success;
+
+    if(0) {}
+    else if(!string_compare(a.name, b.name))                               { res = StructCompareFailure_name;         }
+    else if(a.member_count != b.member_count)                              { res = StructCompareFailure_member_count; }
+    else if(!compare_variable_array(a.members, b.members, a.member_count)) { res = StructCompareFailure_members;      }
+    //else if(!string_compare(a.inherited, b.inherited))                     { res = StructCompareFailure_inherited;    }
+    else if(a.func_count != b.func_count)                                  { res = StructCompareFailure_func_count;   }
+    // TODO(Jonny): Do func_data.
+
+    return(res);
+}
+
+TEST(StructTest, basic_struct_test)
+{
+    Char *basic_struct = "struct BasicStruct {\n"
+                         "    int i;\n"
+                         "    float *f;\n"
+                         "    bool b[10];\n"
+                         "};\n";
+    StructData hardcoded_basic_struct = {};
+    hardcoded_basic_struct.name = create_string("BasicStruct");
+    hardcoded_basic_struct.member_count = 3;
+    hardcoded_basic_struct.members = new Variable[hardcoded_basic_struct.member_count];
+
+    Int member_index = 0;
+    hardcoded_basic_struct.members[member_index++] = create_variable("int", "i");
+    hardcoded_basic_struct.members[member_index++] = create_variable("float", "f", true);
+    hardcoded_basic_struct.members[member_index++] = create_variable("bool", "b", false, 10);
+
+    StructData generated_basic_struct = parse_struct_test(basic_struct);
+
+    StructCompareFailure struct_compare_failure = compare_struct_data(hardcoded_basic_struct, generated_basic_struct);
+    ASSERT_TRUE(struct_compare_failure == StructCompareFailure_success)
+            << "Failed because struct_compare_failure == " << struct_compare_failure_to_string(struct_compare_failure);
+}
+
+#endif
+
+Int
+run_tests(void)
+{
+    Int res = 0;
+#if INTERNAL
+    // Google test uses so much memory, it's difficult to run in x86.
+    if(sizeof(PtrSize) == 8) {
+        Char *flags[] = {"--gtest_list_tests", "--gtest_repeat=1", "--gtest_break_on_failure"};
+        Int number_of_flags = array_count(flags);
+
+        testing::InitGoogleTest(&number_of_flags, flags);
+        res = RUN_ALL_TESTS();
+    }
+#endif
+    return(res);
+}
