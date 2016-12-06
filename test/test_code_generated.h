@@ -130,7 +130,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
     memset(buffer + bytes_written, 0, buf_size - bytes_written);
     for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
 
-    bytes_written += sprintf((char *)buffer + bytes_written, "\n%s%s %s", indent_buf, type, name);
+    bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type, name);
     indent += 4;
 
     for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
@@ -146,17 +146,17 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                     for(j = 0; (j < member->arr_size); ++j) {
                         is_null = (member->is_ptr) ? !(*(double **)(value + j)) : 0;
                         if(!is_null) {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(double *)value[j] : value[j]);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(double *)value[j] : value[j]);
                         } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                         }
                     }
                 } else {
                     double *double_value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;
                     if(double_value) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, *double_value);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, *double_value);
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sdouble *%s = (null)", indent_buf, member->name);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -167,17 +167,17 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                     for(j = 0; (j < member->arr_size); ++j) {
                         is_null = (member->is_ptr) ? !(*(float **)(value + j)) : 0;
                         if(!is_null) {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(float *)value[j] : value[j]);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(float *)value[j] : value[j]);
                         } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                         }
                     }
                 } else {
                     float *float_value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;
                     if(float_value) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, *float_value);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, *float_value);
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sfloat *%s = (null)", indent_buf, member->name);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -188,17 +188,17 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                     for(j = 0; (j < member->arr_size); ++j) {
                         is_null = (member->is_ptr) ? !(*(int **)(value + j)) : 0;
                         if(!is_null) {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(int *)value[j] : (int)value[j]);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(int *)value[j] : (int)value[j]);
                         } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                         }
                     }
                 } else {
                     int *int_value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;
                     if(int_value) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, *int_value);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, *int_value);
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -209,17 +209,17 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                     for(j = 0; (j < member->arr_size); ++j) {
                         is_null = (member->is_ptr) ? !(*(long **)(value + j)) : 0;
                         if(!is_null) {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(long *)value[j] : (long)value[j]);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(long *)value[j] : (long)value[j]);
                         } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                         }
                     }
                 } else {
                     long *long_value = (member->is_ptr) ? *(long **)member_ptr : (long *)member_ptr;
                     if(long_value) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, *long_value);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, *long_value);
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -230,40 +230,41 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                     for(j = 0; (j < member->arr_size); ++j) {
                         is_null = (member->is_ptr) ? !(*(short **)(value + j)) : 0;
                         if(!is_null) {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(short *)value[j] : (short)value[j]);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(short *)value[j] : (short)value[j]);
                         } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                         }
                     }
                 } else {
                     short *short_value = (member->is_ptr) ? *(short **)member_ptr : (short *)member_ptr;
                     if(short_value) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, *short_value);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, *short_value);
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
 
 #if defined(__cplusplus)
             case meta_type_bool: {
+                bool *bool_value = 0;
                 if(member->arr_size > 1) {
                     value = (size_t *)member_ptr;
                     for(j = 0; (j < member->arr_size); ++j) {
                         is_null = (member->is_ptr) ? !(*(bool **)(value + j)) : 0;
                         if(is_null) {
-                            int value_to_print = (member->is_ptr) ? **(bool **)(value + j) : value[j];
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (value_to_print) ? "true" : "false");
+                            size_t value_to_print = (member->is_ptr) ? **(bool **)(value + j) : value[j];
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (value_to_print) ? "true" : "false");
                         } else {
-                            bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
+                            bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                         }
                     }
                 } else {
-                    bool *bool_value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
+                    bool_value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
                     if(bool_value) {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool %s%s = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, (bool_value) ? "true" : "false");
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, (bool_value) ? "true" : "false");
                     } else {
-                        bytes_written += sprintf((char *)buffer + bytes_written, "\n%sbool *%s = (null)", indent_buf, member->name);
+                        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool *%s = (null)", indent_buf, member->name);
                     }
                 }
             } break;
@@ -273,12 +274,12 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 value = (member->is_ptr) ? *(size_t **)member_ptr : (size_t *)member_ptr;
                 if(value) {
                     if(member->is_ptr) {
-                        bytes_written += sprintf(buffer + bytes_written, "\n%schar *%s = \"%s\"", indent_buf, member->name, (char *)value);
+                        bytes_written += my_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%schar *%s = \"%s\"", indent_buf, member->name, (char *)value);
                     } else {
-                        bytes_written += sprintf(buffer + bytes_written, "\n%schar %s = %c", indent_buf, member->name, *(char *)value);
+                        bytes_written += my_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%schar %s = %c", indent_buf, member->name, *(char *)value);
                     }
                 } else {
-                    bytes_written += sprintf((char *)buffer + bytes_written, "\n%schar *%s = (null)", indent_buf, member->name);
+                    bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%schar *%s = (null)", indent_buf, member->name);
                 }
             } break;
 
@@ -351,29 +352,23 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 /* Enum meta data. */
 
 /* Meta Data for: Letters. */
-static size_t number_of_elements_in_enum_Letters = 4;
-static char const *
-enum_to_string_Letters(int v)
+static size_t number_of_elements_in_enum_Letters = 3;
+static char const *enum_to_string_Letters(int v)
 {
     switch(v) {
         case 0: { return("letter_a"); } break;
         case 1: { return("letter_b"); } break;
         case 2: { return("letter_c"); } break;
-        case 3: { return("void"); } break;
 
         default: { return(0); } break; /* v is out of bounds. */
     }
 }
 
-static int
-string_to_enum_Letters(char const *str)
+static int string_to_enum_Letters(char const *str)
 {
-    if(0) {}
-    else if(strcmp(str, "letter_a") == 0) { return(0); }
+    if(strcmp(str, "letter_a") == 0) { return(0); }
     else if(strcmp(str, "letter_b") == 0) { return(1); }
     else if(strcmp(str, "letter_c") == 0) { return(2); }
-    else if(strcmp(str, "void") == 0) { return(3); }
-
     else { return(0); } /* str didn't match. TODO(Jonny): Throw an error here? */
 }
 

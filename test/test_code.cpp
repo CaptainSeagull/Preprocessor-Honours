@@ -70,7 +70,7 @@ void test_struct(void)
 
     size_t size = 256 * 256;
     char *arr = new char[size];
-    int bytes_written = serialize_struct(foo, Foo, arr, size);
+    /*size_t bytes_written =*/ serialize_struct(foo, Foo, arr, size);
     printf("%s\n", arr);
     delete arr;
 }
@@ -82,12 +82,13 @@ void test_struct(void)
 enum Letters {
     letter_a,
     letter_b,
-    letter_c,
+    letter_c
 };
 
 void test_enum(void)
 {
-    int num_members = get_number_of_enum_elements(Letters);
+    size_t num_members = get_number_of_enum_elements(Letters);
+    printf("\nNumber of members: %llu", num_members);
 
     {
         char const *a = enum_to_string(Letters, letter_a);
@@ -107,12 +108,12 @@ void test_enum(void)
     }
 }
 
-int main(int argc, char **argv)
+int main(int /*argc*/, char ** /*argv*/)
 {
     printf("\n");
 
     test_struct();
-    //test_enum();
+    test_enum();
 
     printf("\n");
 
