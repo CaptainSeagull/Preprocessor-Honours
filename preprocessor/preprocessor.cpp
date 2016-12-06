@@ -12,19 +12,21 @@
 /* TODO(Jonny):
     - Completly skip over member functions!
     - Struct meta data.
-        - Multiple inheritance.
         - Right now, it generates invalid code if you make a struct with no members.
         - It breaks if you use a comma to declare members of the same type.
-    - Enum meta data.
-        - Fix glitch with commas.
+        - Have a way to get the type of different elements (as strings or types).
     - Union meta data.
-        - Similar to struct.
+        - Simple version of struct.
     - Function meta data.
-        - Get param type as typedef and string.
-        - Get return type as typedef and string.
+        - Get name (as string).
+        - Get linkage (as string and type).
+        - Get return type (as string and type)
+        - Get param count.
+        - Get params (as strings and types).
     - References.
     - Templates.
     - Macros.
+    - Typedefs.
 */
 
 #include <stdio.h>
@@ -566,6 +568,11 @@ Char *get_static_file(void)
                 "/* size_t get_number_of_enum_elements(EnumType); */\n"
                 "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
                 "\n"
+                "/* TODO(Jonny): Document this \"function\". */\n"
+                "#define get_struct_member_type_(Struct, member) Struct##member\n"
+                "#define get_struct_member_type(Struct, member) get_struct_member_type_(Struct, member)\n"
+                "\n"
+                "/* Because MSVC sucks...*/"
                 "#if defined(_MSC_VER)\n"
                 "    #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)\n"
                 "#else\n"
@@ -2161,7 +2168,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
             StructData *sd = struct_data + struct_index;
 
-            write_to_output_buffer(&ob, "typedef struct _%S _%S;\n",
+            write_to_output_buffer(&ob, "typedef struct _%S _%S;",
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e);
         }
 
@@ -2257,7 +2264,18 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     }
                 }
 
-                write_to_output_buffer(&ob, "};");
+                write_to_output_buffer(&ob, "};\n");
+
+                // Create typedefs so the user can create types based on members.
+                for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
+                    Variable *md = sd->members + member_index;
+
+                    write_to_output_buffer(&ob, "#define %S%S %S%s\n",
+                                           sd->name.len, sd->name.e,
+                                           md->name.len, md->name.e,
+                                           md->type.len, md->type.e,
+                                           (md->is_ptr) ? " *" : " ");
+                }
             }
         }
 

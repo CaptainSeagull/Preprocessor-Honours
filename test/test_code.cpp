@@ -15,7 +15,7 @@
 //
 // struct test.
 //
-typedef struct {
+typedef struct thingy {
     int x;
     int y;
 } thingy;
@@ -60,6 +60,9 @@ void test_struct(void)
     foo.p_array[3] = new double; *foo.p_array[3] = 4.4;
     // Leave foo.p_array blank.
     foo.s = 10;
+
+    V2 v1 = {};
+    get_struct_member_type(Bar, v2) *v2 = &v1;
 
     foo.i = 3;
     foo.f = 3.14f;

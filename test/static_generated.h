@@ -138,7 +138,11 @@ static size_t serialize_struct__(void *var, MemberDefinition members_of_Somethin
 /* size_t get_number_of_enum_elements(EnumType); */
 #define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
 
-#if defined(_MSC_VER)
+/* TODO(Jonny): Document this "function". */
+#define get_struct_member_type_(Struct, member) Struct##member
+#define get_struct_member_type(Struct, member) get_struct_member_type_(Struct, member)
+
+/* Because MSVC sucks...*/#if defined(_MSC_VER)
     #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
 #else
     #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)

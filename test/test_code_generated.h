@@ -23,14 +23,7 @@ typedef enum MetaType {
 /* Struct meta data. */
 
 /* Struct typedefs. */
-typedef struct _thingy _thingy;
-typedef struct _V2 _V2;
-typedef struct _Bar _Bar;
-typedef struct _A _A;
-typedef struct _B _B;
-typedef struct _C _C;
-typedef struct _Foo _Foo;
-
+typedef struct _thingy _thingy;typedef struct _V2 _V2;typedef struct _Bar _Bar;typedef struct _A _A;typedef struct _B _B;typedef struct _C _C;typedef struct _Foo _Foo;
 /* Recreated structs. */
 struct _thingy {  _int x;  _int y;  };
 struct _V2 {  _int x;  _int y;  };
@@ -47,6 +40,9 @@ static MemberDefinition members_of_thingy[] = {
     {meta_type_int, "x", (size_t)&((_thingy *)0)->x, 0, 1},
     {meta_type_int, "y", (size_t)&((_thingy *)0)->y, 0, 1},
 };
+#define thingyx int 
+#define thingyy int 
+
 /* Meta data for: V2. */
 static int num_members_for_V2 = 2;
 static MemberDefinition members_of_V2[] = {
@@ -54,6 +50,9 @@ static MemberDefinition members_of_V2[] = {
     {meta_type_int, "x", (size_t)&((_V2 *)0)->x, 0, 1},
     {meta_type_int, "y", (size_t)&((_V2 *)0)->y, 0, 1},
 };
+#define V2x int 
+#define V2y int 
+
 /* Meta data for: Bar. */
 static int num_members_for_Bar = 5;
 static MemberDefinition members_of_Bar[] = {
@@ -64,24 +63,36 @@ static MemberDefinition members_of_Bar[] = {
     {meta_type_double, "d", (size_t)&((_Bar *)0)->d, 0, 1},
     {meta_type_V2, "v2", (size_t)&((_Bar *)0)->v2, 0, 1},
 };
+#define Bars short 
+#define Bari int 
+#define Barf float 
+#define Bard double 
+#define Barv2 V2 
+
 /* Meta data for: A. */
 static int num_members_for_A = 1;
 static MemberDefinition members_of_A[] = {
     /* Members. */
     {meta_type_float, "dfksjl", (size_t)&((_A *)0)->dfksjl, 0, 1},
 };
+#define Adfksjl float 
+
 /* Meta data for: B. */
 static int num_members_for_B = 1;
 static MemberDefinition members_of_B[] = {
     /* Members. */
     {meta_type_float, "dfgkjn", (size_t)&((_B *)0)->dfgkjn, 0, 1},
 };
+#define Bdfgkjn float 
+
 /* Meta data for: C. */
 static int num_members_for_C = 1;
 static MemberDefinition members_of_C[] = {
     /* Members. */
     {meta_type_float, "fdskl", (size_t)&((_C *)0)->fdskl, 0, 1},
 };
+#define Cfdskl float 
+
 /* Meta data for: Foo. */
 static int num_members_for_Foo = 15;
 static MemberDefinition members_of_Foo[] = {
@@ -112,6 +123,12 @@ static MemberDefinition members_of_Foo[] = {
     /* Inherited Members for C */
     {meta_type_float, "fdskl", (size_t)&((_Foo *)0)->fdskl, 0, 1},
 };
+#define Foostr char *
+#define Fooip int *
+#define Foofp float *
+#define Foob bool *
+#define Foop_array double *
+
 
 /* Function to serialize a struct to a char array buffer. */
 static size_t
