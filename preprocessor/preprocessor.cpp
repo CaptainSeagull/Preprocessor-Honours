@@ -577,6 +577,9 @@ Char *get_static_file(void)
                 "template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };\n"
                 "#define type_compare(a, b) TypeCompare_<a, b>::e\n"
                 "\n"
+                "/* TODO(Jonny): Document this! */\n"
+                "#define type_to_string(Type) type_to_string_<Type>()\n"
+                "\n"
                 "/* Because MSVC sucks. TODO(Jonny): Use stb_sprintf?... */\n"
                 "#if defined(_MSC_VER)\n"
                 "    #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)\n"
@@ -2307,6 +2310,32 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
         write_serialize_struct_implementation(def_struct_code, &ob);
         clear_scratch_memory();
+
+        // type_to_string.
+        write_to_output_buffer(&ob,
+                               "\n/* Convert a type to a string. */\n"
+                               "template<typename T> static char const *type_to_string_(void)\n"
+                               "{\n"
+                               "    /* Primitives. */\n");
+        for(Int primitive_index = 0; (primitive_index < get_num_of_primitive_types()); ++primitive_index) {
+            Char *primitive = primitive_types[primitive_index];
+
+            if(primitive_index == 0) {
+                write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
+            } else {
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
+            }
+        }
+
+        write_to_output_buffer(&ob, "\n    /* Struct types. */\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            write_to_output_buffer(&ob, "    else if(type_compare(T, %S)) { return(\"%S\"); }\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+        }
+        write_to_output_buffer(&ob, "\n    else { return(0); } /* Unknown Type. */\n}\n");
+
 
         //
         // Enum Meta data.

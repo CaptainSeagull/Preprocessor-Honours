@@ -147,6 +147,9 @@ template<class T, class U>struct TypeCompare_{ enum {e = 0}; };
 template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
 #define type_compare(a, b) TypeCompare_<a, b>::e
 
+/* TODO(Jonny): Document this! */
+#define type_to_string(Type) type_to_string_<Type>()
+
 /* Because MSVC sucks. TODO(Jonny): Use stb_sprintf?... */
 #if defined(_MSC_VER)
     #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
