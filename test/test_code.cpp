@@ -118,6 +118,9 @@ int main(int /*argc*/, char ** /*argv*/)
     test_struct();
     test_enum();
 
+    bool a = type_compare(int, int);
+    bool b = type_compare(int, float);
+
     printf("\n");
 
     return(0);
