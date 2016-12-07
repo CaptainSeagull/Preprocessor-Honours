@@ -2322,6 +2322,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
             if(primitive_index == 0) {
                 write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
             } else {
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
             }
@@ -2332,6 +2334,12 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             StructData *sd = struct_data + struct_index;
 
             write_to_output_buffer(&ob, "    else if(type_compare(T, %S)) { return(\"%S\"); }\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+            write_to_output_buffer(&ob, "    else if(type_compare(T, %S *)) { return(\"%S *\"); }\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+            write_to_output_buffer(&ob, "    else if(type_compare(T, %S **)) { return(\"%S **\"); }\n",
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e);
         }
         write_to_output_buffer(&ob, "\n    else { return(0); } /* Unknown Type. */\n}\n");

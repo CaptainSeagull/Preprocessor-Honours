@@ -121,7 +121,7 @@ int main(int /*argc*/, char ** /*argv*/)
     bool a = type_compare(int, int);
     bool b = type_compare(int, float);
 
-    char const *str = type_to_string(Bar);
+    char const *str = type_to_string(Bar **);
 
     printf("\n");
 
