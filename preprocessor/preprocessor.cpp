@@ -554,10 +554,10 @@ Char *get_static_file(void)
                 "/* get_num_of_members(TYPE type); */\n"
                 "#define get_num_of_members(type) num_members_for_##type\n"
                 "\n"
-                "/* size_t serialize_struct(void *var, Type var_type, char *buffer, size_t buf_size); */\n"
-                "#define serialize_struct(var, type, buffer, buf_size) serialize_struct_(var, type, #var, 0, buffer, buf_size, 0)\n"
-                "#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, #type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
-                "static size_t serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
+                "/* size_t serialize_struct(void *var, char *buffer, size_t buf_size); */\n"
+                //"#define serialize_struct(var, buffer, buf_size) serialize_struct_(var, type, #var, 0, buffer, buf_size, 0)\n"
+                //"#define serialize_struct_(var, type, name, indent, buffer, buf_size, bytes_written) serialize_struct__((void *)&var, members_of_##type, name, #type, indent, get_num_of_members(type), buffer, buf_size, bytes_written)\n"
+                //"template<typename T> static size_t serialize_struct__(void *var, MemberDefinition *members_of_Something, char const *name, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "\n"
                 "/* char const *enum_to_string(EnumType, EnumType value); */\n"
                 "#define enum_to_string(Type, v) enum_to_string_##Type(v)\n"
@@ -1670,8 +1670,9 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
 
     // TODO(Jonny): This will currently flop with an array of pointers.
     Char *top_part = "/* Function to serialize a struct to a char array buffer. */\n"
-                     "static size_t\n"
-                     "serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
+                     "template <typename T>static size_t\n"
+                     "serialize_struct_(void *var, MemberDefinition *members_of_Something, char const *name,\n"
+                     "                  int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)\n"
                      "{\n"
                      "    char indent_buf[256];\n"
                      "    int i = 0, j = 0;\n"
@@ -1686,7 +1687,7 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
                      "    memset(buffer + bytes_written, 0, buf_size - bytes_written);\n"
                      "    for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
                      "\n"
-                     "    bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type, name);\n"
+                     "    bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_to_string(T), name);\n"
                      "    indent += 4;\n"
                      "\n"
                      "    for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
@@ -1964,9 +1965,9 @@ Char *get_default_struct_string(void)
 {
     Char *res = "                    case meta_type_%S: {\n"
                 "                        if(member->is_ptr) {\n"
-                "                            bytes_written = serialize_struct_(**(char **)member_ptr, %S, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                "                            bytes_written = serialize_struct_<%S *>(*(char **)member_ptr, get_members_of_<%S>(), member->name, indent, get_number_of_members_<%S>(), buffer, buf_size - bytes_written, bytes_written);\n"
                 "                        } else {\n"
-                "                            bytes_written = serialize_struct_(*(char *)member_ptr, %S, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                "                            bytes_written = serialize_struct_<%S>((char *)member_ptr, get_members_of_<%S>(), member->name, indent, get_number_of_members_<%S>(), buffer, buf_size - bytes_written, bytes_written);\n"
                 "                        }\n"
                 "                    } break;\n"
                 "\n";
@@ -2299,7 +2300,10 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                 StructData *sd = struct_data + struct_index;
                 Char *DefaultStructString = get_default_struct_string();
                 index += format_string(def_struct_code + index, def_struct_code_size, DefaultStructString,
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
             }
 
@@ -2307,6 +2311,51 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         }
 
 
+        // Type to members_of thing.
+        write_to_output_buffer(&ob,
+                               "/* Convert a type into a members of pointer. */\n"
+                               "template<typename T> static MemberDefinition *get_members_of_(void)\n"
+                               "{\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            if(struct_index == 0) {
+                write_to_output_buffer(&ob,
+                                       "    if(type_compare(T, %S)) { return(members_of_%S); }\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+            } else {
+                write_to_output_buffer(&ob,
+                                       "    else if(type_compare(T, %S)) { return(members_of_%S); }\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+            }
+        }
+
+        write_to_output_buffer(&ob,
+                               "\n    else { assert(0); return(0); } /* Error */\n"
+                               "}\n");
+
+        // Get number of members.
+        write_to_output_buffer(&ob,
+                               "/* Convert a type into a members of pointer. */\n"
+                               "template<typename T> static size_t get_number_of_members_(void)\n"
+                               "{\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            if(struct_index == 0) {
+                write_to_output_buffer(&ob,
+                                       "    if(type_compare(T, %S)) { return(num_members_for_%S); }\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+            } else {
+                write_to_output_buffer(&ob,
+                                       "    else if(type_compare(T, %S)) { return(num_members_for_%S); }\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+            }
+        }
+
+        write_to_output_buffer(&ob,
+                               "\n    else { assert(0); return(0); } /* Error */\n"
+                               "}\n");
 
         write_serialize_struct_implementation(def_struct_code, &ob);
         clear_scratch_memory();
@@ -2315,17 +2364,19 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         write_to_output_buffer(&ob,
                                "\n/* Convert a type to a string. */\n"
                                "template<typename T> static char const *type_to_string_(void)\n"
-                               "{\n"
+                               " {\n"
                                "    /* Primitives. */\n");
         for(Int primitive_index = 0; (primitive_index < get_num_of_primitive_types()); ++primitive_index) {
             Char *primitive = primitive_types[primitive_index];
 
             if(primitive_index == 0) {
                 write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
-                write_to_output_buffer(&ob, "    if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
-                write_to_output_buffer(&ob, "    if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
             } else {
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
             }
         }
 

@@ -130,9 +130,36 @@ static MemberDefinition members_of_Foo[] = {
 #define Foop_array double *
 
 
+/* Convert a type into a members of pointer. */
+template<typename T> static MemberDefinition *get_members_of_(void)
+{
+    if(type_compare(T, thingy)) { return(members_of_thingy); }
+    else if(type_compare(T, V2)) { return(members_of_V2); }
+    else if(type_compare(T, Bar)) { return(members_of_Bar); }
+    else if(type_compare(T, A)) { return(members_of_A); }
+    else if(type_compare(T, B)) { return(members_of_B); }
+    else if(type_compare(T, C)) { return(members_of_C); }
+    else if(type_compare(T, Foo)) { return(members_of_Foo); }
+
+    else { assert(0); return(0); } /* Error */
+}
+/* Convert a type into a members of pointer. */
+template<typename T> static size_t get_number_of_members_(void)
+{
+    if(type_compare(T, thingy)) { return(num_members_for_thingy); }
+    else if(type_compare(T, V2)) { return(num_members_for_V2); }
+    else if(type_compare(T, Bar)) { return(num_members_for_Bar); }
+    else if(type_compare(T, A)) { return(num_members_for_A); }
+    else if(type_compare(T, B)) { return(num_members_for_B); }
+    else if(type_compare(T, C)) { return(num_members_for_C); }
+    else if(type_compare(T, Foo)) { return(num_members_for_Foo); }
+
+    else { assert(0); return(0); } /* Error */
+}
 /* Function to serialize a struct to a char array buffer. */
-static size_t
-serialize_struct__(void *var, MemberDefinition members_of_Something[], char const *name, char const *type, int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
+template <typename T>static size_t
+serialize_struct_(void *var, MemberDefinition *members_of_Something, char const *name,
+                  int indent, size_t num_members, char *buffer, size_t buf_size, size_t bytes_written)
 {
     char indent_buf[256];
     int i = 0, j = 0;
@@ -147,7 +174,7 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
     memset(buffer + bytes_written, 0, buf_size - bytes_written);
     for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
 
-    bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type, name);
+    bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_to_string(T), name);
     indent += 4;
 
     for(i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
@@ -304,57 +331,71 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
                 switch(member->type) {
                     case meta_type_thingy: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, thingy, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<thingy *>(*(char **)member_ptr, get_members_of_<thingy>(), member->name, indent, get_number_of_members_<thingy>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<thingy *>(**(char **)member_ptr, get_members_of_<thingy>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, thingy, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<thingy>((char *)member_ptr, get_members_of_<thingy>(), member->name, indent, get_number_of_members_<thingy>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<thingy>(*(char *)member_ptr, get_members_of_<thingy>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
                     case meta_type_V2: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<V2 *>(*(char **)member_ptr, get_members_of_<V2>(), member->name, indent, get_number_of_members_<V2>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<V2 *>(**(char **)member_ptr, get_members_of_<V2>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, V2, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<V2>((char *)member_ptr, get_members_of_<V2>(), member->name, indent, get_number_of_members_<V2>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<V2>(*(char *)member_ptr, get_members_of_<V2>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
                     case meta_type_Bar: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, Bar, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<Bar *>(*(char **)member_ptr, get_members_of_<Bar>(), member->name, indent, get_number_of_members_<Bar>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<Bar *>(**(char **)member_ptr, get_members_of_<Bar>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, Bar, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<Bar>((char *)member_ptr, get_members_of_<Bar>(), member->name, indent, get_number_of_members_<Bar>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<Bar>(*(char *)member_ptr, get_members_of_<Bar>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
                     case meta_type_A: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, A, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<A *>(*(char **)member_ptr, get_members_of_<A>(), member->name, indent, get_number_of_members_<A>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<A *>(**(char **)member_ptr, get_members_of_<A>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, A, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<A>((char *)member_ptr, get_members_of_<A>(), member->name, indent, get_number_of_members_<A>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<A>(*(char *)member_ptr, get_members_of_<A>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
                     case meta_type_B: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, B, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<B *>(*(char **)member_ptr, get_members_of_<B>(), member->name, indent, get_number_of_members_<B>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<B *>(**(char **)member_ptr, get_members_of_<B>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, B, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<B>((char *)member_ptr, get_members_of_<B>(), member->name, indent, get_number_of_members_<B>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<B>(*(char *)member_ptr, get_members_of_<B>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
                     case meta_type_C: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, C, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<C *>(*(char **)member_ptr, get_members_of_<C>(), member->name, indent, get_number_of_members_<C>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<C *>(**(char **)member_ptr, get_members_of_<C>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, C, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<C>((char *)member_ptr, get_members_of_<C>(), member->name, indent, get_number_of_members_<C>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<C>(*(char *)member_ptr, get_members_of_<C>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
                     case meta_type_Foo: {
                         if(member->is_ptr) {
-                            bytes_written = serialize_struct_(**(char **)member_ptr, Foo, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<Foo *>(*(char **)member_ptr, get_members_of_<Foo>(), member->name, indent, get_number_of_members_<Foo>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<Foo *>(**(char **)member_ptr, get_members_of_<Foo>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         } else {
-                            bytes_written = serialize_struct_(*(char *)member_ptr, Foo, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            bytes_written = serialize_struct_<Foo>((char *)member_ptr, get_members_of_<Foo>(), member->name, indent, get_number_of_members_<Foo>(), buffer, buf_size - bytes_written, bytes_written);
+                            //bytes_written = serialize_struct_<Foo>(*(char *)member_ptr, get_members_of_<Foo>, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                         }
                     } break;
 
@@ -368,17 +409,29 @@ serialize_struct__(void *var, MemberDefinition members_of_Something[], char cons
 
 /* Convert a type to a string. */
 template<typename T> static char const *type_to_string_(void)
-{
+ {
     /* Primitives. */
     if(type_compare(T, char)) { return("char"); }
-    if(type_compare(T, char *)) { return("char *"); }
-    if(type_compare(T, char **)) { return("char **"); }
+    else if(type_compare(T, char *)) { return("char *"); }
+    else if(type_compare(T, char **)) { return("char **"); }
     else if(type_compare(T, short)) { return("short"); }
+    else if(type_compare(T, short *)) { return("short *"); }
+    else if(type_compare(T, short **)) { return("short **"); }
     else if(type_compare(T, int)) { return("int"); }
+    else if(type_compare(T, int *)) { return("int *"); }
+    else if(type_compare(T, int **)) { return("int **"); }
     else if(type_compare(T, long)) { return("long"); }
+    else if(type_compare(T, long *)) { return("long *"); }
+    else if(type_compare(T, long **)) { return("long **"); }
     else if(type_compare(T, float)) { return("float"); }
+    else if(type_compare(T, float *)) { return("float *"); }
+    else if(type_compare(T, float **)) { return("float **"); }
     else if(type_compare(T, double)) { return("double"); }
+    else if(type_compare(T, double *)) { return("double *"); }
+    else if(type_compare(T, double **)) { return("double **"); }
     else if(type_compare(T, bool)) { return("bool"); }
+    else if(type_compare(T, bool *)) { return("bool *"); }
+    else if(type_compare(T, bool **)) { return("bool **"); }
 
     /* Struct types. */
     else if(type_compare(T, thingy)) { return("thingy"); }

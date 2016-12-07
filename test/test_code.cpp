@@ -42,6 +42,11 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     double *p_array[5];
 };
 
+#define serialize_struct(var, buffer, size) \
+    serialize_struct_<decltype(var)>(var, get_members_of_<decltype(var)>, #var, 0, get_number_of_members_<decltype(var)>, \
+                                     buffer, size, 0)
+
+
 void test_struct(void)
 {
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
@@ -73,7 +78,10 @@ void test_struct(void)
 
     size_t size = 256 * 256;
     char *arr = new char[size];
-    /*size_t bytes_written =*/ serialize_struct(foo, Foo, arr, size);
+    ///*size_t bytes_written =*/ serialize_struct(foo, arr, size);
+
+    serialize_struct_<decltype(foo)>(&foo, get_members_of_<decltype(foo)>(), "foo", 0, get_number_of_members_<decltype(foo)>(), arr, size, 0);
+
     printf("%s\n", arr);
     delete arr;
 }
