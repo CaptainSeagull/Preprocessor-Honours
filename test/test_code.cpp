@@ -30,6 +30,7 @@ struct Bar {
     V2 v2;
 };
 
+
 struct A { float dfksjl; };
 struct B { float dfgkjn; };
 struct C { float fdskl; };
@@ -42,13 +43,25 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     double *p_array[5];
 };
 
-#define serialize_struct(var, buffer, size) \
-    serialize_struct_<decltype(var)>(var, get_members_of_<decltype(var)>, #var, 0, get_number_of_members_<decltype(var)>, \
-                                     buffer, size, 0)
 
+struct Transform {V2 pos; V2 size;};
 
 void test_struct(void)
 {
+    {
+        Transform t;
+        t.pos.x = 10;
+        t.pos.y = 20;
+        t.size.x = 30;
+        t.size.y = 40;
+        size_t size = 255 * 255;
+        char *buffer = new char[size];
+        size_t bytes_written = serialize_struct(t, buffer, size);
+        delete[] buffer;
+    }
+
+
+
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
     //              struct has been initialized??
@@ -67,7 +80,6 @@ void test_struct(void)
     foo.s = 10;
 
     V2 v1 = {};
-    get_struct_member_type(Bar, v2) *v2 = &v1;
 
     foo.i = 3;
     foo.f = 3.14f;
@@ -78,9 +90,8 @@ void test_struct(void)
 
     size_t size = 256 * 256;
     char *arr = new char[size];
-    ///*size_t bytes_written =*/ serialize_struct(foo, arr, size);
-
-    serialize_struct_<decltype(foo)>(&foo, get_members_of_<decltype(foo)>(), "foo", 0, get_number_of_members_<decltype(foo)>(), arr, size, 0);
+    size_t bytes_written = serialize_struct(foo, arr, size);
+    bytes_written = serialize_struct_with_type(foo, Foo, arr, size);
 
     printf("%s\n", arr);
     delete arr;
