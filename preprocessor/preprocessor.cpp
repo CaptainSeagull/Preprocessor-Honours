@@ -2683,9 +2683,9 @@ Int main(Int argc, Char **argv)
 //
 // Test utils.
 //
-StructData parse_struct_test(Char *str, int ahead = 0)
+StructData parse_struct_test(Char *s, int ahead = 0)
 {
-    Tokenizer tokenizer = {str};
+    Tokenizer tokenizer = {s};
 
     eat_token(&tokenizer);
     for(int struct_index = 0; (struct_index < ahead); ++struct_index) {
@@ -2708,16 +2708,16 @@ enum StructCompareFailure {
     StructCompareFailure_func_data,
     StructCompareFailure_func_count,
 };
-Char *struct_compare_failure_to_string(StructCompareFailure scf)
+Char *struct_compare_failure_to_string(StructCompareFailure s)
 {
     Char *res = 0;
-    if(scf == StructCompareFailure_success)      { res = "StructCompareFailure_success";      }
-    if(scf == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
-    if(scf == StructCompareFailure_member_count) { res = "StructCompareFailure_member_count"; }
-    if(scf == StructCompareFailure_members)      { res = "StructCompareFailure_members";      }
-    if(scf == StructCompareFailure_inherited)    { res = "StructCompareFailure_inherited";    }
-    if(scf == StructCompareFailure_func_data)    { res = "StructCompareFailure_func_data";    }
-    if(scf == StructCompareFailure_func_count)   { res = "StructCompareFailure_func_count";   }
+    if(s == StructCompareFailure_success)           { res = "StructCompareFailure_success";      }
+    else if(s == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
+    else if(s == StructCompareFailure_member_count) { res = "StructCompareFailure_member_count"; }
+    else if(s == StructCompareFailure_members)      { res = "StructCompareFailure_members";      }
+    else if(s == StructCompareFailure_inherited)    { res = "StructCompareFailure_inherited";    }
+    else if(s == StructCompareFailure_func_data)    { res = "StructCompareFailure_func_data";    }
+    else if(s == StructCompareFailure_func_count)   { res = "StructCompareFailure_func_count";   }
 
     return(res);
 };
@@ -2736,9 +2736,7 @@ StructCompareFailure compare_struct_data(StructData a, StructData b)
         res = StructCompareFailure_inherited_count;
     } else if(!string_compare_array(a.inherited, b.inherited, a.inherited_count)) {
         res = StructCompareFailure_inherited;
-    } //else if(a.func_count != b.func_count) {
-    //    res = StructCompareFailure_func_count;
-    //}
+    }
 
     return(res);
 }
@@ -2756,11 +2754,11 @@ TEST(StructTest, basic_struct_test)
                          "    bool b[10];\n"
                          "    double *d[12];\n"
                          "};\n";
+
     StructData hardcoded = {};
     hardcoded.name = create_string("BasicStruct");
     hardcoded.member_count = 4;
     hardcoded.members = cast(Variable *)malloc(sizeof(Variable) * hardcoded.member_count);
-
     Int member_index = 0;
     hardcoded.members[member_index++] = create_variable("int", "i");
     hardcoded.members[member_index++] = create_variable("float", "f", true);
@@ -2779,12 +2777,12 @@ TEST(StructTest, inhertiance_struct_test)
     Char *inheritance_struct = "struct BaseOne { int a; };\n"
                                "struct BaseTwo { int b; };\n"
                                "struct Sub : public BaseOne, public BaseTwo { int c; };";
+
     StructData hardcoded = {};
     hardcoded.name = create_string("Sub");
     hardcoded.member_count = 1;
     hardcoded.members = cast(Variable *)malloc(sizeof(Variable));
     *hardcoded.members = create_variable("int", "c");
-
     hardcoded.inherited_count = 2;
     hardcoded.inherited = malloc_array(String, hardcoded.inherited_count);
     hardcoded.inherited[0] = create_string("BaseOne");
