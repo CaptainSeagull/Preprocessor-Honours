@@ -24,6 +24,8 @@
 #include <string.h>
 #include <assert.h>
 
+namespace pp { // PreProcessor
+
 typedef char _char;
 typedef short _short;
 typedef int _int;
@@ -69,5 +71,6 @@ template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
     #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #endif
 
+} // namespace pp
 #define STATIC_GENERATED
 #endif // !defined(STATIC_GENERATED)

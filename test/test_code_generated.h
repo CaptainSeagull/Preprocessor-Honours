@@ -2,6 +2,8 @@
 
 #include "static_generated.h"
 
+namespace pp { // PreProcessor
+
 // Enum with field for every type detected.
 enum MetaType {
     meta_type_char,
@@ -20,21 +22,6 @@ enum MetaType {
     meta_type_Foo,
     meta_type_Transform,
 };
-
-//
-// Struct meta data.
-//
-
-// Forward declared structs.
-struct thingy;
-struct V2;
-struct Bar;
-struct A;
-struct B;
-struct C;
-struct Foo;
-struct Transform;
-
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void)
@@ -492,6 +479,8 @@ static int string_to_enum_Letters(char const *str)
 
     return(res);
 }
+
+} // namespace pp
 
 #define GENERATED_H
 #endif // !defined(GENERATED_H)

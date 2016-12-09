@@ -451,6 +451,8 @@ Char *get_static_file(void)
                 "#include <string.h>\n"
                 "#include <assert.h>\n"
                 "\n"
+                "namespace pp { // PreProcessor\n"
+                "\n"
                 "typedef char _char;\n"
                 "typedef short _short;\n"
                 "typedef int _int;\n"
@@ -495,6 +497,8 @@ Char *get_static_file(void)
                 "#else\n"
                 "    #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)\n"
                 "#endif\n"
+                "\n"
+                "} // namespace pp"
                 "\n"
                 "#define STATIC_GENERATED\n"
                 "#endif // !defined(STATIC_GENERATED)"
@@ -2026,7 +2030,9 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         write_to_output_buffer(&ob,
                                "#if !defined(GENERATED_H) // TODO(Jonny): Add the actual filename in here?\n"
                                "\n"
-                               "#include \"static_generated.h\"\n");
+                               "#include \"static_generated.h\"\n"
+                               "\n"
+                               "namespace pp { // PreProcessor\n");
 
         //
         // MetaTypes enum.
@@ -2072,9 +2078,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     String *type = types + type_index;
                     write_to_output_buffer(&ob, "    meta_type_%S,\n", type->len, type->e);
                 }
-                write_to_output_buffer(&ob,
-                                       "};\n"
-                                       "\n");
+                write_to_output_buffer(&ob, "};");
 
                 clear_scratch_memory();
             }
@@ -2083,19 +2087,6 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         //
         // Struct Meta Data
         //
-#if 1
-        write_to_output_buffer(&ob,
-                               "//\n"
-                               "// Struct meta data.\n"
-                               "//\n"
-                               "\n"
-                               "// Forward declared structs.\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
-
-            write_to_output_buffer(&ob, "struct %S;\n", sd->name.len, sd->name.e);
-        }
-#endif
 
         // Recursive part for calling on members of structs.
         write_to_output_buffer(&ob, "\n\n");
@@ -2417,7 +2408,12 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         //
         // # Guard macro.
         //
-        write_to_output_buffer(&ob, "\n#define GENERATED_H\n#endif // !defined(GENERATED_H)\n");
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "} // namespace pp\n"
+                               "\n"
+                               "#define GENERATED_H\n"
+                               "#endif // !defined(GENERATED_H)\n");
 
         res.size = ob.index;
         res.data = ob.buffer;

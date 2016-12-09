@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include "test_code_generated.h"
 
+using namespace pp;
+
 //
 // struct test.
 //
