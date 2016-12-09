@@ -14,14 +14,19 @@
 
 using namespace pp;
 
+struct Pigeon {
+    int age;
+    char *name;
+};
+
+
 //
 // struct test.
 //
-typedef struct thingy {
+struct thingy {
     int x;
     int y;
-} thingy;
-
+};
 
 struct V2 {int x; int y;};
 struct Bar {
@@ -32,10 +37,9 @@ struct Bar {
     V2 v2;
 };
 
-
-struct A { float dfksjl; };
-struct B { float dfgkjn; };
-struct C { float fdskl; };
+struct A { float m; };
+struct B { float n; };
+struct C { float o; };
 
 struct Foo : public Bar, public thingy, public A, public B, public C {
     char *str;
@@ -45,25 +49,23 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     double *p_array[5];
 };
 
-
 struct Transform {V2 pos; V2 size;};
 
-void test_struct(void)
+/*static void quick_print(void)
 {
-    {
-        Transform t;
-        t.pos.x = 10;
-        t.pos.y = 20;
-        t.size.x = 30;
-        t.size.y = 40;
-        size_t size = 255 * 255;
-        char *buffer = new char[size];
-        size_t bytes_written = serialize_struct(t, buffer, size);
-        delete[] buffer;
+    size_t size = 256 * 256;
+    char *arr = (char *)malloc(size);
+    if(arr) {
+        size_t bytes_written = serialize_struct(foo, arr, size);
+        bytes_written = serialize_struct_with_type(foo, Foo, arr, size);
+        assert(bytes_written < arr);
     }
 
-
-
+    free(arr);
+}
+*/
+void test_struct(void)
+{
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
     //              struct has been initialized??
@@ -90,13 +92,11 @@ void test_struct(void)
     foo.v2.y = 1;
     foo.x = 101;
 
-    size_t size = 256 * 256;
-    char *arr = new char[size];
-    size_t bytes_written = serialize_struct(foo, arr, size);
-    bytes_written = serialize_struct_with_type(foo, Foo, arr, size);
+    print(foo);
 
-    printf("%s\n", arr);
-    delete arr;
+    char *buf = new char[256 * 256];
+    print(foo, buf, 256 * 256);
+    delete buf;
 }
 
 //

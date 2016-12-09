@@ -3,18 +3,18 @@
 // Reference.
 
 // Structs
-//     size_t serialize_struct(void *var, char *buffer, size_t buf_size);         - Serialize a struct for output (requires decltype).
-//     size_t serialize_struct(void *var, TYPE t, char *buffer, size_t buf_size); - Serialize a struct for output.
-//     int get_num_of_members(TYPE type);                                         - Get the number of members of a struct/class.
-//     char const *type_to_string(TYPE t);                                        - Turn type t into a string literal.
+//     size_t pp::serialize(TYPE var, char *buffer, size_t buf_size);   - Serialize a struct for output.
+//     bool pp::print(TYPE var, char *buffer = 0, size_t buf_size = 0); - Print a struct to the console.
+//     int pp::get_num_of_members(TYPE type);                           - Get the number of members of a struct/class.
+//     char const *pp::type_to_string(TYPE t);                          - Turn type t into a string literal.
 
 // Enums
-//     char const *enum_to_string(EnumType, EnumType value);                      - Convert an enum index to a string.
-//     int string_to_enum(EnumType, char const *str);                             - Convert a string to an enum index.
-//     size_t get_number_of_enum_elements(EnumType);                              - Get the total number of elements for an enum.
+//     char const *pp::enum_to_string(EnumType, EnumType value);        - Convert an enum index to a string.
+//     int pp::string_to_enum(EnumType, char const *str);               - Convert a string to an enum index.
+//     size_t pp::get_number_of_enum_elements(EnumType);                - Get the total number of elements for an enum.
 
 // Misc.
-//     bool type_compare(TYPE a, TYPE b);                                         - Tests whether two types are the same.
+//     bool pp::type_compare(TYPE a, TYPE b);                           - Tests whether two types are the same.
 
 //
 // Code shared between generated files.
@@ -23,6 +23,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
+
+// Overloadable malloc/free.
+#if !defined(pp_alloc)
+    #define pp_alloc malloc
+#endif
+#if !defined(pp_free)
+    #define pp_free free
+#endif
+#if !defined(pp_print)
+    #define pp_print printf
+#endif
 
 namespace pp { // PreProcessor
 
@@ -49,8 +61,33 @@ struct Variable {
 
 #define get_num_of_members(type) get_number_of_members_<type>()
 
-#define serialize_struct_with_type(var, type, buffer, size) serialize_struct_<type>(&var, #var, 0, buffer, size, 0)
-#define serialize_struct(var, buffer, size) serialize_struct_with_type(var, decltype(var), buffer, size)
+#define serialize(var, buf, size) serialize_struct_<decltype(var)>(var, #var, 0, buf, size, 0)
+
+// TODO(Jonny): Maybe make malloc/free/printf default parameters?
+#define print(var, ...) print_<decltype(var)>(var, #var, ##__VA_ARGS__)
+template<typename T>static bool print_(T var, char const *name, char *buf = 0, size_t size = 0)
+{
+    bool res = false, custom_buf = false;
+
+    if(!buf) {
+        size = 256 * 256;
+        buf = (char *)pp_alloc(size);
+        custom_buf = true;
+    }
+
+    if(buf) {
+        memset(buf, 0, size);
+        size_t bytes_written = serialize_struct_<T>(var, name, 0, buf, size, 0);
+        if(bytes_written < size) {
+            printf("%s", buf);
+            res = true;
+        }
+
+        if(custom_buf) { pp_free(buf); }
+    }
+
+    return(res);
+}
 
 #define enum_to_string(Type, v) enum_to_string_##Type(v)
 
@@ -72,5 +109,6 @@ template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
 #endif
 
 } // namespace pp
+
 #define STATIC_GENERATED
 #endif // !defined(STATIC_GENERATED)

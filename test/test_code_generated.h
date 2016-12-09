@@ -13,6 +13,7 @@ enum MetaType {
     meta_type_float,
     meta_type_double,
     meta_type_bool,
+    meta_type_Pigeon,
     meta_type_thingy,
     meta_type_V2,
     meta_type_Bar,
@@ -27,17 +28,27 @@ enum MetaType {
 template<typename T> static MemberDefinition *get_members_of_(void)
 {
     // Recreated structs.
+    struct _Pigeon {  _int age;  _char *name;  };
     struct _thingy {  _int x;  _int y;  };
     struct _V2 {  _int x;  _int y;  };
     struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
-    struct _A {  _float dfksjl;  };
-    struct _B {  _float dfgkjn;  };
-    struct _C {  _float fdskl;  };
+    struct _A {  _float m;  };
+    struct _B {  _float n;  };
+    struct _C {  _float o;  };
     struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
     struct _Transform {  _V2 pos;  _V2 size;  };
  
+    // Pigeon
+    if(type_compare(T, Pigeon)) {
+        static MemberDefinition members_of_Pigeon[] = {
+            // Members.
+            {meta_type_int, "age", (size_t)&((_Pigeon *)0)->age, false, 1},
+            {meta_type_char, "name", (size_t)&((_Pigeon *)0)->name, true, 1},
+        };
+        return(members_of_Pigeon);
+
     // thingy
-    if(type_compare(T, thingy)) {
+    } else if(type_compare(T, thingy)) {
         static MemberDefinition members_of_thingy[] = {
             // Members.
             {meta_type_int, "x", (size_t)&((_thingy *)0)->x, false, 1},
@@ -70,7 +81,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, A)) {
         static MemberDefinition members_of_A[] = {
             // Members.
-            {meta_type_float, "dfksjl", (size_t)&((_A *)0)->dfksjl, false, 1},
+            {meta_type_float, "m", (size_t)&((_A *)0)->m, false, 1},
         };
         return(members_of_A);
 
@@ -78,7 +89,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, B)) {
         static MemberDefinition members_of_B[] = {
             // Members.
-            {meta_type_float, "dfgkjn", (size_t)&((_B *)0)->dfgkjn, false, 1},
+            {meta_type_float, "n", (size_t)&((_B *)0)->n, false, 1},
         };
         return(members_of_B);
 
@@ -86,7 +97,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, C)) {
         static MemberDefinition members_of_C[] = {
             // Members.
-            {meta_type_float, "fdskl", (size_t)&((_C *)0)->fdskl, false, 1},
+            {meta_type_float, "o", (size_t)&((_C *)0)->o, false, 1},
         };
         return(members_of_C);
 
@@ -109,11 +120,11 @@ template<typename T> static MemberDefinition *get_members_of_(void)
             {meta_type_int, "x", (size_t)&((_Foo *)0)->x, false, 1},
             {meta_type_int, "y", (size_t)&((_Foo *)0)->y, false, 1},
             // Members inherited from A.
-            {meta_type_float, "dfksjl", (size_t)&((_Foo *)0)->dfksjl, false, 1},
+            {meta_type_float, "m", (size_t)&((_Foo *)0)->m, false, 1},
             // Members inherited from B.
-            {meta_type_float, "dfgkjn", (size_t)&((_Foo *)0)->dfgkjn, false, 1},
+            {meta_type_float, "n", (size_t)&((_Foo *)0)->n, false, 1},
             // Members inherited from C.
-            {meta_type_float, "fdskl", (size_t)&((_Foo *)0)->fdskl, false, 1},
+            {meta_type_float, "o", (size_t)&((_Foo *)0)->o, false, 1},
         };
         return(members_of_Foo);
 
@@ -132,7 +143,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
 // Convert a type into a members_of *.
 template<typename T> static int get_number_of_members_(void)
 {
-    if(type_compare(T, thingy)) { return(2); } // thingy
+    if(type_compare(T, Pigeon)) { return(2); } // Pigeon
+    else if(type_compare(T, thingy)) { return(2); } // thingy
     else if(type_compare(T, V2)) { return(2); } // V2
     else if(type_compare(T, Bar)) { return(5); } // Bar
     else if(type_compare(T, A)) { return(1); } // A
@@ -145,9 +157,9 @@ template<typename T> static int get_number_of_members_(void)
 }
 // Function to serialize a struct to a char array buffer.
 template <typename T>static size_t
-serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written)
+serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written)
 {
-    assert((var) && (name) && (buffer) && (buf_size > 0)); // Check params.
+    assert((name) && (buffer) && (buf_size > 0)); // Check params.
 
     if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.
 
@@ -167,7 +179,7 @@ serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t 
         int num_members = get_number_of_members_<T>(); assert(num_members != -1); // Get the number of members for the for loop.
         for(int member_index = 0; (member_index < num_members); ++member_index) {
             MemberDefinition *member = members_of_Something + member_index; // Get the member pointer with meta data.
-            size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.
+            size_t *member_ptr = (size_t *)((char *)&var + member->offset); // Get the actual pointer to the memory address.
             // TODO(Jonny): Go through and check all the pointers are correct on these.
             switch(member->type) {
                 // double.
@@ -315,75 +327,84 @@ serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t 
                 // Then that should recursively call this function again.
                 default: {
                     switch(member->type) {
+                        case meta_type_Pigeon: {
+                            // Pigeon
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_<Pigeon *>(*(Pigeon **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_<Pigeon>(*(Pigeon *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case meta_type_Pigeon
+
                         case meta_type_thingy: {
                             // thingy
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<thingy *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<thingy *>(*(thingy **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<thingy>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<thingy>(*(thingy *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_thingy
 
                         case meta_type_V2: {
                             // V2
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<V2 *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<V2 *>(*(V2 **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<V2>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<V2>(*(V2 *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_V2
 
                         case meta_type_Bar: {
                             // Bar
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Bar *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<Bar *>(*(Bar **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<Bar>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<Bar>(*(Bar *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_Bar
 
                         case meta_type_A: {
                             // A
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<A *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<A *>(*(A **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<A>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<A>(*(A *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_A
 
                         case meta_type_B: {
                             // B
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<B *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<B *>(*(B **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<B>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<B>(*(B *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_B
 
                         case meta_type_C: {
                             // C
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<C *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<C *>(*(C **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<C>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<C>(*(C *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_C
 
                         case meta_type_Foo: {
                             // Foo
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Foo *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<Foo *>(*(Foo **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<Foo>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<Foo>(*(Foo *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_Foo
 
                         case meta_type_Transform: {
                             // Transform
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Transform *>(*(char **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<Transform *>(*(Transform **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<Transform>((char *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<Transform>(*(Transform *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_Transform
 
@@ -423,6 +444,9 @@ template<typename T> static char const *type_to_string_(void)
     else if(type_compare(T, bool **)) { return("bool **"); }
 
     // Struct types.
+    else if(type_compare(T, Pigeon)) { return("Pigeon"); }
+    else if(type_compare(T, Pigeon *)) { return("Pigeon *"); }
+    else if(type_compare(T, Pigeon **)) { return("Pigeon **"); }
     else if(type_compare(T, thingy)) { return("thingy"); }
     else if(type_compare(T, thingy *)) { return("thingy *"); }
     else if(type_compare(T, thingy **)) { return("thingy **"); }
