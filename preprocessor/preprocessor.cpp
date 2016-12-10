@@ -2821,7 +2821,7 @@ Int run_tests(void)
     Int res = 0;
     // Google test uses so much memory, it's difficult to run in x86.
     if(sizeof(PtrSize) == 8) {
-        Char *flags[] = {"--gtest_break_on_failure"};
+        Char *flags[] = {"--gtest_break_on_failure", "--gtest_catch_exceptions=0"};
         Int number_of_flags = array_count(flags);
 
         testing::InitGoogleTest(&number_of_flags, flags);
