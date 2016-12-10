@@ -11,21 +11,12 @@
 
 #include "test_code_generated.h"
 #include <stdio.h>
-#include <iostream>
 
 using namespace pp;
-
 
 struct Pigeon {
     int i;
     int j;
-
-    void speak1(void)
-    {
-        std::cout << "Coo";
-    }
-
-    void speak2(void);
 };
 
 //
@@ -58,20 +49,6 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
 };
 
 struct Transform {V2 pos; V2 size;};
-
-/*static void quick_print(void)
-{
-    size_t size = 256 * 256;
-    char *arr = (char *)malloc(size);
-    if(arr) {
-        size_t bytes_written = serialize_struct(foo, arr, size);
-        bytes_written = serialize_struct_with_type(foo, Foo, arr, size);
-        assert(bytes_written < arr);
-    }
-
-    free(arr);
-}
-*/
 void test_struct(void)
 {
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory

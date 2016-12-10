@@ -396,6 +396,7 @@ enum SwitchType {
     SwitchType_silent,
     SwitchType_log_errors,
     SwitchType_run_tests,
+    SwitchType_print_help,
     SwitchType_source_file,
 
     SwitchType_count,
@@ -411,9 +412,10 @@ SwitchType get_switch_type(Char *str)
     // TODO(Jonny): Do this properly...
     if(str[0] == '-') {
         switch(str[1]) {
-            case 's': { res = SwitchType_silent;     } break;
             case 'e': { res = SwitchType_log_errors; } break;
+            case 'h': { res = SwitchType_print_help; } break;
 #if INTERNAL
+            case 's': { res = SwitchType_silent;     } break;
             case 't': { res = SwitchType_run_tests;  } break;
 #endif
 
@@ -2562,12 +2564,29 @@ Void start_parsing(Char *filename, Char *file)
     }
 }
 
+Void print_help(Void)
+{
+    Char *help = "    List of Commands.\n"
+                 "        -e - Print errors to the console.\n"
+                 "        -h - Print this help.\n"
+#if INTERNAL
+                 "    Internal Commands.\n"
+                 "        -s - Do not output any code, just see if there were errors parsing a file.\n"
+                 "        -t - Run tests on the code.\n"
+#endif
+                 "\n";
+
+    printf("%s", help);
+}
+
 Int main(Int argc, Char **argv)
 {
     Int res = 0;
 
+
     if(argc <= 1) {
         push_error(ErrorType_no_parameters);
+        print_help();
     } else {
         Bool should_log_errors = false;
         Bool should_run_tests = false;
@@ -2581,9 +2600,10 @@ Int main(Int argc, Char **argv)
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
-                case SwitchType_silent:     { should_write_to_file = false; } break;
-                case SwitchType_log_errors: { should_log_errors = true;     } break;
-                case SwitchType_run_tests:  { should_run_tests = true;      } break;
+                case SwitchType_silent:      { should_write_to_file = false; } break;
+                case SwitchType_log_errors:  { should_log_errors = true;     } break;
+                case SwitchType_run_tests:   { should_run_tests = true;      } break;
+                case SwitchType_print_help:  { print_help();                 } break;
 
                 case SwitchType_source_file: {
                     PtrSize file_size = get_file_size(switch_name);
