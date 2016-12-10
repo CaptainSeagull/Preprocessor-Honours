@@ -28,7 +28,7 @@ enum MetaType {
 template<typename T> static MemberDefinition *get_members_of_(void)
 {
     // Recreated structs.
-    struct _Pigeon {  _int age;  _char *name;  };
+    struct _Pigeon {  _int i;  _int j;  };
     struct _thingy {  _int x;  _int y;  };
     struct _V2 {  _int x;  _int y;  };
     struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
@@ -42,8 +42,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     if(type_compare(T, Pigeon)) {
         static MemberDefinition members_of_Pigeon[] = {
             // Members.
-            {meta_type_int, "age", (size_t)&((_Pigeon *)0)->age, false, 1},
-            {meta_type_char, "name", (size_t)&((_Pigeon *)0)->name, true, 1},
+            {meta_type_int, "i", (size_t)&((_Pigeon *)0)->i, false, 1},
+            {meta_type_int, "j", (size_t)&((_Pigeon *)0)->j, false, 1},
         };
         return(members_of_Pigeon);
 

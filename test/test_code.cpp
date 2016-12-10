@@ -9,16 +9,24 @@
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
 
-#include <stdio.h>
 #include "test_code_generated.h"
+#include <stdio.h>
+#include <iostream>
 
 using namespace pp;
 
-struct Pigeon {
-    int age;
-    char *name;
-};
 
+struct Pigeon {
+    int i;
+    int j;
+
+    void speak1(void)
+    {
+        std::cout << "Coo";
+    }
+
+    void speak2(void);
+};
 
 //
 // struct test.

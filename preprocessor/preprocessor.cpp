@@ -36,6 +36,7 @@
     - Namespace everything. (Try C++ namespaces first, if they fail do C).
 */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -151,6 +152,9 @@ Uint32 safe_truncate_size_64(Uint64 value)
 //
 // Memory stuff.
 //
+
+// TODO(Jonny): Some of the arrays in here are getting a little out of hand. Should tidy them up.
+
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -165,6 +169,7 @@ MemList *mem_list_root = 0;
 
 Void *get_raw_pointer(Void *ptr) { if(ptr) { return(cast(PtrSize *)ptr - 1);} else { return(0); } }
 PtrSize get_alloc_size(Void *ptr) { if(ptr) { return(*(cast(PtrSize *)ptr - 1)); } else { return(0); } }
+#define get_alloc_size_arr(ptr) (Int)(get_alloc_size(ptr) / sizeof(*ptr))
 
 // malloc
 Void *malloc_(PtrSize size, Char *file, Int line)
@@ -1202,7 +1207,8 @@ Token peak_token(Tokenizer *tokenizer)
     return(res);
 }
 
-// TODO(Jonny): Create a token_equals_keyword function. This could also test macro'd aliases for keywords, as well as the actual keyword.
+// TODO(Jonny): Create a token_equals_keyword function. This could also test macro'd aliases for keywords,
+//              as well as the actual keyword.
 
 Bool token_equals(Token token, Char *str)
 {
@@ -1478,7 +1484,8 @@ Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenT
     }
 
     // Skip over any assignment at the end.
-    if(token.type == TokenType_equals) { eat_token(tokenizer); } // TODO(Jonny): This won't work if a variable is assigned to a function.
+    // TODO(Jonny): This won't work if a variable is assigned to a function.
+    if(token.type == TokenType_equals) { eat_token(tokenizer); }
 
     return(res);
 }
@@ -1569,7 +1576,14 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
                             temp = get_token(&tokenizer_copy);
                         }
 
-                        if(!is_func) {member_pos[res.sd.member_count++] = token.e; }
+                        if(!is_func) {
+                            member_pos[res.sd.member_count++] = token.e;
+                        } else {
+                            // Skip over member functions.
+                            if(temp.type == TokenType_open_brace) {
+                                skip_to_matching_bracket(&tokenizer_copy);
+                            }
+                        }
                         /*
                         } else {
                             // This is commented out because I'm not sure I really _need_ member functions...
@@ -2057,13 +2071,10 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
     File res = {};
 
-    OutputBuffer ob = {};//create_output_buffer(256 * 256);
+    OutputBuffer ob = {};
     ob.size = 256 * 256;
     ob.buffer = malloc_array(Char, ob.size);
     if(ob.buffer) {
-        //
-        // Header Info.
-        //
         write_to_output_buffer(&ob,
                                "#if !defined(GENERATED_H) // TODO(Jonny): Add the actual filename in here?\n"
                                "\n"
@@ -2463,19 +2474,13 @@ Bool should_write_to_file = false;
 
 Void start_parsing(Char *filename, Char *file)
 {
-    Int enum_max = 32, enum_count = 0;
-    EnumData *enum_data = malloc_array(EnumData, enum_max);
+    Int enum_count = 0;
+    EnumData *enum_data = malloc_array(EnumData, 8);
 
-    Int struct_max = 32, struct_count = 0;
-    StructData *struct_data = malloc_array(StructData, struct_max);
+    Int struct_count = 0;
+    StructData *struct_data = malloc_array(StructData, 32);
 
-    Int union_max = 32, union_count = 0;
-    String *union_data = malloc_array(String, union_max);
-
-    //Int func_max = 32, func_count = 0;
-    //FunctionData *func_data = malloc_array(FunctionData, func_max);
-
-    if((enum_data)  && (struct_data) && (union_data)) {
+    if((enum_data)  && (struct_data)) {
         Tokenizer tokenizer = { file };
 
         Bool parsing = true;
@@ -2491,26 +2496,14 @@ Void start_parsing(Char *filename, Char *file)
                         eat_token(&tokenizer);
                         parse_template(&tokenizer);
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
-                        if(struct_count + 1 >= struct_max) {
-                            struct_max *= 2;
-                            Void *p = realloc(struct_data, struct_max * sizeof(StructData));
+                        if(struct_count + 1 >= get_alloc_size_arr(struct_data)) {
+                            Void *p = realloc_and_double(struct_data);
                             if(p) { struct_data = cast(StructData *)p; }
                         }
 
                         ParseStructResult r = parse_struct(&tokenizer);
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
                         if(r.success) {struct_data[struct_count++] = r.sd; }
-                    } else if((token_equals(token, "union"))) {
-                        Token name = get_token(&tokenizer);
-
-                        if(union_count + 1 >= union_max) {
-                            union_max *= 2;
-                            Void *p = realloc(union_data, union_max * sizeof(String));
-                            if(p) { union_data = cast(String *)p; }
-                        }
-
-                        union_data[union_count++] = token_to_string(name);
-
                     } else if((token_equals(token, "enum"))) {
                         Token name = get_token(&tokenizer);
                         Bool is_enum_struct = false;
@@ -2529,31 +2522,14 @@ Void start_parsing(Char *filename, Char *file)
                             }
 
                             if(next.type == TokenType_open_brace) {
-                                if(enum_count + 1 >= enum_max) {
-                                    enum_max *= 2;
-                                    Void *p = realloc(enum_data, sizeof(enum_data) * enum_max);
+                                if(enum_count + 1 >= get_alloc_size_arr(enum_data)) {
+                                    Void *p = realloc_and_double(enum_data);
                                     if(p) { enum_data = cast(EnumData *)p; }
                                 }
 
                                 enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
                             }
                         }
-                    } else {
-                        // This is a bit funny looking because functions don't have keyword to look for, like structs.
-#if 0
-                        ParseFunctionResult pfr = attempt_to_parse_function(&tokenizer, token);
-                        if(pfr.success) {
-                            if(func_count + 1 > func_max) {
-                                func_max *= 2;
-                                Void *p = realloc(func_data, sizeof(FunctionData) * func_max);
-                                if(p) {
-                                    func_data = (FunctionData *)p;
-                                }
-                            }
-
-                            func_data[func_count++] = pfr.func_data;
-                        }
-#endif
                     }
                 } break;
             }
@@ -2576,10 +2552,7 @@ Void start_parsing(Char *filename, Char *file)
             }
         }
 
-        //free(func_data);
-
-        free(union_data);
-
+        // Tidy up memory for the next pass.
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].members);   }
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].inherited); }
         free(struct_data);
@@ -2591,10 +2564,6 @@ Void start_parsing(Char *filename, Char *file)
 
 Int main(Int argc, Char **argv)
 {
-    Bool a = is_whitespace(' ');
-    Bool b = is_whitespace('a');
-    Bool c = is_whitespace('b');
-
     Int res = 0;
 
     if(argc <= 1) {
