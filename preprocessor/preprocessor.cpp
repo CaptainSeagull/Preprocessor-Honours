@@ -78,10 +78,13 @@ enum ErrorType {
     ErrorType_no_parameters,
     ErrorType_cannot_find_file,
     ErrorType_could_not_write_to_disk,
+    ErrorType_could_not_load_file,
     ErrorType_no_files_pass_in,
     ErrorType_could_not_find_mallocd_ptr,
     ErrorType_memory_not_freed,
     ErrorType_could_not_detect_struct_name,
+    ErrorType_could_not_find_struct,
+    ErrorType_unknown_token_found,
 
     ErrorType_count,
 };
@@ -95,9 +98,12 @@ Char *ErrorTypeToString(ErrorType e)
         case ErrorType_no_parameters:              { res = "ErrorType_no_parameters";              } break;
         case ErrorType_cannot_find_file:           { res = "ErrorType_cannot_find_file";           } break;
         case ErrorType_could_not_write_to_disk:    { res = "ErrorType_could_not_write_to_disk";    } break;
+        case ErrorType_could_not_load_file:        { res = "ErrorType_could_not_load_file";        } break;
         case ErrorType_no_files_pass_in:           { res = "ErrorType_no_files_pass_in";           } break;
         case ErrorType_could_not_find_mallocd_ptr: { res = "ErrorType_could_not_find_mallocd_ptr"; } break;
         case ErrorType_memory_not_freed:           { res = "ErrorType_memory_not_freed";           } break;
+        case ErrorType_could_not_find_struct:      { res = "ErrorType_could_not_find_struct";      } break;
+        case ErrorType_unknown_token_found:        { res = "ErrorType_unknown_token_found";        } break;
     }
 
     return(res);
@@ -109,8 +115,8 @@ struct Error {
     Int line;
 };
 
-Int const error_max = 256;
-Error global_errors[error_max] = {};
+Int error_max = 256;
+Error *global_errors = 0;
 Int global_error_count = 0;
 
 #if ERROR_LOGGING
@@ -121,6 +127,13 @@ Int global_error_count = 0;
 
 Void push_error_(ErrorType type, Char *file, Int line)
 {
+    if(global_error_count + 1 >= error_max) {
+        error_max *= 2;
+        Void *p = realloc(global_errors, error_max);
+        if(p) { global_errors = cast(Error *)p; }
+        else  { error_max /= 2;                 }
+    }
+
     if(global_error_count + 1 < error_max) {
         Error *e = global_errors + global_error_count;
 
@@ -152,9 +165,6 @@ Uint32 safe_truncate_size_64(Uint64 value)
 //
 // Memory stuff.
 //
-
-// TODO(Jonny): Some of the arrays in here are getting a little out of hand. Should tidy them up.
-
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -318,7 +328,7 @@ Void *push_scratch_memory(Int size)
     Void *res = 0;
     if(global_scratch_memory) {
         assert(get_alloc_size(global_scratch_memory) > scratch_memory_index + size);
-        res = cast(PtrSize *)global_scratch_memory + scratch_memory_index;
+        res = cast(Byte *)global_scratch_memory + scratch_memory_index;
         scratch_memory_index += size;
     }
 
@@ -344,8 +354,6 @@ Void skip_to_end_of_line(Tokenizer *tokenizer) { while(is_end_of_line(*tokenizer
 
 Int string_length(Char *str)
 {
-    assert(str);
-
     Int res = 0;
     while(*str) {
         ++res;
@@ -357,8 +365,6 @@ Int string_length(Char *str)
 
 Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len)
 {
-    assert((dest) && (a) && (b));
-
     Bool res = false;
 
     if(len > a_len + b_len) {
@@ -373,8 +379,6 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len)
 
 Bool string_compare(Char *a, Char *b, Int len = 0)
 {
-    assert((a) && (b));
-
     Bool res = true;
 
     // TODO(Jonny): Hacky.
@@ -404,8 +408,6 @@ enum SwitchType {
 
 SwitchType get_switch_type(Char *str)
 {
-    assert(str);
-
     SwitchType res = SwitchType_unknown;
 
     Int len = string_length(str);
@@ -561,8 +563,6 @@ struct File {
 
 File read_entire_file_and_null_terminate(Char *filename, Void *memory)
 {
-    assert((filename) &&(memory));
-
     File res = {};
 
     FILE *file = fopen(filename, "r");
@@ -581,7 +581,7 @@ File read_entire_file_and_null_terminate(Char *filename, Void *memory)
 
 Bool write_to_file(Char *filename, Void *data, PtrSize data_size)
 {
-    assert((filename) && (data) && (data_size));
+    assert(data_size > 0);
 
     Bool res = false;
 
@@ -597,8 +597,6 @@ Bool write_to_file(Char *filename, Void *data, PtrSize data_size)
 
 PtrSize get_file_size(Char *filename)
 {
-    assert(filename);
-
     PtrSize size = 0;
 
     FILE *file = fopen(filename, "r");
@@ -622,8 +620,6 @@ Int get_digit_count(Int value)
 
 Void copy_int(Char *dest, Int value, Int start, Int count)
 {
-    assert(dest);
-
     Int end = start + count;
     for(Int index = end - 1; (index >= start); --index, value /= 10) { *(dest + index) = cast(Char)(value % 10 + 48); }
     dest[end] = 0;
@@ -631,8 +627,6 @@ Void copy_int(Char *dest, Int value, Int start, Int count)
 
 Char *int_to_string(Int value, Char *buf)
 {
-    assert(buf);
-
     Int index = 0;
     if(value < 0) {
         value = -value;
@@ -647,8 +641,6 @@ Char *int_to_string(Int value, Char *buf)
 
 Char *float_to_string(Float value, Int dec_accuracy, Char *buf)
 {
-    assert(buf);
-
     Bool is_neg = (value < 0);
     Float abs_value = (is_neg) ? -value : value;
 
@@ -703,8 +695,6 @@ Bool is_numeric(Char input)
 // TODO(Jonny): Print hex numbers for pointers.
 Int format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 {
-    assert((buf) && (buf_len) && (format));
-
     Char *dest = cast(Char *)buf;
     Int bytes_written = 0;
     Int float_precision = 1;
@@ -796,15 +786,11 @@ Int format_string_varargs(Char *buf, Int buf_len, Char *format, va_list args)
 
     *dest = 0;
 
-    assert(bytes_written < buf_len);
-
     return(bytes_written);
 }
 
 Int format_string(Char *buf, Int buf_len, Char *format, ...)
 {
-    assert((buf) && (buf_len) && (format));
-
     va_list args;
     va_start(args, format);
     Int bytes_written = format_string_varargs(buf, buf_len, format, args);
@@ -822,9 +808,6 @@ struct OutputBuffer {
 
 Void write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
 {
-    assert((ob) && (ob->buffer) && (ob->size) && (ob->index < ob->size));
-    assert(format);
-
     va_list args;
     va_start(args, format);
     ob->index += format_string_varargs(ob->buffer + ob->index, ob->size - ob->index, format, args);
@@ -890,8 +873,6 @@ String token_to_string(Token token)
 
 Char *token_to_string(Token token, Char *buffer, Int size)
 {
-    assert((token.type) && (buffer) && (size >= token.len));
-
     memset(buffer, 0, size);
     for(Int str_index = 0; (str_index < token.len); ++str_index) {
         buffer[str_index] = token.e[str_index];
@@ -902,8 +883,6 @@ Char *token_to_string(Token token, Char *buffer, Int size)
 
 Bool token_compare(Token a, Token b)
 {
-    assert((a.len) && (b.len));
-
     Bool res = false;
 
     if(a.len == b.len) {
@@ -953,8 +932,6 @@ Bool string_compare_array(String *a, String *b, Int len)
 
 Void eat_whitespace(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     for(;;) {
         if(is_whitespace(tokenizer->at[0])) { // Whitespace
             ++tokenizer->at;
@@ -1079,8 +1056,6 @@ Bool is_num(Char c)
 
 Void parse_number(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     // TODO(Jonny): Implement.
 }
 
@@ -1088,15 +1063,11 @@ Token get_token(Tokenizer *tokenizer); // Because C++...
 #define eat_token(tokenizer) eat_tokens(tokenizer, 1);
 Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
-    assert(tokenizer);
-
     for(Int token_index = 0; (token_index < num_tokens_to_eat); ++token_index) { get_token(tokenizer); }
 }
 
 Token get_token(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     eat_whitespace(tokenizer);
 
     Token res = {};
@@ -1196,13 +1167,13 @@ Token get_token(Tokenizer *tokenizer)
         } break;
     }
 
+    if(res.type == TokenType_unknown) { push_error(ErrorType_unknown_token_found); }
+
     return(res);
 }
 
 Token peak_token(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     Tokenizer cpy = *tokenizer;
     Token res = get_token(&cpy);
 
@@ -1214,8 +1185,6 @@ Token peak_token(Tokenizer *tokenizer)
 
 Bool token_equals(Token token, Char *str)
 {
-    assert(str);
-
     Bool res = false;
 
     Char *at = str;
@@ -1324,8 +1293,6 @@ Bool compare_variable(Variable a, Variable b)
 
 Bool compare_variable_array(Variable *a, Variable *b, Int count)
 {
-    assert((a) && (b) && (count));
-
     for(Int array_index = 0; (array_index < count); ++array_index) {
         if(!compare_variable(a[array_index], b[array_index])) { return(false); }
     }
@@ -1335,8 +1302,6 @@ Bool compare_variable_array(Variable *a, Variable *b, Int count)
 
 Variable parse_member(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     Variable res = {};
     res.array_count = 1;
     res.type = token_to_string(get_token(tokenizer));
@@ -1366,8 +1331,6 @@ Variable parse_member(Tokenizer *tokenizer)
 
 Bool require_token(Tokenizer *tokenizer, TokenType desired_type)
 {
-    assert(tokenizer);
-
     Token token = get_token(tokenizer);
     Bool res = (token.type == desired_type);
 
@@ -1376,7 +1339,6 @@ Bool require_token(Tokenizer *tokenizer, TokenType desired_type)
 
 Bool is_stupid_class_keyword(Token t)
 {
-    assert(t.type != TokenType_unknown);
     Bool result = false;
 
     Char *keywords[] = { "private", "public", "protected" };
@@ -1409,8 +1371,6 @@ struct StructData {
 
 Void skip_to_matching_bracket(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     Int brace_count = 1;
     Token token = {};
     Bool should_loop = true;
@@ -1429,8 +1389,6 @@ Void skip_to_matching_bracket(Tokenizer *tokenizer)
 
 Void parse_template(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     Int angle_bracket_count = 1;
     Token token;
     Bool should_loop = true;
@@ -1500,8 +1458,6 @@ struct ParseStructResult {
 };
 ParseStructResult parse_struct(Tokenizer *tokenizer)
 {
-    assert(tokenizer);
-
     ParseStructResult res = {};
 
     Bool have_name = false;
@@ -1644,8 +1600,6 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
 
 Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
 {
-    assert((def_struct_code) && (ob));
-
     Char *top_part = "// Function to serialize a struct to a char array buffer.\n"
                      "template <typename T>static size_t\nserialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written)\n"
                      "{\n"
@@ -1848,7 +1802,6 @@ EnumData add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenize
 {
     assert(name.type == TokenType_identifier);
     assert((type.type == TokenType_identifier) || (type.type == TokenType_unknown));
-    assert(tokenizer);
 
     Token token = {};
     EnumData res = {};
@@ -1892,8 +1845,6 @@ EnumData add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenize
 
 Bool is_meta_type_already_in_array(String *array, Int len, String test)
 {
-    assert(array);
-
     Bool res = false;
 
     for(Int arr_index = 0; (arr_index < len); ++arr_index) {
@@ -1911,8 +1862,6 @@ Char *primitive_types[] = {"char", "short", "int", "long", "float", "double", "b
 
 Int set_primitive_type(String *array)
 {
-    assert(array);
-
     Int res = array_count(primitive_types);
 
     for(int i = 0; (i < res); ++i) {
@@ -1927,8 +1876,6 @@ Int set_primitive_type(String *array)
 #define copy_literal_to_char_buffer(buf, index, lit) copy_literal_to_char_buffer_(buf, index, lit, sizeof(lit) - 1)
 Int copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len)
 {
-    assert((buf) && (literal) && (literal_len));
-
     buf += index;
 
     for(Int str_index = 0; (str_index < literal_len); ++str_index) { buf[str_index] = literal[str_index]; }
@@ -1943,8 +1890,6 @@ struct ParseFunctionResult {
 };
 ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 {
-    assert((tokenizer) && (token.type));
-
     ParseFunctionResult res = {};
 
     // Try to parse as a function.
@@ -2064,13 +2009,13 @@ StructData *find_struct(String str, StructData *structs, Int struct_count)
         }
     }
 
+    if(!res) { push_error(ErrorType_could_not_find_struct); }
+
     return(res);
 }
 
 File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count)
 {
-    assert((struct_data) && (enum_data));
-
     File res = {};
 
     OutputBuffer ob = {};
@@ -2092,14 +2037,9 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             // actual number of unique types...
             Int max_type_count = get_num_of_primitive_types();
             for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-                ++max_type_count;
-
-                for(Int member_index = 0; (member_index < struct_data[struct_index].member_count); ++member_index) {
-                    ++max_type_count;
-                }
+                max_type_count += struct_data[struct_index].member_count;
             }
 
-            //String *types = malloc_array(String, max_type_count);
             String *types = cast(String *)push_scratch_memory(sizeof(String) * max_type_count);
             if(types) {
                 Int type_count = set_primitive_type(types);
@@ -2115,9 +2055,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                         Variable *md = sd->members + member_index;
 
-                        if(!is_meta_type_already_in_array(types, type_count, md->type)) {
-                            types[type_count++] = md->type;
-                        }
+                        if(!is_meta_type_already_in_array(types, type_count, md->type)) { types[type_count++] = md->type; }
                     }
                 }
 
@@ -2126,6 +2064,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                 write_to_output_buffer(&ob, "enum MetaType {\n");
                 for(Int type_index = 0; (type_index < type_count); ++type_index) {
                     String *type = types + type_index;
+
                     write_to_output_buffer(&ob, "    meta_type_%S,\n", type->len, type->e);
                 }
                 write_to_output_buffer(&ob, "};");
@@ -2186,11 +2125,11 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                 write_to_output_buffer(&ob, " :");
 
                 for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
-                    String *i = sd->inherited + inherited_index;
+                    String *inherited = sd->inherited + inherited_index;
 
                     if(inherited_index) { write_to_output_buffer(&ob, ","); }
 
-                    write_to_output_buffer(&ob, " public _%S", i->len, i->e);
+                    write_to_output_buffer(&ob, " public _%S", inherited->len, inherited->e);
                 }
             }
             write_to_output_buffer(&ob, " { ");
@@ -2249,22 +2188,19 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             if(sd->inherited) {
                 for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
                     StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
-                    assert(base_class);
 
-                    if(base_class) {
-                        write_to_output_buffer(&ob, "            // Members inherited from %S.\n",
-                                               base_class->name.len, base_class->name.e);
-                        for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
-                            Variable *base_class_var = base_class->members + member_index;
+                    write_to_output_buffer(&ob, "            // Members inherited from %S.\n",
+                                           base_class->name.len, base_class->name.e);
+                    for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
+                        Variable *base_class_var = base_class->members + member_index;
 
-                            write_to_output_buffer(&ob, "            {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %b, %d},\n",
-                                                   base_class_var->type.len, base_class_var->type.e,
-                                                   base_class_var->name.len, base_class_var->name.e,
-                                                   sd->name.len, sd->name.e,
-                                                   base_class_var->name.len, base_class_var->name.e,
-                                                   base_class_var->is_ptr,
-                                                   base_class_var->array_count);
-                        }
+                        write_to_output_buffer(&ob, "            {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %b, %d},\n",
+                                               base_class_var->type.len, base_class_var->type.e,
+                                               base_class_var->name.len, base_class_var->name.e,
+                                               sd->name.len, sd->name.e,
+                                               base_class_var->name.len, base_class_var->name.e,
+                                               base_class_var->is_ptr,
+                                               base_class_var->array_count);
                     }
                 }
             }
@@ -2295,8 +2231,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
                 StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
 
-                assert(base_class);
-                if(base_class) { member_count += base_class->member_count; }
+
+                member_count += base_class->member_count;
             }
 
             if(struct_index == 0) {
@@ -2583,7 +2519,6 @@ Int main(Int argc, Char **argv)
 {
     Int res = 0;
 
-
     if(argc <= 1) {
         push_error(ErrorType_no_parameters);
         print_help();
@@ -2593,7 +2528,7 @@ Int main(Int argc, Char **argv)
         should_write_to_file = true;
 
         // Get the total amount of memory needed to store all files.
-        PtrSize largest_source_file_size = 0;
+        Int largest_source_file_size = 0;
         Int number_of_files = 0;
         for(Int file_index = 1; (file_index < argc); ++file_index) {
             Char *switch_name = argv[file_index];
@@ -2609,9 +2544,7 @@ Int main(Int argc, Char **argv)
                     PtrSize file_size = get_file_size(switch_name);
                     if(file_size) {
                         ++number_of_files;
-                        if(file_size > largest_source_file_size) {
-                            largest_source_file_size = file_size;
-                        }
+                        if(file_size > largest_source_file_size) { largest_source_file_size = file_size; }
                     } else {
                         push_error(ErrorType_cannot_find_file);
                     }
@@ -2635,23 +2568,19 @@ Int main(Int argc, Char **argv)
                         Char *static_file_data = get_static_file();
                         Int static_file_len = string_length(static_file_data);
                         Bool static_write_success = write_to_file("static_generated.h", static_file_data, static_file_len);
-                        if(!static_write_success) {
-                            push_error(ErrorType_could_not_write_to_disk);
-                        }
+                        if(!static_write_success) { push_error(ErrorType_could_not_write_to_disk); }
                     }
 
                     // Parse files
                     for(Int file_index = 1; (file_index < argc); ++file_index) {
-                        memset(file_memory, 0, largest_source_file_size);
-
                         Char *file_name = argv[file_index];
+                        memset(file_memory, 0, largest_source_file_size);
 
                         SwitchType type = get_switch_type(file_name);
                         if(type == SwitchType_source_file) {
                             File file = read_entire_file_and_null_terminate(file_name, file_memory);
-                            if(file.data) {
-                                start_parsing(file_name, file.data);
-                            }
+                            if(file.data) { start_parsing(file_name, file.data);       }
+                            else          { push_error(ErrorType_could_not_load_file); }
                         }
                     }
 
@@ -2680,7 +2609,6 @@ Int main(Int argc, Char **argv)
                         Error *e = global_errors + error_index;
 
                         Char *error_type = ErrorTypeToString(e->type);
-                        assert(error_type);
 
                         printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
                                error_index, error_type, e->file, e->line);
