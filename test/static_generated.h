@@ -24,6 +24,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 // Overloadable malloc/free.
 #if !defined(pp_alloc)

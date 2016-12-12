@@ -42,8 +42,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     if(type_compare(T, Pigeon)) {
         static MemberDefinition members_of_Pigeon[] = {
             // Members.
-            {meta_type_int, "i", (size_t)&((_Pigeon *)0)->i, false, 1},
-            {meta_type_int, "j", (size_t)&((_Pigeon *)0)->j, false, 1},
+            {meta_type_int, "i", offsetof(_Pigeon, i), false, 1},
+            {meta_type_int, "j", offsetof(_Pigeon, j), false, 1},
         };
         return(members_of_Pigeon);
 
@@ -51,8 +51,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, thingy)) {
         static MemberDefinition members_of_thingy[] = {
             // Members.
-            {meta_type_int, "x", (size_t)&((_thingy *)0)->x, false, 1},
-            {meta_type_int, "y", (size_t)&((_thingy *)0)->y, false, 1},
+            {meta_type_int, "x", offsetof(_thingy, x), false, 1},
+            {meta_type_int, "y", offsetof(_thingy, y), false, 1},
         };
         return(members_of_thingy);
 
@@ -60,8 +60,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
             // Members.
-            {meta_type_int, "x", (size_t)&((_V2 *)0)->x, false, 1},
-            {meta_type_int, "y", (size_t)&((_V2 *)0)->y, false, 1},
+            {meta_type_int, "x", offsetof(_V2, x), false, 1},
+            {meta_type_int, "y", offsetof(_V2, y), false, 1},
         };
         return(members_of_V2);
 
@@ -69,11 +69,11 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, Bar)) {
         static MemberDefinition members_of_Bar[] = {
             // Members.
-            {meta_type_short, "s", (size_t)&((_Bar *)0)->s, false, 1},
-            {meta_type_int, "i", (size_t)&((_Bar *)0)->i, false, 1},
-            {meta_type_float, "f", (size_t)&((_Bar *)0)->f, false, 1},
-            {meta_type_double, "d", (size_t)&((_Bar *)0)->d, false, 1},
-            {meta_type_V2, "v2", (size_t)&((_Bar *)0)->v2, false, 1},
+            {meta_type_short, "s", offsetof(_Bar, s), false, 1},
+            {meta_type_int, "i", offsetof(_Bar, i), false, 1},
+            {meta_type_float, "f", offsetof(_Bar, f), false, 1},
+            {meta_type_double, "d", offsetof(_Bar, d), false, 1},
+            {meta_type_V2, "v2", offsetof(_Bar, v2), false, 1},
         };
         return(members_of_Bar);
 
@@ -81,7 +81,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, A)) {
         static MemberDefinition members_of_A[] = {
             // Members.
-            {meta_type_float, "m", (size_t)&((_A *)0)->m, false, 1},
+            {meta_type_float, "m", offsetof(_A, m), false, 1},
         };
         return(members_of_A);
 
@@ -89,7 +89,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, B)) {
         static MemberDefinition members_of_B[] = {
             // Members.
-            {meta_type_float, "n", (size_t)&((_B *)0)->n, false, 1},
+            {meta_type_float, "n", offsetof(_B, n), false, 1},
         };
         return(members_of_B);
 
@@ -97,7 +97,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, C)) {
         static MemberDefinition members_of_C[] = {
             // Members.
-            {meta_type_float, "o", (size_t)&((_C *)0)->o, false, 1},
+            {meta_type_float, "o", offsetof(_C, o), false, 1},
         };
         return(members_of_C);
 
@@ -105,11 +105,11 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, Foo)) {
         static MemberDefinition members_of_Foo[] = {
             // Members.
-            {meta_type_char, "str", (size_t)&((_Foo *)0)->str, true, 1},
-            {meta_type_int, "ip", (size_t)&((_Foo *)0)->ip, true, 1},
-            {meta_type_float, "fp", (size_t)&((_Foo *)0)->fp, true, 1},
-            {meta_type_bool, "b", (size_t)&((_Foo *)0)->b, true, 1},
-            {meta_type_double, "p_array", (size_t)&((_Foo *)0)->p_array, true, 5},
+            {meta_type_char, "str", offsetof(_Foo, str), true, 1},
+            {meta_type_int, "ip", offsetof(_Foo, ip), true, 1},
+            {meta_type_float, "fp", offsetof(_Foo, fp), true, 1},
+            {meta_type_bool, "b", offsetof(_Foo, b), true, 1},
+            {meta_type_double, "p_array", offsetof(_Foo, p_array), true, 5},
             // Members inherited from Bar.
             {meta_type_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
             {meta_type_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
@@ -132,8 +132,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else if(type_compare(T, Transform)) {
         static MemberDefinition members_of_Transform[] = {
             // Members.
-            {meta_type_V2, "pos", (size_t)&((_Transform *)0)->pos, false, 1},
-            {meta_type_V2, "size", (size_t)&((_Transform *)0)->size, false, 1},
+            {meta_type_V2, "pos", offsetof(_Transform, pos), false, 1},
+            {meta_type_V2, "size", offsetof(_Transform, size), false, 1},
         };
         return(members_of_Transform);
 

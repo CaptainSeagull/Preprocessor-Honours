@@ -460,6 +460,7 @@ Char *get_static_file(void)
                 "#include <string.h>\n"
                 "#include <assert.h>\n"
                 "#include <stdlib.h>\n"
+                "#include <stddef.h>\n"
                 "\n"
                 "// Overloadable malloc/free.\n"
                 "#if !defined(pp_alloc)\n"
@@ -2176,7 +2177,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             write_to_output_buffer(&ob, "            // Members.\n");
             for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
-                write_to_output_buffer(&ob, "            {meta_type_%S, \"%S\", (size_t)&((_%S *)0)->%S, %b, %d},\n",
+                write_to_output_buffer(&ob, "            {meta_type_%S, \"%S\", offsetof(_%S, %S), %b, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
                                        sd->name.len, sd->name.e,
