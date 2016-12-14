@@ -13,51 +13,17 @@ enum MetaType {
     meta_type_float,
     meta_type_double,
     meta_type_bool,
-    meta_type_Pigeon,
-    meta_type_thingy,
     meta_type_V2,
-    meta_type_Bar,
-    meta_type_A,
-    meta_type_B,
-    meta_type_C,
-    meta_type_Foo,
-    meta_type_Transform,
 };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void)
 {
     // Recreated structs.
-    struct _Pigeon {  _int i;  _int j;  };
-    struct _thingy {  _int x;  _int y;  };
     struct _V2 {  _int x;  _int y;  };
-    struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
-    struct _A {  _float m;  };
-    struct _B {  _float n;  };
-    struct _C {  _float o;  };
-    struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
-    struct _Transform {  _V2 pos;  _V2 size;  };
  
-    // Pigeon
-    if(type_compare(T, Pigeon)) {
-        static MemberDefinition members_of_Pigeon[] = {
-            // Members.
-            {meta_type_int, "i", offsetof(_Pigeon, i), false, 1},
-            {meta_type_int, "j", offsetof(_Pigeon, j), false, 1},
-        };
-        return(members_of_Pigeon);
-
-    // thingy
-    } else if(type_compare(T, thingy)) {
-        static MemberDefinition members_of_thingy[] = {
-            // Members.
-            {meta_type_int, "x", offsetof(_thingy, x), false, 1},
-            {meta_type_int, "y", offsetof(_thingy, y), false, 1},
-        };
-        return(members_of_thingy);
-
     // V2
-    } else if(type_compare(T, V2)) {
+    if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
             // Members.
             {meta_type_int, "x", offsetof(_V2, x), false, 1},
@@ -65,93 +31,13 @@ template<typename T> static MemberDefinition *get_members_of_(void)
         };
         return(members_of_V2);
 
-    // Bar
-    } else if(type_compare(T, Bar)) {
-        static MemberDefinition members_of_Bar[] = {
-            // Members.
-            {meta_type_short, "s", offsetof(_Bar, s), false, 1},
-            {meta_type_int, "i", offsetof(_Bar, i), false, 1},
-            {meta_type_float, "f", offsetof(_Bar, f), false, 1},
-            {meta_type_double, "d", offsetof(_Bar, d), false, 1},
-            {meta_type_V2, "v2", offsetof(_Bar, v2), false, 1},
-        };
-        return(members_of_Bar);
-
-    // A
-    } else if(type_compare(T, A)) {
-        static MemberDefinition members_of_A[] = {
-            // Members.
-            {meta_type_float, "m", offsetof(_A, m), false, 1},
-        };
-        return(members_of_A);
-
-    // B
-    } else if(type_compare(T, B)) {
-        static MemberDefinition members_of_B[] = {
-            // Members.
-            {meta_type_float, "n", offsetof(_B, n), false, 1},
-        };
-        return(members_of_B);
-
-    // C
-    } else if(type_compare(T, C)) {
-        static MemberDefinition members_of_C[] = {
-            // Members.
-            {meta_type_float, "o", offsetof(_C, o), false, 1},
-        };
-        return(members_of_C);
-
-    // Foo
-    } else if(type_compare(T, Foo)) {
-        static MemberDefinition members_of_Foo[] = {
-            // Members.
-            {meta_type_char, "str", offsetof(_Foo, str), true, 1},
-            {meta_type_int, "ip", offsetof(_Foo, ip), true, 1},
-            {meta_type_float, "fp", offsetof(_Foo, fp), true, 1},
-            {meta_type_bool, "b", offsetof(_Foo, b), true, 1},
-            {meta_type_double, "p_array", offsetof(_Foo, p_array), true, 5},
-            // Members inherited from Bar.
-            {meta_type_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
-            {meta_type_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
-            {meta_type_float, "f", (size_t)&((_Foo *)0)->f, false, 1},
-            {meta_type_double, "d", (size_t)&((_Foo *)0)->d, false, 1},
-            {meta_type_V2, "v2", (size_t)&((_Foo *)0)->v2, false, 1},
-            // Members inherited from thingy.
-            {meta_type_int, "x", (size_t)&((_Foo *)0)->x, false, 1},
-            {meta_type_int, "y", (size_t)&((_Foo *)0)->y, false, 1},
-            // Members inherited from A.
-            {meta_type_float, "m", (size_t)&((_Foo *)0)->m, false, 1},
-            // Members inherited from B.
-            {meta_type_float, "n", (size_t)&((_Foo *)0)->n, false, 1},
-            // Members inherited from C.
-            {meta_type_float, "o", (size_t)&((_Foo *)0)->o, false, 1},
-        };
-        return(members_of_Foo);
-
-    // Transform
-    } else if(type_compare(T, Transform)) {
-        static MemberDefinition members_of_Transform[] = {
-            // Members.
-            {meta_type_V2, "pos", offsetof(_Transform, pos), false, 1},
-            {meta_type_V2, "size", offsetof(_Transform, size), false, 1},
-        };
-        return(members_of_Transform);
-
     } else { assert(0); return(0); } // Error.
 }
 
 // Convert a type into a members_of *.
 template<typename T> static int get_number_of_members_(void)
 {
-    if(type_compare(T, Pigeon)) { return(2); } // Pigeon
-    else if(type_compare(T, thingy)) { return(2); } // thingy
-    else if(type_compare(T, V2)) { return(2); } // V2
-    else if(type_compare(T, Bar)) { return(5); } // Bar
-    else if(type_compare(T, A)) { return(1); } // A
-    else if(type_compare(T, B)) { return(1); } // B
-    else if(type_compare(T, C)) { return(1); } // C
-    else if(type_compare(T, Foo)) { return(15); } // Foo
-    else if(type_compare(T, Transform)) { return(2); } // Transform
+    if(type_compare(T, V2)) { return(2); } // V2
 
     else { assert(0); return(-1); } // Error.
 }
@@ -327,24 +213,6 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // Then that should recursively call this function again.
                 default: {
                     switch(member->type) {
-                        case meta_type_Pigeon: {
-                            // Pigeon
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Pigeon *>(*(Pigeon **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<Pigeon>(*(Pigeon *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_Pigeon
-
-                        case meta_type_thingy: {
-                            // thingy
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<thingy *>(*(thingy **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<thingy>(*(thingy *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_thingy
-
                         case meta_type_V2: {
                             // V2
                             if(member->is_ptr) {
@@ -353,60 +221,6 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                                 bytes_written = serialize_struct_<V2>(*(V2 *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break; // case meta_type_V2
-
-                        case meta_type_Bar: {
-                            // Bar
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Bar *>(*(Bar **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<Bar>(*(Bar *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_Bar
-
-                        case meta_type_A: {
-                            // A
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<A *>(*(A **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<A>(*(A *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_A
-
-                        case meta_type_B: {
-                            // B
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<B *>(*(B **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<B>(*(B *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_B
-
-                        case meta_type_C: {
-                            // C
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<C *>(*(C **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<C>(*(C *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_C
-
-                        case meta_type_Foo: {
-                            // Foo
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Foo *>(*(Foo **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<Foo>(*(Foo *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_Foo
-
-                        case meta_type_Transform: {
-                            // Transform
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Transform *>(*(Transform **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_<Transform>(*(Transform *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case meta_type_Transform
 
                     } // switch(member->type)
                 } break; // default 
@@ -444,64 +258,11 @@ template<typename T> static char const *type_to_string_(void)
     else if(type_compare(T, bool **)) { return("bool **"); }
 
     // Struct types.
-    else if(type_compare(T, Pigeon)) { return("Pigeon"); }
-    else if(type_compare(T, Pigeon *)) { return("Pigeon *"); }
-    else if(type_compare(T, Pigeon **)) { return("Pigeon **"); }
-    else if(type_compare(T, thingy)) { return("thingy"); }
-    else if(type_compare(T, thingy *)) { return("thingy *"); }
-    else if(type_compare(T, thingy **)) { return("thingy **"); }
     else if(type_compare(T, V2)) { return("V2"); }
     else if(type_compare(T, V2 *)) { return("V2 *"); }
     else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, Bar)) { return("Bar"); }
-    else if(type_compare(T, Bar *)) { return("Bar *"); }
-    else if(type_compare(T, Bar **)) { return("Bar **"); }
-    else if(type_compare(T, A)) { return("A"); }
-    else if(type_compare(T, A *)) { return("A *"); }
-    else if(type_compare(T, A **)) { return("A **"); }
-    else if(type_compare(T, B)) { return("B"); }
-    else if(type_compare(T, B *)) { return("B *"); }
-    else if(type_compare(T, B **)) { return("B **"); }
-    else if(type_compare(T, C)) { return("C"); }
-    else if(type_compare(T, C *)) { return("C *"); }
-    else if(type_compare(T, C **)) { return("C **"); }
-    else if(type_compare(T, Foo)) { return("Foo"); }
-    else if(type_compare(T, Foo *)) { return("Foo *"); }
-    else if(type_compare(T, Foo **)) { return("Foo **"); }
-    else if(type_compare(T, Transform)) { return("Transform"); }
-    else if(type_compare(T, Transform *)) { return("Transform *"); }
-    else if(type_compare(T, Transform **)) { return("Transform **"); }
 
     else { return(0); } // Unknown Type.
-}
-
-//
-// Enum meta data.
-//
-
-// Meta Data for Letters.
-static size_t number_of_elements_in_enum_Letters = 3;
-static char const *enum_to_string_Letters(int v)
-{
-    switch(v) {
-        case 0: { return("letter_a"); } break;
-        case 1: { return("letter_b"); } break;
-        case 2: { return("letter_c"); } break;
-
-        default: { return(0); } break; // v is out of bounds.
-    }
-}
-static int string_to_enum_Letters(char const *str)
-{
-    int res = 0;
-    if(str) {
-        if(strcmp(str, "letter_a") == 0) { return(0); }
-        else if(strcmp(str, "letter_b") == 0) { return(1); }
-        else if(strcmp(str, "letter_c") == 0) { return(2); }
-        else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?
-    }
-
-    return(res);
 }
 
 } // namespace pp

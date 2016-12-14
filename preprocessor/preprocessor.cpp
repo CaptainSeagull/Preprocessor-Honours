@@ -19,6 +19,7 @@
         - Output a _useful_ error message if the user declares the same struct twice.
         - In serialize struct, if there is a member which is an enum, call enum_to_string on it's value.
         - Create bool is_primitive(T) which returns if something is a primitive or not.
+        - Some of the generated code, namely get_members_of_(), generate bad code if there are no structs in a project.
     - Union meta data.
         - Simple version of struct.
     - Function meta data.
@@ -33,7 +34,7 @@
     - Typedefs.
     - Type compare ignore if pointer or not.
     - Make a variable_to_string macro (#define var_to_string(v) #v).
-    - Namespace everything. (Try C++ namespaces first, if they fail do C).
+    - Make a is_primitive function.
 */
 
 
@@ -2743,6 +2744,14 @@ TEST(StructTest, inhertiance_struct_test)
     StructCompareFailure struct_compare_failure = compare_struct_data(hardcoded, generated);
     ASSERT_TRUE(struct_compare_failure == StructCompareFailure_success)
             << "Failed because struct_compare_failure == " << struct_compare_failure_to_string(struct_compare_failure);
+}
+
+TEST(StructTest, number_of_members_test)
+{
+    Char *str = "struct A { int a; int b; int c; };";
+    StructData gen = parse_struct_test(str);
+    ASSERT_TRUE(gen.member_count == 3)
+            << "Error: Number of members in struct not correct";
 }
 
 Int run_tests(void)
