@@ -93,19 +93,23 @@ Char *ErrorTypeToString(ErrorType e)
 {
     Char *res = 0;
 
+#define ERROR_TYPE_TO_STRING(err) err: { res = #err; } break
+
     switch(e) {
-        case ErrorType_ran_out_of_memory:          { res = "ErrorType_ran_out_of_memory";          } break;
-        case ErrorType_assert_failed:              { res = "ErrorType_assert_failed";              } break;
-        case ErrorType_no_parameters:              { res = "ErrorType_no_parameters";              } break;
-        case ErrorType_cannot_find_file:           { res = "ErrorType_cannot_find_file";           } break;
-        case ErrorType_could_not_write_to_disk:    { res = "ErrorType_could_not_write_to_disk";    } break;
-        case ErrorType_could_not_load_file:        { res = "ErrorType_could_not_load_file";        } break;
-        case ErrorType_no_files_pass_in:           { res = "ErrorType_no_files_pass_in";           } break;
-        case ErrorType_could_not_find_mallocd_ptr: { res = "ErrorType_could_not_find_mallocd_ptr"; } break;
-        case ErrorType_memory_not_freed:           { res = "ErrorType_memory_not_freed";           } break;
-        case ErrorType_could_not_find_struct:      { res = "ErrorType_could_not_find_struct";      } break;
-        case ErrorType_unknown_token_found:        { res = "ErrorType_unknown_token_found";        } break;
+        case ERROR_TYPE_TO_STRING(ErrorType_ran_out_of_memory);
+        case ERROR_TYPE_TO_STRING(ErrorType_assert_failed);
+        case ERROR_TYPE_TO_STRING(ErrorType_no_parameters);
+        case ERROR_TYPE_TO_STRING(ErrorType_cannot_find_file);
+        case ERROR_TYPE_TO_STRING(ErrorType_could_not_write_to_disk);
+        case ERROR_TYPE_TO_STRING(ErrorType_could_not_load_file);
+        case ERROR_TYPE_TO_STRING(ErrorType_no_files_pass_in);
+        case ERROR_TYPE_TO_STRING(ErrorType_could_not_find_mallocd_ptr);
+        case ERROR_TYPE_TO_STRING(ErrorType_memory_not_freed);
+        case ERROR_TYPE_TO_STRING(ErrorType_could_not_find_struct);
+        case ERROR_TYPE_TO_STRING(ErrorType_unknown_token_found);
     }
+
+#undef ERROR_TYPE_TO_STRING
 
     return(res);
 }
@@ -2622,7 +2626,6 @@ Int main(Int argc, Char **argv)
         }
     }
 
-
     return(res);
 }
 
@@ -2635,9 +2638,9 @@ Int main(Int argc, Char **argv)
 //
 // Test utils.
 //
-StructData parse_struct_test(Char *s, int ahead = 0)
+StructData parse_struct_test(Char *str, int ahead = 0)
 {
-    Tokenizer tokenizer = {s};
+    Tokenizer tokenizer = {str};
 
     eat_token(&tokenizer);
     for(int struct_index = 0; (struct_index < ahead); ++struct_index) {
@@ -2660,16 +2663,16 @@ enum StructCompareFailure {
     StructCompareFailure_func_data,
     StructCompareFailure_func_count,
 };
-Char *struct_compare_failure_to_string(StructCompareFailure s)
+Char *struct_compare_failure_to_string(StructCompareFailure scf)
 {
     Char *res = 0;
-    if(s == StructCompareFailure_success)           { res = "StructCompareFailure_success";      }
-    else if(s == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
-    else if(s == StructCompareFailure_member_count) { res = "StructCompareFailure_member_count"; }
-    else if(s == StructCompareFailure_members)      { res = "StructCompareFailure_members";      }
-    else if(s == StructCompareFailure_inherited)    { res = "StructCompareFailure_inherited";    }
-    else if(s == StructCompareFailure_func_data)    { res = "StructCompareFailure_func_data";    }
-    else if(s == StructCompareFailure_func_count)   { res = "StructCompareFailure_func_count";   }
+    if(scf == StructCompareFailure_success)           { res = "StructCompareFailure_success";      }
+    else if(scf == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
+    else if(scf == StructCompareFailure_member_count) { res = "StructCompareFailure_member_count"; }
+    else if(scf == StructCompareFailure_members)      { res = "StructCompareFailure_members";      }
+    else if(scf == StructCompareFailure_inherited)    { res = "StructCompareFailure_inherited";    }
+    else if(scf == StructCompareFailure_func_data)    { res = "StructCompareFailure_func_data";    }
+    else if(scf == StructCompareFailure_func_count)   { res = "StructCompareFailure_func_count";   }
 
     return(res);
 };
