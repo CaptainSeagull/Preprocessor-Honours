@@ -32,7 +32,9 @@
     - Templates.
     - Macros.
     - Typedefs.
-    - Type compare ignore if pointer or not.
+    - Type compare ignore if pointer or not (or reference).
+    - Type compare where base class/sub class compare true.
+    - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.\
     - Make a variable_to_string macro (#define var_to_string(v) #v).
     - Make a is_primitive function.
 */
@@ -159,10 +161,10 @@ Void push_error_(ErrorType type, Char *file, Int line)
     #define assert(Expression, ...) { if(!(Expression)) { push_error(ErrorType_assert_failed); } }
 #endif
 
-Uint32 safe_truncate_size_64(Uint64 value)
+Uint32 safe_truncate_size_64(Uint64 v)
 {
-    assert(value <= 0xFFFFFFFF);
-    Uint32 res = cast(Uint32)value;
+    assert(v <= 0xFFFFFFFF);
+    Uint32 res = cast(Uint32)v;
 
     return(res);
 }
@@ -184,7 +186,7 @@ MemList *mem_list_root = 0;
 
 Void *get_raw_pointer(Void *ptr) { if(ptr) { return(cast(PtrSize *)ptr - 1);} else { return(0); } }
 PtrSize get_alloc_size(Void *ptr) { if(ptr) { return(*(cast(PtrSize *)ptr - 1)); } else { return(0); } }
-#define get_alloc_size_arr(ptr) (Int)(get_alloc_size(ptr) / sizeof(*ptr))
+#define get_alloc_size_arr(ptr) (get_alloc_size(ptr) / sizeof(*(ptr)))
 
 // malloc
 Void *malloc_(PtrSize size, Char *file, Int line)
@@ -285,7 +287,7 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line)
             if(!raw_ptr) {
                 push_error(ErrorType_ran_out_of_memory);
             } else {
-                *(PtrSize *)raw_ptr = size;
+                *cast(PtrSize *)raw_ptr = size;
                 res = (PtrSize *)raw_ptr + 1;
                 memset(cast(Char *)res + old_size, 0, size - old_size);
 #if MEM_CHECK
