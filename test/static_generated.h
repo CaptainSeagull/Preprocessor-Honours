@@ -111,5 +111,6 @@ template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
 
 } // namespace pp
 
+// TODO(Jonny): Make sure I #undef all internal macros at end.
 #define STATIC_GENERATED
 #endif // !defined(STATIC_GENERATED)

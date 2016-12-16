@@ -10,7 +10,6 @@
   ===================================================================================================*/
 
 /* TODO(Jonny):
-    - Completly skip over member functions!
     - Struct meta data.
         - Right now, it generates invalid code if you make a struct with no members.
         - It breaks if you use a comma to declare members of the same type.
@@ -24,10 +23,10 @@
         - Simple version of struct.
     - Function meta data.
         - Get name (as string).
-        - Get linkage (as string and type).
-        - Get return type (as string and type)
+        - Get linkage (as string).
+        - Get return type.
         - Get param count.
-        - Get params (as strings and types).
+        - Get params types, and names as strings.
     - References.
     - Templates.
     - Macros.
@@ -37,6 +36,8 @@
     - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.\
     - Make a variable_to_string macro (#define var_to_string(v) #v).
     - Make a is_primitive function.
+    - Make a is pointer, or not, function. Could return false if not a pointer, and a positive integer for the level of pointer
+      otherwise. Should work with references too.
 */
 
 
@@ -554,6 +555,7 @@ Char *get_static_file(void)
                 "\n"
                 "} // namespace pp\n"
                 "\n"
+                "// TODO(Jonny): Make sure I #undef all internal macros at end.\n"
                 "#define STATIC_GENERATED\n"
                 "#endif // !defined(STATIC_GENERATED)"
                 "\n";
