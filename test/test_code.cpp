@@ -94,7 +94,17 @@ void test_struct(void)
     bool b = pp::fuzzy_type_compare(Foo, X);
     bool c = pp::fuzzy_type_compare(A, B);
 
+    {
+        char const *a = pp::type_to_string(Foo);
+        char const *b = pp::type_to_string(Foo *);
+        char const *c = pp::weak_type_to_string(Foo);
+        char const *d = pp::weak_type_to_string(Foo *);
 
+        bool one = pp::type_compare(Foo, Foo *);
+        bool two = pp::weak_type_compare(Foo, Foo *);
+
+        int i = 0;
+    }
 
 }
 

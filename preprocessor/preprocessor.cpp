@@ -32,7 +32,6 @@
     - Macros.
     - Typedefs.
     - Type compare ignore if pointer or not (or reference).
-    - Type compare where base class/sub class compare true.
     - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.\
     - Make a variable_to_string macro (#define var_to_string(v) #v).
     - Make a is_primitive function.
@@ -526,6 +525,7 @@ Char *get_static_file(void)
                 "#define type_compare(a, b) TypeCompare_<a, b>::e\n"
                 "\n"
                 "#define type_to_string(Type) type_to_string_<Type>()\n"
+                "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
                 "\n"
                 "#define get_base_type_count(Type) get_base_type_count_<Type>()\n"
                 "#define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)\n"
@@ -550,6 +550,18 @@ Char *get_static_file(void)
                 "                if(strcmp(a_str, str)) { return(true); }\n"
                 "            }\n"
                 "        }\n"
+                "    }\n"
+                "\n"
+                "    return(false);\n"
+                "}\n"
+                "\n"
+                "#define weak_type_compare(A, B) weak_type_compare_<A, B>()\n"
+                "template<typename T, typename U> bool weak_type_compare_(void)\n"
+                "{\n"
+                "    char const *a_str = weak_type_to_string(T);\n"
+                "    char const *b_str = weak_type_to_string(U);\n"
+                "    if((a_str) && (b_str)) {\n"
+                "        if(strcmp(a_str, b_str) == 0) { return(true); }\n"
                 "    }\n"
                 "\n"
                 "    return(false);\n"
@@ -2303,6 +2315,41 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
             write_to_output_buffer(&ob, "    else if(type_compare(T, %S **)) { return(\"%S **\"); }\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+        }
+        write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
+
+        // type_to_string ignore.
+        write_to_output_buffer(&ob,
+                               "\n// Convert a type to a string.\n"
+                               "template<typename T> static char const *weak_type_to_string_(void)\n"
+                               "{\n"
+                               "    // Primitives.\n");
+        for(Int primitive_index = 0; (primitive_index < get_num_of_primitive_types()); ++primitive_index) {
+            Char *primitive = primitive_types[primitive_index];
+
+            if(primitive_index == 0) {
+                write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s\"); }\n", primitive, primitive);
+            } else {
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s\"); }\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s\"); }\n", primitive, primitive);
+            }
+        }
+
+        write_to_output_buffer(&ob, "\n    // Struct types.\n");
+        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            write_to_output_buffer(&ob, "    else if(type_compare(T, %S)) { return(\"%S\"); }\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+            write_to_output_buffer(&ob, "    else if(type_compare(T, %S *)) { return(\"%S\"); }\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+            write_to_output_buffer(&ob, "    else if(type_compare(T, %S **)) { return(\"%S\"); }\n",
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e);
         }
         write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");

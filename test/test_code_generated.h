@@ -504,6 +504,67 @@ template<typename T> static char const *type_to_string_(void)
     else { return(0); } // Unknown Type.
 }
 
+// Convert a type to a string.
+template<typename T> static char const *weak_type_to_string_(void)
+{
+    // Primitives.
+    if(type_compare(T, char)) { return("char"); }
+    else if(type_compare(T, char *)) { return("char"); }
+    else if(type_compare(T, char **)) { return("char"); }
+    else if(type_compare(T, short)) { return("short"); }
+    else if(type_compare(T, short *)) { return("short"); }
+    else if(type_compare(T, short **)) { return("short"); }
+    else if(type_compare(T, int)) { return("int"); }
+    else if(type_compare(T, int *)) { return("int"); }
+    else if(type_compare(T, int **)) { return("int"); }
+    else if(type_compare(T, long)) { return("long"); }
+    else if(type_compare(T, long *)) { return("long"); }
+    else if(type_compare(T, long **)) { return("long"); }
+    else if(type_compare(T, float)) { return("float"); }
+    else if(type_compare(T, float *)) { return("float"); }
+    else if(type_compare(T, float **)) { return("float"); }
+    else if(type_compare(T, double)) { return("double"); }
+    else if(type_compare(T, double *)) { return("double"); }
+    else if(type_compare(T, double **)) { return("double"); }
+    else if(type_compare(T, bool)) { return("bool"); }
+    else if(type_compare(T, bool *)) { return("bool"); }
+    else if(type_compare(T, bool **)) { return("bool"); }
+
+    // Struct types.
+    else if(type_compare(T, thingy)) { return("thingy"); }
+    else if(type_compare(T, thingy *)) { return("thingy"); }
+    else if(type_compare(T, thingy **)) { return("thingy"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2"); }
+    else if(type_compare(T, V2 **)) { return("V2"); }
+    else if(type_compare(T, Bar)) { return("Bar"); }
+    else if(type_compare(T, Bar *)) { return("Bar"); }
+    else if(type_compare(T, Bar **)) { return("Bar"); }
+    else if(type_compare(T, A)) { return("A"); }
+    else if(type_compare(T, A *)) { return("A"); }
+    else if(type_compare(T, A **)) { return("A"); }
+    else if(type_compare(T, B)) { return("B"); }
+    else if(type_compare(T, B *)) { return("B"); }
+    else if(type_compare(T, B **)) { return("B"); }
+    else if(type_compare(T, C)) { return("C"); }
+    else if(type_compare(T, C *)) { return("C"); }
+    else if(type_compare(T, C **)) { return("C"); }
+    else if(type_compare(T, Foo)) { return("Foo"); }
+    else if(type_compare(T, Foo *)) { return("Foo"); }
+    else if(type_compare(T, Foo **)) { return("Foo"); }
+    else if(type_compare(T, X)) { return("X"); }
+    else if(type_compare(T, X *)) { return("X"); }
+    else if(type_compare(T, X **)) { return("X"); }
+    else if(type_compare(T, Y)) { return("Y"); }
+    else if(type_compare(T, Y *)) { return("Y"); }
+    else if(type_compare(T, Y **)) { return("Y"); }
+    else if(type_compare(T, Transform)) { return("Transform"); }
+    else if(type_compare(T, Transform *)) { return("Transform"); }
+    else if(type_compare(T, Transform **)) { return("Transform"); }
+
+    else { return(0); } // Unknown Type.
+}
+
 // Get the number of base types.
 template<typename T> int get_base_type_count_(void)
 {
