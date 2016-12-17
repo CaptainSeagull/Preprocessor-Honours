@@ -40,6 +40,14 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     double *p_array[5];
 };
 
+struct X : public Foo {
+    int i;
+};
+
+struct Y: public X {
+
+};
+
 struct Transform {V2 pos; V2 size;};
 void test_struct(void)
 {
@@ -74,6 +82,20 @@ void test_struct(void)
     char *buf = new char[256 * 256];
     pp::print(foo, buf, 256 * 256);
     delete buf;
+
+
+    for(int i = 0; (i < pp::get_base_type_count(Foo)); ++i) {
+        char const *str = pp::get_base_type_as_string(Foo, i);
+
+        int j = 0;
+    }
+
+    bool a = pp::fuzzy_type_compare(X, Foo);
+    bool b = pp::fuzzy_type_compare(Foo, X);
+    bool c = pp::fuzzy_type_compare(A, B);
+
+
+
 }
 
 //

@@ -41,7 +41,6 @@
     - Make a flag which will forward declare functions/structs.
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -183,7 +182,6 @@ Void *get_raw_pointer(Void *ptr) { if(ptr) { return(cast(PtrSize *)ptr - 1);} el
 PtrSize get_alloc_size(Void *ptr) { if(ptr) { return(*(cast(PtrSize *)ptr - 1)); } else { return(0); } }
 #define get_alloc_size_arr(ptr) (get_alloc_size(ptr) / sizeof(*(ptr)))
 
-// Allocator.
 #define alloc(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
 Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1)
 {
@@ -445,7 +443,7 @@ Char *get_static_file(void)
                 "\n"
                 "//\n"
                 "// Code shared between generated files.\n"
-                "#if !defined(STATIC_GENERATED)\n"
+                "#if !defined(STATIC_GENERATED_H)\n"
                 "\n"
                 "#include <stdio.h>\n"
                 "#include <string.h>\n"
@@ -529,6 +527,34 @@ Char *get_static_file(void)
                 "\n"
                 "#define type_to_string(Type) type_to_string_<Type>()\n"
                 "\n"
+                "#define get_base_type_count(Type) get_base_type_count_<Type>()\n"
+                "#define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)\n"
+                "\n"
+                "#define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()\n"
+                "template<typename T, typename U> bool fuzzy_type_compare_(void)\n"
+                "{\n"
+                "    char const *a_str = type_to_string(T);\n"
+                "    char const *b_str = type_to_string(U);\n"
+                "    if((a_str) && (b_str)) {\n"
+                "        if(strcmp(a_str, b_str) == 0) {\n"
+                "            return(true);\n"
+                "        } else {\n"
+                "            int base_count = get_base_type_count(T);\n"
+                "            for(int base_index = 0; (base_index < base_count); ++base_index) {\n"
+                "                char const *str = get_base_type_as_string(T);\n"
+                "                if(strcmp(b_str, str)) { return(true); }\n"
+                "            }\n"
+                "            \n"
+                "            for(int base_index = 0; (base_index < base_count); ++base_index) {\n"
+                "                char const *str = get_base_type_as_string(U);\n"
+                "                if(strcmp(a_str, str)) { return(true); }\n"
+                "            }\n"
+                "        }\n"
+                "    }\n"
+                "\n"
+                "    return(false);\n"
+                "}\n"
+                "\n"
                 "// TODO(Jonny): MSVC sucks. Use stb_sprintf?...\n"
                 "#if defined(_MSC_VER)\n"
                 "    #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)\n"
@@ -540,7 +566,7 @@ Char *get_static_file(void)
                 "\n"
                 "// TODO(Jonny): Make sure I #undef all internal macros at end.\n"
                 "#define STATIC_GENERATED\n"
-                "#endif // !defined(STATIC_GENERATED)"
+                "#endif // !defined(STATIC_GENERATED_H)"
                 "\n";
 
     return(res);
@@ -2212,7 +2238,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         // Get number of members.
         write_to_output_buffer(&ob,
                                "\n"
-                               "// Convert a type into a members_of *.\n"
+                               "// Get the number of members for a type.\n"
                                "template<typename T> static int get_number_of_members_(void)\n"
                                "{\n");
         for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
@@ -2281,10 +2307,92 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         }
         write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
 
+        //
+        // Get base type count.
+        //
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "// Get the number of base types.\n"
+                               "template<typename T> int get_base_type_count_(void)\n"
+                               "{\n");
 
+        for(Int struct_index = 0, written_count = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            if(sd->inherited_count) {
+                if(!written_count) {
+                    write_to_output_buffer(&ob, "    if(type_compare(T, %S))    { return(%d); }\n",
+                                           sd->name.len, sd->name.e, sd->inherited_count);
+                } else {
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %S)) { return(%d); }\n",
+                                           sd->name.len, sd->name.e, sd->inherited_count);
+                }
+
+                ++written_count;
+            }
+        }
+
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "    return(0); // Not found.\n"
+                               "}\n");
+
+        //
+        // Get base type as string.
+        //
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "// Get the base type.\n"
+                               "template<typename T> char const *get_base_type_as_string_(int index = 0)\n"
+                               "{\n");
+
+        for(Int struct_index = 0, written_count = 0; (struct_index < struct_count); ++struct_index) {
+            StructData *sd = struct_data + struct_index;
+
+            if(sd->inherited_count) {
+                // TODO(Jonny): Make the index return the inherited index.
+                if(!written_count) {
+                    write_to_output_buffer(&ob,
+                                           "    if(type_compare(T, %S)) {\n",
+                                           sd->name.len, sd->name.e);
+                } else {
+                    write_to_output_buffer(&ob,
+                                           "    else if(type_compare(T, %S)) {\n",
+                                           sd->name.len, sd->name.e);
+                }
+
+                for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
+                    if(!inherited_index) {
+                        write_to_output_buffer(&ob,
+                                               "        if(index == %d)      { return(\"%S\"); }\n",
+                                               inherited_index,
+                                               sd->inherited[inherited_index].len, sd->inherited[inherited_index].e);
+                    } else {
+                        write_to_output_buffer(&ob,
+                                               "        else if(index == %d) { return(\"%S\"); }\n",
+                                               inherited_index,
+                                               sd->inherited[inherited_index].len, sd->inherited[inherited_index].e);
+                    }
+
+                }
+
+                write_to_output_buffer(&ob,
+                                       "    }\n",
+                                       sd->inherited[0].len, sd->inherited[0].e);
+
+                ++written_count;
+            }
+        }
+
+
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "    return(0); // Not found.\n"
+                               "}\n");
         //
         // Enum Meta data.
         //
+
         // TODO(Jonny): Can I make the enum meta data templates as well, similar to the structs?
         if(enum_count) {
             write_to_output_buffer(&ob,
@@ -2330,9 +2438,9 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                                     "{\n"
                                                     "    switch(v) {\n"
                                                     "%s"
-                                                    "\n"
-                                                    "        default: { return(0); } break; // v is out of bounds.\n"
                                                     "    }\n"
+                                                    "\n"
+                                                    "    return(0); // v is out of bounds.\n"
                                                     "}\n";
                         Int bytes_written = format_string(buf, buf_size, enum_to_string_base,
                                                           ed->name.len, ed->name.e, small_buf);
@@ -2349,7 +2457,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
                         if(ed->no_of_values) {
                             index += format_string(small_buf + index, array_count(small_buf) - index,
-                                                   "        if(strcmp(str, \"%S\") == 0) { return(%d); }\n",
+                                                   "        if(strcmp(str, \"%S\") == 0)      { return(%d); }\n",
                                                    ed->values[0].name.len, ed->values[0].name.e,
                                                    ed->values[0].value);
                         }
@@ -2367,6 +2475,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                       "    int res = 0;\n"
                                       "    if(str) {\n"
                                       "%s"
+                                      "\n"
                                       "        else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?\n"
                                       "    }\n"
                                       "\n"
@@ -2392,7 +2501,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "} // namespace pp\n"
                                "\n"
                                "#define GENERATED_H\n"
-                               "#endif // !defined(GENERATED_H)\n");
+                               "#endif // !defined(GENERATED_H)\n"
+                               "\n");
 
         res.size = ob.index;
         res.data = ob.buffer;

@@ -18,7 +18,7 @@
 
 //
 // Code shared between generated files.
-#if !defined(STATIC_GENERATED)
+#if !defined(STATIC_GENERATED_H)
 
 #include <stdio.h>
 #include <string.h>
@@ -102,6 +102,34 @@ template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
 
 #define type_to_string(Type) type_to_string_<Type>()
 
+#define get_base_type_count(Type) get_base_type_count_<Type>()
+#define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)
+
+#define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()
+template<typename T, typename U> bool fuzzy_type_compare_(void)
+{
+    char const *a_str = type_to_string(T);
+    char const *b_str = type_to_string(U);
+    if((a_str) && (b_str)) {
+        if(strcmp(a_str, b_str) == 0) {
+            return(true);
+        } else {
+            int base_count = get_base_type_count(T);
+            for(int base_index = 0; (base_index < base_count); ++base_index) {
+                char const *str = get_base_type_as_string(T);
+                if(strcmp(b_str, str)) { return(true); }
+            }
+            
+            for(int base_index = 0; (base_index < base_count); ++base_index) {
+                char const *str = get_base_type_as_string(U);
+                if(strcmp(a_str, str)) { return(true); }
+            }
+        }
+    }
+
+    return(false);
+}
+
 // TODO(Jonny): MSVC sucks. Use stb_sprintf?...
 #if defined(_MSC_VER)
     #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
@@ -113,4 +141,4 @@ template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
 
 // TODO(Jonny): Make sure I #undef all internal macros at end.
 #define STATIC_GENERATED
-#endif // !defined(STATIC_GENERATED)
+#endif // !defined(STATIC_GENERATED_H)

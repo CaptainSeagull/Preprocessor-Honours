@@ -20,6 +20,8 @@ enum MetaType {
     meta_type_B,
     meta_type_C,
     meta_type_Foo,
+    meta_type_X,
+    meta_type_Y,
     meta_type_Transform,
 };
 
@@ -34,6 +36,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     struct _B {  _float n;  };
     struct _C {  _float o;  };
     struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
+    struct _X : public _Foo {  _int i;  };
+    struct _Y : public _X {  };
     struct _Transform {  _V2 pos;  _V2 size;  };
  
     // thingy
@@ -117,6 +121,29 @@ template<typename T> static MemberDefinition *get_members_of_(void)
         };
         return(members_of_Foo);
 
+    // X
+    } else if(type_compare(T, X)) {
+        static MemberDefinition members_of_X[] = {
+            // Members.
+            {meta_type_int, "i", offsetof(_X, i), false, 1},
+            // Members inherited from Foo.
+            {meta_type_char, "str", (size_t)&((_X *)0)->str, true, 1},
+            {meta_type_int, "ip", (size_t)&((_X *)0)->ip, true, 1},
+            {meta_type_float, "fp", (size_t)&((_X *)0)->fp, true, 1},
+            {meta_type_bool, "b", (size_t)&((_X *)0)->b, true, 1},
+            {meta_type_double, "p_array", (size_t)&((_X *)0)->p_array, true, 5},
+        };
+        return(members_of_X);
+
+    // Y
+    } else if(type_compare(T, Y)) {
+        static MemberDefinition members_of_Y[] = {
+            // Members.
+            // Members inherited from X.
+            {meta_type_int, "i", (size_t)&((_Y *)0)->i, false, 1},
+        };
+        return(members_of_Y);
+
     // Transform
     } else if(type_compare(T, Transform)) {
         static MemberDefinition members_of_Transform[] = {
@@ -129,7 +156,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
     } else { assert(0); return(0); } // Error.
 }
 
-// Convert a type into a members_of *.
+// Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void)
 {
     if(type_compare(T, thingy)) { return(2); } // thingy
@@ -139,6 +166,8 @@ template<typename T> static int get_number_of_members_(void)
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, C)) { return(1); } // C
     else if(type_compare(T, Foo)) { return(15); } // Foo
+    else if(type_compare(T, X)) { return(6); } // X
+    else if(type_compare(T, Y)) { return(1); } // Y
     else if(type_compare(T, Transform)) { return(2); } // Transform
 
     else { assert(0); return(-1); } // Error.
@@ -378,6 +407,24 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                             }
                         } break; // case meta_type_Foo
 
+                        case meta_type_X: {
+                            // X
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_<X *>(*(X **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_<X>(*(X *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case meta_type_X
+
+                        case meta_type_Y: {
+                            // Y
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_<Y *>(*(Y **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_<Y>(*(Y *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case meta_type_Y
+
                         case meta_type_Transform: {
                             // Transform
                             if(member->is_ptr) {
@@ -444,11 +491,47 @@ template<typename T> static char const *type_to_string_(void)
     else if(type_compare(T, Foo)) { return("Foo"); }
     else if(type_compare(T, Foo *)) { return("Foo *"); }
     else if(type_compare(T, Foo **)) { return("Foo **"); }
+    else if(type_compare(T, X)) { return("X"); }
+    else if(type_compare(T, X *)) { return("X *"); }
+    else if(type_compare(T, X **)) { return("X **"); }
+    else if(type_compare(T, Y)) { return("Y"); }
+    else if(type_compare(T, Y *)) { return("Y *"); }
+    else if(type_compare(T, Y **)) { return("Y **"); }
     else if(type_compare(T, Transform)) { return("Transform"); }
     else if(type_compare(T, Transform *)) { return("Transform *"); }
     else if(type_compare(T, Transform **)) { return("Transform **"); }
 
     else { return(0); } // Unknown Type.
+}
+
+// Get the number of base types.
+template<typename T> int get_base_type_count_(void)
+{
+    if(type_compare(T, Foo))    { return(5); }
+    else if(type_compare(T, X)) { return(1); }
+    else if(type_compare(T, Y)) { return(1); }
+
+    return(0); // Not found.
+}
+
+// Get the base type.
+template<typename T> char const *get_base_type_as_string_(int index = 0)
+{
+    if(type_compare(T, Foo)) {
+        if(index == 0)      { return("Bar"); }
+        else if(index == 1) { return("thingy"); }
+        else if(index == 2) { return("A"); }
+        else if(index == 3) { return("B"); }
+        else if(index == 4) { return("C"); }
+    }
+    else if(type_compare(T, X)) {
+        if(index == 0)      { return("Foo"); }
+    }
+    else if(type_compare(T, Y)) {
+        if(index == 0)      { return("X"); }
+    }
+
+    return(0); // Not found.
 }
 
 //
@@ -463,17 +546,18 @@ static char const *enum_to_string_Letters(int v)
         case 0: { return("letter_a"); } break;
         case 1: { return("letter_b"); } break;
         case 2: { return("letter_c"); } break;
-
-        default: { return(0); } break; // v is out of bounds.
     }
+
+    return(0); // v is out of bounds.
 }
 static int string_to_enum_Letters(char const *str)
 {
     int res = 0;
     if(str) {
-        if(strcmp(str, "letter_a") == 0) { return(0); }
+        if(strcmp(str, "letter_a") == 0)      { return(0); }
         else if(strcmp(str, "letter_b") == 0) { return(1); }
         else if(strcmp(str, "letter_c") == 0) { return(2); }
+
         else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?
     }
 
@@ -484,3 +568,4 @@ static int string_to_enum_Letters(char const *str)
 
 #define GENERATED_H
 #endif // !defined(GENERATED_H)
+
