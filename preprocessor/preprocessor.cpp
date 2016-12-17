@@ -38,6 +38,7 @@
     - Make a is_primitive function.
     - Make a is pointer, or not, function. Could return false if not a pointer, and a positive integer for the level of pointer
       otherwise. Should work with references too.
+    - Make a flag which will forward declare functions/structs.
 */
 
 
@@ -123,8 +124,8 @@ struct Error {
     Int line;
 };
 
-Int error_max = 256;
-Error *global_errors = 0;
+Int const error_max = 256;
+Error global_errors[error_max];
 Int global_error_count = 0;
 
 #if ERROR_LOGGING
@@ -135,13 +136,6 @@ Int global_error_count = 0;
 
 Void push_error_(ErrorType type, Char *file, Int line)
 {
-    if(global_error_count + 1 >= error_max) {
-        error_max *= 2;
-        Void *p = realloc(global_errors, error_max);
-        if(p) { global_errors = cast(Error *)p; }
-        else  { error_max /= 2;                 }
-    }
-
     if(global_error_count + 1 < error_max) {
         Error *e = global_errors + global_error_count;
 
@@ -189,13 +183,17 @@ Void *get_raw_pointer(Void *ptr) { if(ptr) { return(cast(PtrSize *)ptr - 1);} el
 PtrSize get_alloc_size(Void *ptr) { if(ptr) { return(*(cast(PtrSize *)ptr - 1)); } else { return(0); } }
 #define get_alloc_size_arr(ptr) (get_alloc_size(ptr) / sizeof(*(ptr)))
 
-// malloc
-Void *malloc_(PtrSize size, Char *file, Int line)
+// Allocator.
+#define alloc(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
+Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1)
 {
     Void *res = 0;
-    PtrSize *raw_ptr = cast(PtrSize *)malloc(size + sizeof(PtrSize));
+
+    size *= count;
+    PtrSize *raw_ptr = cast(PtrSize *)malloc(size + sizeof(PtrSize) * 1);
     if(!raw_ptr) {
-        push_error_(ErrorType_ran_out_of_memory, file, line);
+        if(file) { push_error_(ErrorType_ran_out_of_memory, file, line); }
+        else     { push_error_(ErrorType_ran_out_of_memory, __FILE__, __LINE__); }
     } else {
         *raw_ptr = size;
         res = (raw_ptr + 1);
@@ -230,11 +228,9 @@ Void *malloc_(PtrSize size, Char *file, Int line)
 
     return(res);
 }
-#define malloc_array(Type, size) cast(Type *)malloc_(sizeof(Type) * (size), __FILE__, __LINE__)
-#define malloc_type(Type) cast(Type *)malloc_(sizeof(Type), __FILE__, __LINE__)
 
-// free
-Void free_(Void *ptr, Char *file, Int line)
+// Free Memory.
+Void free_(Void *ptr)
 {
 #if MEM_CHECK
     if(ptr) {
@@ -263,8 +259,7 @@ Void free_(Void *ptr, Char *file, Int line)
 }
 
 // realloc
-#define realloc_and_double(ptr) realloc_(ptr, get_alloc_size(ptr) * 2, __FILE__, __LINE__)
-Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line)
+Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0)
 {
     Void *res = 0;
     if(ptr) {
@@ -275,7 +270,10 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line)
             next = next->next;
         }
 
-        if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, file, line); }
+        if(!next) {
+            if(file) { push_error_(ErrorType_could_not_find_mallocd_ptr, file, line); }
+            else     { push_error(ErrorType_could_not_find_mallocd_ptr); }
+        }
 #endif
         PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
         PtrSize old_size = *old_raw_ptr;
@@ -284,7 +282,7 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line)
         if(size <= old_size) {
             res = ptr;
         } else {
-            PtrSize *raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size + sizeof(PtrSize));
+            PtrSize *raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size + sizeof(PtrSize) * 2);
             if(!raw_ptr) {
                 push_error(ErrorType_ran_out_of_memory);
             } else {
@@ -299,31 +297,16 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line)
     } else {
         if(!size) { size = sizeof(PtrSize); }
 
-        res = malloc_(size, file, line);
+        res = alloc_(size, file, line);
     }
 
     return(res);
 }
 
-#if defined(malloc)
-    #undef malloc
-#endif
-#define malloc(size) malloc_(size, __FILE__, __LINE__)
-
-#if defined(free)
-    #undef free
-#endif
-#define free(ptr) free_(ptr, __FILE__, __LINE__)
-
-#if defined(realloc)
-    #undef realloc
-#endif
-#define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
-
-#if defined(calloc)
-    #undef calloc
-#endif
-#define calloc(size, stride) malloc_((size) * (stride), __FILE__, __LINE__)
+#define malloc(size) alloc_(size, __FILE__, __LINE__)
+#define calloc(size, count) alloc_(size, __FILE__, __LINE__, count)
+#define realloc(ptr, ...) realloc_(ptr, __FILE__, __LINE__, ##__VA_ARGS__)
+#define free(ptr) free_(ptr)
 
 // A quick-to-access temp region of memory. Should be frequently cleared.
 Int scratch_memory_index = 0;
@@ -1480,7 +1463,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
 
     Token peaked_token = peak_token(tokenizer);
     if(peaked_token.type == TokenType_colon) {
-        res.sd.inherited = malloc_array(String, 4);
+        res.sd.inherited = alloc(String, 4);
 
         eat_token(tokenizer);
 
@@ -1488,7 +1471,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
         while(next.type != TokenType_open_brace) {
             if(!(is_stupid_class_keyword(next)) && (next.type != TokenType_comma)) {
                 if(res.sd.inherited_count + 1 >= cast(Int)(get_alloc_size(res.sd.inherited) / sizeof(String))) {
-                    Void *p = realloc_and_double(res.sd.inherited);
+                    Void *p = realloc(res.sd.inherited);
                     if(p) {
                         res.sd.inherited = cast(String *)p;
                     }
@@ -1595,7 +1578,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
         }
 
         if(res.sd.member_count > 0) {
-            res.sd.members = malloc_array(Variable, res.sd.member_count);
+            res.sd.members = alloc(Variable, res.sd.member_count);
             if(res.sd.members) {
                 for(Int member_index = 0; (member_index < res.sd.member_count); ++member_index) {
                     Tokenizer fake_tokenizer = { member_pos[member_index] };
@@ -1837,7 +1820,7 @@ EnumData add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenize
         token = get_token(&copy);
     }
 
-    res.values = malloc_array(EnumValue, res.no_of_values);
+    res.values = alloc(EnumValue, res.no_of_values);
     if(res.values) {
         for(Int index = 0; (index < res.no_of_values); ++index) {
             EnumValue *ev = res.values + index;
@@ -2030,7 +2013,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
     OutputBuffer ob = {};
     ob.size = 256 * 256;
-    ob.buffer = malloc_array(Char, ob.size);
+    ob.buffer = alloc(Char, ob.size);
     if(ob.buffer) {
         write_to_output_buffer(&ob,
                                "#if !defined(GENERATED_H) // TODO(Jonny): Add the actual filename in here?\n"
@@ -2423,10 +2406,10 @@ Bool should_write_to_file = false;
 Void start_parsing(Char *filename, Char *file)
 {
     Int enum_count = 0;
-    EnumData *enum_data = malloc_array(EnumData, 8);
+    EnumData *enum_data = alloc(EnumData, 8);
 
     Int struct_count = 0;
-    StructData *struct_data = malloc_array(StructData, 32);
+    StructData *struct_data = alloc(StructData, 32);
 
     if((enum_data)  && (struct_data)) {
         Tokenizer tokenizer = { file };
@@ -2445,7 +2428,7 @@ Void start_parsing(Char *filename, Char *file)
                         parse_template(&tokenizer);
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
                         if(struct_count + 1 >= get_alloc_size_arr(struct_data)) {
-                            Void *p = realloc_and_double(struct_data);
+                            Void *p = realloc(struct_data);
                             if(p) { struct_data = cast(StructData *)p; }
                         }
 
@@ -2471,7 +2454,7 @@ Void start_parsing(Char *filename, Char *file)
 
                             if(next.type == TokenType_open_brace) {
                                 if(enum_count + 1 >= get_alloc_size_arr(enum_data)) {
-                                    Void *p = realloc_and_double(enum_data);
+                                    Void *p = realloc(enum_data);
                                     if(p) { enum_data = cast(EnumData *)p; }
                                 }
 
@@ -2571,7 +2554,7 @@ Int main(Int argc, Char **argv)
             if(!number_of_files) {
                 push_error(ErrorType_no_files_pass_in);
             } else {
-                Byte *file_memory = malloc_array(Byte, largest_source_file_size);
+                Byte *file_memory = alloc(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
                     if(should_write_to_file) {
@@ -2743,7 +2726,7 @@ TEST(StructTest, inhertiance_struct_test)
     hardcoded.members = cast(Variable *)malloc(sizeof(Variable));
     *hardcoded.members = create_variable("int", "c");
     hardcoded.inherited_count = 2;
-    hardcoded.inherited = malloc_array(String, hardcoded.inherited_count);
+    hardcoded.inherited = alloc(String, hardcoded.inherited_count);
     hardcoded.inherited[0] = create_string("BaseOne");
     hardcoded.inherited[1] = create_string("BaseTwo");
 
