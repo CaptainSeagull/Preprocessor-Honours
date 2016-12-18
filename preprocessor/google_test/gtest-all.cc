@@ -106,6 +106,8 @@
 // Utilities for testing Google Test itself and code that uses Google Test
 // (e.g. frameworks built on top of Google Test).
 
+#if RUN_TESTS
+
 #ifndef GTEST_INCLUDE_GTEST_GTEST_SPI_H_
 #define GTEST_INCLUDE_GTEST_GTEST_SPI_H_
 
@@ -11044,3 +11046,5 @@ const char *TypedTestCasePState::VerifyRegisteredTestNames(
 
 }  // namespace internal
 }  // namespace testing
+
+#endif // RUN_TESTS
