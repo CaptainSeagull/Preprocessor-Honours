@@ -566,7 +566,7 @@ template<typename T> static char const *weak_type_to_string_(void)
 }
 
 // Get the number of base types.
-template<typename T> int get_base_type_count_(void)
+template<typename T> static int get_base_type_count_(void)
 {
     if(type_compare(T, Foo))    { return(5); }
     else if(type_compare(T, X)) { return(1); }
@@ -576,7 +576,7 @@ template<typename T> int get_base_type_count_(void)
 }
 
 // Get the base type.
-template<typename T> char const *get_base_type_as_string_(int index = 0)
+template<typename T> static char const *get_base_type_as_string_(int index = 0)
 {
     if(type_compare(T, Foo)) {
         if(index == 0)      { return("Bar"); }

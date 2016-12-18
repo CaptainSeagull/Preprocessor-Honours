@@ -2170,7 +2170,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         write_to_output_buffer(&ob,
                                "\n"
                                "// Get the number of base types.\n"
-                               "template<typename T> int get_base_type_count_(void)\n"
+                               "template<typename T> static int get_base_type_count_(void)\n"
                                "{\n");
 
         for(Int struct_index = 0, written_count = 0; (struct_index < struct_count); ++struct_index) {
@@ -2200,7 +2200,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         write_to_output_buffer(&ob,
                                "\n"
                                "// Get the base type.\n"
-                               "template<typename T> char const *get_base_type_as_string_(int index = 0)\n"
+                               "template<typename T> static char const *get_base_type_as_string_(int index = 0)\n"
                                "{\n");
 
         for(Int struct_index = 0, written_count = 0; (struct_index < struct_count); ++struct_index) {
