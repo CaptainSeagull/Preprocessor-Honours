@@ -92,6 +92,7 @@ enum ErrorType {
     ErrorType_could_not_detect_struct_name,
     ErrorType_could_not_find_struct,
     ErrorType_unknown_token_found,
+    ErrorType_failed_to_parse_enum,
 
     ErrorType_count,
 };
@@ -113,6 +114,7 @@ Char *ErrorTypeToString(ErrorType e)
         case ERROR_TYPE_TO_STRING(ErrorType_memory_not_freed);
         case ERROR_TYPE_TO_STRING(ErrorType_could_not_find_struct);
         case ERROR_TYPE_TO_STRING(ErrorType_unknown_token_found);
+        case ERROR_TYPE_TO_STRING(ErrorType_failed_to_parse_enum);
     }
 
 #undef ERROR_TYPE_TO_STRING
@@ -1027,14 +1029,10 @@ Bool token_equals(Token token, Char *str)
 {
     Bool res = false;
 
-    Char *at = str;
-    for(Int str_index = 0; (str_index < token.len); ++str_index, ++at) {
-        if((*at == 0) == (*at == token.e[str_index])) { goto exit_func; }
+    Int len = string_length(str);
+    if(len == token.len) {
+        res = string_compare(token.e, str, len);
     }
-
-    res = (*at == 0);
-
-exit_func:
 
     return(res);
 }
@@ -1157,10 +1155,13 @@ Variable parse_member(Tokenizer *tokenizer)
             case TokenType_open_bracket: {
                 Token size_token = get_token(tokenizer);
                 if(size_token.type == TokenType_number) {
-                    Char buffer[256] = {};
-                    token_to_string(size_token, buffer, array_count(buffer));
+                    Char *buffer = cast(Char *)push_scratch_memory();
+
+                    token_to_string(size_token, buffer, scratch_memory_size);
                     ResultInt arr_count = string_to_int(buffer);
                     if(arr_count.success) { res.array_count = arr_count.e; }
+
+                    clear_scratch_memory();
                 }
             } break;
         }
@@ -1438,6 +1439,105 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
     return(res);
 }
 
+struct EnumValue {
+    String name;
+    Int value;
+};
+
+struct EnumData {
+    String name;
+    String type;
+    Bool is_struct;
+
+    EnumValue *values;
+    Int no_of_values;
+};
+
+struct ParseEnumResult {
+    EnumData ed;
+    Bool success;
+};
+ParseEnumResult parse_enum(Tokenizer *tokenizer)
+{
+    ParseEnumResult res = {};
+
+    Token name = get_token(tokenizer);
+    Bool is_enum_struct = false;
+    if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
+        is_enum_struct = true;
+        name = get_token(tokenizer);
+    }
+
+    if(name.type == TokenType_identifier) {
+        // If the enum has an underlying type, get it.
+        Token underlying_type = {};
+        Token next = get_token(tokenizer);
+        if(next.type == TokenType_colon) {
+            underlying_type = get_token(tokenizer);
+            next = get_token(tokenizer);
+        }
+
+        if(next.type == TokenType_open_brace) {
+            //res = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
+            assert(name.type == TokenType_identifier);
+            assert((underlying_type.type == TokenType_identifier) || (underlying_type.type == TokenType_unknown));
+
+            Token token = {};
+
+            res.ed.is_struct = is_enum_struct;
+            res.ed.name = token_to_string(name);
+            if(underlying_type.type == TokenType_identifier) {
+                res.ed.type = token_to_string(underlying_type);
+            }
+
+            Tokenizer copy = *tokenizer;
+            res.ed.no_of_values = 1;
+            token = get_token(&copy);
+            while(token.type != TokenType_close_brace) {
+                // TODO(Jonny): It was stupid to count the number of commas. Instead, actually count
+                //              the number of enums.
+                if(token.type == TokenType_comma) {
+                    Token tmp = get_token(&copy);
+                    if(tmp.type == TokenType_identifier) { ++res.ed.no_of_values; }
+                    else if (tmp.type == TokenType_close_brace) { break; }
+                }
+
+                token = get_token(&copy);
+            }
+
+            res.ed.values = alloc(EnumValue, res.ed.no_of_values);
+            if(res.ed.values) {
+                for(Int index = 0, count = 0; (index < res.ed.no_of_values); ++index, ++count) {
+                    EnumValue *ev = res.ed.values + index;
+
+                    Token temp_token = {};
+                    while(temp_token.type != TokenType_identifier) { temp_token = get_token(tokenizer); }
+
+                    ev->name = token_to_string(temp_token);
+                    if(peak_token(tokenizer).type == TokenType_equals) {
+                        eat_token(tokenizer);
+                        Token num = get_token(tokenizer);
+
+                        ResultInt r = token_to_int(num);
+                        if(r.success) {
+                            count = r.e;
+                        } else {
+                            push_error(ErrorType_failed_to_parse_enum);
+                        }
+                    }
+
+                    ev->value = count;
+                }
+
+                res.success = true;
+            }
+        }
+    }
+
+
+    return(res);
+}
+
 Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
 {
     Char *top =
@@ -1625,6 +1725,7 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
     write_to_output_buffer(ob, bottom);
 }
 
+#if 0
 struct EnumValue {
     String name;
     Int value;
@@ -1638,7 +1739,6 @@ struct EnumData {
     EnumValue *values;
     Int no_of_values;
 };
-
 EnumData add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokenizer)
 {
     assert(name.type == TokenType_identifier);
@@ -1683,7 +1783,7 @@ EnumData add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenize
 
     return(res);
 }
-
+#endif
 Bool is_meta_type_already_in_array(String *array, Int len, String test)
 {
     Bool res = false;
@@ -2404,9 +2504,18 @@ Void start_parsing(Char *filename, Char *file)
                         }
 
                         ParseStructResult r = parse_struct(&tokenizer);
+
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
-                        if(r.success) {struct_data[struct_count++] = r.sd; }
+                        if(r.success) { struct_data[struct_count++] = r.sd; }
                     } else if((token_equals(token, "enum"))) {
+                        if(enum_count + 1 >= get_alloc_size_arr(enum_data)) {
+                            Void *p = realloc(enum_data);
+                            if(p) { enum_data = cast(EnumData *)p; }
+                        }
+
+                        ParseEnumResult r = parse_enum(&tokenizer);
+                        if(r.success) { enum_data[enum_count++] = r.ed; }
+#if 0
                         Token name = get_token(&tokenizer);
                         Bool is_enum_struct = false;
                         if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
@@ -2432,6 +2541,7 @@ Void start_parsing(Char *filename, Char *file)
                                 enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
                             }
                         }
+#endif
                     }
                 } break;
             }

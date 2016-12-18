@@ -604,9 +604,9 @@ static size_t number_of_elements_in_enum_Letters = 3;
 static char const *enum_to_string_Letters(int v)
 {
     switch(v) {
-        case 0: { return("letter_a"); } break;
-        case 1: { return("letter_b"); } break;
-        case 2: { return("letter_c"); } break;
+        case 10: { return("letter_a"); } break;
+        case 11: { return("letter_b"); } break;
+        case 12: { return("letter_c"); } break;
     }
 
     return(0); // v is out of bounds.
@@ -615,9 +615,9 @@ static int string_to_enum_Letters(char const *str)
 {
     int res = 0;
     if(str) {
-        if(strcmp(str, "letter_a") == 0)      { return(0); }
-        else if(strcmp(str, "letter_b") == 0) { return(1); }
-        else if(strcmp(str, "letter_c") == 0) { return(2); }
+        if(strcmp(str, "letter_a") == 0)      { return(10); }
+        else if(strcmp(str, "letter_b") == 0) { return(11); }
+        else if(strcmp(str, "letter_c") == 0) { return(12); }
 
         else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?
     }

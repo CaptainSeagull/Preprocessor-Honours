@@ -113,7 +113,7 @@ void test_struct(void)
 //
 
 enum Letters {
-    letter_a,
+    letter_a = 10,
     letter_b,
     letter_c
 };
