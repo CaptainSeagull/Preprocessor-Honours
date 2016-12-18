@@ -2017,12 +2017,12 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             write_to_output_buffer(&ob, "            // Members.\n");
             for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                 Variable *md = sd->members + member_index;
-                write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", offsetof(_%.*s, %.*s), %d, %d},\n",
+                write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", offsetof(_%.*s, %.*s), %s, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
                                        sd->name.len, sd->name.e,
                                        md->name.len, md->name.e,
-                                       md->is_ptr,
+                                       (md->is_ptr) ? "true" : "false",
                                        md->array_count);
             }
 
@@ -2035,12 +2035,12 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
                         Variable *base_class_var = base_class->members + member_index;
 
-                        write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %d, %d},\n",
+                        write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
                                                base_class_var->type.len, base_class_var->type.e,
                                                base_class_var->name.len, base_class_var->name.e,
                                                sd->name.len, sd->name.e,
                                                base_class_var->name.len, base_class_var->name.e,
-                                               base_class_var->is_ptr,
+                                               (base_class_var->is_ptr) ? "true" : "false",
                                                base_class_var->array_count);
                     }
                 }
