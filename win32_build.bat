@@ -2,8 +2,8 @@
 
 rem Variables to set. NOTE - Google Test uses _a lot_ of memory, so it's advised to run tests in 64-bit.
 set VISUAL_STUDIO_VERSION=10
-set ENVIRONMENT=x86
-set RELEASE=false
+set ENVIRONMENT=x64
+set RELEASE=true
 set RUN_CODE_AFTER_BUILDING=true
 
 set RUN_SDL_CODE=false
@@ -16,12 +16,12 @@ set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4
 rem 32/64 bit builds.
 call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\VC\vcvarsall.bat" %ENVIRONMENT%
 
-set COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
+set COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 
 setlocal EnableDelayedExpansion
 set FILES="../../preprocessor/preprocessor.cpp" "../../preprocessor/google_test/gtest-all.cc"
 if "%RELEASE%"=="true" (
-    set COMMON_COMPILER_FLAGS=-nologo -MT -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DINTERNAL=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999 -NODEFAULTLIB
+    set COMMON_COMPILER_FLAGS=-nologo -MT -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DINTERNAL=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
     set FILES="../../preprocessor/preprocessor.cpp"
 )
 
