@@ -1882,16 +1882,14 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             }
 
             String *types = cast(String *)push_scratch_memory(sizeof(String) * max_type_count);
-            if(types) {
+            {
                 Int type_count = set_primitive_type(types);
 
                 // Fill out the enum meta type enum.
                 for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
                     StructData *sd = struct_data + struct_index;
 
-                    if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
-                        types[type_count++] = sd->name;
-                    }
+                    if(!is_meta_type_already_in_array(types, type_count, sd->name)) { types[type_count++] = sd->name; }
 
                     for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
                         Variable *md = sd->members + member_index;
@@ -1908,10 +1906,11 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
                     write_to_output_buffer(&ob, "    meta_type_%.*s,\n", type->len, type->e);
                 }
-                write_to_output_buffer(&ob, "};");
 
-                clear_scratch_memory();
+                write_to_output_buffer(&ob, "};");
             }
+
+            clear_scratch_memory();
         }
 
         //
