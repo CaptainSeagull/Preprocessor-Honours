@@ -11,6 +11,12 @@
 
 #include "test_code_generated.h"
 
+#define NUMBER_TEN 10
+
+struct TEST {
+    int i[NUMBER_TEN];
+};
+
 //
 // struct test.
 //
@@ -37,7 +43,7 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     int *ip;
     float *fp;
     bool *b;
-    double *p_array[5];
+    double *p_array[NUMBER_TEN];
 };
 
 struct X : public Foo {

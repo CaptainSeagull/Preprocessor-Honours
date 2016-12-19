@@ -13,6 +13,7 @@ enum MetaType {
     meta_type_float,
     meta_type_double,
     meta_type_bool,
+    meta_type_TEST,
     meta_type_thingy,
     meta_type_V2,
     meta_type_Bar,
@@ -29,19 +30,28 @@ enum MetaType {
 template<typename T> static MemberDefinition *get_members_of_(void)
 {
     // Recreated structs.
+    struct _TEST {  _int i[10];  };
     struct _thingy {  _int x;  _int y;  };
     struct _V2 {  _int x;  _int y;  };
     struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
     struct _A {  _float m;  };
     struct _B {  _float n;  };
     struct _C {  _float o;  };
-    struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[5];  };
+    struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[10];  };
     struct _X : public _Foo {  _int i;  };
     struct _Y : public _X {  };
     struct _Transform {  _V2 pos;  _V2 size;  };
  
+    // TEST
+    if(type_compare(T, TEST)) {
+        static MemberDefinition members_of_TEST[] = {
+            // Members.
+            {meta_type_int, "i", offsetof(_TEST, i), false, 10},
+        };
+        return(members_of_TEST);
+
     // thingy
-    if(type_compare(T, thingy)) {
+    } else if(type_compare(T, thingy)) {
         static MemberDefinition members_of_thingy[] = {
             // Members.
             {meta_type_int, "x", offsetof(_thingy, x), false, 1},
@@ -102,7 +112,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
             {meta_type_int, "ip", offsetof(_Foo, ip), true, 1},
             {meta_type_float, "fp", offsetof(_Foo, fp), true, 1},
             {meta_type_bool, "b", offsetof(_Foo, b), true, 1},
-            {meta_type_double, "p_array", offsetof(_Foo, p_array), true, 5},
+            {meta_type_double, "p_array", offsetof(_Foo, p_array), true, 10},
             // Members inherited from Bar.
             {meta_type_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
             {meta_type_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
@@ -131,7 +141,7 @@ template<typename T> static MemberDefinition *get_members_of_(void)
             {meta_type_int, "ip", (size_t)&((_X *)0)->ip, true, 1},
             {meta_type_float, "fp", (size_t)&((_X *)0)->fp, true, 1},
             {meta_type_bool, "b", (size_t)&((_X *)0)->b, true, 1},
-            {meta_type_double, "p_array", (size_t)&((_X *)0)->p_array, true, 5},
+            {meta_type_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
         };
         return(members_of_X);
 
@@ -159,7 +169,8 @@ template<typename T> static MemberDefinition *get_members_of_(void)
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void)
 {
-    if(type_compare(T, thingy)) { return(2); } // thingy
+    if(type_compare(T, TEST)) { return(1); } // TEST
+    else if(type_compare(T, thingy)) { return(2); } // thingy
     else if(type_compare(T, V2)) { return(2); } // V2
     else if(type_compare(T, Bar)) { return(5); } // Bar
     else if(type_compare(T, A)) { return(1); } // A
@@ -344,6 +355,15 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // Then that should recursively call this function again.
                 default: {
                     switch(member->type) {
+                        case meta_type_TEST: {
+                            // TEST
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_<TEST *>(*(TEST **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_<TEST>(*(TEST *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case meta_type_TEST
+
                         case meta_type_thingy: {
                             // thingy
                             if(member->is_ptr) {
@@ -470,6 +490,9 @@ template<typename T> static char const *type_to_string_(void)
     else if(type_compare(T, bool **)) { return("bool **"); }
 
     // Struct types.
+    else if(type_compare(T, TEST)) { return("TEST"); }
+    else if(type_compare(T, TEST *)) { return("TEST *"); }
+    else if(type_compare(T, TEST **)) { return("TEST **"); }
     else if(type_compare(T, thingy)) { return("thingy"); }
     else if(type_compare(T, thingy *)) { return("thingy *"); }
     else if(type_compare(T, thingy **)) { return("thingy **"); }
@@ -531,6 +554,9 @@ template<typename T> static char const *weak_type_to_string_(void)
     else if(type_compare(T, bool **)) { return("bool"); }
 
     // Struct types.
+    else if(type_compare(T, TEST)) { return("TEST"); }
+    else if(type_compare(T, TEST *)) { return("TEST"); }
+    else if(type_compare(T, TEST **)) { return("TEST"); }
     else if(type_compare(T, thingy)) { return("thingy"); }
     else if(type_compare(T, thingy *)) { return("thingy"); }
     else if(type_compare(T, thingy **)) { return("thingy"); }

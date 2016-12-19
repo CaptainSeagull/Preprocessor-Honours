@@ -93,6 +93,7 @@ enum ErrorType {
     ErrorType_could_not_find_struct,
     ErrorType_unknown_token_found,
     ErrorType_failed_to_parse_enum,
+    ErrorType_failed_parsing_variable,
 
     ErrorType_count,
 };
@@ -115,6 +116,7 @@ Char *ErrorTypeToString(ErrorType e)
         case ERROR_TYPE_TO_STRING(ErrorType_could_not_find_struct);
         case ERROR_TYPE_TO_STRING(ErrorType_unknown_token_found);
         case ERROR_TYPE_TO_STRING(ErrorType_failed_to_parse_enum);
+        case ERROR_TYPE_TO_STRING(ErrorType_failed_parsing_variable);
     }
 
 #undef ERROR_TYPE_TO_STRING
@@ -128,7 +130,7 @@ struct Error {
     Int line;
 };
 
-Error global_errors[128];
+Error global_errors[32];
 Int global_error_count = 0;
 
 #if ERROR_LOGGING
@@ -141,6 +143,7 @@ Void push_error_(ErrorType type, Char *file, Int line)
 {
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count;
+        memset(e, 0, sizeof(*e));
 
         e->type = type;
         e->file = file;
@@ -150,9 +153,6 @@ Void push_error_(ErrorType type, Char *file, Int line)
     }
 }
 
-#if defined(assert)
-    #undef assert
-#endif
 #if INTERNAL
     #define assert(Expression, ...) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
@@ -700,25 +700,15 @@ struct String {
     Int len;
 };
 
-String create_string(Char *str, Int len = 0)
-{
-    String res = {str, (len) ? len : string_length(str)};
-    return(res);
-}
-
-String token_to_string(Token token)
-{
-    String res = create_string(token.e, token.len);
-
-    return(res);
-}
+String create_string(Char *str, Int len = 0) { String res = {str, (len) ? len : string_length(str)}; return(res); }
+String token_to_string(Token token) { return(create_string(token.e, token.len)); }
 
 Char *token_to_string(Token token, Char *buffer, Int size)
 {
-    memset(buffer, 0, size);
-    for(Int str_index = 0; (str_index < token.len); ++str_index) {
-        buffer[str_index] = token.e[str_index];
-    }
+    Char *at = buffer;
+    for(Int str_index = 0; (str_index < token.len); ++str_index, ++at) { *at = token.e[str_index]; }
+
+    *at = 0;
 
     return(buffer);
 }
@@ -779,18 +769,12 @@ Void eat_whitespace(Tokenizer *tokenizer)
             ++tokenizer->at;
         } else if((tokenizer->at[0] == '/') && (tokenizer->at[1] == '/')) { // C++ comments.
             tokenizer->at += 2;
-            while((tokenizer->at[0]) && (!is_end_of_line(tokenizer->at[0]))) {
-                ++tokenizer->at;
-            }
+            while((tokenizer->at[0]) && (!is_end_of_line(tokenizer->at[0]))) { ++tokenizer->at; }
         } else if((tokenizer->at[0] == '/') && (tokenizer->at[1] == '*')) { // C comments.
             tokenizer->at += 2;
-            while((tokenizer->at[0]) && !((tokenizer->at[0] == '*') && (tokenizer->at[1] == '/'))) {
-                ++tokenizer->at;
-            }
+            while((tokenizer->at[0]) && !((tokenizer->at[0] == '*') && (tokenizer->at[1] == '/'))) { ++tokenizer->at; }
 
-            if(tokenizer->at[0] == '*') {
-                tokenizer->at += 2;
-            }
+            if(tokenizer->at[0] == '*') { tokenizer->at += 2; }
         } else if(tokenizer->at[0] == '#') { // #if 0 blocks.
             Char *hash_if_zero = "#if 0";
             Int hash_if_zero_length = string_length(hash_if_zero);
@@ -882,30 +866,59 @@ Void eat_whitespace(Tokenizer *tokenizer)
     }
 }
 
-Bool is_alphabetical(Char c)
-{
-    Bool res = (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')));
-
-    return(res);
-}
-
-Bool is_num(Char c)
-{
-    Bool res = ((c >= '0') && (c <= '9'));
-
-    return(res);
-}
+Bool is_alphabetical(Char c) { return(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'))); }
+Bool is_num(Char c) { return((c >= '0') && (c <= '9')); }
 
 Void parse_number(Tokenizer *tokenizer)
 {
     // TODO(Jonny): Implement.
 }
 
+struct MacroData {
+    String iden;
+    String res;
+};
+
+Int macro_count = 0;
+MacroData *macro_data = 0;
+
 Token get_token(Tokenizer *tokenizer); // Because C++...
 #define eat_token(tokenizer) eat_tokens(tokenizer, 1);
 Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
     for(Int token_index = 0; (token_index < num_tokens_to_eat); ++token_index) { get_token(tokenizer); }
+}
+
+Token string_to_token(String str)
+{
+    Token res = {};
+
+    res.e = str.e;
+    res.len = str.len;
+
+    switch(res.e[0]) {
+        case 0:    { res.type = TokenType_end_of_stream;       } break;
+
+        case '(':  { res.type = TokenType_open_paren;          } break;
+        case ')':  { res.type = TokenType_close_param;         } break;
+        case ':':  { res.type = TokenType_colon;               } break;
+        case ';':  { res.type = TokenType_semi_colon;          } break;
+        case '*':  { res.type = TokenType_asterisk;            } break;
+        case '[':  { res.type = TokenType_open_bracket;        } break;
+        case ']':  { res.type = TokenType_close_bracket;       } break;
+        case '{':  { res.type = TokenType_open_brace;          } break;
+        case '}':  { res.type = TokenType_close_brace;         } break;
+        case '<':  { res.type = TokenType_open_angle_bracket;  } break;
+        case '>':  { res.type = TokenType_close_angle_bracket; } break;
+        case '=':  { res.type = TokenType_equals;              } break;
+        case ',':  { res.type = TokenType_comma;               } break;
+        case '~':  { res.type = TokenType_tilde;               } break;
+        case '#':  { res.type = TokenType_hash;                } break;
+
+        default:   { res.type = TokenType_identifier;          } break;
+    }
+
+    return(res);
 }
 
 Token get_token(Tokenizer *tokenizer)
@@ -953,9 +966,7 @@ Token get_token(Tokenizer *tokenizer)
                 }
             }
 
-            if(!var_args) {
-                res.type = TokenType_period;
-            }
+            if(!var_args) { res.type = TokenType_period; }
         } break;
 
         case '"': {
@@ -997,9 +1008,7 @@ Token get_token(Tokenizer *tokenizer)
                 res.len = safe_truncate_size_64(tokenizer->at - res.e);
                 res.type = TokenType_identifier;
             } else if(is_num(c)) {
-                while(is_num(tokenizer->at[0])) {
-                    ++tokenizer->at;
-                }
+                while(is_num(tokenizer->at[0])) { ++tokenizer->at; }
 
                 res.len = safe_truncate_size_64(tokenizer->at - res.e);
                 res.type = TokenType_number;
@@ -1007,6 +1016,17 @@ Token get_token(Tokenizer *tokenizer)
                 res.type = TokenType_unknown;
             }
         } break;
+    }
+
+    if(res.type == TokenType_identifier) {
+        for(Int macro_index = 0; (macro_index < macro_count); ++macro_index) {
+            MacroData *md = macro_data + macro_index;
+
+            String token_as_string = token_to_string(res);
+            if(string_compare(token_as_string, md->iden)) {
+                res = string_to_token(md->res);
+            }
+        }
     }
 
     if(res.type == TokenType_unknown) { push_error(ErrorType_unknown_token_found); }
@@ -1030,9 +1050,7 @@ Bool token_equals(Token token, Char *str)
     Bool res = false;
 
     Int len = string_length(str);
-    if(len == token.len) {
-        res = string_compare(token.e, str, len);
-    }
+    if(len == token.len) { res = string_compare(token.e, str, len); }
 
     return(res);
 }
@@ -1154,15 +1172,15 @@ Variable parse_member(Tokenizer *tokenizer)
 
             case TokenType_open_bracket: {
                 Token size_token = get_token(tokenizer);
-                if(size_token.type == TokenType_number) {
-                    Char *buffer = cast(Char *)push_scratch_memory();
+                //if(size_token.type == TokenType_number) {
+                Char *buffer = cast(Char *)push_scratch_memory();
 
-                    token_to_string(size_token, buffer, scratch_memory_size);
-                    ResultInt arr_count = string_to_int(buffer);
-                    if(arr_count.success) { res.array_count = arr_count.e; }
+                token_to_string(size_token, buffer, scratch_memory_size);
+                ResultInt arr_count = string_to_int(buffer);
+                if(arr_count.success) { res.array_count = arr_count.e; }
 
-                    clear_scratch_memory();
-                }
+                clear_scratch_memory();
+                //}
             } break;
         }
     }
@@ -1170,10 +1188,22 @@ Variable parse_member(Tokenizer *tokenizer)
     return(res);
 }
 
+// TODO(Jonny): This eats a token. Should it?
 Bool require_token(Tokenizer *tokenizer, TokenType desired_type)
 {
     Token token = get_token(tokenizer);
     Bool res = (token.type == desired_type);
+
+    return(res);
+}
+
+Bool peak_require_token(Tokenizer *tokenizer, Char *str)
+{
+    Bool res = false;
+    Tokenizer cpy = *tokenizer;
+    Token token = get_token(&cpy);
+
+    if(string_compare(token.e, str, token.len)) { res = true; }
 
     return(res);
 }
@@ -1275,10 +1305,10 @@ Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenT
                 res.array_count = num.e;
                 eat_token(tokenizer); // Eat the second ']'.
             } else {
-                // TODO(Jonny): Error case.
+                push_error(ErrorType_failed_parsing_variable);
             }
         } else {
-            // TODO(Jonny): Error case.
+            push_error(ErrorType_failed_parsing_variable);
         }
     } else {
         res.array_count = 1;
@@ -1320,9 +1350,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer)
             if(!(is_stupid_class_keyword(next)) && (next.type != TokenType_comma)) {
                 if(res.sd.inherited_count + 1 >= cast(Int)(get_alloc_size(res.sd.inherited) / sizeof(String))) {
                     Void *p = realloc(res.sd.inherited);
-                    if(p) {
-                        res.sd.inherited = cast(String *)p;
-                    }
+                    if(p) { res.sd.inherited = cast(String *)p; }
                 }
 
                 res.sd.inherited[res.sd.inherited_count++] = token_to_string(next);
@@ -1486,9 +1514,7 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer)
 
             res.ed.is_struct = is_enum_struct;
             res.ed.name = token_to_string(name);
-            if(underlying_type.type == TokenType_identifier) {
-                res.ed.type = token_to_string(underlying_type);
-            }
+            if(underlying_type.type == TokenType_identifier) { res.ed.type = token_to_string(underlying_type); }
 
             Tokenizer copy = *tokenizer;
             res.ed.no_of_values = 1;
@@ -1519,11 +1545,8 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer)
                         Token num = get_token(tokenizer);
 
                         ResultInt r = token_to_int(num);
-                        if(r.success) {
-                            count = r.e;
-                        } else {
-                            push_error(ErrorType_failed_to_parse_enum);
-                        }
+                        if(r.success) { count = r.e;                                }
+                        else          { push_error(ErrorType_failed_to_parse_enum); }
                     }
 
                     ev->value = count;
@@ -1859,9 +1882,7 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
 
                                 *tokenizer = copy_tokenizer;
 
-                                if(linkage.type == TokenType_identifier) {
-                                    res.func_data.linkage = token_to_string(linkage);
-                                }
+                                if(linkage.type == TokenType_identifier) { res.func_data.linkage = token_to_string(linkage); }
 
                                 res.func_data.ret_type = token_to_string(return_type);
                                 res.func_data.name = token_to_string(name);
@@ -1880,9 +1901,7 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
                                     Token temp_token = get_token(&copy);
                                     if(token_equals(temp_token, "void")) {
                                         Token next = get_token(&copy);
-                                        if(next.type == TokenType_close_param) {
-                                            parsing = false;
-                                        }
+                                        if(next.type == TokenType_close_param) { parsing = false; }
                                     }
                                 }
 
@@ -1890,8 +1909,12 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
                                 while(parsing) {
                                     Token temp_token = get_token(tokenizer);
                                     switch(temp_token.type) {
-                                        case TokenType_asterisk: {
-                                            var->is_ptr = true;
+                                        case TokenType_asterisk: { var->is_ptr = true; } break;
+
+                                        case TokenType_comma: { ++var; } break;
+
+                                        case TokenType_end_of_stream: case TokenType_open_brace: {
+                                            parsing = false; // TODO(Jonny): Something baaaad happened...
                                         } break;
 
                                         case TokenType_open_bracket: {
@@ -1900,9 +1923,7 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
                                                 Char buffer[256] = {};
                                                 token_to_string(SizeToken, buffer, array_count(buffer));
                                                 ResultInt arr_count = string_to_int(buffer);
-                                                if(arr_count.success) {
-                                                    var->array_count = arr_count.e;
-                                                }
+                                                if(arr_count.success) { var->array_count = arr_count.e; }
                                             }
                                         } break;
 
@@ -1913,14 +1934,6 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
                                                 var->name = token_to_string(temp_token);
                                                 ++res.func_data.param_count;
                                             }
-                                        } break;
-
-                                        case TokenType_comma: {
-                                            ++var;
-                                        } break;
-
-                                        case TokenType_end_of_stream: case TokenType_open_brace: {
-                                            parsing = false; // TODO(Jonny): Something baaaad happened...
                                         } break;
                                     }
                                 }
@@ -2482,7 +2495,9 @@ Void start_parsing(Char *filename, Char *file)
     Int struct_count = 0;
     StructData *struct_data = alloc(StructData, 32);
 
-    if((enum_data)  && (struct_data)) {
+    macro_data = alloc(MacroData, 32);
+
+    if((enum_data)  && (struct_data) && (macro_data)) {
         Tokenizer tokenizer = { file };
 
         Bool parsing = true;
@@ -2490,7 +2505,27 @@ Void start_parsing(Char *filename, Char *file)
             Token token = get_token(&tokenizer);
             switch(token.type) {
                 case TokenType_end_of_stream: { parsing = false;                 } break;
-                case TokenType_hash:          { skip_to_end_of_line(&tokenizer); } break;
+
+                case TokenType_hash: {
+                    if(peak_require_token(&tokenizer, "define")) {
+                        eat_token(&tokenizer);
+
+                        MacroData *md = macro_data + macro_count++;
+
+                        md->iden = token_to_string(get_token(&tokenizer));
+                        eat_whitespace(&tokenizer);
+                        md->res.e = tokenizer.at;
+                        while(!is_end_of_line(*tokenizer.at)) {
+                            ++md->res.len;
+                            ++tokenizer.at;
+                        }
+
+                        int i = 0;
+                    } else {
+                        skip_to_end_of_line(&tokenizer);
+                    }
+                } break;
+
 
                 case TokenType_identifier: {
                     // TODO(Jonny): I may need to keep the template header, so that the generated structs still work.
@@ -2507,7 +2542,7 @@ Void start_parsing(Char *filename, Char *file)
 
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
                         if(r.success) { struct_data[struct_count++] = r.sd; }
-                    } else if((token_equals(token, "enum"))) {
+                    } else if(token_equals(token, "enum")) {
                         if(enum_count + 1 >= get_alloc_size_arr(enum_data)) {
                             Void *p = realloc(enum_data);
                             if(p) { enum_data = cast(EnumData *)p; }
@@ -2515,6 +2550,7 @@ Void start_parsing(Char *filename, Char *file)
 
                         ParseEnumResult r = parse_enum(&tokenizer);
                         if(r.success) { enum_data[enum_count++] = r.ed; }
+
 #if 0
                         Token name = get_token(&tokenizer);
                         Bool is_enum_struct = false;
@@ -2571,6 +2607,8 @@ Void start_parsing(Char *filename, Char *file)
 
         for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) { free(enum_data[enum_index].values); }
         free(enum_data);
+
+        free(macro_data);
     }
 }
 
@@ -2749,17 +2787,11 @@ StructCompareFailure compare_struct_data(StructData a, StructData b)
 {
     StructCompareFailure res = StructCompareFailure_success;
 
-    if(!string_compare(a.name, b.name)) {
-        res = StructCompareFailure_name;
-    } else if(a.member_count != b.member_count) {
-        res = StructCompareFailure_member_count;
-    } else if(!compare_variable_array(a.members, b.members, a.member_count)) {
-        res = StructCompareFailure_members;
-    } else if(a.inherited_count != b.inherited_count) {
-        res = StructCompareFailure_inherited_count;
-    } else if(!string_compare_array(a.inherited, b.inherited, a.inherited_count)) {
-        res = StructCompareFailure_inherited;
-    }
+    if(!string_compare(a.name, b.name))                                         { res = StructCompareFailure_name;            }
+    else if(a.member_count != b.member_count)                                   { res = StructCompareFailure_member_count;    }
+    else if(!compare_variable_array(a.members, b.members, a.member_count))      { res = StructCompareFailure_members;         }
+    else if(a.inherited_count != b.inherited_count)                             { res = StructCompareFailure_inherited_count; }
+    else if(!string_compare_array(a.inherited, b.inherited, a.inherited_count)) { res = StructCompareFailure_inherited;       }
 
     return(res);
 }
@@ -2821,8 +2853,7 @@ TEST(StructTest, number_of_members_test)
 {
     Char *str = "struct A { int a; int b; int c; };";
     StructData gen = parse_struct_test(str);
-    ASSERT_TRUE(gen.member_count == 3)
-            << "Error: Number of members in struct not correct";
+    ASSERT_TRUE(gen.member_count == 3) << "Error: Number of members in struct not correct";
 }
 
 Int run_tests(void)
