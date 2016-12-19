@@ -29,7 +29,8 @@
         - Get params types, and names as strings.
     - References.
     - Templates.
-    - Macros.
+    - Allow mathematical macros (1 + 1) to be the index for an array.
+    - Global consts for arrays.
     - Typedefs.
     - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.
     - Make a variable_to_string macro (#define var_to_string(v) #v).
@@ -915,7 +916,10 @@ Token string_to_token(String str)
         case '~':  { res.type = TokenType_tilde;               } break;
         case '#':  { res.type = TokenType_hash;                } break;
 
-        default:   { res.type = TokenType_identifier;          } break;
+        default: {
+            if(is_num(res.e[0])) { res.type = TokenType_number;     }
+            else                 { res.type = TokenType_identifier; }
+        } break;
     }
 
     return(res);
@@ -1172,15 +1176,17 @@ Variable parse_member(Tokenizer *tokenizer)
 
             case TokenType_open_bracket: {
                 Token size_token = get_token(tokenizer);
-                //if(size_token.type == TokenType_number) {
-                Char *buffer = cast(Char *)push_scratch_memory();
+                if(size_token.type == TokenType_number) {
+                    Char *buffer = cast(Char *)push_scratch_memory();
 
-                token_to_string(size_token, buffer, scratch_memory_size);
-                ResultInt arr_count = string_to_int(buffer);
-                if(arr_count.success) { res.array_count = arr_count.e; }
+                    token_to_string(size_token, buffer, scratch_memory_size);
+                    ResultInt arr_count = string_to_int(buffer);
+                    if(arr_count.success) { res.array_count = arr_count.e; }
 
-                clear_scratch_memory();
-                //}
+                    clear_scratch_memory();
+                } else {
+                    // TODO(Jonny): Something _bad_ happened...
+                }
             } break;
         }
     }
