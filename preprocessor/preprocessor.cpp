@@ -340,10 +340,7 @@ Void skip_to_end_of_line(Tokenizer *tokenizer) { while(is_end_of_line(*tokenizer
 
 Int string_length(Char *str) {
     Int res = 0;
-    while(*str) {
-        ++res;
-        ++str;
-    }
+    while(*str++) { ++res; }
 
     return(res);
 }
@@ -352,8 +349,8 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
     Bool res = false;
 
     if(len > a_len + b_len) {
-        for(Int a_index = 0; (a_index < a_len); ++a_index) { *dest++ = *a++; }
-        for(Int b_index = 0; (b_index < b_len); ++b_index) { *dest++ = *b++; }
+        for(Int i = 0; (i < a_len); ++i) { *dest++ = *a++; }
+        for(Int i = 0; (i < b_len); ++i) { *dest++ = *b++; }
 
         res = true;
     }
@@ -362,7 +359,7 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
 }
 
 Bool string_compare(Char *a, Char *b, Int len) {
-    for(Int string_index = 0; (string_index < len); ++string_index, ++a, ++b) {
+    for(Int i = 0; (i < len); ++i, ++a, ++b) {
         if(*a != *b) { return(false); }
     }
 
@@ -533,12 +530,12 @@ Char *get_static_file(void) {
                 "            return(true);\n"
                 "        } else {\n"
                 "            int base_count = get_base_type_count(T);\n"
-                "            for(int base_index = 0; (base_index < base_count); ++base_index) {\n"
+                "            for(int i = 0; (i < base_count); ++i) {\n"
                 "                char const *str = get_base_type_as_string(T);\n"
                 "                if(strcmp(b_str, str)) { return(true); }\n"
                 "            }\n"
                 "            \n"
-                "            for(int base_index = 0; (base_index < base_count); ++base_index) {\n"
+                "            for(int i = 0; (i < base_count); ++i) {\n"
                 "                char const *str = get_base_type_as_string(U);\n"
                 "                if(strcmp(a_str, str)) { return(true); }\n"
                 "            }\n"
@@ -689,7 +686,7 @@ String token_to_string(Token token) { return(create_string(token.e, token.len));
 
 Char *token_to_string(Token token, Char *buffer, Int size) {
     Char *at = buffer;
-    for(Int str_index = 0; (str_index < token.len); ++str_index, ++at) { *at = token.e[str_index]; }
+    for(Int i = 0; (i < token.len); ++i, ++at) { *at = token.e[i]; }
 
     *at = 0;
 
@@ -702,8 +699,8 @@ Bool token_compare(Token a, Token b) {
     if(a.len == b.len) {
         res = true;
 
-        for(Int string_index = 0; (string_index < a.len); ++string_index) {
-            if(a.e[string_index] != b.e[string_index]) {
+        for(Int i = 0; (i < a.len); ++i) {
+            if(a.e[i] != b.e[i]) {
                 res = false;
                 break; // for
             }
@@ -719,8 +716,8 @@ Bool string_compare(String a, String b) {
     if(a.len == b.len) {
         res = true;
 
-        for(Int string_index = 0; (string_index < a.len); ++string_index) {
-            if(a.e[string_index] != b.e[string_index]) {
+        for(Int i = 0; (i < a.len); ++i) {
+            if(a.e[i] != b.e[i]) {
                 res = false;
                 break; // for
             }
@@ -732,8 +729,8 @@ Bool string_compare(String a, String b) {
 
 Bool string_compare_array(String *a, String *b, Int len) {
     Bool res = true;
-    for(Int string_index = 0; (string_index < len); ++string_index) {
-        if(!string_compare(a[string_index], b[string_index])) {
+    for(Int i = 0; (i < len); ++i) {
+        if(!string_compare(a[i], b[i])) {
             res = false;
             break; // for
         }
@@ -847,23 +844,19 @@ Void eat_whitespace(Tokenizer *tokenizer) {
 
 Bool is_alphabetical(Char c) { return(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'))); }
 Bool is_num(Char c) { return((c >= '0') && (c <= '9')); }
-
-Void parse_number(Tokenizer *tokenizer) {
-    // TODO(Jonny): Implement.
-}
+Void parse_number(Tokenizer *tokenizer) { /* TODO(Jonny): Implement. */ }
 
 struct MacroData {
     String iden;
     String res;
 };
-
 Int macro_count = 0;
 MacroData *macro_data = 0;
 
 Token get_token(Tokenizer *tokenizer); // Because C++...
 #define eat_token(tokenizer) eat_tokens(tokenizer, 1);
 Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat) {
-    for(Int token_index = 0; (token_index < num_tokens_to_eat); ++token_index) { get_token(tokenizer); }
+    for(Int i = 0; (i < num_tokens_to_eat); ++i) { get_token(tokenizer); }
 }
 
 Token string_to_token(String str) {
@@ -872,6 +865,7 @@ Token string_to_token(String str) {
     res.e = str.e;
     res.len = str.len;
 
+    // TODO(Jonny): This isn't foolproof.
     switch(res.e[0]) {
         case 0:    { res.type = TokenType_end_of_stream;       } break;
 
@@ -958,9 +952,7 @@ Token get_token(Tokenizer *tokenizer) {
 
             res.type = TokenType_string;
             res.len = safe_truncate_size_64(tokenizer->at - res.e);
-            if(tokenizer->at[0] == '"') {
-                ++tokenizer->at;
-            }
+            if(tokenizer->at[0] == '"') { ++tokenizer->at; }
         } break;
 
         case '\'': {
@@ -997,13 +989,11 @@ Token get_token(Tokenizer *tokenizer) {
     }
 
     if(res.type == TokenType_identifier) {
-        for(Int macro_index = 0; (macro_index < macro_count); ++macro_index) {
-            MacroData *md = macro_data + macro_index;
+        for(Int i = 0; (i < macro_count); ++i) {
+            MacroData *md = macro_data + i;
 
             String token_as_string = token_to_string(res);
-            if(string_compare(token_as_string, md->iden)) {
-                res = string_to_token(md->res);
-            }
+            if(string_compare(token_as_string, md->iden)) { res = string_to_token(md->res); }
         }
     }
 
@@ -1059,14 +1049,14 @@ ResultInt char_to_int(Char C) {
 ResultInt string_to_int(String str) {
     ResultInt res = {};
 
-    for(Int str_index = 0; (str_index < str.len); ++str_index) {
-        ResultInt temp_int = char_to_int(str.e[str_index]);
+    for(Int i = 0; (i < str.len); ++i) {
+        ResultInt temp_int = char_to_int(str.e[i]);
         if(!temp_int.success) { break; } // for
 
         res.e *= 10;
         res.e += temp_int.e;
 
-        if(str_index == str.len - 1) { res.success = true; }
+        if(i == str.len - 1) { res.success = true; }
     }
 
     assert(res.success);
@@ -1118,8 +1108,8 @@ Bool compare_variable(Variable a, Variable b) {
 }
 
 Bool compare_variable_array(Variable *a, Variable *b, Int count) {
-    for(Int array_index = 0; (array_index < count); ++array_index) {
-        if(!compare_variable(a[array_index], b[array_index])) { return(false); }
+    for(Int i = 0; (i < count); ++i) {
+        if(!compare_variable(a[i], b[i])) { return(false); }
     }
 
     return(true);
@@ -1180,8 +1170,8 @@ Bool is_stupid_class_keyword(Token t) {
     Bool result = false;
 
     Char *keywords[] = { "private", "public", "protected" };
-    for(Int keyword_index = 0, num_keywords = array_count(keywords); (keyword_index < num_keywords); ++keyword_index) {
-        if(string_compare(keywords[keyword_index], t.e, t.len)) { result = true; }
+    for(Int i = 0; (i < array_count(keywords)); ++i) {
+        if(string_compare(keywords[i], t.e, t.len)) { result = true; }
     }
 
     return(result);
@@ -1370,9 +1360,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer) {
                             member_pos[res.sd.member_count++] = token.e;
                         } else {
                             // Skip over member functions.
-                            if(temp.type == TokenType_open_brace) {
-                                skip_to_matching_bracket(&tokenizer_copy);
-                            }
+                            if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); }
                         }
                         /*
                         } else {
@@ -1419,9 +1407,9 @@ ParseStructResult parse_struct(Tokenizer *tokenizer) {
         if(res.sd.member_count > 0) {
             res.sd.members = alloc(Variable, res.sd.member_count);
             if(res.sd.members) {
-                for(Int member_index = 0; (member_index < res.sd.member_count); ++member_index) {
-                    Tokenizer fake_tokenizer = { member_pos[member_index] };
-                    res.sd.members[member_index] = parse_member(&fake_tokenizer);
+                for(Int i = 0; (i < res.sd.member_count); ++i) {
+                    Tokenizer fake_tokenizer = { member_pos[i] };
+                    res.sd.members[i] = parse_member(&fake_tokenizer);
                 }
             }
         }
@@ -1486,8 +1474,8 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
                 //              the number of enums.
                 if(token.type == TokenType_comma) {
                     Token tmp = get_token(&copy);
-                    if(tmp.type == TokenType_identifier) { ++res.ed.no_of_values; }
-                    else if (tmp.type == TokenType_close_brace) { break; }
+                    if(tmp.type == TokenType_identifier)       { ++res.ed.no_of_values; }
+                    else if(tmp.type == TokenType_close_brace) { break;                 }
                 }
 
                 token = get_token(&copy);
@@ -1495,8 +1483,8 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
 
             res.ed.values = alloc(EnumValue, res.ed.no_of_values);
             if(res.ed.values) {
-                for(Int index = 0, count = 0; (index < res.ed.no_of_values); ++index, ++count) {
-                    EnumValue *ev = res.ed.values + index;
+                for(Int i = 0, count = 0; (i < res.ed.no_of_values); ++i, ++count) {
+                    EnumValue *ev = res.ed.values + i;
 
                     Token temp_token = {};
                     while(temp_token.type != TokenType_identifier) { temp_token = get_token(tokenizer); }
@@ -1536,30 +1524,30 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "    if(members_of_Something) {\n"
         "        // Setup the indent buffer.\n"
         "        char indent_buf[256] = {};\n"
-        "        for(int indent_buf_index = 0; (indent_buf_index < indent); ++indent_buf_index) { indent_buf[indent_buf_index] = ' '; }\n"
+        "        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
         "\n"
         "        // Write the name and the type.\n"
         "        bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_to_string(T), name);\n"
         "        indent += 4;\n"
         "\n"
         "        // Add 4 to the indent.\n"
-        "        for(int indent_index = 0; (indent_index < indent); ++indent_index) { indent_buf[indent_index] = ' '; }\n"
+        "        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
         "\n"
         "        int num_members = get_number_of_members_<T>(); assert(num_members != -1); // Get the number of members for the for loop.\n"
-        "        for(int member_index = 0; (member_index < num_members); ++member_index) {\n"
-        "            MemberDefinition *member = members_of_Something + member_index; // Get the member pointer with meta data.\n"
+        "        for(int i = 0; (i < num_members); ++i) {\n"
+        "            MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.\n"
         "            size_t *member_ptr = (size_t *)((char *)&var + member->offset); // Get the actual pointer to the memory address.\n"
         "            // TODO(Jonny): Go through and check all the pointers are correct on these.\n"
         "            switch(member->type) {\n"
         "                // double.\n"
         "                case meta_type_double: {\n"
         "                    if(member->arr_size > 1) {\n"
-        "                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {\n"
-        "                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + member_index)) : 0;\n"
+        "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
+        "                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index, (member->is_ptr) ? *(double *)member_ptr[member_index] : member_ptr[member_index]);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(double *)member_ptr[j] : member_ptr[j]);\n"
         "                            } else {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
         "                        }\n"
         "                    } else {\n"
@@ -1575,12 +1563,12 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                // float.\n"
         "                case meta_type_float: {\n"
         "                    if(member->arr_size > 1) {\n"
-        "                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {\n"
-        "                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + member_index)) : 0;\n"
+        "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
+        "                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index, (member->is_ptr) ? *(float *)member_ptr[member_index] : member_ptr[member_index]);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(float *)member_ptr[j] : member_ptr[j]);\n"
         "                            } else {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
         "                        }\n"
         "                    } else {\n"
@@ -1596,12 +1584,12 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                // int.\n"
         "                case meta_type_int: {\n"
         "                    if(member->arr_size > 1) {\n"
-        "                        for(member_index = 0; (member_index < member->arr_size); ++member_index) {\n"
-        "                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + member_index)) : 0;\n"
+        "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
+        "                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index, (member->is_ptr) ? *(int *)member_ptr[member_index] : (int)member_ptr[member_index]);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(int *)member_ptr[j] : (int)member_ptr[j]);\n"
         "                            } else {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
         "                        }\n"
         "                    } else {\n"
@@ -1617,12 +1605,12 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                // long.\n"
         "                case meta_type_long: {\n"
         "                    if(member->arr_size > 1) {\n"
-        "                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {\n"
-        "                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + member_index)) : 0;\n"
+        "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
+        "                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%ld\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index, (member->is_ptr) ? *(long *)member_ptr[member_index] : (long)member_ptr[member_index]);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%ld\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(long *)member_ptr[j] : (long)member_ptr[j]);\n"
         "                            } else {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
         "                        }\n"
         "                    } else {\n"
@@ -1638,12 +1626,12 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                // short.\n"
         "                case meta_type_short: {\n"
         "                    if(member->arr_size > 1) {\n"
-        "                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {\n"
-        "                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + member_index)) : 0;\n"
+        "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
+        "                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index, (member->is_ptr) ? *(short *)member_ptr[member_index] : (short)member_ptr[member_index]);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(short *)member_ptr[j] : (short)member_ptr[j]);\n"
         "                            } else {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
         "                        }\n"
         "                    } else {\n"
@@ -1660,13 +1648,13 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                case meta_type_bool: {\n"
         "                    bool *bool_value = 0;\n"
         "                    if(member->arr_size > 1) {\n"
-        "                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {\n"
-        "                            bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + member_index)) : 0;\n"
+        "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
+        "                            bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + j)) : 0;\n"
         "                            if(is_null) {\n"
-        "                                size_t value_to_print = (member->is_ptr) ? **(bool **)(member_ptr + member_index) : member_ptr[member_index];\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index, (value_to_print) ? \"true\" : \"false\");\n"
+        "                                size_t value_to_print = (member->is_ptr) ? **(bool **)(member_ptr + j) : member_ptr[j];\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (value_to_print) ? \"true\" : \"false\");\n"
         "                            } else {\n"
-        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, member_index);\n"
+        "                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
         "                        }\n"
         "                    } else {\n"
@@ -1709,69 +1697,11 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
     write_to_output_buffer(ob, bottom);
 }
 
-#if 0
-struct EnumValue {
-    String name;
-    Int value;
-};
-
-struct EnumData {
-    String name;
-    String type;
-    Bool is_struct;
-
-    EnumValue *values;
-    Int no_of_values;
-};
-EnumData add_token_to_enum(Token name, Token type, Bool is_enum_struct, Tokenizer *tokenizer) {
-    assert(name.type == TokenType_identifier);
-    assert((type.type == TokenType_identifier) || (type.type == TokenType_unknown));
-
-    Token token = {};
-    EnumData res = {};
-
-    res.is_struct = is_enum_struct;
-    res.name = token_to_string(name);
-    if(type.type == TokenType_identifier) {
-        res.type = token_to_string(type);
-    }
-
-    Tokenizer copy = *tokenizer;
-    res.no_of_values = 1;
-    token = get_token(&copy);
-    while(token.type != TokenType_close_brace) {
-        // TODO(Jonny): It was stupid to count the number of commas. Instead, actually count
-        //              the number of enums.
-        if(token.type == TokenType_comma) {
-            Token tmp = get_token(&copy);
-            if(tmp.type == TokenType_identifier) { ++res.no_of_values; }
-            else if (tmp.type == TokenType_close_brace) { break; }
-        }
-
-        token = get_token(&copy);
-    }
-
-    res.values = alloc(EnumValue, res.no_of_values);
-    if(res.values) {
-        for(Int index = 0; (index < res.no_of_values); ++index) {
-            EnumValue *ev = res.values + index;
-
-            Token temp_token = {};
-            while(temp_token.type != TokenType_identifier) { temp_token = get_token(tokenizer); }
-
-            ev->name = token_to_string(temp_token);
-            ev->value = index; // TODO(Jonny): Doesn't work for enums with an assignment in them.
-        }
-    }
-
-    return(res);
-}
-#endif
 Bool is_meta_type_already_in_array(String *array, Int len, String test) {
     Bool res = false;
 
-    for(Int arr_index = 0; (arr_index < len); ++arr_index) {
-        if(string_compare(array[arr_index], test)) {
+    for(Int i = 0; (i < len); ++i) {
+        if(string_compare(array[i], test)) {
             res = true;
             break; // for
         }
@@ -1799,7 +1729,7 @@ Int set_primitive_type(String *array) {
 Int copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len) {
     buf += index;
 
-    for(Int str_index = 0; (str_index < literal_len); ++str_index) { buf[str_index] = literal[str_index]; }
+    for(Int i = 0; (i < literal_len); ++i) { buf[i] = literal[i]; }
 
     Int res = index + literal_len;
     return(res);
@@ -1844,8 +1774,8 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
                                 res.func_data.name = token_to_string(name);
 
                                 // Set the array size to 1 for all the variables...
-                                for(Int param_index = 0; (param_index < array_count(res.func_data.params)); ++param_index) {
-                                    res.func_data.params[param_index].array_count = 1;
+                                for(Int i = 0; (i < array_count(res.func_data.params)); ++i) {
+                                    res.func_data.params[i].array_count = 1;
                                 }
 
                                 Bool parsing = true;
@@ -1908,8 +1838,8 @@ StructData *find_struct(String str, StructData *structs, Int struct_count) {
     StructData *res = 0;
 
     if(str.len) {
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = structs + struct_index;
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = structs + i;
 
             if(string_compare(str, sd->name)) {
                 res = sd;
@@ -1944,38 +1874,35 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             // Get the absolute max number of meta types. This will be significantly bigger than the
             // actual number of unique types...
             Int max_type_count = get_num_of_primitive_types();
-            for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-                max_type_count += struct_data[struct_index].member_count;
-            }
+            for(Int i = 0; (i < struct_count); ++i) { max_type_count += struct_data[i].member_count; }
 
             String *types = cast(String *)push_scratch_memory(sizeof(String) * max_type_count);
-            {
-                Int type_count = set_primitive_type(types);
 
-                // Fill out the enum meta type enum.
-                for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-                    StructData *sd = struct_data + struct_index;
+            Int type_count = set_primitive_type(types);
 
-                    if(!is_meta_type_already_in_array(types, type_count, sd->name)) { types[type_count++] = sd->name; }
+            // Fill out the enum meta type enum.
+            for(Int i = 0; (i < struct_count); ++i) {
+                StructData *sd = struct_data + i;
 
-                    for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                        Variable *md = sd->members + member_index;
+                if(!is_meta_type_already_in_array(types, type_count, sd->name)) { types[type_count++] = sd->name; }
 
-                        if(!is_meta_type_already_in_array(types, type_count, md->type)) { types[type_count++] = md->type; }
-                    }
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
+
+                    if(!is_meta_type_already_in_array(types, type_count, md->type)) { types[type_count++] = md->type; }
                 }
-
-                // Write the meta type enum to file.
-                write_to_output_buffer(&ob, "\n// Enum with field for every type detected.\n");
-                write_to_output_buffer(&ob, "enum MetaType {\n");
-                for(Int type_index = 0; (type_index < type_count); ++type_index) {
-                    String *type = types + type_index;
-
-                    write_to_output_buffer(&ob, "    meta_type_%.*s,\n", type->len, type->e);
-                }
-
-                write_to_output_buffer(&ob, "};");
             }
+
+            // Write the meta type enum to file.
+            write_to_output_buffer(&ob, "\n// Enum with field for every type detected.\n");
+            write_to_output_buffer(&ob, "enum MetaType {\n");
+            for(Int i = 0; (i < type_count); ++i) {
+                String *type = types + i;
+
+                write_to_output_buffer(&ob, "    meta_type_%.*s,\n", type->len, type->e);
+            }
+
+            write_to_output_buffer(&ob, "};");
 
             clear_scratch_memory();
         }
@@ -1992,8 +1919,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         if(def_struct_code) {
             Int index = 0;
             index = copy_literal_to_char_buffer(def_struct_code, index, "                    switch(member->type) {\n");
-            for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-                StructData *sd = struct_data + struct_index;
+            for(Int i = 0; (i < struct_count); ++i) {
+                StructData *sd = struct_data + i;
                 Char *DefaultStructString =
                     "                        case meta_type_%.*s: {\n"
                     "                            // %.*s\n"
@@ -2024,25 +1951,25 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "template<typename T> static MemberDefinition *get_members_of_(void)\n"
                                "{\n");
         write_to_output_buffer(&ob, "    // Recreated structs.\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
             write_to_output_buffer(&ob, "    struct _%.*s", sd->name.len, sd->name.e);
             if(sd->inherited) {
                 write_to_output_buffer(&ob, " :");
 
-                for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
-                    String *inherited = sd->inherited + inherited_index;
+                for(Int j = 0; (j < sd->inherited_count); ++j) {
+                    String *inherited = sd->inherited + j;
 
-                    if(inherited_index) { write_to_output_buffer(&ob, ","); }
+                    if(j) { write_to_output_buffer(&ob, ","); }
 
                     write_to_output_buffer(&ob, " public _%.*s", inherited->len, inherited->e);
                 }
             }
             write_to_output_buffer(&ob, " { ");
 
-            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                Variable *md = sd->members + member_index;
+            for(Int j = 0; (j < sd->member_count); ++j) {
+                Variable *md = sd->members + j;
                 Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
                 Char arr_buffer[256] = {};
                 if(md->array_count > 1) {
@@ -2061,10 +1988,10 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         }
         write_to_output_buffer(&ob, " \n");
 
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
-            if(!struct_index) {
+            if(!i) {
                 write_to_output_buffer(&ob,
                                        "    // %.*s\n"
                                        "    if(type_compare(T, %.*s)) {\n",
@@ -2081,8 +2008,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
             write_to_output_buffer(&ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
             write_to_output_buffer(&ob, "            // Members.\n");
-            for(Int member_index = 0; (member_index < sd->member_count); ++member_index) {
-                Variable *md = sd->members + member_index;
+            for(Int i = 0; (i < sd->member_count); ++i) {
+                Variable *md = sd->members + i;
                 write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", offsetof(_%.*s, %.*s), %s, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
@@ -2093,13 +2020,13 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             }
 
             if(sd->inherited) {
-                for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
-                    StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
+                for(Int j = 0; (j < sd->inherited_count); ++j) {
+                    StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
 
                     write_to_output_buffer(&ob, "            // Members inherited from %.*s.\n",
                                            base_class->name.len, base_class->name.e);
-                    for(Int member_index = 0; (member_index < base_class->member_count); ++member_index) {
-                        Variable *base_class_var = base_class->members + member_index;
+                    for(Int j = 0; (j < base_class->member_count); ++j) {
+                        Variable *base_class_var = base_class->members + j;
 
                         write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
                                                base_class_var->type.len, base_class_var->type.e,
@@ -2129,20 +2056,20 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "// Get the number of members for a type.\n"
                                "template<typename T> static int get_number_of_members_(void)\n"
                                "{\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
             Int member_count = sd->member_count;
 
             // Add inherited struct members onto the member count.
-            for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
-                StructData *base_class = find_struct(sd->inherited[inherited_index], struct_data, struct_count);
+            for(Int j = 0; (j < sd->inherited_count); ++j) {
+                StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
 
 
                 member_count += base_class->member_count;
             }
 
-            if(struct_index == 0) {
+            if(i == 0) {
                 write_to_output_buffer(&ob,
                                        "    if(type_compare(T, %.*s)) { return(%d); } // %.*s\n",
                                        sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
@@ -2166,10 +2093,10 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "template<typename T> static char const *type_to_string_(void)\n"
                                "{\n"
                                "    // Primitives.\n");
-        for(Int primitive_index = 0; (primitive_index < get_num_of_primitive_types()); ++primitive_index) {
-            Char *primitive = primitive_types[primitive_index];
+        for(Int i = 0; (i < get_num_of_primitive_types()); ++i) {
+            Char *primitive = primitive_types[i];
 
-            if(primitive_index == 0) {
+            if(!i) {
                 write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
@@ -2181,8 +2108,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         }
 
         write_to_output_buffer(&ob, "\n    // Struct types.\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
             write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(\"%.*s\"); }\n",
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e);
@@ -2201,10 +2128,10 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "template<typename T> static char const *weak_type_to_string_(void)\n"
                                "{\n"
                                "    // Primitives.\n");
-        for(Int primitive_index = 0; (primitive_index < get_num_of_primitive_types()); ++primitive_index) {
-            Char *primitive = primitive_types[primitive_index];
+        for(Int i = 0; (i < get_num_of_primitive_types()); ++i) {
+            Char *primitive = primitive_types[i];
 
-            if(primitive_index == 0) {
+            if(!i) {
                 write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s\"); }\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s\"); }\n", primitive, primitive);
@@ -2216,8 +2143,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         }
 
         write_to_output_buffer(&ob, "\n    // Struct types.\n");
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
             write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(\"%.*s\"); }\n",
                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e);
@@ -2239,8 +2166,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "template<typename T> static int get_base_type_count_(void)\n"
                                "{\n");
 
-        for(Int struct_index = 0, written_count = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0, written_count = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
             if(sd->inherited_count) {
                 if(!written_count) {
@@ -2269,8 +2196,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "template<typename T> static char const *get_base_type_as_string_(int index = 0)\n"
                                "{\n");
 
-        for(Int struct_index = 0, written_count = 0; (struct_index < struct_count); ++struct_index) {
-            StructData *sd = struct_data + struct_index;
+        for(Int i = 0, written_count = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
 
             if(sd->inherited_count) {
                 // TODO(Jonny): Make the index return the inherited index.
@@ -2284,17 +2211,17 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                            sd->name.len, sd->name.e);
                 }
 
-                for(Int inherited_index = 0; (inherited_index < sd->inherited_count); ++inherited_index) {
-                    if(!inherited_index) {
+                for(Int j = 0; (j < sd->inherited_count); ++j) {
+                    if(!j) {
                         write_to_output_buffer(&ob,
                                                "        if(index == %d)      { return(\"%.*s\"); }\n",
-                                               inherited_index,
-                                               sd->inherited[inherited_index].len, sd->inherited[inherited_index].e);
+                                               j,
+                                               sd->inherited[j].len, sd->inherited[j].e);
                     } else {
                         write_to_output_buffer(&ob,
                                                "        else if(index == %d) { return(\"%.*s\"); }\n",
-                                               inherited_index,
-                                               sd->inherited[inherited_index].len, sd->inherited[inherited_index].e);
+                                               j,
+                                               sd->inherited[j].len, sd->inherited[j].e);
                     }
 
                 }
@@ -2326,8 +2253,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
             //Int buf_size = scratch_memory_size;
             //Char *buf = cast(Char *)push_scratch_memory(buf_size);
-            for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) {
-                EnumData *ed = enum_data + enum_index;
+            for(Int i = 0; (i < enum_count); ++i) {
+                EnumData *ed = enum_data + i;
                 write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
 
                 // Enum size.
@@ -2351,11 +2278,11 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     Char *buf2 = cast(Char *)push_scratch_memory(size);
                     Int index = 0;
 
-                    for(int enum_value_index = 0; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                    for(int j = 0; (j < ed->no_of_values); ++j) {
                         index += stbsp_snprintf(buf2 + index, size - index,
                                                 "        case %d: { return(\"%.*s\"); } break;\n",
-                                                ed->values[enum_value_index].value,
-                                                ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e);
+                                                ed->values[j].value,
+                                                ed->values[j].name.len, ed->values[j].name.e);
                     }
 
 
@@ -2390,11 +2317,11 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                                 ed->values[0].name.len, ed->values[0].name.e,
                                                 ed->values[0].value);
                     }
-                    for(int enum_value_index = 1; (enum_value_index < ed->no_of_values); ++enum_value_index) {
+                    for(int j = 1; (j < ed->no_of_values); ++j) {
                         index += stbsp_snprintf(buf2 + index, size - index,
                                                 "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                                ed->values[enum_value_index].name.len, ed->values[enum_value_index].name.e,
-                                                ed->values[enum_value_index].value);
+                                                ed->values[j].name.len, ed->values[j].name.e,
+                                                ed->values[j].value);
                     }
 
 
@@ -2554,11 +2481,11 @@ Void start_parsing(Char *filename, Char *file) {
         }
 
         // Tidy up memory for the next pass.
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].members);   }
-        for(Int struct_index = 0; (struct_index < struct_count); ++struct_index) { free(struct_data[struct_index].inherited); }
+        for(Int i = 0; (i < struct_count); ++i) { free(struct_data[i].members);   }
+        for(Int i = 0; (i < struct_count); ++i) { free(struct_data[i].inherited); }
         free(struct_data);
 
-        for(Int enum_index = 0; (enum_index < enum_count); ++enum_index) { free(enum_data[enum_index].values); }
+        for(Int i = 0; (i < enum_count); ++i) { free(enum_data[i].values); }
         free(enum_data);
 
         free(macro_data);
@@ -2593,8 +2520,8 @@ Int main(Int argc, Char **argv) {
         // Get the total amount of memory needed to store all files.
         PtrSize largest_source_file_size = 0;
         Int number_of_files = 0;
-        for(Int file_index = 1; (file_index < argc); ++file_index) {
-            Char *switch_name = argv[file_index];
+        for(Int i = 1; (i < argc); ++i) {
+            Char *switch_name = argv[i];
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
@@ -2635,8 +2562,8 @@ Int main(Int argc, Char **argv) {
                     }
 
                     // Parse files
-                    for(Int file_index = 1; (file_index < argc); ++file_index) {
-                        Char *file_name = argv[file_index];
+                    for(Int i = 1; (i < argc); ++i) {
+                        Char *file_name = argv[i];
                         memset(file_memory, 0, largest_source_file_size);
 
                         SwitchType type = get_switch_type(file_name);
@@ -2668,13 +2595,13 @@ Int main(Int argc, Char **argv) {
                 if(should_log_errors) {
                     // TODO(Jonny): Write errors to disk.
                     printf("\n\nList of errors:\n");
-                    for(Int error_index = 0; (error_index < global_error_count); ++error_index) {
-                        Error *e = global_errors + error_index;
+                    for(Int i = 0; (i < global_error_count); ++i) {
+                        Error *e = global_errors + i;
 
                         Char *error_type = ErrorTypeToString(e->type);
 
                         printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
-                               error_index, error_type, e->file, e->line);
+                               i, error_type, e->file, e->line);
                     }
                 }
 
@@ -2699,7 +2626,7 @@ StructData parse_struct_test(Char *str, int ahead = 0) {
     Tokenizer tokenizer = {str};
 
     eat_token(&tokenizer);
-    for(int struct_index = 0; (struct_index < ahead); ++struct_index) {
+    for(int i = 0; (i < ahead); ++i) {
         parse_struct(&tokenizer);
         eat_token(&tokenizer);
         eat_token(&tokenizer);

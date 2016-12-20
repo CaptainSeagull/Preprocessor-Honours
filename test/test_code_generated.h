@@ -195,30 +195,30 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
     if(members_of_Something) {
         // Setup the indent buffer.
         char indent_buf[256] = {};
-        for(int indent_buf_index = 0; (indent_buf_index < indent); ++indent_buf_index) { indent_buf[indent_buf_index] = ' '; }
+        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
 
         // Write the name and the type.
         bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_to_string(T), name);
         indent += 4;
 
         // Add 4 to the indent.
-        for(int indent_index = 0; (indent_index < indent); ++indent_index) { indent_buf[indent_index] = ' '; }
+        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
 
         int num_members = get_number_of_members_<T>(); assert(num_members != -1); // Get the number of members for the for loop.
-        for(int member_index = 0; (member_index < num_members); ++member_index) {
-            MemberDefinition *member = members_of_Something + member_index; // Get the member pointer with meta data.
+        for(int i = 0; (i < num_members); ++i) {
+            MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.
             size_t *member_ptr = (size_t *)((char *)&var + member->offset); // Get the actual pointer to the memory address.
             // TODO(Jonny): Go through and check all the pointers are correct on these.
             switch(member->type) {
                 // double.
                 case meta_type_double: {
                     if(member->arr_size > 1) {
-                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {
-                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + member_index)) : 0;
+                        for(int j = 0; (j < member->arr_size); ++j) {
+                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index, (member->is_ptr) ? *(double *)member_ptr[member_index] : member_ptr[member_index]);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(double *)member_ptr[j] : member_ptr[j]);
                             } else {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
                         }
                     } else {
@@ -234,12 +234,12 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // float.
                 case meta_type_float: {
                     if(member->arr_size > 1) {
-                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {
-                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + member_index)) : 0;
+                        for(int j = 0; (j < member->arr_size); ++j) {
+                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index, (member->is_ptr) ? *(float *)member_ptr[member_index] : member_ptr[member_index]);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(float *)member_ptr[j] : member_ptr[j]);
                             } else {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
                         }
                     } else {
@@ -255,12 +255,12 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // int.
                 case meta_type_int: {
                     if(member->arr_size > 1) {
-                        for(member_index = 0; (member_index < member->arr_size); ++member_index) {
-                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + member_index)) : 0;
+                        for(int j = 0; (j < member->arr_size); ++j) {
+                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index, (member->is_ptr) ? *(int *)member_ptr[member_index] : (int)member_ptr[member_index]);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(int *)member_ptr[j] : (int)member_ptr[j]);
                             } else {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
                         }
                     } else {
@@ -276,12 +276,12 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // long.
                 case meta_type_long: {
                     if(member->arr_size > 1) {
-                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {
-                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + member_index)) : 0;
+                        for(int j = 0; (j < member->arr_size); ++j) {
+                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index, (member->is_ptr) ? *(long *)member_ptr[member_index] : (long)member_ptr[member_index]);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(long *)member_ptr[j] : (long)member_ptr[j]);
                             } else {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
                         }
                     } else {
@@ -297,12 +297,12 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // short.
                 case meta_type_short: {
                     if(member->arr_size > 1) {
-                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {
-                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + member_index)) : 0;
+                        for(int j = 0; (j < member->arr_size); ++j) {
+                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index, (member->is_ptr) ? *(short *)member_ptr[member_index] : (short)member_ptr[member_index]);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(short *)member_ptr[j] : (short)member_ptr[j]);
                             } else {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
                         }
                     } else {
@@ -319,13 +319,13 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 case meta_type_bool: {
                     bool *bool_value = 0;
                     if(member->arr_size > 1) {
-                        for(int member_index = 0; (member_index < member->arr_size); ++member_index) {
-                            bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + member_index)) : 0;
+                        for(int j = 0; (j < member->arr_size); ++j) {
+                            bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + j)) : 0;
                             if(is_null) {
-                                size_t value_to_print = (member->is_ptr) ? **(bool **)(member_ptr + member_index) : member_ptr[member_index];
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index, (value_to_print) ? "true" : "false");
+                                size_t value_to_print = (member->is_ptr) ? **(bool **)(member_ptr + j) : member_ptr[j];
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (value_to_print) ? "true" : "false");
                             } else {
-                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, member_index);
+                                bytes_written += my_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
                         }
                     } else {

@@ -116,12 +116,12 @@ template<typename T, typename U> bool fuzzy_type_compare_(void)
             return(true);
         } else {
             int base_count = get_base_type_count(T);
-            for(int base_index = 0; (base_index < base_count); ++base_index) {
+            for(int i = 0; (i < base_count); ++i) {
                 char const *str = get_base_type_as_string(T);
                 if(strcmp(b_str, str)) { return(true); }
             }
             
-            for(int base_index = 0; (base_index < base_count); ++base_index) {
+            for(int i = 0; (i < base_count); ++i) {
                 char const *str = get_base_type_as_string(U);
                 if(strcmp(a_str, str)) { return(true); }
             }
