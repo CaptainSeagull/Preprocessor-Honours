@@ -51,27 +51,27 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef uint64_t Uint64;
-typedef uint32_t Uint32;
-typedef uint16_t Uint16;
-typedef uint8_t Uint8;
+using Uint64 = uint64_t;
+using Uint32 = uint32_t;
+using Uint16 = uint16_t;
+using Uint8 = uint8_t;
 
-typedef int64_t Int64;
-typedef int32_t Int32;
-typedef int16_t Int16;
-typedef int8_t Int8;
+using Int64 = int64_t;
+using Int32 = int32_t;
+using Int16 = int16_t;
+using Int8 = int8_t;
 
-typedef bool Bool;
-typedef void Void;
-typedef char Char;
+using Bool = bool;
+using Void = void;
+using Char = char;
 
-typedef Int32 Int; // Int guaranteed to be 32-bits.
+using Int = Int32; // Int guaranteed to be bits = 32.
 
-typedef Uint8 Byte;
-typedef intptr_t PtrSize;
+using Byte = Uint8;
+using PtrSize = intptr_t;
 
-typedef float Float;
-typedef double Float64;
+using Float = float;
+using Float64 = double;
 
 #define cast(type) (type)
 
@@ -142,7 +142,6 @@ Int global_error_count = 0;
 Void push_error_(ErrorType type, Char *file, Int line) {
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count;
-        memset(e, 0, sizeof(*e));
 
         e->type = type;
         e->file = file;
@@ -163,6 +162,42 @@ Uint32 safe_truncate_size_64(Uint64 v) {
     Uint32 res = cast(Uint32)v;
 
     return(res);
+}
+
+//
+// System stuff.
+//
+#if WIN32
+namespace win32 {
+#include <windows.h>
+}
+
+#endif
+
+Uint64 system_get_performance_counter(void) {
+    Uint64 res = 0;
+
+#if WIN32
+    //res = win32::__rdtsc();
+    win32::LARGE_INTEGER i;
+    if(win32::QueryPerformanceCounter(&i)) { res = i.QuadPart; }
+#else
+    // TODO(Jonny): Implement.
+#endif
+
+    return(res);
+}
+
+Void system_print_timer(Uint64 value) {
+#if WIN32
+    win32::LARGE_INTEGER freq;
+    if(win32::QueryPerformanceFrequency(&freq)) {
+        Uint64 duration = value * 1000 / freq.QuadPart;
+        printf("The program took %llums.\n", duration);
+    }
+#else
+    // TODO(Jonny): Implement.
+#endif
 }
 
 //
@@ -380,6 +415,7 @@ enum SwitchType {
     SwitchType_log_errors,
     SwitchType_run_tests,
     SwitchType_print_help,
+    SwitchType_display_time_taken,
     SwitchType_source_file,
 
     SwitchType_count,
@@ -389,14 +425,15 @@ SwitchType get_switch_type(Char *str) {
     SwitchType res = SwitchType_unknown;
 
     Int len = string_length(str);
-    if(len > 2) {
+    if(len >= 2) {
         if(str[0] == '-') {
             switch(str[1]) {
-                case 'e': { res = SwitchType_log_errors; } break;
-                case 'h': { res = SwitchType_print_help; } break;
+                case 'e': { res = SwitchType_log_errors;          } break;
+                case 'h': { res = SwitchType_print_help;          } break;
+                case 'p': { res = SwitchType_display_time_taken;  } break;
 #if INTERNAL
-                case 's': { res = SwitchType_silent;     } break;
-                case 't': { res = SwitchType_run_tests;  } break;
+                case 's': { res = SwitchType_silent;              } break;
+                case 't': { res = SwitchType_run_tests;           } break;
 #endif
 
                 default: { assert(0); } break;
@@ -2008,8 +2045,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
             write_to_output_buffer(&ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
             write_to_output_buffer(&ob, "            // Members.\n");
-            for(Int i = 0; (i < sd->member_count); ++i) {
-                Variable *md = sd->members + i;
+            for(Int j = 0; (j < sd->member_count); ++j) {
+                Variable *md = sd->members + j;
                 write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", offsetof(_%.*s, %.*s), %s, %d},\n",
                                        md->type.len, md->type.e,
                                        md->name.len, md->name.e,
@@ -2025,8 +2062,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
                     write_to_output_buffer(&ob, "            // Members inherited from %.*s.\n",
                                            base_class->name.len, base_class->name.e);
-                    for(Int j = 0; (j < base_class->member_count); ++j) {
-                        Variable *base_class_var = base_class->members + j;
+                    for(Int k = 0; (k < base_class->member_count); ++k) {
+                        Variable *base_class_var = base_class->members + k;
 
                         write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
                                                base_class_var->type.len, base_class_var->type.e,
@@ -2480,7 +2517,7 @@ Void start_parsing(Char *filename, Char *file) {
             }
         }
 
-        // Tidy up memory for the next pass.
+        // Tidy up memory for the next pass. Can probably optimize this and reuse the memory.
         for(Int i = 0; (i < struct_count); ++i) { free(struct_data[i].members);   }
         for(Int i = 0; (i < struct_count); ++i) { free(struct_data[i].inherited); }
         free(struct_data);
@@ -2509,6 +2546,9 @@ Void print_help(Void) {
 Int main(Int argc, Char **argv) {
     Int res = 0;
 
+    Bool display_time_taken = false;
+    Uint64 start_time = system_get_performance_counter();
+
     if(argc <= 1) {
         push_error(ErrorType_no_parameters);
         print_help();
@@ -2525,10 +2565,11 @@ Int main(Int argc, Char **argv) {
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
-                case SwitchType_silent:      { should_write_to_file = false; } break;
-                case SwitchType_log_errors:  { should_log_errors = true;     } break;
-                case SwitchType_run_tests:   { should_run_tests = true;      } break;
-                case SwitchType_print_help:  { print_help();                 } break;
+                case SwitchType_silent:             { should_write_to_file = false; } break;
+                case SwitchType_log_errors:         { should_log_errors = true;     } break;
+                case SwitchType_run_tests:          { should_run_tests = true;      } break;
+                case SwitchType_print_help:         { print_help();                 } break;
+                case SwitchType_display_time_taken: { display_time_taken = true;    } break;
 
                 case SwitchType_source_file: {
                     PtrSize file_size = get_file_size(switch_name);
@@ -2609,6 +2650,9 @@ Int main(Int argc, Char **argv) {
             }
         }
     }
+
+    Uint64 end_time = system_get_performance_counter();
+    if(display_time_taken) { system_print_timer(end_time - start_time); }
 
     return(res);
 }
