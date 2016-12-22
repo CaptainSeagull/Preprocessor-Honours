@@ -51,27 +51,27 @@
 #include <stdint.h>
 #include <string.h>
 
-using Uint64 = uint64_t;
-using Uint32 = uint32_t;
-using Uint16 = uint16_t;
-using Uint8 = uint8_t;
+typedef uint64_t Uint64;
+typedef uint32_t Uint32;
+typedef uint16_t Uint16;
+typedef uint8_t Uint8;
 
-using Int64 = int64_t;
-using Int32 = int32_t;
-using Int16 = int16_t;
-using Int8 = int8_t;
+typedef int64_t Int64;
+typedef int32_t Int32;
+typedef int16_t Int16;
+typedef int8_t Int8;
 
-using Bool = bool;
-using Void = void;
-using Char = char;
+typedef bool Bool;
+typedef void Void;
+typedef char Char;
 
-using Int = Int32; // Int guaranteed to be bits = 32.
+typedef Int32 Int; // Int guaranteed to be bits = 32.
 
-using Byte = Uint8;
-using PtrSize = intptr_t;
+typedef Uint8 Byte;
+typedef intptr_t PtrSize;
 
-using Float = float;
-using Float64 = double;
+typedef float Float;
+typedef double Float64;
 
 #define cast(type) (type)
 
@@ -139,6 +139,7 @@ Int global_error_count = 0;
     #define push_error(type) {}
 #endif
 
+Bool immediately_print_errors = false;
 Void push_error_(ErrorType type, Char *file, Int line) {
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count;
@@ -147,11 +148,17 @@ Void push_error_(ErrorType type, Char *file, Int line) {
         e->file = file;
         e->line = line;
 
+
+        if(immediately_print_errors) {
+            printf("    Error:\n        Type = %s\n        File = %s\n        Line = %d\n",
+                   ErrorTypeToString(e->type), e->file, e->line);
+        }
+
         ++global_error_count;
     }
 }
 
-#if INTERNAL
+#if 1//INTERNAL
     #define assert(Expression, ...) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
     #define assert(Expression, ...) {}
@@ -719,15 +726,12 @@ struct String {
 };
 
 String create_string(Char *str, Int len = 0) { String res = {str, (len) ? len : string_length(str)}; return(res); }
-String token_to_string(Token token) { return(create_string(token.e, token.len)); }
+String token_to_string(Token token) { String res = { token.e, token.len }; return(res); }
 
-Char *token_to_string(Token token, Char *buffer, Int size) {
-    Char *at = buffer;
-    for(Int i = 0; (i < token.len); ++i, ++at) { *at = token.e[i]; }
+Void token_to_string(Token token, Char *buf, Int size) {
+    for(Int i = 0; (i < token.len); ++i, ++buf) { *buf = token.e[i]; }
 
-    *at = 0;
-
-    return(buffer);
+    *buf = 0;
 }
 
 Bool token_compare(Token a, Token b) {
@@ -1500,7 +1504,11 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
             Token token = {};
 
             res.ed.is_struct = is_enum_struct;
-            res.ed.name = token_to_string(name);
+
+            // If I call token_to_string here, Visual Studio 2010 ends up generating code which uses MOVAPS on unaligned memory
+            // and crashes. So that's why I didn't...
+            res.ed.name.e = name.e; res.ed.name.len = name.len;
+
             if(underlying_type.type == TokenType_identifier) { res.ed.type = token_to_string(underlying_type); }
 
             Tokenizer copy = *tokenizer;
