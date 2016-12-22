@@ -95,6 +95,7 @@ enum ErrorType {
     ErrorType_unknown_token_found,
     ErrorType_failed_to_parse_enum,
     ErrorType_failed_parsing_variable,
+    ErrorType_failed_to_find_size_of_array,
 
     ErrorType_count,
 };
@@ -117,6 +118,7 @@ Char *ErrorTypeToString(ErrorType e) {
         case ERROR_TYPE_TO_STRING(ErrorType_unknown_token_found);
         case ERROR_TYPE_TO_STRING(ErrorType_failed_to_parse_enum);
         case ERROR_TYPE_TO_STRING(ErrorType_failed_parsing_variable);
+        case ERROR_TYPE_TO_STRING(ErrorType_failed_to_find_size_of_array);
     }
 
 #undef ERROR_TYPE_TO_STRING
@@ -205,6 +207,17 @@ Void system_print_timer(Uint64 value) {
 #else
     // TODO(Jonny): Implement.
 #endif
+}
+
+Bool system_check_for_debugger(void) {
+    Bool res = false;
+#if WIN32
+    res = win32::IsDebuggerPresent() != 0;
+#else
+
+#endif
+
+    return(res);
 }
 
 //
@@ -702,7 +715,12 @@ enum TokenType {
     TokenType_comma,
     TokenType_tilde,
     TokenType_period,
+    TokenType_ampersand,
     TokenType_var_args,
+
+    TokenType_plus,
+    TokenType_minus,
+    TokenType_divide,
 
     TokenType_number,
     TokenType_identifier,
@@ -925,6 +943,10 @@ Token string_to_token(String str) {
         case ',':  { res.type = TokenType_comma;               } break;
         case '~':  { res.type = TokenType_tilde;               } break;
         case '#':  { res.type = TokenType_hash;                } break;
+        case '&':  { res.type = TokenType_ampersand;           } break;
+        case '+':  { res.type = TokenType_plus;                } break;
+        case '-':  { res.type = TokenType_minus;               } break;
+        case '/':  { res.type = TokenType_divide;              } break;
 
         default: {
             if(is_num(res.e[0])) { res.type = TokenType_number;     }
@@ -962,6 +984,10 @@ Token get_token(Tokenizer *tokenizer) {
         case ',':  { res.type = TokenType_comma;               } break;
         case '~':  { res.type = TokenType_tilde;               } break;
         case '#':  { res.type = TokenType_hash;                } break;
+        case '&':  { res.type = TokenType_ampersand;           } break;
+        case '+':  { res.type = TokenType_plus;                } break;
+        case '-':  { res.type = TokenType_minus;               } break;
+        case '/':  { res.type = TokenType_divide;              } break;
 
         case '.':  {
             Bool var_args = false;
@@ -1030,12 +1056,19 @@ Token get_token(Tokenizer *tokenizer) {
     }
 
     if(res.type == TokenType_identifier) {
-        for(Int i = 0; (i < macro_count); ++i) {
-            MacroData *md = macro_data + i;
+        Bool changed = false;
+        do {
+            changed = false;
+            for(Int i = 0; (i < macro_count); ++i) {
+                MacroData *md = macro_data + i;
 
-            String token_as_string = token_to_string(res);
-            if(string_compare(token_as_string, md->iden)) { res = string_to_token(md->res); }
-        }
+                String token_as_string = token_to_string(res);
+                if(string_compare(token_as_string, md->iden)) {
+                    res = string_to_token(md->res);
+                    changed = true;
+                }
+            }
+        } while(changed);
     }
 
     if(res.type == TokenType_unknown) { push_error(ErrorType_unknown_token_found); }
@@ -1080,8 +1113,6 @@ ResultInt char_to_int(Char C) {
         case '7': { res.e = 7; res.success = true; } break;
         case '8': { res.e = 8; res.success = true; } break;
         case '9': { res.e = 9; res.success = true; } break;
-
-        default: { assert(0); } break;
     }
 
     return(res);
@@ -1100,7 +1131,6 @@ ResultInt string_to_int(String str) {
         if(i == str.len - 1) { res.success = true; }
     }
 
-    assert(res.success);
     return(res);
 }
 
@@ -1176,7 +1206,8 @@ Variable parse_member(Tokenizer *tokenizer) {
 
                     token_to_string(size_token, buffer, scratch_memory_size);
                     ResultInt arr_count = string_to_int(buffer);
-                    if(arr_count.success) { res.array_count = arr_count.e; }
+                    if(arr_count.success) { res.array_count = arr_count.e;                      }
+                    else                  { push_error(ErrorType_failed_to_find_size_of_array); }
 
                     clear_scratch_memory();
                 } else {
@@ -2475,34 +2506,6 @@ Void start_parsing(Char *filename, Char *file) {
 
                         ParseEnumResult r = parse_enum(&tokenizer);
                         if(r.success) { enum_data[enum_count++] = r.ed; }
-
-#if 0
-                        Token name = get_token(&tokenizer);
-                        Bool is_enum_struct = false;
-                        if((token_equals(name, "class")) || (token_equals(name, "struct"))) {
-                            is_enum_struct = true;
-                            name = get_token(&tokenizer);
-                        }
-
-                        if(name.type == TokenType_identifier) {
-                            // If the enum has an underlying type, get it.
-                            Token underlying_type = {};
-                            Token next = get_token(&tokenizer);
-                            if(next.type == TokenType_colon) {
-                                underlying_type = get_token(&tokenizer);
-                                next = get_token(&tokenizer);
-                            }
-
-                            if(next.type == TokenType_open_brace) {
-                                if(enum_count + 1 >= get_alloc_size_arr(enum_data)) {
-                                    Void *p = realloc(enum_data);
-                                    if(p) { enum_data = cast(EnumData *)p; }
-                                }
-
-                                enum_data[enum_count++] = add_token_to_enum(name, underlying_type, is_enum_struct, &tokenizer);
-                            }
-                        }
-#endif
                     }
                 } break;
             }
@@ -2561,7 +2564,7 @@ Int main(Int argc, Char **argv) {
         push_error(ErrorType_no_parameters);
         print_help();
     } else {
-        Bool should_log_errors = false;
+        Bool should_log_errors = true;
         Bool should_run_tests = false;
         should_write_to_file = true;
 
@@ -2652,9 +2655,11 @@ Int main(Int argc, Char **argv) {
                         printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
                                i, error_type, e->file, e->line);
                     }
-                }
 
-                assert(0, "Errors Found");
+                    if(system_check_for_debugger()) {
+                        assert(0);
+                    }
+                }
             }
         }
     }

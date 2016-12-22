@@ -16,7 +16,7 @@ set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4
 rem 32/64 bit builds.
 call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\VC\vcvarsall.bat" %ENVIRONMENT%
 
-set COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
+set COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 
 setlocal EnableDelayedExpansion
 set FILES="../../preprocessor/preprocessor.cpp" "../../preprocessor/google_test/gtest-all.cc"

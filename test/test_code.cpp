@@ -8,7 +8,6 @@
                            The use of this code is at your own risk
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
-
 #include "test_code_generated.h"
 
 #define NUMBER_TEN 10
