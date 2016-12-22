@@ -55,8 +55,7 @@ struct Y: public X {
 };
 
 struct Transform {V2 pos; V2 size;};
-void test_struct(void)
-{
+void test_struct(void) {
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
     //              struct has been initialized??
@@ -119,13 +118,12 @@ void test_struct(void)
 //
 
 enum Letters {
-    letter_a = 10,
+    letter_a,
     letter_b,
     letter_c
 };
 
-void test_enum(void)
-{
+void test_enum(void) {
     size_t num_members = pp::get_number_of_enum_elements(Letters);
     printf("\nNumber of members: %llu", num_members);
 
@@ -147,8 +145,7 @@ void test_enum(void)
     }
 }
 
-int main(int /*argc*/, char ** /*argv*/)
-{
+int main(int /*argc*/, char ** /*argv*/) {
     printf("\n");
 
     test_struct();
