@@ -8,6 +8,123 @@
                            The use of this code is at your own risk
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
+    #include "test_code_generated.h" // Generated code.
+
+    #include <iostream>
+
+
+//
+//
+// Misc.
+//
+//     - Tests whether two types are the same, or if one is a base class of another.
+//     bool pp::fuzzy_type_compare(TYPE a, TYPE b);
+//
+//     - Tests whether two types are the same, ignoring pointer status.
+//     bool pp::weak_type_compare(TYPE a, TYPE b);
+
+
+
+
+    bool pp::type_compare(TYPE a, TYPE b);
+    
+
+    bool pp::fuzzy_type_compare(TYPE a, TYPE b);
+    
+
+    bool pp::weak_type_compare(TYPE a, TYPE b);
+
+
+
+
+    struct BaseTypeOne {};
+    struct BaseTypeTwo {};
+    struct BaseTypeThree {};
+
+    struct Sub : public BaseTypeOne, public BaseTypeTwo, public BaseTypeThree {};
+
+    int main(int argc, char **argv) {
+        int count = pp::get_base_type_count(Sub);
+        std::cout << "Sub inherits from " << count << " structs." << '\n';
+
+        for(int i = 0; (i < count); ++i) {
+            char const *str = pp::get_base_type_as_string(Sub, i);
+            std::cout << "Struct[" << i << "] : " << str << '\n';
+        }
+
+        return(0);
+    }
+
+
+
+
+#if 0
+
+    // File: test_code.cpp
+    #include "test_code_generated.h" // Generated code.
+    
+    class BaseOne {
+    public:
+        int a;
+        char *str;
+    };
+    
+    class BaseTwo {
+    public:
+        double *double_ptr;
+    };
+    
+    struct V2 {
+        int x;
+        int y;
+    };
+    
+    class SubClass : public BaseOne, public BaseTwo {
+    public:
+        float *float_ptr;
+        double *pointer_array[4];
+    
+        void set_v2(V2 other) { this->v2 = other; }
+    private:
+        V2 v2;
+    };
+
+    int main(int argc, char **argv) {
+        SubClass s;
+        memset(&s, 0, sizeof(SubClass));
+    
+        // SubClass
+        s.float_ptr = NULL; // Leave blank.
+    
+        s.pointer_array[0] = new double;
+        *s.pointer_array[0] = 1.1;
+    
+        s.pointer_array[1] = new double;
+        *s.pointer_array[1] = 2.2;
+    
+        s.pointer_array[2] = NULL; // Leave blank.
+    
+        s.pointer_array[3] = new double;
+        *s.pointer_array[3] = 3.3;
+    
+        V2 v = {10, 20};
+        s.set_v2(v);
+    
+        // BaseOne.
+        s.a = 1;
+        s.str = "Hello World";
+    
+        // BaseTwo.
+        s.double_ptr = new double;
+        *s.double_ptr = 5.5;
+    
+        pp::print(s);
+    
+        return(0);
+    }
+#endif
+
+#if 0
 #include "test_code_generated.h"
 
 #define NUMBER_TEN 10
@@ -159,3 +276,4 @@ int main(int /*argc*/, char ** /*argv*/) {
 
     return(0);
 }
+#endif
