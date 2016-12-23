@@ -1150,11 +1150,58 @@ ResultInt string_to_int(Char *str) {
     return(res);
 }
 
+ResultInt calculator_string_to_int(Char *str) {
+    ResultInt res = {};
+
+    /* TODO(Jonny);
+        - Make sure each element in the string is either a number or a operator.
+        - Do the calculator in order (multiply, divide, add, subtract).
+    */
+    String *arr = alloc(String, 256); // TODO(Jonny): Random size.
+    if(arr) {
+        Char *at = str;
+        arr[0].e = at;
+        Int cnt = 0;
+        for(; (*at); ++at, ++arr[cnt].len) {
+            if(*at == ' ') {
+                ++at;
+                arr[++cnt].e = at;
+            }
+        }
+        ++cnt;
+
+        Int *nums = alloc(Int, cnt);
+        Char *ops = alloc(Char, cnt);
+        if((nums) && (ops)) {
+            for(Int i = 0, j = 0; (j < cnt); ++i, j += 2) {
+                ResultInt r = string_to_int(arr[j]);
+                if(r.success) { nums[i] = r.e; }
+                else          { goto clean_up; }
+            }
+
+            for(Int i = 0, j = 1; (j < cnt); ++i, j += 2) {
+                assert(arr[j].len == 1);
+                ops[i] = *arr[j].e;
+            }
+
+            // TODO(Jonny): At this point, I have all the numbers and ops in seperate arrays.
+
+clean_up:;
+            free(ops);
+            free(nums);
+        }
+
+        free(arr);
+    }
+
+    return(res);
+}
+
 struct Variable {
     String type;
     String name;
     Bool is_ptr;
-    Int array_count; // This is 1 if it's not an array.
+    Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
 };
 
 Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1) {
@@ -2555,6 +2602,8 @@ Void print_help(Void) {
 }
 
 Int main(Int argc, Char **argv) {
+    calculator_string_to_int("1 + 2 * 3");
+
     Int res = 0;
 
     Bool display_time_taken = false;
