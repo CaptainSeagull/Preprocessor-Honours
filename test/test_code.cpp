@@ -27,7 +27,8 @@ public:
 class BaseTwo
 {
 public:
-    //double *double_ptr;
+    int *double_ptr; // TODO(Jonny): This breaks with clang...
+    int zero;
 };
 
 struct V2 {
@@ -35,7 +36,7 @@ struct V2 {
     int y;
 };
 
-class SubClass : public BaseOne, public BaseTwo
+class SubClass : public BaseTwo, public BaseOne
 {
 public:
     float *float_ptr;
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
     memset(&s, 0, sizeof(SubClass));
 
     // SubClass
-    s.float_ptr = NULL; // Leave blank.
+    //s.float_ptr = NULL; // Leave blank.
 
     s.pointer_array[0] = new double;
     *s.pointer_array[0] = 1.1;

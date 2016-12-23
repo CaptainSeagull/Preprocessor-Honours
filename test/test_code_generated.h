@@ -23,9 +23,9 @@ enum MetaType {
 template<typename T> static MemberDefinition *get_members_of_(void) {
     // Recreated structs.
     struct _BaseOne {  _int a;  _char *str;  };
-    struct _BaseTwo {  };
+    struct _BaseTwo {  _int *double_ptr;  _int zero;  };
     struct _V2 {  _int x;  _int y;  };
-    struct _SubClass : public _BaseOne, public _BaseTwo {  _float *float_ptr;  _double *pointer_array[4];  _V2 v2;  };
+    struct _SubClass : public _BaseTwo, public _BaseOne {  _float *float_ptr;  _double *pointer_array[4];  _V2 v2;  };
  
     // BaseOne
     if(type_compare(T, BaseOne)) {
@@ -40,6 +40,8 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     } else if(type_compare(T, BaseTwo)) {
         static MemberDefinition members_of_BaseTwo[] = {
             // Members.
+            {meta_type_int, "double_ptr", offsetof(_BaseTwo, double_ptr), true, 1},
+            {meta_type_int, "zero", offsetof(_BaseTwo, zero), false, 1},
         };
         return(members_of_BaseTwo);
 
@@ -59,10 +61,12 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {meta_type_float, "float_ptr", offsetof(_SubClass, float_ptr), true, 1},
             {meta_type_double, "pointer_array", offsetof(_SubClass, pointer_array), true, 4},
             {meta_type_V2, "v2", offsetof(_SubClass, v2), false, 1},
+            // Members inherited from BaseTwo.
+            {meta_type_int, "double_ptr", (size_t)&((_SubClass *)0)->double_ptr, true, 1},
+            {meta_type_int, "zero", (size_t)&((_SubClass *)0)->zero, false, 1},
             // Members inherited from BaseOne.
             {meta_type_int, "a", (size_t)&((_SubClass *)0)->a, false, 1},
             {meta_type_char, "str", (size_t)&((_SubClass *)0)->str, true, 1},
-            // Members inherited from BaseTwo.
         };
         return(members_of_SubClass);
 
@@ -72,9 +76,9 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void) {
     if(type_compare(T, BaseOne)) { return(2); } // BaseOne
-    else if(type_compare(T, BaseTwo)) { return(0); } // BaseTwo
+    else if(type_compare(T, BaseTwo)) { return(2); } // BaseTwo
     else if(type_compare(T, V2)) { return(2); } // V2
-    else if(type_compare(T, SubClass)) { return(5); } // SubClass
+    else if(type_compare(T, SubClass)) { return(7); } // SubClass
 
     else { assert(0); return(-1); } // Error.
 }
@@ -388,8 +392,8 @@ template<typename T> static int get_base_type_count_(void) {
 // Get the base type.
 template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {
     if(type_compare(T, SubClass)) {
-        if(index == 0)      { return("BaseOne"); }
-        else if(index == 1) { return("BaseTwo"); }
+        if(index == 0)      { return("BaseTwo"); }
+        else if(index == 1) { return("BaseOne"); }
     }
 
     return(0); // Not found.
