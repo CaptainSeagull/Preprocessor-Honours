@@ -13,66 +13,74 @@ enum MetaType {
     meta_type_float,
     meta_type_double,
     meta_type_bool,
-    meta_type_BaseTypeOne,
-    meta_type_BaseTypeTwo,
-    meta_type_BaseTypeThree,
-    meta_type_Sub,
+    meta_type_BaseOne,
+    meta_type_BaseTwo,
+    meta_type_V2,
+    meta_type_SubClass,
 };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
     // Recreated structs.
-    struct _BaseTypeOne {  };
-    struct _BaseTypeTwo {  };
-    struct _BaseTypeThree {  };
-    struct _Sub : public _BaseTypeOne, public _BaseTypeTwo, public _BaseTypeThree {  };
+    struct _BaseOne {  _int a;  _char *str;  };
+    struct _BaseTwo {  };
+    struct _V2 {  _int x;  _int y;  };
+    struct _SubClass : public _BaseOne, public _BaseTwo {  _float *float_ptr;  _double *pointer_array[4];  _V2 v2;  };
  
-    // BaseTypeOne
-    if(type_compare(T, BaseTypeOne)) {
-        static MemberDefinition members_of_BaseTypeOne[] = {
+    // BaseOne
+    if(type_compare(T, BaseOne)) {
+        static MemberDefinition members_of_BaseOne[] = {
             // Members.
+            {meta_type_int, "a", offsetof(_BaseOne, a), false, 1},
+            {meta_type_char, "str", offsetof(_BaseOne, str), true, 1},
         };
-        return(members_of_BaseTypeOne);
+        return(members_of_BaseOne);
 
-    // BaseTypeTwo
-    } else if(type_compare(T, BaseTypeTwo)) {
-        static MemberDefinition members_of_BaseTypeTwo[] = {
+    // BaseTwo
+    } else if(type_compare(T, BaseTwo)) {
+        static MemberDefinition members_of_BaseTwo[] = {
             // Members.
         };
-        return(members_of_BaseTypeTwo);
+        return(members_of_BaseTwo);
 
-    // BaseTypeThree
-    } else if(type_compare(T, BaseTypeThree)) {
-        static MemberDefinition members_of_BaseTypeThree[] = {
+    // V2
+    } else if(type_compare(T, V2)) {
+        static MemberDefinition members_of_V2[] = {
             // Members.
+            {meta_type_int, "x", offsetof(_V2, x), false, 1},
+            {meta_type_int, "y", offsetof(_V2, y), false, 1},
         };
-        return(members_of_BaseTypeThree);
+        return(members_of_V2);
 
-    // Sub
-    } else if(type_compare(T, Sub)) {
-        static MemberDefinition members_of_Sub[] = {
+    // SubClass
+    } else if(type_compare(T, SubClass)) {
+        static MemberDefinition members_of_SubClass[] = {
             // Members.
-            // Members inherited from BaseTypeOne.
-            // Members inherited from BaseTypeTwo.
-            // Members inherited from BaseTypeThree.
+            {meta_type_float, "float_ptr", offsetof(_SubClass, float_ptr), true, 1},
+            {meta_type_double, "pointer_array", offsetof(_SubClass, pointer_array), true, 4},
+            {meta_type_V2, "v2", offsetof(_SubClass, v2), false, 1},
+            // Members inherited from BaseOne.
+            {meta_type_int, "a", (size_t)&((_SubClass *)0)->a, false, 1},
+            {meta_type_char, "str", (size_t)&((_SubClass *)0)->str, true, 1},
+            // Members inherited from BaseTwo.
         };
-        return(members_of_Sub);
+        return(members_of_SubClass);
 
     } else { assert(0); return(0); } // Error.
 }
 
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, BaseTypeOne)) { return(0); } // BaseTypeOne
-    else if(type_compare(T, BaseTypeTwo)) { return(0); } // BaseTypeTwo
-    else if(type_compare(T, BaseTypeThree)) { return(0); } // BaseTypeThree
-    else if(type_compare(T, Sub)) { return(0); } // Sub
+    if(type_compare(T, BaseOne)) { return(2); } // BaseOne
+    else if(type_compare(T, BaseTwo)) { return(0); } // BaseTwo
+    else if(type_compare(T, V2)) { return(2); } // V2
+    else if(type_compare(T, SubClass)) { return(5); } // SubClass
 
     else { assert(0); return(-1); } // Error.
 }
 // Function to serialize a struct to a char array buffer.
 template <typename T>static size_t
-serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     assert((name) && (buffer) && (buf_size > 0)); // Check params.
 
     if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.
@@ -93,7 +101,7 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
         int num_members = get_number_of_members_<T>(); assert(num_members != -1); // Get the number of members for the for loop.
         for(int i = 0; (i < num_members); ++i) {
             MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.
-            size_t *member_ptr = (size_t *)((char *)&var + member->offset); // Get the actual pointer to the memory address.
+            size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.
             // TODO(Jonny): Go through and check all the pointers are correct on these.
             switch(member->type) {
                 // double.
@@ -241,41 +249,41 @@ serialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_
                 // Then that should recursively call this function again.
                 default: {
                     switch(member->type) {
-                        case meta_type_BaseTypeOne: {
-                            // BaseTypeOne
+                        case meta_type_BaseOne: {
+                            // BaseOne
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<BaseTypeOne *>(*(BaseTypeOne **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<BaseOne *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<BaseTypeOne>(*(BaseTypeOne *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<BaseOne>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
-                        } break; // case meta_type_BaseTypeOne
+                        } break; // case meta_type_BaseOne
 
-                        case meta_type_BaseTypeTwo: {
-                            // BaseTypeTwo
+                        case meta_type_BaseTwo: {
+                            // BaseTwo
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<BaseTypeTwo *>(*(BaseTypeTwo **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<BaseTwo *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<BaseTypeTwo>(*(BaseTypeTwo *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<BaseTwo>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
-                        } break; // case meta_type_BaseTypeTwo
+                        } break; // case meta_type_BaseTwo
 
-                        case meta_type_BaseTypeThree: {
-                            // BaseTypeThree
+                        case meta_type_V2: {
+                            // V2
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<BaseTypeThree *>(*(BaseTypeThree **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<V2 *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<BaseTypeThree>(*(BaseTypeThree *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<V2>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
-                        } break; // case meta_type_BaseTypeThree
+                        } break; // case meta_type_V2
 
-                        case meta_type_Sub: {
-                            // Sub
+                        case meta_type_SubClass: {
+                            // SubClass
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_<Sub *>(*(Sub **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<SubClass *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_<Sub>(*(Sub *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_<SubClass>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);
                             }
-                        } break; // case meta_type_Sub
+                        } break; // case meta_type_SubClass
 
                     } // switch(member->type)
                 } break; // default 
@@ -312,18 +320,18 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, bool **)) { return("bool **"); }
 
     // Struct types.
-    else if(type_compare(T, BaseTypeOne)) { return("BaseTypeOne"); }
-    else if(type_compare(T, BaseTypeOne *)) { return("BaseTypeOne *"); }
-    else if(type_compare(T, BaseTypeOne **)) { return("BaseTypeOne **"); }
-    else if(type_compare(T, BaseTypeTwo)) { return("BaseTypeTwo"); }
-    else if(type_compare(T, BaseTypeTwo *)) { return("BaseTypeTwo *"); }
-    else if(type_compare(T, BaseTypeTwo **)) { return("BaseTypeTwo **"); }
-    else if(type_compare(T, BaseTypeThree)) { return("BaseTypeThree"); }
-    else if(type_compare(T, BaseTypeThree *)) { return("BaseTypeThree *"); }
-    else if(type_compare(T, BaseTypeThree **)) { return("BaseTypeThree **"); }
-    else if(type_compare(T, Sub)) { return("Sub"); }
-    else if(type_compare(T, Sub *)) { return("Sub *"); }
-    else if(type_compare(T, Sub **)) { return("Sub **"); }
+    else if(type_compare(T, BaseOne)) { return("BaseOne"); }
+    else if(type_compare(T, BaseOne *)) { return("BaseOne *"); }
+    else if(type_compare(T, BaseOne **)) { return("BaseOne **"); }
+    else if(type_compare(T, BaseTwo)) { return("BaseTwo"); }
+    else if(type_compare(T, BaseTwo *)) { return("BaseTwo *"); }
+    else if(type_compare(T, BaseTwo **)) { return("BaseTwo **"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2 *"); }
+    else if(type_compare(T, V2 **)) { return("V2 **"); }
+    else if(type_compare(T, SubClass)) { return("SubClass"); }
+    else if(type_compare(T, SubClass *)) { return("SubClass *"); }
+    else if(type_compare(T, SubClass **)) { return("SubClass **"); }
 
     else { return(0); } // Unknown Type.
 }
@@ -354,35 +362,34 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, bool **)) { return("bool"); }
 
     // Struct types.
-    else if(type_compare(T, BaseTypeOne)) { return("BaseTypeOne"); }
-    else if(type_compare(T, BaseTypeOne *)) { return("BaseTypeOne"); }
-    else if(type_compare(T, BaseTypeOne **)) { return("BaseTypeOne"); }
-    else if(type_compare(T, BaseTypeTwo)) { return("BaseTypeTwo"); }
-    else if(type_compare(T, BaseTypeTwo *)) { return("BaseTypeTwo"); }
-    else if(type_compare(T, BaseTypeTwo **)) { return("BaseTypeTwo"); }
-    else if(type_compare(T, BaseTypeThree)) { return("BaseTypeThree"); }
-    else if(type_compare(T, BaseTypeThree *)) { return("BaseTypeThree"); }
-    else if(type_compare(T, BaseTypeThree **)) { return("BaseTypeThree"); }
-    else if(type_compare(T, Sub)) { return("Sub"); }
-    else if(type_compare(T, Sub *)) { return("Sub"); }
-    else if(type_compare(T, Sub **)) { return("Sub"); }
+    else if(type_compare(T, BaseOne)) { return("BaseOne"); }
+    else if(type_compare(T, BaseOne *)) { return("BaseOne"); }
+    else if(type_compare(T, BaseOne **)) { return("BaseOne"); }
+    else if(type_compare(T, BaseTwo)) { return("BaseTwo"); }
+    else if(type_compare(T, BaseTwo *)) { return("BaseTwo"); }
+    else if(type_compare(T, BaseTwo **)) { return("BaseTwo"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2"); }
+    else if(type_compare(T, V2 **)) { return("V2"); }
+    else if(type_compare(T, SubClass)) { return("SubClass"); }
+    else if(type_compare(T, SubClass *)) { return("SubClass"); }
+    else if(type_compare(T, SubClass **)) { return("SubClass"); }
 
     else { return(0); } // Unknown Type.
 }
 
 // Get the number of base types.
 template<typename T> static int get_base_type_count_(void) {
-    if(type_compare(T, Sub))    { return(3); }
+    if(type_compare(T, SubClass))    { return(2); }
 
     return(0); // Not found.
 }
 
 // Get the base type.
-template<typename T> static char const *get_base_type_as_string_(int index = 0) {
-    if(type_compare(T, Sub)) {
-        if(index == 0)      { return("BaseTypeOne"); }
-        else if(index == 1) { return("BaseTypeTwo"); }
-        else if(index == 2) { return("BaseTypeThree"); }
+template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {
+    if(type_compare(T, SubClass)) {
+        if(index == 0)      { return("BaseOne"); }
+        else if(index == 1) { return("BaseTwo"); }
     }
 
     return(0); // Not found.

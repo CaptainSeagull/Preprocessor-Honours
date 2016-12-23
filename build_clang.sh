@@ -21,8 +21,8 @@ popd
 pushd "test"
 "../builds/linux_clang/preprocessor" test_code.cpp
 
-clang++ -Wall "test_code.cpp" -std=c++1y -o text_exe -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-unused-variable -g -ldl
-mv "./text_exe" "../builds/linux_clang/text_exe"
+clang++ -Wall "test_code.cpp" -std=c++1y -o text_exe -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-unused-variable -Wno-invalid-offsetof -g -ldl
+mv "./text_exe" "../builds/linux_clang/text"
 
 
 popd

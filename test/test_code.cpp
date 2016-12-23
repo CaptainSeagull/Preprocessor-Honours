@@ -8,121 +8,78 @@
                            The use of this code is at your own risk
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
-    #include "test_code_generated.h" // Generated code.
 
-    #include <iostream>
+// File: test_code.cpp
+class BaseOne;
+class BaseTwo;
+struct V2;
+class SubClass;
 
+#include "test_code_generated.h" // Generated code.
 
-//
-//
-// Misc.
-//
-//     - Tests whether two types are the same, or if one is a base class of another.
-//     bool pp::fuzzy_type_compare(TYPE a, TYPE b);
-//
-//     - Tests whether two types are the same, ignoring pointer status.
-//     bool pp::weak_type_compare(TYPE a, TYPE b);
+class BaseOne
+{
+public:
+    int a;
+    char *str;
+};
 
+class BaseTwo
+{
+public:
+    //double *double_ptr;
+};
 
+struct V2 {
+    int x;
+    int y;
+};
 
+class SubClass : public BaseOne, public BaseTwo
+{
+public:
+    float *float_ptr;
+    double *pointer_array[4];
 
-    bool pp::type_compare(TYPE a, TYPE b);
-    
+    void set_v2(V2 other) { this->v2 = other; }
+private:
+    V2 v2;
+};
 
-    bool pp::fuzzy_type_compare(TYPE a, TYPE b);
-    
+int main(int argc, char **argv)
+{
+    SubClass s;
+    memset(&s, 0, sizeof(SubClass));
 
-    bool pp::weak_type_compare(TYPE a, TYPE b);
+    // SubClass
+    s.float_ptr = NULL; // Leave blank.
 
+    s.pointer_array[0] = new double;
+    *s.pointer_array[0] = 1.1;
 
+    s.pointer_array[1] = new double;
+    *s.pointer_array[1] = 2.2;
 
+    s.pointer_array[2] = NULL; // Leave blank.
 
-    struct BaseTypeOne {};
-    struct BaseTypeTwo {};
-    struct BaseTypeThree {};
+    s.pointer_array[3] = new double;
+    *s.pointer_array[3] = 3.3;
 
-    struct Sub : public BaseTypeOne, public BaseTypeTwo, public BaseTypeThree {};
+    V2 v = {10, 20};
+    s.set_v2(v);
 
-    int main(int argc, char **argv) {
-        int count = pp::get_base_type_count(Sub);
-        std::cout << "Sub inherits from " << count << " structs." << '\n';
+    // BaseOne.
+    s.a = 1;
+    s.str = "Hello World";
 
-        for(int i = 0; (i < count); ++i) {
-            char const *str = pp::get_base_type_as_string(Sub, i);
-            std::cout << "Struct[" << i << "] : " << str << '\n';
-        }
+    // BaseTwo.
+    //s.double_ptr = new double;
+    //*s.double_ptr = 5.5;
 
-        return(0);
-    }
+    pp::print(s);
 
-
-
-
-#if 0
-
-    // File: test_code.cpp
-    #include "test_code_generated.h" // Generated code.
-    
-    class BaseOne {
-    public:
-        int a;
-        char *str;
-    };
-    
-    class BaseTwo {
-    public:
-        double *double_ptr;
-    };
-    
-    struct V2 {
-        int x;
-        int y;
-    };
-    
-    class SubClass : public BaseOne, public BaseTwo {
-    public:
-        float *float_ptr;
-        double *pointer_array[4];
-    
-        void set_v2(V2 other) { this->v2 = other; }
-    private:
-        V2 v2;
-    };
-
-    int main(int argc, char **argv) {
-        SubClass s;
-        memset(&s, 0, sizeof(SubClass));
-    
-        // SubClass
-        s.float_ptr = NULL; // Leave blank.
-    
-        s.pointer_array[0] = new double;
-        *s.pointer_array[0] = 1.1;
-    
-        s.pointer_array[1] = new double;
-        *s.pointer_array[1] = 2.2;
-    
-        s.pointer_array[2] = NULL; // Leave blank.
-    
-        s.pointer_array[3] = new double;
-        *s.pointer_array[3] = 3.3;
-    
-        V2 v = {10, 20};
-        s.set_v2(v);
-    
-        // BaseOne.
-        s.a = 1;
-        s.str = "Hello World";
-    
-        // BaseTwo.
-        s.double_ptr = new double;
-        *s.double_ptr = 5.5;
-    
-        pp::print(s);
-    
-        return(0);
-    }
-#endif
+    return(0);
+}
 
 #if 0
 #include "test_code_generated.h"
@@ -171,7 +128,8 @@ struct Y: public X {
 };
 
 struct Transform {V2 pos; V2 size;};
-void test_struct(void) {
+void test_struct(void)
+{
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
     //              struct has been initialized??
@@ -239,7 +197,8 @@ enum Letters {
     letter_c
 };
 
-void test_enum(void) {
+void test_enum(void)
+{
     size_t num_members = pp::get_number_of_enum_elements(Letters);
     printf("\nNumber of members: %llu", num_members);
 
@@ -261,7 +220,8 @@ void test_enum(void) {
     }
 }
 
-int main(int /*argc*/, char ** /*argv*/) {
+int main(int /*argc*/, char ** /*argv*/)
+{
     printf("\n");
 
     test_struct();

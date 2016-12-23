@@ -81,8 +81,9 @@ struct Variable {
 
 #define serialize(var, buf, size) serialize_struct_<decltype(var)>(var, #var, 0, buf, size, 0)
 
-#define print(var, ...) print_<decltype(var)>(var, #var, ##__VA_ARGS__)
-template<typename T>static bool print_(T var, char const *name, char *buf = 0, size_t size = 0) {
+template <typename T>static size_t serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written);
+#define print(var, ...) print_<decltype(var)>(&var, #var, ##__VA_ARGS__)
+template<typename T>static bool print_(T *var, char const *name, char *buf = 0, size_t size = 0) {
     bool res = false, custom_buf = false;
 
     if(!buf) {
@@ -115,10 +116,14 @@ template<class T, class U>struct TypeCompare_{ enum {e = 0}; };
 template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
 #define type_compare(a, b) TypeCompare_<a, b>::e
 
+template<typename T> static char const *type_to_string_(void);
 #define type_to_string(Type) type_to_string_<Type>()
 #define weak_type_to_string(Type) weak_type_to_string_<Type>()
 
+template<typename T> static int get_base_type_count_(void);
 #define get_base_type_count(Type) get_base_type_count_<Type>()
+
+template<typename T> static char const *get_base_type_as_string_(int index = 0);
 #define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)
 
 #define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()
@@ -145,6 +150,7 @@ template<typename T, typename U> bool fuzzy_type_compare_(void) {
     return(false);
 }
 
+template<typename T> static char const *weak_type_to_string_(void);
 #define weak_type_compare(A, B) weak_type_compare_<A, B>()
 template<typename T, typename U> bool weak_type_compare_(void) {
     char const *a_str = weak_type_to_string(T);

@@ -99,7 +99,8 @@ enum ErrorType {
 
     ErrorType_count,
 };
-Char *ErrorTypeToString(ErrorType e) {
+Char *ErrorTypeToString(ErrorType e)
+{
     Char *res = 0;
 
 #define ERROR_TYPE_TO_STRING(err) err: { res = #err; } break
@@ -142,7 +143,8 @@ Int global_error_count = 0;
 #endif
 
 Bool immediately_print_errors = false;
-Void push_error_(ErrorType type, Char *file, Int line) {
+Void push_error_(ErrorType type, Char *file, Int line)
+{
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count;
 
@@ -166,7 +168,8 @@ Void push_error_(ErrorType type, Char *file, Int line) {
     #define assert(Expression, ...) {}
 #endif
 
-Uint32 safe_truncate_size_64(Uint64 v) {
+Uint32 safe_truncate_size_64(Uint64 v)
+{
     assert(v <= 0xFFFFFFFF);
     Uint32 res = cast(Uint32)v;
 
@@ -177,13 +180,15 @@ Uint32 safe_truncate_size_64(Uint64 v) {
 // System stuff.
 //
 #if WIN32
-namespace win32 {
+namespace win32
+{
 #include <windows.h>
 }
 
 #endif
 
-Uint64 system_get_performance_counter(void) {
+Uint64 system_get_performance_counter(void)
+{
     Uint64 res = 0;
 
 #if WIN32
@@ -197,7 +202,8 @@ Uint64 system_get_performance_counter(void) {
     return(res);
 }
 
-Void system_print_timer(Uint64 value) {
+Void system_print_timer(Uint64 value)
+{
 #if WIN32
     win32::LARGE_INTEGER freq;
     if(win32::QueryPerformanceFrequency(&freq)) {
@@ -209,7 +215,8 @@ Void system_print_timer(Uint64 value) {
 #endif
 }
 
-Bool system_check_for_debugger(void) {
+Bool system_check_for_debugger(void)
+{
     Bool res = false;
 #if WIN32
     res = win32::IsDebuggerPresent() != 0;
@@ -240,7 +247,8 @@ PtrSize get_alloc_size(Void *ptr) { return(*(cast(PtrSize *)ptr - 1)); }
 #define get_alloc_size_arr(ptr) (get_alloc_size(ptr) / sizeof(*(ptr)))
 
 #define alloc(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
-Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1) {
+Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1)
+{
     Void *res = 0;
 
     size *= count;
@@ -284,7 +292,8 @@ Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1) {
 }
 
 // Free Memory.
-Void free_(Void *ptr) {
+Void free_(Void *ptr)
+{
 #if MEM_CHECK
     if(ptr) {
         Void *raw_ptr = get_raw_pointer(ptr);
@@ -312,7 +321,8 @@ Void free_(Void *ptr) {
 }
 
 // realloc
-Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0) {
+Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0)
+{
     Void *res = 0;
     if(ptr) {
 #if MEM_CHECK
@@ -364,7 +374,8 @@ Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0) {
 Int scratch_memory_index = 0;
 Int scratch_memory_size = 256 * 256;
 Void *global_scratch_memory = 0;
-Void *push_scratch_memory(Int size = scratch_memory_size) {
+Void *push_scratch_memory(Int size = scratch_memory_size)
+{
     if(!global_scratch_memory) { global_scratch_memory = malloc(scratch_memory_size + 256); } // Allocate a little extra, just in case.
 
     Void *res = 0;
@@ -377,7 +388,8 @@ Void *push_scratch_memory(Int size = scratch_memory_size) {
     return(res);
 }
 
-Void clear_scratch_memory(void) {
+Void clear_scratch_memory(void)
+{
     if(global_scratch_memory) {
         memset(global_scratch_memory, 0, scratch_memory_index);
         scratch_memory_index = 0;
@@ -393,14 +405,16 @@ Bool is_end_of_line(Char c) { return((c == '\n') || (c == '\r')); }
 Bool is_whitespace(Char c) { return((c == ' ') || (c == '\t') || (c == '\v') || (c == '\f') || (is_end_of_line(c))); }
 Void skip_to_end_of_line(Tokenizer *tokenizer) { while(is_end_of_line(*tokenizer->at)) { ++tokenizer->at; } }
 
-Int string_length(Char *str) {
+Int string_length(Char *str)
+{
     Int res = 0;
     while(*str++) { ++res; }
 
     return(res);
 }
 
-Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) {
+Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len)
+{
     Bool res = false;
 
     if(len > a_len + b_len) {
@@ -413,7 +427,8 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
     return(res);
 }
 
-Bool string_compare(Char *a, Char *b, Int len) {
+Bool string_compare(Char *a, Char *b, Int len)
+{
     for(Int i = 0; (i < len); ++i, ++a, ++b) {
         if(*a != *b) { return(false); }
     }
@@ -421,7 +436,8 @@ Bool string_compare(Char *a, Char *b, Int len) {
     return(true);
 }
 
-Bool string_compare(Char *a, Char *b) {
+Bool string_compare(Char *a, Char *b)
+{
     for(;; ++a, ++b) {
         if((*a == 0) && (*b == 0)) { return(true);  }
         else if(*a != *b)          { return(false); }
@@ -441,7 +457,8 @@ enum SwitchType {
     SwitchType_count,
 };
 
-SwitchType get_switch_type(Char *str) {
+SwitchType get_switch_type(Char *str)
+{
     SwitchType res = SwitchType_unknown;
 
     Int len = string_length(str);
@@ -468,7 +485,8 @@ SwitchType get_switch_type(Char *str) {
     return(res);
 }
 
-Char *get_static_file(void) {
+Char *get_static_file(void)
+{
     Char *res = "// Preprocessor API.\n"
                 "//\n"
                 "// Reference.\n"
@@ -552,8 +570,9 @@ Char *get_static_file(void) {
                 "\n"
                 "#define serialize(var, buf, size) serialize_struct_<decltype(var)>(var, #var, 0, buf, size, 0)\n"
                 "\n"
-                "#define print(var, ...) print_<decltype(var)>(var, #var, ##__VA_ARGS__)\n"
-                "template<typename T>static bool print_(T var, char const *name, char *buf = 0, size_t size = 0) {\n"
+                "template <typename T>static size_t serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written);\n"
+                "#define print(var, ...) print_<decltype(var)>(&var, #var, ##__VA_ARGS__)\n"
+                "template<typename T>static bool print_(T *var, char const *name, char *buf = 0, size_t size = 0) {\n"
                 "    bool res = false, custom_buf = false;\n"
                 "\n"
                 "    if(!buf) {\n"
@@ -586,10 +605,14 @@ Char *get_static_file(void) {
                 "template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };\n"
                 "#define type_compare(a, b) TypeCompare_<a, b>::e\n"
                 "\n"
+                "template<typename T> static char const *type_to_string_(void);\n"
                 "#define type_to_string(Type) type_to_string_<Type>()\n"
                 "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
                 "\n"
+                "template<typename T> static int get_base_type_count_(void);\n"
                 "#define get_base_type_count(Type) get_base_type_count_<Type>()\n"
+                "\n"
+                "template<typename T> static char const *get_base_type_as_string_(int index = 0);\n"
                 "#define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)\n"
                 "\n"
                 "#define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()\n"
@@ -616,6 +639,7 @@ Char *get_static_file(void) {
                 "    return(false);\n"
                 "}\n"
                 "\n"
+                "template<typename T> static char const *weak_type_to_string_(void);\n"
                 "#define weak_type_compare(A, B) weak_type_compare_<A, B>()\n"
                 "template<typename T, typename U> bool weak_type_compare_(void) {\n"
                 "    char const *a_str = weak_type_to_string(T);\n"
@@ -646,7 +670,8 @@ struct File {
     Char *data;
     Int size;
 };
-File read_entire_file_and_null_terminate(Char *filename, Void *memory) {
+File read_entire_file_and_null_terminate(Char *filename, Void *memory)
+{
     File res = {};
 
     FILE *file = fopen(filename, "r");
@@ -663,7 +688,8 @@ File read_entire_file_and_null_terminate(Char *filename, Void *memory) {
     return(res);
 }
 
-Bool write_to_file(Char *filename, Void *data, PtrSize data_size) {
+Bool write_to_file(Char *filename, Void *data, PtrSize data_size)
+{
     assert(data_size > 0);
 
     Bool res = false;
@@ -678,7 +704,8 @@ Bool write_to_file(Char *filename, Void *data, PtrSize data_size) {
     return(res);
 }
 
-PtrSize get_file_size(Char *filename) {
+PtrSize get_file_size(Char *filename)
+{
     PtrSize size = 0;
 
     FILE *file = fopen(filename, "r");
@@ -698,7 +725,8 @@ struct OutputBuffer {
     Int size;
 };
 
-Void write_to_output_buffer(OutputBuffer *ob, Char *format, ...) {
+Void write_to_output_buffer(OutputBuffer *ob, Char *format, ...)
+{
     va_list args;
     va_start(args, format);
     ob->index += stbsp_vsnprintf(ob->buffer + ob->index, ob->size - ob->index, format, args);
@@ -757,13 +785,15 @@ struct String {
 String create_string(Char *str, Int len = 0) { String res = {str, (len) ? len : string_length(str)}; return(res); }
 String token_to_string(Token token) { String res = { token.e, token.len }; return(res); }
 
-Void token_to_string(Token token, Char *buf, Int size) {
+Void token_to_string(Token token, Char *buf, Int size)
+{
     for(Int i = 0; (i < token.len); ++i, ++buf) { *buf = token.e[i]; }
 
     *buf = 0;
 }
 
-Bool token_compare(Token a, Token b) {
+Bool token_compare(Token a, Token b)
+{
     Bool res = false;
 
     if(a.len == b.len) {
@@ -780,7 +810,8 @@ Bool token_compare(Token a, Token b) {
     return(res);
 }
 
-Bool string_compare(String a, String b) {
+Bool string_compare(String a, String b)
+{
     Bool res = false;
 
     if(a.len == b.len) {
@@ -797,7 +828,8 @@ Bool string_compare(String a, String b) {
     return(res);
 }
 
-Bool string_compare_array(String *a, String *b, Int len) {
+Bool string_compare_array(String *a, String *b, Int len)
+{
     Bool res = true;
     for(Int i = 0; (i < len); ++i) {
         if(!string_compare(a[i], b[i])) {
@@ -809,7 +841,8 @@ Bool string_compare_array(String *a, String *b, Int len) {
     return(res);
 }
 
-Void eat_whitespace(Tokenizer *tokenizer) {
+Void eat_whitespace(Tokenizer *tokenizer)
+{
     for(;;) {
         if(is_whitespace(tokenizer->at[0])) { // Whitespace
             ++tokenizer->at;
@@ -925,11 +958,13 @@ MacroData *macro_data = 0;
 
 Token get_token(Tokenizer *tokenizer); // Because C++...
 #define eat_token(tokenizer) eat_tokens(tokenizer, 1);
-Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat) {
+Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
+{
     for(Int i = 0; (i < num_tokens_to_eat); ++i) { get_token(tokenizer); }
 }
 
-Token string_to_token(String str) {
+Token string_to_token(String str)
+{
     Token res = {};
 
     res.e = str.e;
@@ -968,7 +1003,8 @@ Token string_to_token(String str) {
     return(res);
 }
 
-Token get_token(Tokenizer *tokenizer) {
+Token get_token(Tokenizer *tokenizer)
+{
     eat_whitespace(tokenizer);
 
     Token res = {};
@@ -1087,7 +1123,8 @@ Token get_token(Tokenizer *tokenizer) {
     return(res);
 }
 
-Token peak_token(Tokenizer *tokenizer) {
+Token peak_token(Tokenizer *tokenizer)
+{
     Tokenizer cpy = *tokenizer;
     Token res = get_token(&cpy);
 
@@ -1097,7 +1134,8 @@ Token peak_token(Tokenizer *tokenizer) {
 // TODO(Jonny): Create a token_equals_keyword function. This could also test macro'd aliases for keywords,
 //              as well as the actual keyword.
 
-Bool token_equals(Token token, Char *str) {
+Bool token_equals(Token token, Char *str)
+{
     Bool res = false;
 
     Int len = string_length(str);
@@ -1111,7 +1149,8 @@ struct ResultInt {
     Bool success;
 };
 
-ResultInt char_to_int(Char c) {
+ResultInt char_to_int(Char c)
+{
     ResultInt res = {};
     switch(c) {
         case '0': { res.e = 0; res.success = true; } break;
@@ -1129,7 +1168,8 @@ ResultInt char_to_int(Char c) {
     return(res);
 }
 
-ResultInt string_to_int(String str) {
+ResultInt string_to_int(String str)
+{
     ResultInt res = {};
 
     for(Int i = 0; (i < str.len); ++i) {
@@ -1145,14 +1185,16 @@ ResultInt string_to_int(String str) {
     return(res);
 }
 
-ResultInt token_to_int(Token t) {
+ResultInt token_to_int(Token t)
+{
     String str = token_to_string(t);
     ResultInt res = string_to_int(str);
 
     return(res);
 }
 
-ResultInt string_to_int(Char *str) {
+ResultInt string_to_int(Char *str)
+{
     String string;
     string.e = str;
     string.len = string_length(str);
@@ -1161,7 +1203,8 @@ ResultInt string_to_int(Char *str) {
     return(res);
 }
 
-ResultInt calculator_string_to_int(Char *str) {
+ResultInt calculator_string_to_int(Char *str)
+{
     ResultInt res = {};
 
     /* TODO(Jonny);
@@ -1215,7 +1258,8 @@ struct Variable {
     Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
 };
 
-Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1) {
+Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1)
+{
     Variable res;
     res.type = create_string(type);
     res.name = create_string(name);
@@ -1225,7 +1269,8 @@ Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_
     return(res);
 }
 
-Bool compare_variable(Variable a, Variable b) {
+Bool compare_variable(Variable a, Variable b)
+{
     Bool res = true;
 
     if(!string_compare(a.type, b.type))      { res = false; }
@@ -1236,7 +1281,8 @@ Bool compare_variable(Variable a, Variable b) {
     return(res);
 }
 
-Bool compare_variable_array(Variable *a, Variable *b, Int count) {
+Bool compare_variable_array(Variable *a, Variable *b, Int count)
+{
     for(Int i = 0; (i < count); ++i) {
         if(!compare_variable(a[i], b[i])) { return(false); }
     }
@@ -1244,7 +1290,8 @@ Bool compare_variable_array(Variable *a, Variable *b, Int count) {
     return(true);
 }
 
-Variable parse_member(Tokenizer *tokenizer) {
+Variable parse_member(Tokenizer *tokenizer)
+{
     Variable res = {};
     res.array_count = 1;
     res.type = token_to_string(get_token(tokenizer));
@@ -1279,14 +1326,16 @@ Variable parse_member(Tokenizer *tokenizer) {
 }
 
 // TODO(Jonny): This eats a token. Should it?
-Bool require_token(Tokenizer *tokenizer, TokenType desired_type) {
+Bool require_token(Tokenizer *tokenizer, TokenType desired_type)
+{
     Token token = get_token(tokenizer);
     Bool res = (token.type == desired_type);
 
     return(res);
 }
 
-Bool peak_require_token(Tokenizer *tokenizer, Char *str) {
+Bool peak_require_token(Tokenizer *tokenizer, Char *str)
+{
     Bool res = false;
     Tokenizer cpy = *tokenizer;
     Token token = get_token(&cpy);
@@ -1296,7 +1345,8 @@ Bool peak_require_token(Tokenizer *tokenizer, Char *str) {
     return(res);
 }
 
-Bool is_stupid_class_keyword(Token t) {
+Bool is_stupid_class_keyword(Token t)
+{
     Bool result = false;
 
     Char *keywords[] = { "private", "public", "protected" };
@@ -1327,7 +1377,8 @@ struct StructData {
     //Int func_count;
 };
 
-Void skip_to_matching_bracket(Tokenizer *tokenizer) {
+Void skip_to_matching_bracket(Tokenizer *tokenizer)
+{
     Int brace_count = 1;
     Token token = {};
     Bool should_loop = true;
@@ -1344,7 +1395,8 @@ Void skip_to_matching_bracket(Tokenizer *tokenizer) {
     }
 }
 
-Void parse_template(Tokenizer *tokenizer) {
+Void parse_template(Tokenizer *tokenizer)
+{
     Int angle_bracket_count = 1;
     Token token;
     Bool should_loop = true;
@@ -1361,7 +1413,8 @@ Void parse_template(Tokenizer *tokenizer) {
     }
 }
 
-Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_token_type_2 = TokenType_unknown) {
+Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_token_type_2 = TokenType_unknown)
+{
     Variable res = {};
 
     // Return type.
@@ -1411,7 +1464,8 @@ struct ParseStructResult {
     StructData sd;
     Bool success;
 };
-ParseStructResult parse_struct(Tokenizer *tokenizer) {
+ParseStructResult parse_struct(Tokenizer *tokenizer)
+{
     ParseStructResult res = {};
 
     Bool have_name = false;
@@ -1566,7 +1620,8 @@ struct ParseEnumResult {
     EnumData ed;
     Bool success;
 };
-ParseEnumResult parse_enum(Tokenizer *tokenizer) {
+ParseEnumResult parse_enum(Tokenizer *tokenizer)
+{
     ParseEnumResult res = {};
 
     Token name = get_token(tokenizer);
@@ -1645,10 +1700,11 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
     return(res);
 }
 
-Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob) {
+Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob)
+{
     Char *top =
         "// Function to serialize a struct to a char array buffer.\n"
-        "template <typename T>static size_t\nserialize_struct_(T var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
+        "template <typename T>static size_t\nserialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
         "    assert((name) && (buffer) && (buf_size > 0)); // Check params.\n"
         "\n"
         "    if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.\n"
@@ -1669,7 +1725,7 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "        int num_members = get_number_of_members_<T>(); assert(num_members != -1); // Get the number of members for the for loop.\n"
         "        for(int i = 0; (i < num_members); ++i) {\n"
         "            MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.\n"
-        "            size_t *member_ptr = (size_t *)((char *)&var + member->offset); // Get the actual pointer to the memory address.\n"
+        "            size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.\n"
         "            // TODO(Jonny): Go through and check all the pointers are correct on these.\n"
         "            switch(member->type) {\n"
         "                // double.\n"
@@ -1830,7 +1886,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
     write_to_output_buffer(ob, bottom);
 }
 
-Bool is_meta_type_already_in_array(String *array, Int len, String test) {
+Bool is_meta_type_already_in_array(String *array, Int len, String test)
+{
     Bool res = false;
 
     for(Int i = 0; (i < len); ++i) {
@@ -1846,7 +1903,8 @@ Bool is_meta_type_already_in_array(String *array, Int len, String test) {
 Char *primitive_types[] = {"char", "short", "int", "long", "float", "double", "bool"};
 #define get_num_of_primitive_types() array_count(primitive_types)
 
-Int set_primitive_type(String *array) {
+Int set_primitive_type(String *array)
+{
     Int res = array_count(primitive_types);
 
     for(int i = 0; (i < res); ++i) {
@@ -1859,7 +1917,8 @@ Int set_primitive_type(String *array) {
 
 // TODO(Jonny): I don't like this...
 #define copy_literal_to_char_buffer(buf, index, lit) copy_literal_to_char_buffer_(buf, index, lit, sizeof(lit) - 1)
-Int copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len) {
+Int copy_literal_to_char_buffer_(Char *buf, Int index, Char *literal, Int literal_len)
+{
     buf += index;
 
     for(Int i = 0; (i < literal_len); ++i) { buf[i] = literal[i]; }
@@ -1872,7 +1931,8 @@ struct ParseFunctionResult {
     FunctionData func_data;
     Bool success;
 };
-ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token) {
+ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
+{
     ParseFunctionResult res = {};
 
     // Try to parse as a function.
@@ -1967,7 +2027,8 @@ ParseFunctionResult attempt_to_parse_function(Tokenizer *tokenizer, Token token)
     return(res);
 }
 
-StructData *find_struct(String str, StructData *structs, Int struct_count) {
+StructData *find_struct(String str, StructData *structs, Int struct_count)
+{
     StructData *res = 0;
 
     if(str.len) {
@@ -1986,7 +2047,8 @@ StructData *find_struct(String str, StructData *structs, Int struct_count) {
     return(res);
 }
 
-File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
+File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count)
+{
     File res = {};
 
     OutputBuffer ob = {};
@@ -2058,9 +2120,9 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     "                        case meta_type_%.*s: {\n"
                     "                            // %.*s\n"
                     "                            if(member->is_ptr) {\n"
-                    "                                bytes_written = serialize_struct_<%.*s *>(*(%.*s **)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                    "                                bytes_written = serialize_struct_<%.*s *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                     "                            } else {\n"
-                    "                                bytes_written = serialize_struct_<%.*s>(*(%.*s *)member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                    "                                bytes_written = serialize_struct_<%.*s>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                     "                            }\n"
                     "                        } break; // case meta_type_%.*s\n"
                     "\n";
@@ -2321,7 +2383,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         write_to_output_buffer(&ob,
                                "\n"
                                "// Get the base type.\n"
-                               "template<typename T> static char const *get_base_type_as_string_(int index = 0) {\n");
+                               "template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {\n");
 
         for(Int i = 0, written_count = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
@@ -2495,7 +2557,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
 Bool should_write_to_file = false;
 
-Void start_parsing(Char *filename, Char *file) {
+Void start_parsing(Char *filename, Char *file)
+{
     Int enum_count = 0;
     EnumData *enum_data = alloc(EnumData, 8);
 
@@ -2526,8 +2589,6 @@ Void start_parsing(Char *filename, Char *file) {
                             ++md->res.len;
                             ++tokenizer.at;
                         }
-
-                        int i = 0;
                     } else {
                         skip_to_end_of_line(&tokenizer);
                     }
@@ -2591,7 +2652,8 @@ Void start_parsing(Char *filename, Char *file) {
     }
 }
 
-Void print_help(Void) {
+Void print_help(void)
+{
     Char *help = "    List of Commands.\n"
                  "        -e - Print errors to the console.\n"
                  "        -h - Print this help.\n"
@@ -2605,7 +2667,8 @@ Void print_help(Void) {
     printf("%s", help);
 }
 
-Int main(Int argc, Char **argv) {
+Int main(Int argc, Char **argv)
+{
     calculator_string_to_int("1 + 2 * 3");
 
     Int res = 0;
@@ -2732,7 +2795,8 @@ Int main(Int argc, Char **argv) {
 //
 // Test utils.
 //
-StructData parse_struct_test(Char *str, int ahead = 0) {
+StructData parse_struct_test(Char *str, int ahead = 0)
+{
     Tokenizer tokenizer = {str};
 
     eat_token(&tokenizer);
@@ -2756,7 +2820,8 @@ enum StructCompareFailure {
     StructCompareFailure_func_data,
     StructCompareFailure_func_count,
 };
-Char *struct_compare_failure_to_string(StructCompareFailure scf) {
+Char *struct_compare_failure_to_string(StructCompareFailure scf)
+{
     Char *res = 0;
     if(scf == StructCompareFailure_success)           { res = "StructCompareFailure_success";      }
     else if(scf == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
@@ -2769,7 +2834,8 @@ Char *struct_compare_failure_to_string(StructCompareFailure scf) {
     return(res);
 };
 
-StructCompareFailure compare_struct_data(StructData a, StructData b) {
+StructCompareFailure compare_struct_data(StructData a, StructData b)
+{
     StructCompareFailure res = StructCompareFailure_success;
 
     if(!string_compare(a.name, b.name))                                         { res = StructCompareFailure_name;            }
@@ -2786,7 +2852,8 @@ StructCompareFailure compare_struct_data(StructData a, StructData b) {
 //
 
 // Basic struct test.
-TEST(StructTest, basic_struct_test) {
+TEST(StructTest, basic_struct_test)
+{
     Char *basic_struct = "struct BasicStruct {\n"
                          "    int i;\n"
                          "    float *f;\n"
@@ -2811,7 +2878,8 @@ TEST(StructTest, basic_struct_test) {
 }
 
 // Inheritance test.
-TEST(StructTest, inhertiance_struct_test) {
+TEST(StructTest, inhertiance_struct_test)
+{
     Char *inheritance_struct = "struct BaseOne { int a; };\n"
                                "struct BaseTwo { int b; };\n"
                                "struct Sub : public BaseOne, public BaseTwo { int c; };";
@@ -2832,13 +2900,15 @@ TEST(StructTest, inhertiance_struct_test) {
             << "Failed because struct_compare_failure == " << struct_compare_failure_to_string(struct_compare_failure);
 }
 
-TEST(StructTest, number_of_members_test) {
+TEST(StructTest, number_of_members_test)
+{
     Char *str = "struct A { int a; int b; int c; };";
     StructData gen = parse_struct_test(str);
     ASSERT_TRUE(gen.member_count == 3) << "Error: Number of members in struct not correct";
 }
 
-Int run_tests(void) {
+Int run_tests(void)
+{
     Int res = 0;
     // Google test uses so much memory, it's difficult to run in x86.
     if(sizeof(PtrSize) == 8) {
