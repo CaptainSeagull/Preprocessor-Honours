@@ -162,6 +162,8 @@ template<typename T, typename U> bool weak_type_compare_(void) {
     return(false);
 }
 
+template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }
+
 #if defined(_MSC_VER)
     #define pp_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
 #else

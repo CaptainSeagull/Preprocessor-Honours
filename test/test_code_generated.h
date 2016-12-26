@@ -19,20 +19,17 @@ enum MetaType {
     meta_type_SubClass,
 };
 
-template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }
-
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
     // Recreated structs.
     struct _BaseOne {  _int a;  _char *str;  };
-    struct _BaseTwo {  _int *double_ptr;  _int zero;  };
+    struct _BaseTwo {  _double *double_ptr;  _int zero;  };
     struct _V2 {  _int x;  _int y;  };
     struct _SubClass : public _BaseTwo, public _BaseOne {  _float *float_ptr;  _double *pointer_array[4];  _V2 v2;  };
  
     // BaseOne
     if(type_compare(T, BaseOne)) {
         static MemberDefinition members_of_BaseOne[] = {
-            // Members.
             {meta_type_int, "a", offset_of(&_BaseOne::a), false, 1},
             {meta_type_char, "str", offset_of(&_BaseOne::str), true, 1},
         };
@@ -41,8 +38,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // BaseTwo
     } else if(type_compare(T, BaseTwo)) {
         static MemberDefinition members_of_BaseTwo[] = {
-            // Members.
-            {meta_type_int, "double_ptr", offset_of(&_BaseTwo::double_ptr), true, 1},
+            {meta_type_double, "double_ptr", offset_of(&_BaseTwo::double_ptr), true, 1},
             {meta_type_int, "zero", offset_of(&_BaseTwo::zero), false, 1},
         };
         return(members_of_BaseTwo);
@@ -50,7 +46,6 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // V2
     } else if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
-            // Members.
             {meta_type_int, "x", offset_of(&_V2::x), false, 1},
             {meta_type_int, "y", offset_of(&_V2::y), false, 1},
         };
@@ -59,12 +54,11 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // SubClass
     } else if(type_compare(T, SubClass)) {
         static MemberDefinition members_of_SubClass[] = {
-            // Members.
             {meta_type_float, "float_ptr", offset_of(&_SubClass::float_ptr), true, 1},
             {meta_type_double, "pointer_array", offset_of(&_SubClass::pointer_array), true, 4},
             {meta_type_V2, "v2", offset_of(&_SubClass::v2), false, 1},
             // Members inherited from BaseTwo.
-            {meta_type_int, "double_ptr", (size_t)&((_SubClass *)0)->double_ptr, true, 1},
+            {meta_type_double, "double_ptr", (size_t)&((_SubClass *)0)->double_ptr, true, 1},
             {meta_type_int, "zero", (size_t)&((_SubClass *)0)->zero, false, 1},
             // Members inherited from BaseOne.
             {meta_type_int, "a", (size_t)&((_SubClass *)0)->a, false, 1},

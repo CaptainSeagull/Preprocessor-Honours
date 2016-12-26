@@ -27,7 +27,7 @@ public:
 class BaseTwo
 {
 public:
-    int *double_ptr; // TODO(Jonny): This breaks with clang...
+    double *double_ptr; // TODO(Jonny): This breaks with clang...
     int zero;
 };
 
@@ -74,8 +74,8 @@ int main(int argc, char **argv)
     s.str = "Hello World";
 
     // BaseTwo.
-    //s.double_ptr = new double;
-    //*s.double_ptr = 5.5;
+    s.double_ptr = new double;
+    *s.double_ptr = 5.5;
 
     pp::print(s);
 
