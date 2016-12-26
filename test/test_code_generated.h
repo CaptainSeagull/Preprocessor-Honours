@@ -395,6 +395,36 @@ template<typename T> static char const *get_base_type_as_string_(int index/*= 0*
     return(0); // Not found.
 }
 
+//
+// Enum meta data.
+//
+
+// Meta Data for Letters.
+static short number_of_elements_in_enum_Letters = 3;
+static char const *enum_to_string_Letters(short v)
+{
+    switch(v) {
+        case 0: { return("a"); } break;
+        case 1: { return("b"); } break;
+        case 2: { return("c"); } break;
+    }
+
+    return(0); // v is out of bounds.
+}
+static short string_to_enum_Letters(char const *str)
+{
+    int res = 0;
+    if(str) {
+        if(strcmp(str, "a") == 0)      { return(0); }
+        else if(strcmp(str, "b") == 0) { return(1); }
+        else if(strcmp(str, "c") == 0) { return(2); }
+
+        else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?
+    }
+
+    return(res);
+}
+
 } // namespace pp
 
 #define GENERATED_H

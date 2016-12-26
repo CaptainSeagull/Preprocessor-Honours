@@ -106,7 +106,7 @@ template<typename T>static bool print_(T *var, char const *name, char *buf = 0, 
     return(res);
 }
 
-#define enum_to_string(Type, v) enum_to_string_##Type(v)
+#define enum_to_string(Type, v) enum_to_string_##Type((int)v)
 
 #define string_to_enum(Type, str) string_to_enum_##Type(str)
 

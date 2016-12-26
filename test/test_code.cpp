@@ -47,8 +47,19 @@ private:
     V2 v2;
 };
 
+enum class Letters : short {
+    a, b, c
+};
 int main(int argc, char **argv)
 {
+    char const *str = pp::enum_to_string(Letters, Letters::b);
+
+    short index = pp::string_to_enum(Letters, "b");
+
+    size_t element_no = pp::get_number_of_enum_elements(Letters);
+
+
+#if 0
     SubClass s;
     memset(&s, 0, sizeof(SubClass));
 
@@ -78,7 +89,7 @@ int main(int argc, char **argv)
     *s.double_ptr = 5.5;
 
     pp::print(s);
-
+#endif
     return(0);
 }
 

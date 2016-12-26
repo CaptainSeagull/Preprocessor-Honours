@@ -596,7 +596,7 @@ Char *get_static_file(void)
                 "    return(res);\n"
                 "}\n"
                 "\n"
-                "#define enum_to_string(Type, v) enum_to_string_##Type(v)\n"
+                "#define enum_to_string(Type, v) enum_to_string_##Type((int)v)\n"
                 "\n"
                 "#define string_to_enum(Type, str) string_to_enum_##Type(str)\n"
                 "\n"
@@ -2452,19 +2452,27 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                    "// Enum meta data.\n"
                                    "//\n");
 
-            //Int buf_size = scratch_memory_size;
-            //Char *buf = cast(Char *)push_scratch_memory(buf_size);
             for(Int i = 0; (i < enum_count); ++i) {
                 EnumData *ed = enum_data + i;
                 write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
+
+                Char type[32];
+                if(ed->type.len) {
+                    for(int i = 0; (i < ed->type.len); ++i) { type[i] = ed->type.e[i]; }
+                    type[ed->type.len] = 0;
+                } else {
+                    type[0] = 'i'; type[1] = 'n'; type[2] = 't'; type[3] = 0;
+                }
 
                 // Enum size.
                 {
                     Char *buf = cast(Char *)push_scratch_memory();
 
                     int bytes_written = my_sprintf(buf, scratch_memory_size,
-                                                   "static size_t number_of_elements_in_enum_%.*s = %d;",
-                                                   ed->name.len, ed->name.e, ed->no_of_values);
+                                                   "static %s number_of_elements_in_enum_%.*s = %d;",
+                                                   type,
+                                                   ed->name.len, ed->name.e,
+                                                   ed->no_of_values);
                     assert(bytes_written < scratch_memory_size);
 
                     write_to_output_buffer(&ob, buf);
@@ -2488,16 +2496,18 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
 
 
-                    Char *enum_to_string_base = "\nstatic char const *enum_to_string_%.*s(int v)\n"
-                                                "{\n"
-                                                "    switch(v) {\n"
-                                                "%s"
-                                                "    }\n"
-                                                "\n"
-                                                "    return(0); // v is out of bounds.\n"
-                                                "}\n";
-                    Int bytes_written = my_sprintf(buf1, size, enum_to_string_base,
-                                                   ed->name.len, ed->name.e, buf2);
+                    Int bytes_written = my_sprintf(buf1, size,
+                                                   "\nstatic char const *enum_to_string_%.*s(%s v)\n"
+                                                   "{\n"
+                                                   "    switch(v) {\n"
+                                                   "%s"
+                                                   "    }\n"
+                                                   "\n"
+                                                   "    return(0); // v is out of bounds.\n"
+                                                   "}\n",
+                                                   ed->name.len, ed->name.e,
+                                                   type,
+                                                   buf2);
                     assert(bytes_written < size);
 
                     write_to_output_buffer(&ob, buf1);
@@ -2525,9 +2535,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                             ed->values[j].value);
                     }
 
-
                     my_sprintf(buf1, scratch_memory_size,
-                               "static int string_to_enum_%.*s(char const *str)\n"
+                               "static %s string_to_enum_%.*s(char const *str)\n"
                                "{\n"
                                "    int res = 0;\n"
                                "    if(str) {\n"
@@ -2538,6 +2547,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "\n"
                                "    return(res);\n"
                                "}\n",
+                               type,
                                ed->name.len, ed->name.e, buf2);
 
                     write_to_output_buffer(&ob, buf1);
