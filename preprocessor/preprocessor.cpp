@@ -121,6 +121,7 @@ Char *ErrorTypeToString(ErrorType e)
         case ERROR_TYPE_TO_STRING(ErrorType_failed_to_parse_enum);
         case ERROR_TYPE_TO_STRING(ErrorType_failed_parsing_variable);
         case ERROR_TYPE_TO_STRING(ErrorType_failed_to_find_size_of_array);
+        case ERROR_TYPE_TO_STRING(ErrorType_could_not_detect_struct_name);
     }
 
 #undef ERROR_TYPE_TO_STRING
@@ -790,6 +791,7 @@ String token_to_string(Token token) { String res = { token.e, token.len }; retur
 
 Void token_to_string(Token token, Char *buf, Int size)
 {
+    assert(size > token.len);
     for(Int i = 0; (i < token.len); ++i, ++buf) { *buf = token.e[i]; }
 
     *buf = 0;
