@@ -1,29 +1,40 @@
 # Batch File to compile the preprocessor on Linux.
 
-# Preprocessor
-pushd preprocessor
+RELEASE=true
+RUN_CODE_AFTER_BUILDING=true
+RUN_TEST=true
+RUN_GCC_FOR_EXTRA_TEST=true
 
-clang++ -Wall "preprocessor.cpp" "google_test/gtest-all.cc" -std=c++1y -o preprocessor -DINTERNAL=1 -DMEM_CHECK -DERROR_LOGGING=1 -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -g -ldl -pthread
+# Preprocessor
+pushd "preprocessor"
+
+COMMON_WARNINGS="-Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter"
+
+if [ "$RELEASE" == "$true" ]; then
+    clang++ -Wall "preprocessor.cpp" -std=c++11 -o preprocessor -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 -DWIN32=0 -DLINUX=1 $COMMON_WARNINGS -ldl 
+else
+    clang++ -Wall -Wextra "preprocessor.cpp" -std=c++11 -o preprocessor -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $COMMON_WARNINGS -g -ldl -pthread
+fi
 mv "./preprocessor" "../builds/linux_clang/preprocessor"
+
+# GCC
+if [ "$RELEASE" == "$true" ]; then
+    COMMON_WARNINGS="-Wno-write-strings -Wno-switch -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-parameter"
+    gcc -Wall -Wextra "preprocessor.cpp" -std=c++11 -o preprocessor_gcc -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $COMMON_WARNINGS -g -ldl -pthread
+    rm "./preprocessor_gcc"
+fi
 
 popd
 
-# SDL.
-#pushd "app test"
-#"../builds/linux_clang/preprocessor" sdl_main.cpp sdl_other.cpp
-#
-#clang++ -Wall "sdl_main.cpp" "sdl_other.cpp" -std=c++1y -o app_test -DINTERNAL=1 -DERROR_LOGGING=1 -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-unused-variable -g -ldl -pthread -lSDL2
-#mv "./app_test" "../builds/linux_clang/app_test"
-#
-#popd
+# Run code after building.
+if [ "$RUN_CODE_AFTER_BUILDING%"=="true" ]; then
+    ./builds/linux_clang/preprocessor -t
+fi
 
 # Test.
 pushd "test"
 "../builds/linux_clang/preprocessor" test_code.cpp
 
-clang++ -Wall "test_code.cpp" -std=c++1y -o text_exe -Wno-unused-function -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-unused-variable -Wno-invalid-offsetof -g -ldl
+clang++ -Wall "test_code.cpp" -std=c++11 -o text_exe -Wno-unused-function -Wno-unused-variable -g -ldl
 mv "./text_exe" "../builds/linux_clang/text"
-
-
-popd
 
