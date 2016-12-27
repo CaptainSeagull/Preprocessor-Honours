@@ -2693,7 +2693,10 @@ Void print_help(void)
 
 Int main(Int argc, Char **argv)
 {
-    calculator_string_to_int("1 + 2 * 3");
+    ResultInt calc_res = calculator_string_to_int("1 + 2 * 3");
+    if(calc_res.success) {
+        int i = 0;
+    }
 
     Int res = 0;
 
@@ -2875,7 +2878,6 @@ StructCompareFailure compare_struct_data(StructData a, StructData b)
 // Tests.
 //
 
-// Basic struct test.
 TEST(StructTest, basic_struct_test)
 {
     Char *basic_struct = "struct BasicStruct {\n"
@@ -2901,7 +2903,6 @@ TEST(StructTest, basic_struct_test)
             << "Failed because struct_compare_failure == " << struct_compare_failure_to_string(struct_compare_failure);
 }
 
-// Inheritance test.
 TEST(StructTest, inhertiance_struct_test)
 {
     Char *inheritance_struct = "struct BaseOne { int a; };\n"
@@ -2929,6 +2930,54 @@ TEST(StructTest, number_of_members_test)
     Char *str = "struct A { int a; int b; int c; };";
     StructData gen = parse_struct_test(str);
     ASSERT_TRUE(gen.member_count == 3) << "Error: Number of members in struct not correct";
+}
+
+TEST(StructTest, struct_name)
+{
+    Char *str = "struct my_name {};";
+    StructData gen = parse_struct_test(str);
+    ASSERT_TRUE(string_compare("my_name", gen.name.e, gen.name.len))
+            << "Error: Failed to properly generate struct name.";
+}
+
+EnumData parse_enum_test(Char *str)
+{
+    Tokenizer tokenizer = {str};
+
+    eat_token(&tokenizer);
+    return(parse_enum(&tokenizer).ed);
+}
+
+TEST(EnumTest, enum_name_test)
+{
+    Char *str = "enum MyName {};";
+    EnumData gen = parse_enum_test(str);
+    ASSERT_TRUE(string_compare("MyName", gen.name.e, gen.name.len))
+            << "Error: Failed to properly generate enum name.";
+}
+
+TEST(EnumTest, enum_type_test)
+{
+    Char *str = "enum Enum : short {};";
+    EnumData gen = parse_enum_test(str);
+    ASSERT_TRUE(string_compare("short", gen.type.e, gen.type.len))
+            << "Error: Failed to properly handle enum type.";
+}
+
+TEST(EnumTest, enum_class_test)
+{
+    Char *str = "enum class Enum {};";
+    EnumData gen = parse_enum_test(str);
+    ASSERT_TRUE(gen.is_struct)
+            << "Error: Failed to properly handle an enum class.";
+}
+
+TEST(EnumTest, enum_number_of_values_test)
+{
+    Char *str = "enum Nums {one, two, three};";
+    EnumData gen = parse_enum_test(str);
+    ASSERT_TRUE(gen.no_of_values == 3)
+            << "Error: Did not generate the correct number of values for an enum.";
 }
 
 Int run_tests(void)
