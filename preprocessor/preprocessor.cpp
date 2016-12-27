@@ -154,7 +154,6 @@ Void push_error_(ErrorType type, Char *file, Int line)
         e->file = file;
         e->line = line;
 
-
         if(immediately_print_errors) {
             printf("    Error:\n        Type = %s\n        File = %s\n        Line = %d\n",
                    ErrorTypeToString(e->type), e->file, e->line);
@@ -164,7 +163,7 @@ Void push_error_(ErrorType type, Char *file, Int line)
     }
 }
 
-#if 1//INTERNAL
+#if INTERNAL
     #define assert(Expression, ...) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
     #define assert(Expression, ...) {}
@@ -186,7 +185,6 @@ namespace win32
 {
 #include <windows.h>
 }
-
 #endif
 
 Uint64 system_get_performance_counter(void)
@@ -966,6 +964,43 @@ Token get_token(Tokenizer *tokenizer); // Because C++...
 Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat)
 {
     for(Int i = 0; (i < num_tokens_to_eat); ++i) { get_token(tokenizer); }
+}
+
+TokenType get_token_type(String s)
+{
+    assert(s.len);
+
+    TokenType res = {};
+    switch(s.e[0]) {
+        case 0:    { res = TokenType_end_of_stream;       } break;
+
+        case '(':  { res = TokenType_open_paren;          } break;
+        case ')':  { res = TokenType_close_param;         } break;
+        case ':':  { res = TokenType_colon;               } break;
+        case ';':  { res = TokenType_semi_colon;          } break;
+        case '*':  { res = TokenType_asterisk;            } break;
+        case '[':  { res = TokenType_open_bracket;        } break;
+        case ']':  { res = TokenType_close_bracket;       } break;
+        case '{':  { res = TokenType_open_brace;          } break;
+        case '}':  { res = TokenType_close_brace;         } break;
+        case '<':  { res = TokenType_open_angle_bracket;  } break;
+        case '>':  { res = TokenType_close_angle_bracket; } break;
+        case '=':  { res = TokenType_equals;              } break;
+        case ',':  { res = TokenType_comma;               } break;
+        case '~':  { res = TokenType_tilde;               } break;
+        case '#':  { res = TokenType_hash;                } break;
+        case '&':  { res = TokenType_ampersand;           } break;
+        case '+':  { res = TokenType_plus;                } break;
+        case '-':  { res = TokenType_minus;               } break;
+        case '/':  { res = TokenType_divide;              } break;
+
+        default: {
+            if(is_num(s.e[0])) { res = TokenType_number;     }
+            else                 { res = TokenType_identifier; }
+        } break;
+    }
+
+    return(res);
 }
 
 Token string_to_token(String str)
