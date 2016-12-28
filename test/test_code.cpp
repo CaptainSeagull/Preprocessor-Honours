@@ -10,22 +10,16 @@
   ===================================================================================================*/
 
 // File: test_code.cpp
-class BaseOne;
-class BaseTwo;
-struct V2;
-class SubClass;
 
 #include "test_code_generated.h" // Generated code.
 
-class BaseOne
-{
+struct BaseOne {
 public:
     int a;
     char *str;
 };
 
-class BaseTwo
-{
+struct BaseTwo {
 public:
     double *double_ptr; // TODO(Jonny): This breaks with clang...
     int zero;
@@ -36,8 +30,7 @@ struct V2 {
     int y;
 };
 
-class SubClass : public BaseTwo, public BaseOne
-{
+struct SubClass : public BaseTwo, public BaseOne {
 public:
     float *float_ptr;
     double *pointer_array[4];
@@ -50,16 +43,12 @@ private:
 enum class Letters : short {
     a, b, c
 };
+
+enum Nums {
+    one = 1, two, three, four,
+};
 int main(int argc, char **argv)
 {
-    char const *str = pp::enum_to_string(Letters, Letters::b);
-
-    short index = pp::string_to_enum(Letters, "b");
-
-    size_t element_no = pp::get_number_of_enum_elements(Letters);
-
-
-#if 0
     SubClass s;
     memset(&s, 0, sizeof(SubClass));
 
@@ -88,8 +77,9 @@ int main(int argc, char **argv)
     s.double_ptr = new double;
     *s.double_ptr = 5.5;
 
-    pp::print(s);
-#endif
+    char buf[1024];
+    pp::print(s, buf, 1024);
+
     return(0);
 }
 

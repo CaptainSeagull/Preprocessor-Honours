@@ -2,6 +2,12 @@
 
 #include "static_generated.h"
 
+// Forward declared structs (these must be declared outside the namespace...)
+struct BaseOne;
+struct BaseTwo;
+struct V2;
+struct SubClass;
+
 namespace pp { // PreProcessor
 
 // Enum with field for every type detected.
@@ -18,6 +24,7 @@ enum MetaType {
     meta_type_V2,
     meta_type_SubClass,
 };
+
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
@@ -401,8 +408,7 @@ template<typename T> static char const *get_base_type_as_string_(int index/*= 0*
 
 // Meta Data for Letters.
 static short number_of_elements_in_enum_Letters = 3;
-static char const *enum_to_string_Letters(short v)
-{
+static char const *enum_to_string_Letters(short v) {
     switch(v) {
         case 0: { return("a"); } break;
         case 1: { return("b"); } break;
@@ -411,18 +417,37 @@ static char const *enum_to_string_Letters(short v)
 
     return(0); // v is out of bounds.
 }
-static short string_to_enum_Letters(char const *str)
-{
-    int res = 0;
+static short string_to_enum_Letters(char const *str) {
     if(str) {
-        if(strcmp(str, "a") == 0)      { return(0); }
+        if(strcmp(str, "a") == 0) { return(0); }
         else if(strcmp(str, "b") == 0) { return(1); }
         else if(strcmp(str, "c") == 0) { return(2); }
-
-        else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?
     }
 
-    return(res);
+    return(0);  // str didn't match.
+}
+
+// Meta Data for Nums.
+static int number_of_elements_in_enum_Nums = 4;
+static char const *enum_to_string_Nums(int v) {
+    switch(v) {
+        case 1: { return("one"); } break;
+        case 2: { return("two"); } break;
+        case 3: { return("three"); } break;
+        case 4: { return("four"); } break;
+    }
+
+    return(0); // v is out of bounds.
+}
+static int string_to_enum_Nums(char const *str) {
+    if(str) {
+        if(strcmp(str, "one") == 0) { return(1); }
+        else if(strcmp(str, "two") == 0) { return(2); }
+        else if(strcmp(str, "three") == 0) { return(3); }
+        else if(strcmp(str, "four") == 0) { return(4); }
+    }
+
+    return(0);  // str didn't match.
 }
 
 } // namespace pp
