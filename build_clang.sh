@@ -6,7 +6,6 @@ RUN_TEST_CODE=true
 RUN_GCC_FOR_EXTRA_TEST=fals
 
 # Preprocessor
-pwd
 COMMON_WARNINGS_CLANG="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter"
 
 if [ "$RELEASE" == "true" ]; then
@@ -15,7 +14,7 @@ else
     if [ "$GTEST" == "true" ]; then
         clang++ -Wall -Wextra "preprocessor/preprocessor.cpp" "preprocessor/google_test/gtest-all.cc" -std=c++11 -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $COMMON_WARNINGS_CLANG -g -ldl -pthread
     else
-        clang++ -Wall -Wextra "preprocessor/preprocessor.cpp" -std=c++11 -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $COMMON_WARNINGS_CLANG -g -ldl -pthread
+        clang++ -Wall -Wextra "preprocessor/preprocessor.cpp" -std=c++11 -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $COMMON_WARNINGS_CLANG -g -ldl
     fi
 fi
 mv "./preprocessor_exe" "builds/preprocessor"
@@ -40,7 +39,7 @@ if [ "$RUN_TEST_CODE" == "true" ]; then
     "../builds/preprocessor" test_code.cpp
     popd
 
-    clang++ -Wall "test/test_code.cpp" -std=c++11 -o test_exe -Wno-unused-function -Wno-unused-variable -g -ldl
+    clang++ -Wall -Wextra "test/test_code.cpp" -std=c++11 -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl
     mv "./test_exe" "builds/test"
 fi
 
