@@ -1405,6 +1405,8 @@ struct FunctionData {
     Int param_count;
 };
 
+enum StructType { StructType_unknown, StructType_struct, StructType_class, StructType_count };
+
 struct StructData {
     String name;
     Int member_count;
@@ -1412,6 +1414,8 @@ struct StructData {
 
     Int inherited_count;
     String *inherited;
+
+    StructType struct_or_class;
 
     //FunctionData *func_data;
     //Int func_count;
@@ -1504,9 +1508,11 @@ struct ParseStructResult {
     StructData sd;
     Bool success;
 };
-ParseStructResult parse_struct(Tokenizer *tokenizer)
+ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
 {
     ParseStructResult res = {};
+
+    res.sd.struct_or_class = struct_or_class;
 
     Bool have_name = false;
     Token name = peak_token(tokenizer);
@@ -2099,6 +2105,18 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "#if !defined(GENERATED_H) // TODO(Jonny): Add the actual filename in here?\n"
                                "\n"
                                "#include \"static_generated.h\"\n"
+                               "\n");
+
+        // Forward declare structs.
+        // TODO(Jonny): Find out if something is a class or a struct and forward declare it properly.
+        write_to_output_buffer(&ob,
+                               "// Forward declared structs (these must be declared outside the namespace...)\n");
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
+            write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e);
+        }
+
+        write_to_output_buffer(&ob,
                                "\n"
                                "namespace pp { // PreProcessor\n");
 
@@ -2179,22 +2197,13 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             index = copy_literal_to_char_buffer(def_struct_code, index, "                    } // switch(member->type)");
         }
 
+        write_to_output_buffer(&ob, "\n");
 
-        // Type to members_of thing.
-#if 0
-        // Keil 8051 compiler
-#define offsetof(s,m) (size_t)&(((s *)0)->m)
-
-        // Microsoft x86 compiler (version 7)
-#define offsetof(s,m) (size_t)(unsigned long)&(((s *)0)->m)
-
-        // Diab Coldfire compiler
-#define offsetof(s,memb) ((size_t)((char *)&((s *)0)->memb-(char *)0));
-#endif
         write_to_output_buffer(&ob,
                                "// Convert a type into a members of pointer.\n"
                                "template<typename T> static MemberDefinition *get_members_of_(void) {\n");
         write_to_output_buffer(&ob, "    // Recreated structs.\n");
+
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
@@ -2531,11 +2540,8 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                             ed->values[j].name.len, ed->values[j].name.e);
                     }
 
-
-
                     Int bytes_written = my_sprintf(buf1, size,
-                                                   "\nstatic char const *enum_to_string_%.*s(%s v)\n"
-                                                   "{\n"
+                                                   "\nstatic char const *enum_to_string_%.*s(%s v) {\n"
                                                    "    switch(v) {\n"
                                                    "%s"
                                                    "    }\n"
@@ -2559,30 +2565,27 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     Char *buf2 = cast(Char *)push_scratch_memory(size);
 
                     Int index = 0;
-                    if(ed->no_of_values) {
-                        index += my_sprintf(buf2 + index, size - index,
-                                            "        if(strcmp(str, \"%.*s\") == 0)      { return(%d); }\n",
-                                            ed->values[0].name.len, ed->values[0].name.e,
-                                            ed->values[0].value);
-                    }
-                    for(int j = 1; (j < ed->no_of_values); ++j) {
-                        index += my_sprintf(buf2 + index, size - index,
-                                            "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                            ed->values[j].name.len, ed->values[j].name.e,
-                                            ed->values[j].value);
+                    for(int j = 0; (j < ed->no_of_values); ++j) {
+                        if(!j) {
+                            index += my_sprintf(buf2 + index, size - index,
+                                                "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                                ed->values[0].name.len, ed->values[0].name.e,
+                                                ed->values[0].value);
+                        } else {
+                            index += my_sprintf(buf2 + index, size - index,
+                                                "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                                ed->values[j].name.len, ed->values[j].name.e,
+                                                ed->values[j].value);
+                        }
                     }
 
                     my_sprintf(buf1, scratch_memory_size,
-                               "static %s string_to_enum_%.*s(char const *str)\n"
-                               "{\n"
-                               "    int res = 0;\n"
+                               "static %s string_to_enum_%.*s(char const *str) {\n"
                                "    if(str) {\n"
                                "%s"
-                               "\n"
-                               "        else { assert(0); } // str didn't match. TODO(Jonny): Throw an error here?\n"
                                "    }\n"
                                "\n"
-                               "    return(res);\n"
+                               "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
                                "}\n",
                                type,
                                ed->name.len, ed->name.e, buf2);
@@ -2592,8 +2595,6 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                     clear_scratch_memory();
                 }
             }
-
-            clear_scratch_memory();
         }
 
         //
@@ -2660,12 +2661,13 @@ Void start_parsing(Char *filename, Char *file)
                         eat_token(&tokenizer);
                         parse_template(&tokenizer);
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
+                        StructType struct_or_class = token_equals(token, "struct") ? StructType_struct : StructType_class;
                         if(struct_count + 1 >= get_alloc_size_arr(struct_data)) {
                             Void *p = realloc(struct_data);
                             if(p) { struct_data = cast(StructData *)p; }
                         }
 
-                        ParseStructResult r = parse_struct(&tokenizer);
+                        ParseStructResult r = parse_struct(&tokenizer, struct_or_class);
 
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
                         if(r.success) { struct_data[struct_count++] = r.sd; }
