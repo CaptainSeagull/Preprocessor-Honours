@@ -14,12 +14,12 @@ OUTPUT_NAME="preprocessor_exe"
 DEFINES="-DWIN32=0 -DLINUX=1"
 
 if [ "$RELEASE" == "true" ]; then
-    clang++ $WARNING_LEVEL "preprocessor/preprocessor.cpp" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 $DEFINES $WARNINGS -ldl
+    clang++-3.8 $WARNING_LEVEL "preprocessor/preprocessor.cpp" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 $DEFINES $WARNINGS -ldl
 else
     if [ "$GTEST" == "true" ]; then
-        clang++ $WARNING_LEVEL "preprocessor/preprocessor.cpp" "preprocessor/google_test/gtest-all.cc" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 $DEFINES $WARNINGS -g -ldl -pthread
+        clang++-3.8 $WARNING_LEVEL "preprocessor/preprocessor.cpp" "preprocessor/google_test/gtest-all.cc" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 $DEFINES $WARNINGS -g -ldl -pthread
     else
-        clang++ $WARNING_LEVEL "preprocessor/preprocessor.cpp" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 $DEFINES $WARNINGS -g -ldl
+        clang++-3.8 $WARNING_LEVEL "preprocessor/preprocessor.cpp" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 $DEFINES $WARNINGS -g -ldl
     fi
 fi
 mv "./preprocessor_exe" "builds/preprocessor"
@@ -44,7 +44,7 @@ if [ "$RUN_TEST_CODE" == "true" ]; then
     "../builds/preprocessor" test_code.cpp
     popd
 
-    clang++ -Wall -Wextra "test/test_code.cpp" -std=c++11 -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl
+    clang++-3.8 -Wall -Wextra "test/test_code.cpp" -std=c++11 -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl
     mv "./test_exe" "builds/test"
 fi
 
