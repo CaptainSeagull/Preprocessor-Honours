@@ -934,14 +934,12 @@ MacroData *macro_data = 0;
 
 Token get_token(Tokenizer *tokenizer); // Because C++...
 #define eat_token(tokenizer) eat_tokens(tokenizer, 1);
-Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat) {
-    for(Int i = 0; (i < num_tokens_to_eat); ++i) { get_token(tokenizer); }
-}
+Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat) { for(Int i = 0; (i < num_tokens_to_eat); ++i) { get_token(tokenizer); } }
 
 TokenType get_token_type(String s) {
     assert(s.len);
 
-    TokenType res = {};
+    TokenType res = TokenType_unknown;
     switch(s.e[0]) {
         case 0:    { res = TokenType_end_of_stream;       } break;
 
@@ -967,7 +965,7 @@ TokenType get_token_type(String s) {
 
         default: {
             if(is_num(s.e[0])) { res = TokenType_number;     }
-            else                 { res = TokenType_identifier; }
+            else               { res = TokenType_identifier; }
         } break;
     }
 
@@ -1537,12 +1535,8 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
                             temp = get_token(&tokenizer_copy);
                         }
 
-                        if(!is_func) {
-                            member_pos[res.sd.member_count++] = token.e;
-                        } else {
-                            // Skip over member functions.
-                            if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); }
-                        }
+                        if(!is_func) { member_pos[res.sd.member_count++] = token.e;                                         }
+                        else         { if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); } }
                         /*
                         } else {
                             // This is commented out because I'm not sure I really _need_ member functions...
