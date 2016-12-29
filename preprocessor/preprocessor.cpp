@@ -2807,12 +2807,12 @@ StructData parse_struct_test(Char *str, int ahead = 0) {
 
     eat_token(&tokenizer);
     for(int i = 0; (i < ahead); ++i) {
-        parse_struct(&tokenizer);
+        parse_struct(&tokenizer, StructType_struct);
         eat_token(&tokenizer);
         eat_token(&tokenizer);
     }
 
-    return(parse_struct(&tokenizer).sd);
+    return(parse_struct(&tokenizer, StructType_struct).sd);
 }
 
 enum StructCompareFailure {
