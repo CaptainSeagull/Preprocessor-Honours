@@ -6,20 +6,20 @@ RUN_TEST_CODE=true
 RUN_GCC_FOR_EXTRA_TEST=false
 
 # Preprocessor
-COMMON_WARNING_LEVEL="-Wall -Wextra"
-COMMON_WARNINGS_CLANG="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter"
-COMMON_CPP_VERSION="-std=c++98"
-COMMON_DISABLED="-fno-exceptions -fno-rtti"
-COMMON_OUTPUT_NAME="preprocessor_exe"
-COMMON_DEFINES="-DWIN32=0 -DLINUX=1"
+WARNING_LEVEL="-Wall -Wextra"
+WARNINGS="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter"
+CPP_VERSION="-std=c++98"
+DISABLED="-fno-exceptions -fno-rtti"
+OUTPUT_NAME="preprocessor_exe"
+DEFINES="-DWIN32=0 -DLINUX=1"
 
 if [ "$RELEASE" == "true" ]; then
-    clang++ $COMMON_WARNING_LEVEL "preprocessor/preprocessor.cpp" $COMMON_CPP_VERSION $COMMON_DISABLED -o $COMMON_OUTPUT_NAME -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 $COMMON_DEFINES $COMMON_WARNINGS_CLANG -ldl
+    clang++ $WARNING_LEVEL "preprocessor/preprocessor.cpp" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 $DEFINES $WARNINGS -ldl
 else
     if [ "$GTEST" == "true" ]; then
-        clang++ $COMMON_WARNING_LEVEL "preprocessor/preprocessor.cpp" "preprocessor/google_test/gtest-all.cc" $COMMON_CPP_VERSION $COMMON_DISABLED -o $COMMON_OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 $COMMON_DEFINES $COMMON_WARNINGS_CLANG -g -ldl -pthread
+        clang++ $WARNING_LEVEL "preprocessor/preprocessor.cpp" "preprocessor/google_test/gtest-all.cc" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 $DEFINES $WARNINGS -g -ldl -pthread
     else
-        clang++ $COMMON_WARNING_LEVEL "preprocessor/preprocessor.cpp" $COMMON_CPP_VERSION $COMMON_DISABLED -o $COMMON_OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 $COMMON_DEFINES $COMMON_WARNINGS_CLANG -g -ldl
+        clang++ $WARNING_LEVEL "preprocessor/preprocessor.cpp" $CPP_VERSION $DISABLED -o $OUTPUT_NAME -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 $DEFINES $WARNINGS -g -ldl
     fi
 fi
 mv "./preprocessor_exe" "builds/preprocessor"
