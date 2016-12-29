@@ -41,7 +41,7 @@ struct B { float n; };
 struct C { float o; };
 
 struct Foo : public Bar, public thingy, public A, public B, public C {
-    char *str;
+    char const *str;
     int *ip;
     float *fp;
     bool *b;
@@ -88,7 +88,7 @@ void test_struct(void) {
 
     char *buf = new char[256 * 256];
     pp::print(foo, buf, 256 * 256);
-    delete buf;
+    delete[] buf;
 
 
     for(int i = 0; (i < pp::get_base_type_count(Foo)); ++i) {
