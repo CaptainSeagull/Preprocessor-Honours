@@ -11,79 +11,6 @@
 
 // File: test_code.cpp
 
-#include "test_code_generated.h" // Generated code.
-
-struct BaseOne {
-public:
-    int a;
-    char *str;
-};
-
-struct BaseTwo {
-public:
-    double *double_ptr; // TODO(Jonny): This breaks with clang...
-    int zero;
-};
-
-struct V2 {
-    int x;
-    int y;
-};
-
-struct SubClass : public BaseTwo, public BaseOne {
-public:
-    float *float_ptr;
-    double *pointer_array[4];
-
-    void set_v2(V2 other) { this->v2 = other; }
-private:
-    V2 v2;
-};
-
-enum class Letters : short {
-    a, b, c
-};
-
-enum Nums {
-    one = 1, two, three, four,
-};
-int main(int argc, char **argv)
-{
-    SubClass s;
-    memset(&s, 0, sizeof(SubClass));
-
-    // SubClass
-    //s.float_ptr = NULL; // Leave blank.
-
-    s.pointer_array[0] = new double;
-    *s.pointer_array[0] = 1.1;
-
-    s.pointer_array[1] = new double;
-    *s.pointer_array[1] = 2.2;
-
-    s.pointer_array[2] = NULL; // Leave blank.
-
-    s.pointer_array[3] = new double;
-    *s.pointer_array[3] = 3.3;
-
-    V2 v = {10, 20};
-    s.set_v2(v);
-
-    // BaseOne.
-    s.a = 1;
-    s.str = "Hello World";
-
-    // BaseTwo.
-    s.double_ptr = new double;
-    *s.double_ptr = 5.5;
-
-    char buf[1024];
-    pp::print(s, buf, 1024);
-
-    return(0);
-}
-
-#if 0
 #include "test_code_generated.h"
 
 #define NUMBER_TEN 10
@@ -130,8 +57,7 @@ struct Y: public X {
 };
 
 struct Transform {V2 pos; V2 size;};
-void test_struct(void)
-{
+void test_struct(void) {
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
     //              struct has been initialized??
@@ -166,7 +92,7 @@ void test_struct(void)
 
 
     for(int i = 0; (i < pp::get_base_type_count(Foo)); ++i) {
-        char const *str = pp::get_base_type_as_string(Foo, i);
+        char const *str = pp::get_base_type_as_string_index(Foo, i);
 
         int j = 0;
     }
@@ -199,10 +125,9 @@ enum Letters {
     letter_c
 };
 
-void test_enum(void)
-{
+void test_enum(void) {
     size_t num_members = pp::get_number_of_enum_elements(Letters);
-    printf("\nNumber of members: %llu", num_members);
+    printf("\nNumber of members: %lu", num_members);
 
     {
         char const *a = pp::enum_to_string(Letters, letter_a);
@@ -222,8 +147,7 @@ void test_enum(void)
     }
 }
 
-int main(int /*argc*/, char ** /*argv*/)
-{
+int main(int /*argc*/, char ** /*argv*/) {
     printf("\n");
 
     test_struct();
@@ -238,4 +162,3 @@ int main(int /*argc*/, char ** /*argv*/)
 
     return(0);
 }
-#endif
