@@ -37,7 +37,6 @@
     - Make a is_primitive function.
     - Make a function tell if something's a pointer or not. Could return false if not a pointer, and a positive integer
       for the level of pointer otherwise. Should work with references too.
-    - Make a flag which will forward declare functions/structs.
 */
 
 #include <stdio.h>
@@ -595,7 +594,8 @@ Char *get_static_file(void) {
                 "#define get_base_type_count(Type) get_base_type_count_<Type>()\n"
                 "\n"
                 "template<typename T> static char const *get_base_type_as_string_(int index = 0);\n"
-                "#define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)\n"
+                "#define get_base_type_as_string(Type)       get_base_type_as_string_<Type>()\n"
+                "#define get_base_type_as_string_index(Type, i) get_base_type_as_string_<Type>(i)\n"
                 "\n"
                 "#define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()\n"
                 "template<typename T, typename U> bool fuzzy_type_compare_(void) {\n"
@@ -607,12 +607,12 @@ Char *get_static_file(void) {
                 "        } else {\n"
                 "            int base_count = get_base_type_count(T);\n"
                 "            for(int i = 0; (i < base_count); ++i) {\n"
-                "                char const *str = get_base_type_as_string(T);\n"
+                "                char const *str = get_base_type_as_string_<T>(i);\n"
                 "                if(strcmp(b_str, str)) { return(true); }\n"
                 "            }\n"
                 "            \n"
                 "            for(int i = 0; (i < base_count); ++i) {\n"
-                "                char const *str = get_base_type_as_string(U);\n"
+                "                char const *str = get_base_type_as_string_<U>(i);\n"
                 "                if(strcmp(a_str, str)) { return(true); }\n"
                 "            }\n"
                 "        }\n"

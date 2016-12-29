@@ -124,7 +124,8 @@ template<typename T> static int get_base_type_count_(void);
 #define get_base_type_count(Type) get_base_type_count_<Type>()
 
 template<typename T> static char const *get_base_type_as_string_(int index = 0);
-#define get_base_type_as_string(Type, ...) get_base_type_as_string_<Type>(##__VA_ARGS__)
+#define get_base_type_as_string(Type)       get_base_type_as_string_<Type>()
+#define get_base_type_as_string_index(Type, i) get_base_type_as_string_<Type>(i)
 
 #define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()
 template<typename T, typename U> bool fuzzy_type_compare_(void) {
@@ -136,12 +137,12 @@ template<typename T, typename U> bool fuzzy_type_compare_(void) {
         } else {
             int base_count = get_base_type_count(T);
             for(int i = 0; (i < base_count); ++i) {
-                char const *str = get_base_type_as_string(T);
+                char const *str = get_base_type_as_string_<T>(i);
                 if(strcmp(b_str, str)) { return(true); }
             }
             
             for(int i = 0; (i < base_count); ++i) {
-                char const *str = get_base_type_as_string(U);
+                char const *str = get_base_type_as_string_<U>(i);
                 if(strcmp(a_str, str)) { return(true); }
             }
         }
