@@ -549,10 +549,12 @@ Char *get_static_file(void) {
                 "\n"
                 "#define get_num_of_members(type) get_number_of_members_<type>()\n"
                 "\n"
-                "#define serialize(var, buf, size) serialize_struct_<decltype(var)>(var, #var, 0, buf, size, 0)\n"
+                "#define serialize_type(var, Type, buf, size) serialize_struct_<Type>(var, #var, 0, buf, size, 0)\n"
+                "#define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)\n"
                 "\n"
                 "template <typename T>static size_t serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written);\n"
-                "#define print(var, ...) print_<decltype(var)>(&var, #var, ##__VA_ARGS__)\n"
+                "#define print_type(var, Type, ...) print_<Type>(&var, #var, ##__VA_ARGS__)\n"
+                "#define print(var, ...) print_type(var, decltype(var), ##__VA_ARGS__)\n"
                 "template<typename T>static bool print_(T *var, char const *name, char *buf = 0, size_t size = 0) {\n"
                 "    bool res = false, custom_buf = false;\n"
                 "\n"
@@ -1718,7 +1720,7 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "            // TODO(Jonny): Go through and check all the pointers are correct on these.\n"
         "            switch(member->type) {\n"
         "                // double.\n"
-        "                case meta_type_double: {\n"
+        "                case MetaType_double: {\n"
         "                    if(member->arr_size > 1) {\n"
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + j)) : 0;\n"
@@ -1736,10 +1738,10 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble *%%s = (null)\", indent_buf, member->name);\n"
         "                        }\n"
         "                    }\n"
-        "                } break; // case meta_type_double\n"
+        "                } break; // case MetaType_double\n"
         "\n"
         "                // float.\n"
-        "                case meta_type_float: {\n"
+        "                case MetaType_float: {\n"
         "                    if(member->arr_size > 1) {\n"
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + j)) : 0;\n"
@@ -1757,10 +1759,10 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat *%%s = (null)\", indent_buf, member->name);\n"
         "                        }\n"
         "                    }\n"
-        "                } break; // case meta_type_float\n"
+        "                } break; // case MetaType_float\n"
         "\n"
         "                // int.\n"
-        "                case meta_type_int: {\n"
+        "                case MetaType_int: {\n"
         "                    if(member->arr_size > 1) {\n"
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + j)) : 0;\n"
@@ -1778,10 +1780,10 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint *%%s = (null)\", indent_buf, member->name);\n"
         "                        }\n"
         "                    }\n"
-        "                } break; // case meta_type_int\n"
+        "                } break; // case MetaType_int\n"
         "\n"
         "                // long.\n"
-        "                case meta_type_long: {\n"
+        "                case MetaType_long: {\n"
         "                    if(member->arr_size > 1) {\n"
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + j)) : 0;\n"
@@ -1799,10 +1801,10 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint *%%s = (null)\", indent_buf, member->name);\n"
         "                        }\n"
         "                    }\n"
-        "                } break; // case meta_type_long\n"
+        "                } break; // case MetaType_long\n"
         "\n"
         "                // short.\n"
-        "                case meta_type_short: {\n"
+        "                case MetaType_short: {\n"
         "                    if(member->arr_size > 1) {\n"
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;\n"
@@ -1820,10 +1822,10 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint *%%s = (null)\", indent_buf, member->name);\n"
         "                        }\n"
         "                    }\n"
-        "                } break; // case meta_type_short\n"
+        "                } break; // case MetaType_short\n"
         "\n"
         "                // bool.\n"
-        "                case meta_type_bool: {\n"
+        "                case MetaType_bool: {\n"
         "                    bool *bool_value = 0;\n"
         "                    if(member->arr_size > 1) {\n"
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
@@ -1843,10 +1845,10 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool *%%s = (null)\", indent_buf, member->name);\n"
         "                        }\n"
         "                    }\n"
-        "                } break; // case meta_type_bool\n"
+        "                } break; // case MetaType_bool\n"
         "\n"
         "                // char.\n"
-        "                case meta_type_char: {\n"
+        "                case MetaType_char: {\n"
         "                    if(member_ptr) {\n"
         "                        if(member->is_ptr) {\n"
         "                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%%schar *%%s = \\\"%%s\\\"\", indent_buf, member->name, (char *)(*(size_t *)member_ptr));\n"
@@ -1856,7 +1858,7 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                    } else {\n"
         "                        bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%schar *%%s = (null)\", indent_buf, member->name);\n"
         "                    }\n"
-        "                } break; // case meta_type_char\n"
+        "                } break; // case MetaType_char\n"
         "\n"
         "                // If the type wasn't a primtive, do a switchon the type again, but search for structs.\n"
         "                // Then that should recursively call this function again.\n"
@@ -2090,7 +2092,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         for(Int i = 0; (i < type_count); ++i) {
             String *type = types + i;
 
-            write_to_output_buffer(&ob, "    meta_type_%.*s,\n", type->len, type->e);
+            write_to_output_buffer(&ob, "    MetaType_%.*s,\n", type->len, type->e);
         }
 
         write_to_output_buffer(&ob, "};");
@@ -2112,14 +2114,14 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
                 Char *DefaultStructString =
-                    "                        case meta_type_%.*s: {\n"
+                    "                        case MetaType_%.*s: {\n"
                     "                            // %.*s\n"
                     "                            if(member->is_ptr) {\n"
                     "                                bytes_written = serialize_struct_<%.*s *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                     "                            } else {\n"
                     "                                bytes_written = serialize_struct_<%.*s>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                     "                            }\n"
-                    "                        } break; // case meta_type_%.*s\n"
+                    "                        } break; // case MetaType_%.*s\n"
                     "\n";
 
                 index += my_sprintf(def_struct_code + index, def_struct_code_size, DefaultStructString,
@@ -2136,15 +2138,12 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
         write_to_output_buffer(&ob, "\n");
 
-        write_to_output_buffer(&ob,
-                               "// Convert a type into a members of pointer.\n"
-                               "template<typename T> static MemberDefinition *get_members_of_(void) {\n");
-        write_to_output_buffer(&ob, "    // Recreated structs.\n");
-
+        // Recreated structs.
+        write_to_output_buffer(&ob, "// Recreated structs (Clang in std=C++98 complains if these are local).\n");
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            write_to_output_buffer(&ob, "    struct _%.*s", sd->name.len, sd->name.e);
+            write_to_output_buffer(&ob, "struct _%.*s", sd->name.len, sd->name.e);
             if(sd->inherited) {
                 write_to_output_buffer(&ob, " :");
 
@@ -2176,7 +2175,11 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
             write_to_output_buffer(&ob, " };\n");
         }
-        write_to_output_buffer(&ob, " \n");
+
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "// Convert a type into a members of pointer.\n"
+                               "template<typename T> static MemberDefinition *get_members_of_(void) {\n");
 
         if(struct_count) {
             for(Int i = 0; (i < struct_count); ++i) {
@@ -2200,7 +2203,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                 write_to_output_buffer(&ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
                 for(Int j = 0; (j < sd->member_count); ++j) {
                     Variable *md = sd->members + j;
-                    write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
+                    write_to_output_buffer(&ob, "            {MetaType_%.*s, \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
                                            md->type.len, md->type.e,
                                            md->name.len, md->name.e,
                                            sd->name.len, sd->name.e,
@@ -2218,7 +2221,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                         for(Int k = 0; (k < base_class->member_count); ++k) {
                             Variable *base_class_var = base_class->members + k;
 
-                            write_to_output_buffer(&ob, "            {meta_type_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
+                            write_to_output_buffer(&ob, "            {MetaType_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
                                                    base_class_var->type.len, base_class_var->type.e,
                                                    base_class_var->name.len, base_class_var->name.e,
                                                    sd->name.len, sd->name.e,
