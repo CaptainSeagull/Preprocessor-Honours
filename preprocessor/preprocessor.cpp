@@ -2411,7 +2411,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                            sd->name.len, sd->name.e);
                 } else {
                     write_to_output_buffer(&ob,
-                                           "    else if(type_compare(T, %.*s)) {\n",
+                                           "    } else if(type_compare(T, %.*s)) {\n",
                                            sd->name.len, sd->name.e);
                 }
 
@@ -2430,16 +2430,13 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 }
 
-                write_to_output_buffer(&ob,
-                                       "    }\n",
-                                       sd->inherited[0].len, sd->inherited[0].e);
-
                 ++written_count;
             }
         }
 
 
         write_to_output_buffer(&ob,
+                               "    }\n"
                                "\n"
                                "    return(0); // Not found.\n"
                                "}\n");
