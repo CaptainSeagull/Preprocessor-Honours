@@ -11,14 +11,12 @@
 
 /* TODO(Jonny):
     - Struct meta data.
-        - Right now, it generates invalid code if you make a struct with no members.
         - It breaks if you use a comma to declare members of the same type.
         - Have a way to get the type of different elements (as strings or types).
         - Get a get_member(v, i) function, which simple returns the member at index i.
         - Output a _useful_ error message if the user declares the same struct twice.
         - In serialize struct, if there is a member which is an enum, call enum_to_string on it's value.
         - Create bool is_primitive(T) which returns if something is a primitive or not.
-        - Some of the generated code, namely get_members_of_(), generate bad code if there are no structs in a project.
     - Union meta data.
         - Simple version of struct.
     - Function meta data.
@@ -135,14 +133,12 @@ struct Error {
 
 Error global_errors[32];
 Int global_error_count = 0;
-
 #if ERROR_LOGGING
     #define push_error(type) push_error_(type, __FILE__, __LINE__)
 #else
     #define push_error(type) {}
 #endif
 
-Bool immediately_print_errors = false;
 Void push_error_(ErrorType type, Char *file, Int line) {
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count;
@@ -150,11 +146,6 @@ Void push_error_(ErrorType type, Char *file, Int line) {
         e->type = type;
         e->file = file;
         e->line = line;
-
-        if(immediately_print_errors) {
-            printf("    Error:\n        Type = %s\n        File = %s\n        Line = %d\n",
-                   ErrorTypeToString(e->type), e->file, e->line);
-        }
 
         ++global_error_count;
     }
@@ -255,17 +246,15 @@ Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1) {
 #if MEM_CHECK
     if(res) {
         MemList *cur = cast(MemList *)malloc(sizeof(MemList));
-        if(!cur) {
-            push_error(ErrorType_ran_out_of_memory);
-        } else {
+        if(!cur) { push_error(ErrorType_ran_out_of_memory); }
+        else {
             memset(cur, 0, sizeof(MemList));
             cur->ptr = res;
             cur->file = file;
             cur->line = line;
 
-            if(!mem_list_root) {
-                mem_list_root = cur;
-            } else {
+            if(!mem_list_root) { mem_list_root = cur; }
+            else {
                 MemList *next = mem_list_root;
                 while(next->next) { next = next->next; }
 
@@ -334,9 +323,8 @@ Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0) {
             res = ptr;
         } else {
             PtrSize *raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size + sizeof(PtrSize) * 2);
-            if(!raw_ptr) {
-                push_error(ErrorType_ran_out_of_memory);
-            } else {
+            if(!raw_ptr) { push_error(ErrorType_ran_out_of_memory); }
+            else {
                 *cast(PtrSize *)raw_ptr = size;
                 res = (PtrSize *)raw_ptr + 1;
                 memset(cast(Char *)res + old_size, 0, size - old_size);
@@ -413,9 +401,7 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
 }
 
 Bool string_compare(Char *a, Char *b, Int len) {
-    for(Int i = 0; (i < len); ++i, ++a, ++b) {
-        if(*a != *b) { return(false); }
-    }
+    for(Int i = 0; (i < len); ++i, ++a, ++b) { if(*a != *b) { return(false); } }
 
     return(true);
 }
@@ -652,14 +638,11 @@ Char *get_static_file(void) {
     return(res);
 }
 
-struct File {
-    Char *data;
-    Int size;
-};
-File read_entire_file_and_null_terminate(Char *filename, Void *memory) {
+struct File { Char *data; Int size; };
+File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     File res = {};
 
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(fname, "r");
     if(file) {
         fseek(file, 0, SEEK_END);
         res.size = ftell(file);
@@ -673,12 +656,12 @@ File read_entire_file_and_null_terminate(Char *filename, Void *memory) {
     return(res);
 }
 
-Bool write_to_file(Char *filename, Void *data, PtrSize data_size) {
+Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
     assert(data_size > 0);
 
     Bool res = false;
 
-    FILE *file = fopen(filename, "w");
+    FILE *file = fopen(fname, "w");
     if(file) {
         fwrite(data, 1, data_size, file);
         fclose(file);
@@ -688,10 +671,10 @@ Bool write_to_file(Char *filename, Void *data, PtrSize data_size) {
     return(res);
 }
 
-PtrSize get_file_size(Char *filename) {
+PtrSize get_file_size(Char *fname) {
     PtrSize size = 0;
 
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(fname, "r");
     if(file) {
         fseek(file, 0, SEEK_END);
         size = ftell(file) + 1;
@@ -1067,9 +1050,7 @@ Token get_token(Tokenizer *tokenizer) {
         case '"': {
             res.e = tokenizer->at;
             while((tokenizer->at[0]) && (tokenizer->at[0] != '"')) {
-                // TODO(Jonny): Is this right??
                 if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { ++tokenizer->at; }
-
                 ++tokenizer->at;
             }
 
@@ -1081,9 +1062,7 @@ Token get_token(Tokenizer *tokenizer) {
         case '\'': {
             res.e = tokenizer->at;
             while((tokenizer->at[0]) && (tokenizer->at[0] != '\'')) {
-                // TODO(Jonny): Is this right??
                 if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { ++tokenizer->at; }
-
                 ++tokenizer->at;
             }
 
@@ -1342,14 +1321,12 @@ Bool peak_require_token(Tokenizer *tokenizer, Char *str) {
 }
 
 Bool is_stupid_class_keyword(Token t) {
-    Bool result = false;
-
     Char *keywords[] = { "private", "public", "protected" };
     for(Int i = 0; (i < array_count(keywords)); ++i) {
-        if(string_compare(keywords[i], t.e, t.len)) { result = true; }
+        if(string_compare(keywords[i], t.e, t.len)) { return(true); }
     }
 
-    return(result);
+    return(false);
 }
 
 struct FunctionData {
@@ -2250,11 +2227,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                        sd->name.len, sd->name.e);
             }
 
-            write_to_output_buffer(&ob, "}\n");
+            write_to_output_buffer(&ob, "    }\n");
         }
 
         write_to_output_buffer(&ob,
-                               "\n"
                                "\n"
                                "    return(0); // Error.\n"
                                "}\n");
@@ -2570,7 +2546,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
 Bool should_write_to_file = false;
 
-Void start_parsing(Char *filename, Char *file) {
+Void start_parsing(Char *fname, Char *file) {
     Int enum_count = 0;
     EnumData *enum_data = alloc(EnumData, 8);
 
@@ -2601,11 +2577,8 @@ Void start_parsing(Char *filename, Char *file) {
                             ++md->res.len;
                             ++tokenizer.at;
                         }
-                    } else {
-                        skip_to_end_of_line(&tokenizer);
-                    }
+                    } else { skip_to_end_of_line(&tokenizer); }
                 } break;
-
 
                 case TokenType_identifier: {
                     // TODO(Jonny): I may need to keep the template header, so that the generated structs still work.
@@ -2636,14 +2609,14 @@ Void start_parsing(Char *filename, Char *file) {
             }
         }
 
-        File file_to_write = write_data(filename, struct_data, struct_count, enum_data, enum_count);
+        File file_to_write = write_data(fname, struct_data, struct_count, enum_data, enum_count);
 
         if(should_write_to_file) {
             Char generated_file_name[256] = {};
             Char *generated_extension = "_generated.h";
 
             if(string_concat(generated_file_name, array_count(generated_file_name),
-                             filename, string_length(filename) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
+                             fname, string_length(fname) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                              generated_extension, string_length(generated_extension))) {
 
                 Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
@@ -2699,6 +2672,8 @@ Int main(Int argc, Char **argv) {
         should_write_to_file = true;
 
         // Get the total amount of memory needed to store all files.
+
+
         PtrSize largest_source_file_size = 0;
         Int number_of_files = 0;
         for(Int i = 1; (i < argc); ++i) {
@@ -2714,11 +2689,10 @@ Int main(Int argc, Char **argv) {
 
                 case SwitchType_source_file: {
                     PtrSize file_size = get_file_size(switch_name);
-                    if(file_size) {
+                    if(!file_size) {push_error(ErrorType_cannot_find_file); }
+                    else {
                         ++number_of_files;
                         if(file_size > largest_source_file_size) { largest_source_file_size = file_size; }
-                    } else {
-                        push_error(ErrorType_cannot_find_file);
                     }
                 } break;
             }
@@ -2730,9 +2704,8 @@ Int main(Int argc, Char **argv) {
             res = run_tests();
 #endif
         } else {
-            if(!number_of_files) {
-                push_error(ErrorType_no_files_pass_in);
-            } else {
+            if(!number_of_files) { push_error(ErrorType_no_files_pass_in); }
+            else {
                 Byte *file_memory = alloc(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
@@ -2778,17 +2751,11 @@ Int main(Int argc, Char **argv) {
                     // TODO(Jonny): Write errors to disk.
                     printf("\n\nList of errors:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
-                        Error *e = global_errors + i;
-
-                        Char *error_type = ErrorTypeToString(e->type);
-
                         printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
-                               i, error_type, e->file, e->line);
+                               i, ErrorTypeToString(global_errors[i].type), global_errors[i].file, global_errors[i].line);
                     }
 
-                    if(system_check_for_debugger()) {
-                        assert(0);
-                    }
+                    if(system_check_for_debugger()) { assert(0); }
                 }
             }
         }
@@ -2916,8 +2883,7 @@ TEST(StructTest, number_of_members_test) {
 TEST(StructTest, struct_name) {
     Char *str = "struct my_name {};";
     StructData gen = parse_struct_test(str);
-    ASSERT_TRUE(string_compare("my_name", gen.name.e, gen.name.len))
-            << "Error: Failed to properly generate struct name.";
+    ASSERT_TRUE(string_compare("my_name", gen.name.e, gen.name.len)) << "Error: Failed to properly generate struct name.";
 }
 
 EnumData parse_enum_test(Char *str) {
@@ -2930,29 +2896,25 @@ EnumData parse_enum_test(Char *str) {
 TEST(EnumTest, enum_name_test) {
     Char *str = "enum MyName {};";
     EnumData gen = parse_enum_test(str);
-    ASSERT_TRUE(string_compare("MyName", gen.name.e, gen.name.len))
-            << "Error: Failed to properly generate enum name.";
+    ASSERT_TRUE(string_compare("MyName", gen.name.e, gen.name.len)) << "Error: Failed to properly generate enum name.";
 }
 
 TEST(EnumTest, enum_type_test) {
     Char *str = "enum Enum : short {};";
     EnumData gen = parse_enum_test(str);
-    ASSERT_TRUE(string_compare("short", gen.type.e, gen.type.len))
-            << "Error: Failed to properly handle enum type.";
+    ASSERT_TRUE(string_compare("short", gen.type.e, gen.type.len)) << "Error: Failed to properly handle enum type.";
 }
 
 TEST(EnumTest, enum_class_test) {
     Char *str = "enum class Enum {};";
     EnumData gen = parse_enum_test(str);
-    ASSERT_TRUE(gen.is_struct)
-            << "Error: Failed to properly handle an enum class.";
+    ASSERT_TRUE(gen.is_struct) << "Error: Failed to properly handle an enum class.";
 }
 
 TEST(EnumTest, enum_number_of_values_test) {
     Char *str = "enum Nums {one, two, three};";
     EnumData gen = parse_enum_test(str);
-    ASSERT_TRUE(gen.no_of_values == 3)
-            << "Error: Did not generate the correct number of values for an enum.";
+    ASSERT_TRUE(gen.no_of_values == 3) << "Error: Did not generate the correct number of values for an enum.";
 }
 
 Int run_tests(void) {
@@ -2970,3 +2932,4 @@ Int run_tests(void) {
 }
 
 #endif
+
