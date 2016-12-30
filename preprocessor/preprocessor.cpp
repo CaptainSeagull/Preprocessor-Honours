@@ -2045,12 +2045,14 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "\n");
 
         // Forward declare structs.
-        // TODO(Jonny): Find out if something is a class or a struct and forward declare it properly.
         write_to_output_buffer(&ob,
                                "// Forward declared structs (these must be declared outside the namespace...)\n");
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
-            write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e);
+
+            if(sd->struct_or_class == StructType_struct)     { write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
+            else if(sd->struct_or_class == StructType_class) { write_to_output_buffer(&ob, "class %.*s;\n", sd->name.len, sd->name.e); }
+            else { assert(0); }
         }
 
         write_to_output_buffer(&ob,
