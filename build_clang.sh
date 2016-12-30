@@ -8,7 +8,7 @@ RUN_GCC_FOR_EXTRA_TEST=false
 
 # Preprocessor
 WARNING_LEVEL="-Wall -Wextra"
-WARNINGS="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter"
+WARNINGS="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter -Wno-writable-strings" 
 CPP_VERSION="-std=c++98"
 DISABLED="-fno-exceptions -fno-rtti"
 OUTPUT_NAME="preprocessor_exe"
