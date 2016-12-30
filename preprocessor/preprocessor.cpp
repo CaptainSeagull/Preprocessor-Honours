@@ -2033,18 +2033,36 @@ StructData *find_struct(String str, StructData *structs, Int struct_count) {
     return(res);
 }
 
-File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
+Char to_caps(Char c) {
+    Char res = c;
+    if((c >= 'a') && (c <= 'z')) { res += ('A' - 'a'); }
+
+    return(res);
+}
+
+File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
     File res = {};
 
     OutputBuffer ob = {};
     ob.size = 256 * 256;
     ob.buffer = alloc(Char, ob.size);
     if(ob.buffer) {
+
+        Char *name_buf = cast(Char *)push_scratch_memory();
+        Int len_wo_extension = string_length(fname) - 4; // TODO(Jonny): Do properly.
+        for(Int i = 0; (i < len_wo_extension); ++i) {
+            name_buf[i] = to_caps(fname[i]);
+        }
+
         write_to_output_buffer(&ob,
-                               "#if !defined(GENERATED_H) // TODO(Jonny): Add the actual filename in here?\n"
+                               "#if !defined(%s_GENERATED_H)\n"
+                               "#define %s_GENERATED_H\n"
                                "\n"
                                "#include \"static_generated.h\"\n"
-                               "\n");
+                               "\n",
+                               name_buf, name_buf);
+
+        clear_scratch_memory();
 
         // Forward declare structs.
         write_to_output_buffer(&ob,
@@ -2089,11 +2107,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
         // Write the meta type enum to file.
         write_to_output_buffer(&ob, "\n// Enum with field for every type detected.\n");
         write_to_output_buffer(&ob, "enum MetaType {\n");
-        for(Int i = 0; (i < type_count); ++i) {
-            String *type = types + i;
-
-            write_to_output_buffer(&ob, "    MetaType_%.*s,\n", type->len, type->e);
-        }
+        for(Int i = 0; (i < type_count); ++i) { write_to_output_buffer(&ob, "    MetaType_%.*s,\n", types[i].len, types[i].e); }
 
         write_to_output_buffer(&ob, "};");
 
@@ -2135,8 +2149,6 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
 
             index = copy_literal_to_char_buffer(def_struct_code, index, "                    } // switch(member->type)");
         }
-
-        write_to_output_buffer(&ob, "\n");
 
         // Recreated structs.
         write_to_output_buffer(&ob, "// Recreated structs (Clang in std=C++98 complains if these are local).\n");
@@ -2549,8 +2561,7 @@ File write_data(StructData *struct_data, Int struct_count, EnumData *enum_data, 
                                "\n"
                                "} // namespace pp\n"
                                "\n"
-                               "#define GENERATED_H\n"
-                               "#endif // !defined(GENERATED_H)\n"
+                               "#endif // Header guard.\n"
                                "\n");
 
         res.size = ob.index;
@@ -2628,7 +2639,7 @@ Void start_parsing(Char *filename, Char *file) {
             }
         }
 
-        File file_to_write = write_data(struct_data, struct_count, enum_data, enum_count);
+        File file_to_write = write_data(filename, struct_data, struct_count, enum_data, enum_count);
 
         if(should_write_to_file) {
             Char generated_file_name[256] = {};
