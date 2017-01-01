@@ -2749,10 +2749,10 @@ Int main(Int argc, Char **argv) {
 
                 if(should_log_errors) {
                     // TODO(Jonny): Write errors to disk.
-                    printf("\n\nList of errors:\n");
+                    fprintf(stderr, "\n\nList of errors:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
-                        printf("    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
-                               i, ErrorTypeToString(global_errors[i].type), global_errors[i].file, global_errors[i].line);
+                        fprintf(stderr, "    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
+                                i, ErrorTypeToString(global_errors[i].type), global_errors[i].file, global_errors[i].line);
                     }
 
                     if(system_check_for_debugger()) { assert(0); }
