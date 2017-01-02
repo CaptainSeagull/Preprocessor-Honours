@@ -79,10 +79,12 @@ struct Variable {
 
 #define get_num_of_members(type) get_number_of_members_<type>()
 
-#define serialize(var, buf, size) serialize_struct_<decltype(var)>(var, #var, 0, buf, size, 0)
+#define serialize_type(var, Type, buf, size) serialize_struct_<Type>(var, #var, 0, buf, size, 0)
+#define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)
 
 template <typename T>static size_t serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written);
-#define print(var, ...) print_<decltype(var)>(&var, #var, ##__VA_ARGS__)
+#define print_type(var, Type, ...) print_<Type>(&var, #var, ##__VA_ARGS__)
+#define print(var, ...) print_type(var, decltype(var), ##__VA_ARGS__)
 template<typename T>static bool print_(T *var, char const *name, char *buf = 0, size_t size = 0) {
     bool res = false, custom_buf = false;
 
