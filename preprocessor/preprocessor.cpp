@@ -45,6 +45,7 @@
 
 #if defined(_MSC_VER)
     #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
+    //#define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #else
     #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #endif
@@ -213,6 +214,11 @@ Bool system_check_for_debugger(void) {
 //
 // Memory stuff.
 //
+
+#define alloc(Type) (Type *)calloc(sizeof(Type), 1)
+#define alloc_arr(Type, cnt) (Type *)calloc(sizeof(Type), cnt)
+
+#if 0
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -346,6 +352,7 @@ Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0) {
 #define calloc(size, count) alloc_(size, __FILE__, __LINE__, count)
 #define realloc(ptr, ...) realloc_(ptr, __FILE__, __LINE__, ##__VA_ARGS__)
 #define free(ptr) free_(ptr)
+#endif
 
 // A quick-to-access temp region of memory. Should be frequently cleared.
 Int scratch_memory_index = 0;
@@ -356,7 +363,7 @@ Void *push_scratch_memory(Int size = scratch_memory_size) {
 
     Void *res = 0;
     if(global_scratch_memory) {
-        assert(get_alloc_size(global_scratch_memory) > scratch_memory_index + size);
+        assert(scratch_memory_size + 256 > scratch_memory_index + size);
         res = cast(Byte *)global_scratch_memory + scratch_memory_index;
         scratch_memory_index += size;
     }
@@ -1192,7 +1199,7 @@ ResultInt calculator_string_to_int(Char *str) {
         - Make sure each element in the string is either a number or a operator.
         - Do the calculator in order (multiply, divide, add, subtract).
     */
-    String *arr = alloc(String, 256); // TODO(Jonny): Random size.
+    String *arr = alloc_arr(String, 256); // TODO(Jonny): Random size.
     if(arr) {
         Char *at = str;
         arr[0].e = at;
@@ -1205,8 +1212,8 @@ ResultInt calculator_string_to_int(Char *str) {
         }
         ++cnt;
 
-        Int *nums = alloc(Int, cnt);
-        Char *ops = alloc(Char, cnt);
+        Int *nums = alloc_arr(Int, cnt);
+        Char *ops = alloc_arr(Char, cnt);
         if((nums) && (ops)) {
             for(Int i = 0, j = 0; (j < cnt); ++i, j += 2) {
                 ResultInt r = string_to_int(arr[j]);
@@ -1452,17 +1459,18 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
 
     Token peaked_token = peak_token(tokenizer);
     if(peaked_token.type == TokenType_colon) {
-        res.sd.inherited = alloc(String, 4);
+        res.sd.inherited = alloc_arr(String, 8);
 
         eat_token(tokenizer);
 
         Token next = get_token(tokenizer);
         while(next.type != TokenType_open_brace) {
             if(!(is_stupid_class_keyword(next)) && (next.type != TokenType_comma)) {
-                if(res.sd.inherited_count + 1 >= cast(Int)(get_alloc_size(res.sd.inherited) / sizeof(String))) {
+                // TODO(Jonny): Fix properly.
+                /*if(res.sd.inherited_count + 1 >= cast(Int)(get_alloc_size(res.sd.inherited) / sizeof(String))) {
                     Void *p = realloc(res.sd.inherited);
                     if(p) { res.sd.inherited = cast(String *)p; }
-                }
+                }*/
 
                 res.sd.inherited[res.sd.inherited_count++] = token_to_string(next);
             }
@@ -1559,7 +1567,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
         }
 
         if(res.sd.member_count > 0) {
-            res.sd.members = alloc(Variable, res.sd.member_count);
+            res.sd.members = alloc_arr(Variable, res.sd.member_count);
             if(res.sd.members) {
                 for(Int i = 0; (i < res.sd.member_count); ++i) {
                     Tokenizer fake_tokenizer = { member_pos[i] };
@@ -1639,7 +1647,7 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
                 token = get_token(&copy);
             }
 
-            res.ed.values = alloc(EnumValue, res.ed.no_of_values);
+            res.ed.values = alloc_arr(EnumValue, res.ed.no_of_values);
             if(res.ed.values) {
                 for(Int i = 0, count = 0; (i < res.ed.no_of_values); ++i, ++count) {
                     EnumValue *ev = res.ed.values + i;
@@ -2022,7 +2030,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
     OutputBuffer ob = {};
     ob.size = 256 * 256;
-    ob.buffer = alloc(Char, ob.size);
+    ob.buffer = alloc_arr(Char, ob.size);
     if(ob.buffer) {
 
         Char *name_buf = cast(Char *)push_scratch_memory();
@@ -2097,34 +2105,42 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         // Recursive part for calling on members of structs.
         write_to_output_buffer(&ob, "\n\n");
 
-        Int def_struct_code_size = scratch_memory_size;
-        Char *def_struct_code = cast(Char *)push_scratch_memory(def_struct_code_size);
-        if(def_struct_code) {
+        Int def_struct_code_size = 20000;
+        Char *def_struct_code_mem = alloc_arr(Char, def_struct_code_size);
+        if(def_struct_code_mem) {
             Int index = 0;
-            index = copy_literal_to_char_buffer(def_struct_code, index, "                    switch(member->type) {\n");
+
+
+            Char *switch_start = "                    switch(member->type) {\n";
+            strcpy(def_struct_code_mem + index, switch_start);
+            index += string_length(switch_start);
+
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
-                Char *DefaultStructString =
-                    "                        case MetaType_%.*s: {\n"
-                    "                            // %.*s\n"
-                    "                            if(member->is_ptr) {\n"
-                    "                                bytes_written = serialize_struct_<%.*s *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                    "                            } else {\n"
-                    "                                bytes_written = serialize_struct_<%.*s>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                    "                            }\n"
-                    "                        } break; // case MetaType_%.*s\n"
-                    "\n";
 
-                index += my_sprintf(def_struct_code + index, def_struct_code_size, DefaultStructString,
-                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                                    sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+                index +=
+                    my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                               "                        case MetaType_%.*s: {\n"
+                               "                            // %.*s\n"
+                               "                            if(member->is_ptr) {\n"
+                               "                                bytes_written = serialize_struct_<%.*s *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                               "                            } else {\n"
+                               "                                bytes_written = serialize_struct_<%.*s>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                               "                            }\n"
+                               "                        } break; // case MetaType_%.*s\n"
+                               "\n",
+                               sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
+                               sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
             }
 
-            index = copy_literal_to_char_buffer(def_struct_code, index, "                    } // switch(member->type)");
+            Char *switch_end = "                    } // switch(member->type)";
+            strcpy(def_struct_code_mem + index, switch_end);
+            index += string_length(switch_end);
+
+            assert(index < def_struct_code_size);
+
+            free(def_struct_code_mem);
         }
 
         // Recreated structs.
@@ -2148,10 +2164,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             for(Int j = 0; (j < sd->member_count); ++j) {
                 Variable *md = sd->members + j;
-                Char *arr = cast(Char *)((md->array_count > 1) ? "[%u]" : "");
+                Char *arr = "";//cast(Char *)((md->array_count > 1) ? "[%u]" : "");
                 Char arr_buffer[256] = {};
                 if(md->array_count > 1) {
-                    my_sprintf(arr_buffer, 256, arr, md->array_count);
+                    my_sprintf(arr_buffer, 256, "[%u]", md->array_count);
+                    arr = arr_buffer;
                 }
 
                 write_to_output_buffer(&ob, " _%.*s %s%.*s%s; ",
@@ -2268,7 +2285,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "\n    return(-1); // Error.\n"
                                "}\n");
 
-        write_serialize_struct_implementation(def_struct_code, &ob);
+        //write_serialize_struct_implementation(def_struct_code, &ob);
         clear_scratch_memory();
 
         // type_to_string.
@@ -2434,7 +2451,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 Char type[32];
                 if(ed->type.len) {
-                    for(int i = 0; (i < ed->type.len); ++i) { type[i] = ed->type.e[i]; }
+                    for(int j = 0; (j < ed->type.len); ++j) { type[j] = ed->type.e[j]; }
                     type[ed->type.len] = 0;
                 } else {
                     type[0] = 'i'; type[1] = 'n'; type[2] = 't'; type[3] = 0;
@@ -2547,13 +2564,14 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 Bool should_write_to_file = false;
 
 Void start_parsing(Char *fname, Char *file) {
-    Int enum_count = 0;
-    EnumData *enum_data = alloc(EnumData, 8);
+    Int enum_count = 0, enum_max = 8;
+    EnumData *enum_data = alloc_arr(EnumData, enum_max);
 
-    Int struct_count = 0;
-    StructData *struct_data = alloc(StructData, 32);
+    Int struct_count = 0, struct_max = 32;
+    StructData *struct_data = alloc_arr(StructData, struct_max);
 
-    macro_data = alloc(MacroData, 32);
+    Int macro_max = 32;
+    macro_data = alloc_arr(MacroData, macro_max);
 
     if((enum_data)  && (struct_data) && (macro_data)) {
         Tokenizer tokenizer = { file };
@@ -2587,8 +2605,9 @@ Void start_parsing(Char *fname, Char *file) {
                         parse_template(&tokenizer);
                     } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
                         StructType struct_or_class = token_equals(token, "struct") ? StructType_struct : StructType_class;
-                        if(struct_count + 1 >= get_alloc_size_arr(struct_data)) {
-                            Void *p = realloc(struct_data);
+                        if(struct_count + 1 >= struct_max) {
+                            struct_max *= 2;
+                            Void *p = realloc(struct_data, struct_max);
                             if(p) { struct_data = cast(StructData *)p; }
                         }
 
@@ -2597,8 +2616,9 @@ Void start_parsing(Char *fname, Char *file) {
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
                         if(r.success) { struct_data[struct_count++] = r.sd; }
                     } else if(token_equals(token, "enum")) {
-                        if(enum_count + 1 >= get_alloc_size_arr(enum_data)) {
-                            Void *p = realloc(enum_data);
+                        if(enum_count + 1 >= enum_max) {
+                            enum_max *= 2;
+                            Void *p = realloc(enum_data, enum_max);
                             if(p) { enum_data = cast(EnumData *)p; }
                         }
 
@@ -2626,7 +2646,6 @@ Void start_parsing(Char *fname, Char *file) {
             }
         }
 
-        // Tidy up memory for the next pass. Can probably optimize this and reuse the memory.
         for(Int i = 0; (i < struct_count); ++i) { free(struct_data[i].members);   }
         for(Int i = 0; (i < struct_count); ++i) { free(struct_data[i].inherited); }
         free(struct_data);
@@ -2706,7 +2725,7 @@ Int main(Int argc, Char **argv) {
         } else {
             if(!number_of_files) { push_error(ErrorType_no_files_pass_in); }
             else {
-                Byte *file_memory = alloc(Byte, largest_source_file_size);
+                Byte *file_memory = alloc_arr(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
                     if(should_write_to_file) {
