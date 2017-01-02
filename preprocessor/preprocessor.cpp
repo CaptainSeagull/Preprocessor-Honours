@@ -45,7 +45,6 @@
 
 #if defined(_MSC_VER)
     #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
-    //#define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #else
     #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #endif
@@ -542,10 +541,17 @@ Char *get_static_file(void) {
                 "\n"
                 "#define get_num_of_members(type) get_number_of_members_<type>()\n"
                 "\n"
-                "#define serialize_type(var, Type, buf, size) serialize_struct_<Type>(var, #var, 0, buf, size, 0)\n"
+                "#define serialize_type(var, Type, buf, size) serialize_struct_(var, #var, type_to_string(Type), 0, buf, size, 0)\n"
                 "#define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)\n"
                 "\n"
-                "template <typename T>static size_t serialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written);\n"
+                "static MemberDefinition *get_members_of_str(char const *str);\n"
+                "static int get_number_of_members_str(char const *str);\n"
+                "\n"
+                "template<typename T> static char const *type_to_string_(void);\n"
+                "#define type_to_string(Type) type_to_string_<Type>()\n"
+                "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
+                "\n"
+                "static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "#define print_type(var, Type, ...) print_<Type>(&var, #var, ##__VA_ARGS__)\n"
                 "#define print(var, ...) print_type(var, decltype(var), ##__VA_ARGS__)\n"
                 "template<typename T>static bool print_(T *var, char const *name, char *buf = 0, size_t size = 0) {\n"
@@ -559,7 +565,7 @@ Char *get_static_file(void) {
                 "\n"
                 "    if(buf) {\n"
                 "        memset(buf, 0, size);\n"
-                "        size_t bytes_written = serialize_struct_<T>(var, name, 0, buf, size, 0);\n"
+                "        size_t bytes_written = serialize_struct_(var, name, type_to_string(T), 0, buf, size, 0);\n"
                 "        if(bytes_written < size) {\n"
                 "            printf(\"%s\", buf);\n"
                 "            res = true;\n"
@@ -580,10 +586,6 @@ Char *get_static_file(void) {
                 "template<class T, class U>struct TypeCompare_{ enum {e = 0}; };\n"
                 "template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };\n"
                 "#define type_compare(a, b) TypeCompare_<a, b>::e\n"
-                "\n"
-                "template<typename T> static char const *type_to_string_(void);\n"
-                "#define type_to_string(Type) type_to_string_<Type>()\n"
-                "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
                 "\n"
                 "template<typename T> static int get_base_type_count_(void);\n"
                 "#define get_base_type_count(Type) get_base_type_count_<Type>()\n"
@@ -1680,25 +1682,25 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
 Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob) {
     Char *top =
         "// Function to serialize a struct to a char array buffer.\n"
-        "template <typename T>static size_t\nserialize_struct_(void *var, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
+        "static size_t\nserialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
         "    assert((name) && (buffer) && (buf_size > 0)); // Check params.\n"
         "\n"
         "    if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.\n"
         "\n"
-        "    MemberDefinition *members_of_Something = get_members_of_<T>(); assert(members_of_Something); // Get the members_of pointer. \n"
+        "    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. \n"
         "    if(members_of_Something) {\n"
         "        // Setup the indent buffer.\n"
         "        char indent_buf[256] = {};\n"
         "        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
         "\n"
         "        // Write the name and the type.\n"
-        "        bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_to_string(T), name);\n"
+        "        bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_as_str, name);\n"
         "        indent += 4;\n"
         "\n"
         "        // Add 4 to the indent.\n"
         "        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
         "\n"
-        "        int num_members = get_number_of_members_<T>(); assert(num_members != -1); // Get the number of members for the for loop.\n"
+        "        int num_members = get_number_of_members_str(type_as_str); assert(num_members != -1); // Get the number of members for the for loop.\n"
         "        for(int i = 0; (i < num_members); ++i) {\n"
         "            MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.\n"
         "            size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.\n"
@@ -2123,9 +2125,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "                        case MetaType_%.*s: {\n"
                                "                            // %.*s\n"
                                "                            if(member->is_ptr) {\n"
-                               "                                bytes_written = serialize_struct_<%.*s *>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                               "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s *\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
                                "                            } else {\n"
-                               "                                bytes_written = serialize_struct_<%.*s>(member_ptr, member->name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                               "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
                                "                            }\n"
                                "                        } break; // case MetaType_%.*s\n"
                                "\n",
@@ -2139,6 +2141,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             index += string_length(switch_end);
 
             assert(index < def_struct_code_size);
+
+            write_serialize_struct_implementation(def_struct_code_mem, &ob);
 
             free(def_struct_code_mem);
         }
@@ -2182,6 +2186,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             write_to_output_buffer(&ob, " };\n");
         }
 
+        // Get Members of.
         write_to_output_buffer(&ob,
                                "\n"
                                "// Convert a type into a members of pointer.\n"
@@ -2285,8 +2290,119 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "\n    return(-1); // Error.\n"
                                "}\n");
 
-        //write_serialize_struct_implementation(def_struct_code, &ob);
         clear_scratch_memory();
+
+
+        //
+        // Get Members of str.
+        //
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "// Convert a type into a members of pointer.\n"
+                               "static MemberDefinition *get_members_of_str(char const *str) {\n");
+
+        if(struct_count) {
+            for(Int i = 0; (i < struct_count); ++i) {
+                StructData *sd = struct_data + i;
+
+                if(!i) {
+                    write_to_output_buffer(&ob,
+                                           "    // %.*s\n"
+                                           "    if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s\ *\") == 0) || (strcmp(str, \"%.*s\ **\") == 0)) {\n",
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e);
+                } else {
+                    write_to_output_buffer(&ob,
+                                           "\n"
+                                           "    // %.*s\n"
+                                           "    } if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s\ *\") == 0) || (strcmp(str, \"%.*s\ **\") == 0)) {\n",
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e);
+                }
+
+                write_to_output_buffer(&ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
+                    write_to_output_buffer(&ob, "            {MetaType_%.*s, \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
+                                           md->type.len, md->type.e,
+                                           md->name.len, md->name.e,
+                                           sd->name.len, sd->name.e,
+                                           md->name.len, md->name.e,
+                                           (md->is_ptr) ? "true" : "false",
+                                           md->array_count);
+                }
+
+                if(sd->inherited) {
+                    for(Int j = 0; (j < sd->inherited_count); ++j) {
+                        StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+
+                        write_to_output_buffer(&ob, "            // Members inherited from %.*s.\n",
+                                               base_class->name.len, base_class->name.e);
+                        for(Int k = 0; (k < base_class->member_count); ++k) {
+                            Variable *base_class_var = base_class->members + k;
+
+                            write_to_output_buffer(&ob, "            {MetaType_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
+                                                   base_class_var->type.len, base_class_var->type.e,
+                                                   base_class_var->name.len, base_class_var->name.e,
+                                                   sd->name.len, sd->name.e,
+                                                   base_class_var->name.len, base_class_var->name.e,
+                                                   (base_class_var->is_ptr) ? "true" : "false",
+                                                   base_class_var->array_count);
+                        }
+                    }
+                }
+
+                write_to_output_buffer(&ob,
+                                       "        };\n"
+                                       "        return(members_of_%.*s);\n",
+                                       sd->name.len, sd->name.e);
+            }
+
+            write_to_output_buffer(&ob, "    }\n");
+        }
+
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "    return(0); // Error.\n"
+                               "}\n");
+
+        //
+        // Get number of members from string.
+        //
+        write_to_output_buffer(&ob,
+                               "\n"
+                               "// Get the number of members for a type.\n"
+                               "static int get_number_of_members_str(char const *str) {\n");
+        for(Int i = 0; (i < struct_count); ++i) {
+            StructData *sd = struct_data + i;
+
+            Int member_count = sd->member_count;
+
+            // Add inherited struct members onto the member count.
+            for(Int j = 0; (j < sd->inherited_count); ++j) {
+                StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+
+                member_count += base_class->member_count;
+            }
+
+            if(i == 0) {
+                write_to_output_buffer(&ob,
+                                       "    if(strcmp(str, \"%.*s\") == 0) { return(%d); } // %.*s\n",
+                                       sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
+            } else {
+                write_to_output_buffer(&ob,
+                                       "    else if(strcmp(str, \"%.*s\") == 0) { return(%d); } // %.*s\n",
+                                       sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
+            }
+        }
+
+        write_to_output_buffer(&ob,
+                               "\n    return(-1); // Error.\n"
+                               "}\n");
 
         // type_to_string.
         write_to_output_buffer(&ob,

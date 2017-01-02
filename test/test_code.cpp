@@ -87,7 +87,7 @@ void test_struct(void) {
     pp::print(foo);
 
     char *buf = new char[256 * 256];
-    pp::print(foo, buf, 256 * 256);
+    //pp::print(foo, buf, 256 * 256);
     delete[] buf;
 
 
