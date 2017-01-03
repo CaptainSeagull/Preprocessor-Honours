@@ -34,50 +34,7 @@ static bool wini32_init_gl(HWND wnd) {
 
     HGLRC glrc = wglCreateContext(global_dc);
     if(glrc) {
-        if(wglMakeCurrent(global_dc, glrc)) {
-            res = true;
-
-#if 0
-#define WGL_CONTEXT_MAJOR_VERSION_ARB (0x2091)
-#define WGL_CONTEXT_MINOR_VERSION_ARB (0x2092)
-#define WGL_CONTEXT_FLAGS_ARB (0x2094)
-#define WGL_CONTEXT_PROFILE_MASK_ARB (0x9126)
-#define WGL_CONTEXT_DEBUG_BIT_ARB (0x0001)
-#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB (0x00000002)
-
-            typedef HGLRC WINAPI wgl_create_context_attribts_arb(HDC hDC, HGLRC hShareContext, const int *attribList);
-            wgl_create_context_attribts_arb *wglCreateContextAttribsARB =
-                (wgl_create_context_attribts_arb *)wglGetProcAddress("wglCreateContextAttribsARB");
-            if(!wglCreateContextAttribsARB) { fprintf(stderr, "Failed to load wglCreateContextAttribsARB."); }
-            else {
-                int attribs[] = {WGL_CONTEXT_MAJOR_VERSION_ARB, 3, WGL_CONTEXT_MINOR_VERSION_ARB, 0, WGL_CONTEXT_FLAGS_ARB,
-#if INTERNAL
-                                 WGL_CONTEXT_DEBUG_BIT_ARB
-#else
-                                 0
-#endif
-                                 , WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB, 0
-                                };
-                HGLRC shared_context = 0;
-                HGLRC new_glrc = wglCreateContextAttribsARB(dc, shared_context, attribs);
-                if(new_glrc) {
-                    if(wglMakeCurrent(dc, new_glrc)) {
-                        wglDeleteContext(glrc);
-                        glrc = new_glrc;
-
-                        typedef int WINAPI wgl_swap_interval_ext(int interval);
-                        wgl_swap_interval_ext *wglSwapIntervalEXT =
-                            (wgl_swap_interval_ext *)wglGetProcAddress("wglSwapIntervalEXT");
-                        if(!wglSwapIntervalEXT) { fprintf(stderr, "Failed to load wglSwapIntervalEXT"); }
-                        else {
-                            wglSwapIntervalEXT(1);
-                            res = true;
-                        }
-                    }
-                }
-            }
-#endif
-        }
+        if(wglMakeCurrent(global_dc, glrc)) { res = true; }
     }
 
     return(res);
