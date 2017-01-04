@@ -2,12 +2,14 @@
 #include <dsound.h>
 #include <gl/gl.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
+
+#include "win32.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 static bool global_running = true;
 static bool global_init_game = true;
@@ -61,12 +63,6 @@ static float Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end, int6
     return((float)(end.QuadPart - start.QuadPart) / (float)perf_counter_frequency);
 }
 
-struct Texture {
-    int unsigned id;
-    int width;
-    int height;
-};
-
 Texture load_texture_from_disk(char const *fname) {
     Texture res = {};
 
@@ -94,6 +90,22 @@ Texture load_texture_from_disk(char const *fname) {
 }
 
 void delete_texture(Texture t) { glDeleteTextures(1, &t.id); }
+
+void draw_sprite(Texture tex, float x, float y, float xscale/*= 1.0f*/, float yscale/*= 1.0f*/) {
+    glScalef(xscale, yscale, 1.0f);
+
+    glBindTexture(GL_TEXTURE_2D, tex.id);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0f, 0.0f); glVertex2f(x + 0,         y + 0);
+    glTexCoord2f(1.0f, 0.0f); glVertex2f(x + tex.width, y + 0);
+    glTexCoord2f(1.0f, 1.0f); glVertex2f(x + tex.width, y + tex.height);
+    glTexCoord2f(0.0f, 1.0f); glVertex2f(x + 0,         y + tex.height);
+    glEnd();
+
+    glScalef(1 / xscale, 1 / yscale, 1.0f);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
 
 int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR CommandLine, int ShowCode) {
     LARGE_INTEGER perf_counter_frequency_res;
@@ -142,110 +154,92 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                         LARGE_INTEGER last_counter = Win32GetWallClock();
                         LARGE_INTEGER flip_wall_clock = Win32GetWallClock();
 
-                        float ms_per_frame = 16.6666f;
+                        float ms_per_frame = target_seconds_per_frame;
                         global_running = true;
                         global_init_game = true;
-                        bool SoundIsValid = false;
+                        bool first_time = true;
+                        Controls controls = {};
 
                         float camx = 0.0f, camy = 0.0f;
 
-                        Texture tree = load_texture_from_disk("tree.png");
-                        Texture ball = load_texture_from_disk("ball.png");
+                        GameState *game_state = (GameState *)malloc(sizeof(GameState));
+                        if(!game_state) { fprintf(stderr, "Failed to allocate gamestate"); }
+                        else {
+                            // Game loop start.
+                            while(global_running) {
+                                if(controls.left)  { controls.prev_left  = true;  }
+                                else               { controls.prev_left  = false; }
+                                if(controls.right) { controls.prev_right = true;  }
+                                else               { controls.prev_right = false; }
+                                if(controls.up)    { controls.prev_up    = true;  }
+                                else               { controls.prev_up    = false; }
+                                if(controls.down)  { controls.prev_down  = true;  }
+                                else               { controls.prev_down  = false; }
 
-                        // Game loop start.
-                        while(global_running) {
-                            MSG msg;
-                            while(PeekMessageA(&msg, wnd, 0, 0, PM_REMOVE)) {
-                                switch(msg.message) {
-                                    case WM_QUIT: { global_running = false; } break;
+                                MSG msg;
+                                while(PeekMessageA(&msg, wnd, 0, 0, PM_REMOVE)) {
+                                    switch(msg.message) {
+                                        case WM_QUIT: { global_running = false; } break;
 
-                                    case WM_KEYDOWN: {
-                                        switch(msg.wParam) {
-                                            case 'a': case VK_LEFT:  { camx += 20.0f; } break;
-                                            case 'd': case VK_RIGHT: { camx -= 20.0f; } break;
-                                            case 'w': case VK_UP:    { camy += 20.0f; } break;
-                                            case 's': case VK_DOWN:  { camy -= 20.0f; } break;
-                                        }
-                                    } break;
+                                        case WM_KEYDOWN: {
+                                            switch(msg.wParam) {
+                                                case 'a': case VK_LEFT:  { controls.left = true;  } break;
+                                                case 'd': case VK_RIGHT: { controls.right = true; } break;
+                                                case 'w': case VK_UP:    { controls.up = true;    } break;
+                                                case 's': case VK_DOWN:  { controls.down = true;  } break;
+                                            }
+                                        } break;
 
-                                    default: {
-                                        TranslateMessage(&msg);
-                                        DispatchMessageA(&msg);
-                                    } break;
+                                        default: {
+                                            TranslateMessage(&msg);
+                                            DispatchMessageA(&msg);
+                                        } break;
+                                    }
                                 }
-                            }
 
-                            // TODO(Jonny): Do game stuff here.
+                                // TODO(Jonny): Do game stuff here.
+                                glMatrixMode(GL_MODELVIEW);
+                                glPopMatrix();
+                                glLoadIdentity();
 
-                            glMatrixMode(GL_MODELVIEW);
-                            glPopMatrix();
-                            glLoadIdentity();
+                                glTranslatef(camx, camy, 0.0f);
+                                glPushMatrix();
 
-                            glTranslatef(camx, camy, 0.0f);
-                            glPushMatrix();
+                                glClear(GL_COLOR_BUFFER_BIT);
+                                glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-                            glClear(GL_COLOR_BUFFER_BIT);
-                            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+                                glMatrixMode(GL_MODELVIEW);
+                                glPopMatrix();
 
-                            glMatrixMode(GL_MODELVIEW);
-                            glPopMatrix();
+                                // Drawing test.
+                                update_and_render(controls, first_time, game_state);
+                                first_time = false;
 
-                            // Drawing test.
-#if 1
-                            {
-                                glScalef(0.25f, 0.25f, 1.0f);
+                                SwapBuffers(global_dc);
 
-                                float x = 50.0f, y = 50.0f;
+                                float seconds_for_frame = Win32GetSecondsElapsed(last_counter, Win32GetWallClock(),
+                                                                                 perf_counter_frequency);
+                                if(seconds_for_frame >= target_seconds_per_frame) { fprintf(stderr, "Missed frame rate"); }
+                                else {
+                                    DWORD time_to_sleep = (DWORD)(1000.0f * (target_seconds_per_frame - seconds_for_frame));
+                                    if(time_to_sleep > 0) { Sleep(time_to_sleep); }
 
-                                glBindTexture(GL_TEXTURE_2D, ball.id);
-                                glColor3f(1.0f, 1.0f, 1.0f);
-                                glBegin(GL_POLYGON);
-                                glTexCoord2f(0.0f, 0.0f); glVertex2f(x + 0,         y + 0);
-                                glTexCoord2f(1.0f, 0.0f); glVertex2f(x + ball.width, y + 0);
-                                glTexCoord2f(1.0f, 1.0f); glVertex2f(x + ball.width, y + ball.height);
-                                glTexCoord2f(0.0f, 1.0f); glVertex2f(x + 0,         y + ball.height);
-                                glEnd();
+                                    float test_seconds_elapsed_for_frame = Win32GetSecondsElapsed(last_counter, Win32GetWallClock(),
+                                                                                                  perf_counter_frequency);
+                                    if(test_seconds_elapsed_for_frame < target_seconds_per_frame) { fprintf(stderr, "Missed sleep"); }
 
-                                glBindTexture(GL_TEXTURE_2D, 0);
-
-                                glScalef(2.0f, 2.0f, 1.0f);
-
-                                x = 250.0f, y = 250.0f;
-                                glBindTexture(GL_TEXTURE_2D, tree.id);
-                                glColor3f(1.0f, 1.0f, 1.0f);
-                                glBegin(GL_POLYGON);
-                                glTexCoord2f(0.0f, 0.0f); glVertex2f(x + 0,         y + 0);
-                                glTexCoord2f(1.0f, 0.0f); glVertex2f(x + tree.width, y + 0);
-                                glTexCoord2f(1.0f, 1.0f); glVertex2f(x + tree.width, y + tree.height);
-                                glTexCoord2f(0.0f, 1.0f); glVertex2f(x + 0,         y + tree.height);
-                                glEnd();
-                                glBindTexture(GL_TEXTURE_2D, 0);
-                            }
-#endif
-
-                            SwapBuffers(global_dc);
-
-                            float seconds_for_frame = Win32GetSecondsElapsed(last_counter, Win32GetWallClock(), perf_counter_frequency);
-                            if(seconds_for_frame >= target_seconds_per_frame) { fprintf(stderr, "Missed frame rate"); }
-                            else {
-                                DWORD time_to_sleep = (DWORD)(1000.0f * (target_seconds_per_frame - seconds_for_frame));
-                                if(time_to_sleep > 0) { Sleep(time_to_sleep); }
-
-                                float test_seconds_elapsed_for_frame = Win32GetSecondsElapsed(last_counter, Win32GetWallClock(),
-                                                                                              perf_counter_frequency);
-                                if(test_seconds_elapsed_for_frame < target_seconds_per_frame) { fprintf(stderr, "Missed sleep"); }
-
-                                while(seconds_for_frame < target_seconds_per_frame) {
-                                    seconds_for_frame = Win32GetSecondsElapsed(last_counter, Win32GetWallClock(),
-                                                                               perf_counter_frequency);
+                                    while(seconds_for_frame < target_seconds_per_frame) {
+                                        seconds_for_frame = Win32GetSecondsElapsed(last_counter, Win32GetWallClock(),
+                                                                                   perf_counter_frequency);
+                                    }
                                 }
+
+                                LARGE_INTEGER end_counter = Win32GetWallClock();
+                                ms_per_frame = 1000.0f * Win32GetSecondsElapsed(last_counter, end_counter, perf_counter_frequency);
+                                last_counter = end_counter;
+
+                                flip_wall_clock = Win32GetWallClock();
                             }
-
-                            LARGE_INTEGER end_counter = Win32GetWallClock();
-                            ms_per_frame = 1000.0f * Win32GetSecondsElapsed(last_counter, end_counter, perf_counter_frequency);
-                            last_counter = end_counter;
-
-                            flip_wall_clock = Win32GetWallClock();
                         }
                     }
                 }

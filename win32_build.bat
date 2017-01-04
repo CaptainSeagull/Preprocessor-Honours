@@ -50,6 +50,6 @@ if "%RUN_BREAKOUT%"=="true" (
     rem popd
 
     pushd "build"
-    cl -FeBreakout %COMMON_COMPILER_FLAGS% -wd4201 -Wall "../breakout/win32.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib
+    cl -FeBreakout %COMMON_COMPILER_FLAGS% -wd4201 -Wall "../breakout/win32.cpp" "../breakout/game.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib
     popd
 )
