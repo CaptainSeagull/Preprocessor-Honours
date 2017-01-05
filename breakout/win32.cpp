@@ -1,3 +1,33 @@
+
+
+    using System;
+
+    namespace TestApplication {
+        class TestClass {
+            public int i { get; set; }
+            public string str { get; set; }
+        }
+
+        class Program {
+            static void Main() {
+                TestClass test = new TestClass();
+                test.i = 10;
+                test.str = "Hello World";
+                foreach(var prop in test.GetType().GetProperties()) {
+                    Console.WriteLine("{0} : {1}", prop.Name, prop.GetValue(test, null));
+                }
+
+                /* Prints:
+                    "i : 10"
+                    "str : Hello World"*/
+            }
+        }
+    }
+    
+
+
+
+
 #include <windows.h>
 #include <dsound.h>
 #include <gl/gl.h>
@@ -8,6 +38,7 @@
 
 #include "win32.h"
 
+#define STBI_ONLY_PNG
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -18,72 +49,23 @@ static HDC global_dc = 0;
 #define SCREEN_WIDTH (640)
 #define SCREEN_HEIGHT (480)
 
-static bool wini32_init_gl(HWND wnd) {
-    bool res = false;
-
-    PIXELFORMATDESCRIPTOR desired_pixel_format = {};
-    desired_pixel_format.nSize = sizeof(desired_pixel_format);
-    desired_pixel_format.nVersion = 1;
-    desired_pixel_format.iPixelType = PFD_TYPE_RGBA;
-    desired_pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    desired_pixel_format.cColorBits = 24; // TODO(Jonny): Should this be 32... even though MSDN says EXCLUDING alpha??
-    desired_pixel_format.cAlphaBits = 8;
-
-    int suggested_pixel_format_index = ChoosePixelFormat(global_dc, &desired_pixel_format);
-    PIXELFORMATDESCRIPTOR suggested_pixel_format = {};
-    DescribePixelFormat(global_dc, suggested_pixel_format_index, sizeof(suggested_pixel_format), &suggested_pixel_format);
-    SetPixelFormat(global_dc, suggested_pixel_format_index, &suggested_pixel_format);
-
-    HGLRC glrc = wglCreateContext(global_dc);
-    if(glrc) {
-        if(wglMakeCurrent(global_dc, glrc)) { res = true; }
-    }
-
-    return(res);
-}
-
-static LRESULT CALLBACK Win32WinProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-    LRESULT res = 0;
-    switch(msg) {
-        case WM_CLOSE: { global_running = false;                         } break;
-        default:       { res = DefWindowProcA(wnd, msg, wparam, lparam); } break;
-    }
-
-    return(res);
-};
-
-static LARGE_INTEGER Win32GetWallClock(void) {
-    LARGE_INTEGER res;
-    QueryPerformanceCounter(&res);
-
-    return(res);
-}
-
-static float Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end, int64_t perf_counter_frequency) {
-    return((float)(end.QuadPart - start.QuadPart) / (float)perf_counter_frequency);
-}
-
+// External functions.
 Texture load_texture_from_disk(char const *fname) {
     Texture res = {};
 
-    // Create texture.
     int channels = 0;
     unsigned char *data = stbi_load(fname, &res.width, &res.height, &channels, 4);
-    if(channels != 4) { fprintf(stderr, "Can only load png files with 4 channels"); }
+    if(channels != 4) { fprintf(stderr, "Currently on support pngs with 4 channels."); }
     else {
-        // Generate, and bind, texture ID.
         glGenTextures(1, &res.id);
         glBindTexture(GL_TEXTURE_2D, res.id);
 
-        // Generate texture.
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.width, res.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-        // Set texture parameters.
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-        // Now unbind the texture.
-        glBindTexture(GL_TEXTURE_2D, NULL);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     return(res);
@@ -103,8 +85,59 @@ void draw_sprite(Texture tex, float x, float y, float xscale/*= 1.0f*/, float ys
     glTexCoord2f(0.0f, 1.0f); glVertex2f(x + 0,         y + tex.height);
     glEnd();
 
-    glScalef(1 / xscale, 1 / yscale, 1.0f);
+    // Reset the scale, then unbind the sprite.
+    glScalef(1.0f / xscale, 1.0f / yscale, 1.0f);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+// Internal functions.
+static bool wini32_init_gl(HWND wnd) {
+    bool res = false;
+
+    PIXELFORMATDESCRIPTOR desired_pixel_format = {};
+    desired_pixel_format.nSize = sizeof(desired_pixel_format);
+    desired_pixel_format.nVersion = 1;
+    desired_pixel_format.iPixelType = PFD_TYPE_RGBA;
+    desired_pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    desired_pixel_format.cColorBits = 24; // TODO(Jonny): Should this be 32... even though MSDN says EXCLUDING alpha??
+    desired_pixel_format.cAlphaBits = 8;
+
+    int suggested_pixel_format_index = ChoosePixelFormat(global_dc, &desired_pixel_format);
+    PIXELFORMATDESCRIPTOR suggested_pixel_format = {};
+    DescribePixelFormat(global_dc, suggested_pixel_format_index, sizeof(suggested_pixel_format), &suggested_pixel_format);
+    SetPixelFormat(global_dc, suggested_pixel_format_index, &suggested_pixel_format);
+
+    HGLRC glrc = wglCreateContext(global_dc);
+    if(glrc) { if(wglMakeCurrent(global_dc, glrc)) { res = true; } }
+
+    return(res);
+}
+
+static LRESULT CALLBACK Win32WinProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+    LRESULT res = 0;
+    switch(msg) {
+        case WM_CLOSE: { global_running = false;                         } break;
+        default:       { res = DefWindowProcA(wnd, msg, wparam, lparam); } break;
+    }
+
+    return(res);
+}
+
+static LARGE_INTEGER Win32GetWallClock(void) {
+    LARGE_INTEGER res;
+    QueryPerformanceCounter(&res);
+
+    return(res);
+}
+
+static float Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end, int64_t perf_counter_frequency) {
+    return((float)(end.QuadPart - start.QuadPart) / (float)perf_counter_frequency);
+}
+
+static unsigned char float_to_hex(float f) {
+    unsigned char res = f * 255.0f;
+
+    return(res);
 }
 
 int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR CommandLine, int ShowCode) {
@@ -167,14 +200,12 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                         else {
                             // Game loop start.
                             while(global_running) {
-                                if(controls.left)  { controls.prev_left  = true;  }
-                                else               { controls.prev_left  = false; }
-                                if(controls.right) { controls.prev_right = true;  }
-                                else               { controls.prev_right = false; }
-                                if(controls.up)    { controls.prev_up    = true;  }
-                                else               { controls.prev_up    = false; }
-                                if(controls.down)  { controls.prev_down  = true;  }
-                                else               { controls.prev_down  = false; }
+                                if(controls.left)  { controls.prev_left  = true; } else { controls.prev_left  = false; }
+                                if(controls.right) { controls.prev_right = true; } else { controls.prev_right = false; }
+                                if(controls.up)    { controls.prev_up    = true; } else { controls.prev_up    = false; }
+                                if(controls.down)  { controls.prev_down  = true; } else { controls.prev_down  = false; }
+
+                                controls.left = true; controls.right = true; controls.up = true; controls.down = true;
 
                                 MSG msg;
                                 while(PeekMessageA(&msg, wnd, 0, 0, PM_REMOVE)) {
@@ -183,10 +214,10 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
 
                                         case WM_KEYDOWN: {
                                             switch(msg.wParam) {
-                                                case 'a': case VK_LEFT:  { controls.left = true;  } break;
+                                                case 'a': case VK_LEFT:  { controls.left  = true; } break;
                                                 case 'd': case VK_RIGHT: { controls.right = true; } break;
-                                                case 'w': case VK_UP:    { controls.up = true;    } break;
-                                                case 's': case VK_DOWN:  { controls.down = true;  } break;
+                                                case 'w': case VK_UP:    { controls.up    = true; } break;
+                                                case 's': case VK_DOWN:  { controls.down  = true; } break;
                                             }
                                         } break;
 
@@ -197,7 +228,6 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                                     }
                                 }
 
-                                // TODO(Jonny): Do game stuff here.
                                 glMatrixMode(GL_MODELVIEW);
                                 glPopMatrix();
                                 glLoadIdentity();
@@ -211,7 +241,6 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                                 glMatrixMode(GL_MODELVIEW);
                                 glPopMatrix();
 
-                                // Drawing test.
                                 update_and_render(controls, first_time, game_state);
                                 first_time = false;
 
