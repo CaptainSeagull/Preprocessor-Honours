@@ -1,7 +1,7 @@
 @echo off
 
 rem Variables to set. NOTE - Google Test uses _a lot_ of memory, so it's advised to run tests in 64-bit.
-set VISUAL_STUDIO_VERSION=10
+set VISUAL_STUDIO_VERSION=14
 set ENVIRONMENT=x86
 set RELEASE=false
 set RUN_CODE_AFTER_BUILDING=true
@@ -45,9 +45,9 @@ if "%RUN_TEST%"=="true" (
 )
 
 if "%RUN_BREAKOUT%"=="true" (
-    rem pushd "breakout"
-    rem "../build/preprocessor.exe" test_code.cpp -p
-    rem popd
+    pushd "breakout"
+    rem "../build/preprocessor.exe" win32.cpp game.cpp -p
+    popd
 
     pushd "build"
     cl -FeBreakout %COMMON_COMPILER_FLAGS% -wd4201 -Wall "../breakout/win32.cpp" "../breakout/game.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib
