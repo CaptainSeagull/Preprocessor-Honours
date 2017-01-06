@@ -1,9 +1,14 @@
-#if !defined(GAME_GENERATED_H)
-#define GAME_GENERATED_H
+#if !defined(PLATFO_GENERATED_H)
+#define PLATFO_GENERATED_H
 
 #include "static_generated.h"
 
 // Forward declared structs (these must be declared outside the namespace...)
+struct Controls;
+struct Texture;
+struct V2;
+struct Block;
+struct GameState;
 
 namespace pp { // PreProcessor
 
@@ -16,6 +21,11 @@ enum MetaType {
     MetaType_float,
     MetaType_double,
     MetaType_bool,
+    MetaType_Controls,
+    MetaType_Texture,
+    MetaType_V2,
+    MetaType_Block,
+    MetaType_GameState,
 };
 
 // Function to serialize a struct to a char array buffer.
@@ -189,6 +199,51 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                 // Then that should recursively call this function again.
                 default: {
                     switch(member->type) {
+                        case MetaType_Controls: {
+                            // Controls
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Controls *", indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Controls", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case MetaType_Controls
+
+                        case MetaType_Texture: {
+                            // Texture
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Texture *", indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Texture", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case MetaType_Texture
+
+                        case MetaType_V2: {
+                            // V2
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "V2 *", indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "V2", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case MetaType_V2
+
+                        case MetaType_Block: {
+                            // Block
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Block *", indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Block", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case MetaType_Block
+
+                        case MetaType_GameState: {
+                            // GameState
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "GameState *", indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "GameState", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case MetaType_GameState
+
                     } // switch(member->type)
                 } break; // default 
             }
@@ -198,27 +253,140 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
     return(bytes_written);
 }
 // Recreated structs (Clang in std=C++98 complains if these are local).
+struct _Controls {  _bool left;  _bool right;  _bool up;  _bool down;  _bool prev_down;  };
+struct _Texture {  _int id;  _int width;  _int height;  };
+struct _V2 {  _float x;  _float y;  };
+struct _Block {  _V2 pos;  _bool is_enabled;  };
+struct _GameState {  _Texture tex_paddle;  _Texture tex_ball;  _Texture tex_block;  _V2 ball_pos;  _V2 ball_speed;  _V2 paddle_pos;  _Block block[32];  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
+    // Controls
+    if(type_compare(T, Controls)) {
+        static MemberDefinition members_of_Controls[] = {
+            {MetaType_bool, "left", offset_of(&_Controls::left), false, 1},
+            {MetaType_bool, "right", offset_of(&_Controls::right), false, 1},
+            {MetaType_bool, "up", offset_of(&_Controls::up), false, 1},
+            {MetaType_bool, "down", offset_of(&_Controls::down), false, 1},
+            {MetaType_bool, "prev_down", offset_of(&_Controls::prev_down), false, 1},
+        };
+        return(members_of_Controls);
+
+    // Texture
+    } else if(type_compare(T, Texture)) {
+        static MemberDefinition members_of_Texture[] = {
+            {MetaType_int, "id", offset_of(&_Texture::id), false, 1},
+            {MetaType_int, "width", offset_of(&_Texture::width), false, 1},
+            {MetaType_int, "height", offset_of(&_Texture::height), false, 1},
+        };
+        return(members_of_Texture);
+
+    // V2
+    } else if(type_compare(T, V2)) {
+        static MemberDefinition members_of_V2[] = {
+            {MetaType_float, "x", offset_of(&_V2::x), false, 1},
+            {MetaType_float, "y", offset_of(&_V2::y), false, 1},
+        };
+        return(members_of_V2);
+
+    // Block
+    } else if(type_compare(T, Block)) {
+        static MemberDefinition members_of_Block[] = {
+            {MetaType_V2, "pos", offset_of(&_Block::pos), false, 1},
+            {MetaType_bool, "is_enabled", offset_of(&_Block::is_enabled), false, 1},
+        };
+        return(members_of_Block);
+
+    // GameState
+    } else if(type_compare(T, GameState)) {
+        static MemberDefinition members_of_GameState[] = {
+            {MetaType_Texture, "tex_paddle", offset_of(&_GameState::tex_paddle), false, 1},
+            {MetaType_Texture, "tex_ball", offset_of(&_GameState::tex_ball), false, 1},
+            {MetaType_Texture, "tex_block", offset_of(&_GameState::tex_block), false, 1},
+            {MetaType_V2, "ball_pos", offset_of(&_GameState::ball_pos), false, 1},
+            {MetaType_V2, "ball_speed", offset_of(&_GameState::ball_speed), false, 1},
+            {MetaType_V2, "paddle_pos", offset_of(&_GameState::paddle_pos), false, 1},
+            {MetaType_Block, "block", offset_of(&_GameState::block), false, 32},
+        };
+        return(members_of_GameState);
+    }
 
     return(0); // Error.
 }
 
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void) {
+    if(type_compare(T, Controls)) { return(5); } // Controls
+    else if(type_compare(T, Texture)) { return(3); } // Texture
+    else if(type_compare(T, V2)) { return(2); } // V2
+    else if(type_compare(T, Block)) { return(2); } // Block
+    else if(type_compare(T, GameState)) { return(7); } // GameState
 
     return(-1); // Error.
 }
 
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
+    // Controls
+    if((strcmp(str, "Controls") == 0) || (strcmp(str, "Controls *") == 0) || (strcmp(str, "Controls **") == 0)) {
+        static MemberDefinition members_of_Controls[] = {
+            {MetaType_bool, "left", offset_of(&_Controls::left), false, 1},
+            {MetaType_bool, "right", offset_of(&_Controls::right), false, 1},
+            {MetaType_bool, "up", offset_of(&_Controls::up), false, 1},
+            {MetaType_bool, "down", offset_of(&_Controls::down), false, 1},
+            {MetaType_bool, "prev_down", offset_of(&_Controls::prev_down), false, 1},
+        };
+        return(members_of_Controls);
+
+    // Texture
+    } if((strcmp(str, "Texture") == 0) || (strcmp(str, "Texture *") == 0) || (strcmp(str, "Texture **") == 0)) {
+        static MemberDefinition members_of_Texture[] = {
+            {MetaType_int, "id", offset_of(&_Texture::id), false, 1},
+            {MetaType_int, "width", offset_of(&_Texture::width), false, 1},
+            {MetaType_int, "height", offset_of(&_Texture::height), false, 1},
+        };
+        return(members_of_Texture);
+
+    // V2
+    } if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
+        static MemberDefinition members_of_V2[] = {
+            {MetaType_float, "x", offset_of(&_V2::x), false, 1},
+            {MetaType_float, "y", offset_of(&_V2::y), false, 1},
+        };
+        return(members_of_V2);
+
+    // Block
+    } if((strcmp(str, "Block") == 0) || (strcmp(str, "Block *") == 0) || (strcmp(str, "Block **") == 0)) {
+        static MemberDefinition members_of_Block[] = {
+            {MetaType_V2, "pos", offset_of(&_Block::pos), false, 1},
+            {MetaType_bool, "is_enabled", offset_of(&_Block::is_enabled), false, 1},
+        };
+        return(members_of_Block);
+
+    // GameState
+    } if((strcmp(str, "GameState") == 0) || (strcmp(str, "GameState *") == 0) || (strcmp(str, "GameState **") == 0)) {
+        static MemberDefinition members_of_GameState[] = {
+            {MetaType_Texture, "tex_paddle", offset_of(&_GameState::tex_paddle), false, 1},
+            {MetaType_Texture, "tex_ball", offset_of(&_GameState::tex_ball), false, 1},
+            {MetaType_Texture, "tex_block", offset_of(&_GameState::tex_block), false, 1},
+            {MetaType_V2, "ball_pos", offset_of(&_GameState::ball_pos), false, 1},
+            {MetaType_V2, "ball_speed", offset_of(&_GameState::ball_speed), false, 1},
+            {MetaType_V2, "paddle_pos", offset_of(&_GameState::paddle_pos), false, 1},
+            {MetaType_Block, "block", offset_of(&_GameState::block), false, 32},
+        };
+        return(members_of_GameState);
+    }
 
     return(0); // Error.
 }
 
 // Get the number of members for a type.
 static int get_number_of_members_str(char const *str) {
+    if(strcmp(str, "Controls") == 0) { return(5); } // Controls
+    else if(strcmp(str, "Texture") == 0) { return(3); } // Texture
+    else if(strcmp(str, "V2") == 0) { return(2); } // V2
+    else if(strcmp(str, "Block") == 0) { return(2); } // Block
+    else if(strcmp(str, "GameState") == 0) { return(7); } // GameState
 
     return(-1); // Error.
 }
@@ -249,6 +417,21 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, bool **)) { return("bool **"); }
 
     // Struct types.
+    else if(type_compare(T, Controls)) { return("Controls"); }
+    else if(type_compare(T, Controls *)) { return("Controls *"); }
+    else if(type_compare(T, Controls **)) { return("Controls **"); }
+    else if(type_compare(T, Texture)) { return("Texture"); }
+    else if(type_compare(T, Texture *)) { return("Texture *"); }
+    else if(type_compare(T, Texture **)) { return("Texture **"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2 *"); }
+    else if(type_compare(T, V2 **)) { return("V2 **"); }
+    else if(type_compare(T, Block)) { return("Block"); }
+    else if(type_compare(T, Block *)) { return("Block *"); }
+    else if(type_compare(T, Block **)) { return("Block **"); }
+    else if(type_compare(T, GameState)) { return("GameState"); }
+    else if(type_compare(T, GameState *)) { return("GameState *"); }
+    else if(type_compare(T, GameState **)) { return("GameState **"); }
 
     else { return(0); } // Unknown Type.
 }
@@ -279,6 +462,21 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, bool **)) { return("bool"); }
 
     // Struct types.
+    else if(type_compare(T, Controls)) { return("Controls"); }
+    else if(type_compare(T, Controls *)) { return("Controls"); }
+    else if(type_compare(T, Controls **)) { return("Controls"); }
+    else if(type_compare(T, Texture)) { return("Texture"); }
+    else if(type_compare(T, Texture *)) { return("Texture"); }
+    else if(type_compare(T, Texture **)) { return("Texture"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2"); }
+    else if(type_compare(T, V2 **)) { return("V2"); }
+    else if(type_compare(T, Block)) { return("Block"); }
+    else if(type_compare(T, Block *)) { return("Block"); }
+    else if(type_compare(T, Block **)) { return("Block"); }
+    else if(type_compare(T, GameState)) { return("GameState"); }
+    else if(type_compare(T, GameState *)) { return("GameState"); }
+    else if(type_compare(T, GameState **)) { return("GameState"); }
 
     else { return(0); } // Unknown Type.
 }
@@ -291,6 +489,7 @@ template<typename T> static int get_base_type_count_(void) {
 
 // Get the base type.
 template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {
+    }
 
     return(0); // Not found.
 }

@@ -1,33 +1,3 @@
-
-
-    using System;
-
-    namespace TestApplication {
-        class TestClass {
-            public int i { get; set; }
-            public string str { get; set; }
-        }
-
-        class Program {
-            static void Main() {
-                TestClass test = new TestClass();
-                test.i = 10;
-                test.str = "Hello World";
-                foreach(var prop in test.GetType().GetProperties()) {
-                    Console.WriteLine("{0} : {1}", prop.Name, prop.GetValue(test, null));
-                }
-
-                /* Prints:
-                    "i : 10"
-                    "str : Hello World"*/
-            }
-        }
-    }
-    
-
-
-
-
 #include <windows.h>
 #include <dsound.h>
 #include <gl/gl.h>
@@ -36,7 +6,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "win32.h"
+#include "platform.h"
 
 #define STBI_ONLY_PNG
 #define STB_IMAGE_IMPLEMENTATION
@@ -55,18 +25,15 @@ Texture load_texture_from_disk(char const *fname) {
 
     int channels = 0;
     unsigned char *data = stbi_load(fname, &res.width, &res.height, &channels, 4);
-    if(channels != 4) { fprintf(stderr, "Currently on support pngs with 4 channels."); }
-    else {
-        glGenTextures(1, &res.id);
-        glBindTexture(GL_TEXTURE_2D, res.id);
+    glGenTextures(1, &res.id);
+    glBindTexture(GL_TEXTURE_2D, res.id);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.width, res.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.width, res.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     return(res);
 }
@@ -134,8 +101,8 @@ static float Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end, int6
     return((float)(end.QuadPart - start.QuadPart) / (float)perf_counter_frequency);
 }
 
-static unsigned char float_to_hex(float f) {
-    unsigned char res = f * 255.0f;
+static char unsigned float_to_hex(float f) {
+    char unsigned res = (char unsigned)f * 255;
 
     return(res);
 }
@@ -170,7 +137,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                 if(!wini32_init_gl(wnd)) { fprintf(stderr, "Failed to load OpenGL"); }
                 else {
                     // Enable opengl stuff.
-                    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+                    //glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
                     glMatrixMode(GL_PROJECTION);
                     glLoadIdentity();
                     glOrtho(0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 1.0f, -1.0f);
@@ -198,15 +165,10 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                         GameState *game_state = (GameState *)malloc(sizeof(GameState));
                         if(!game_state) { fprintf(stderr, "Failed to allocate gamestate"); }
                         else {
+                            memset(game_state, 0, sizeof(*game_state));
+
                             // Game loop start.
                             while(global_running) {
-                                if(controls.left)  { controls.prev_left  = true; } else { controls.prev_left  = false; }
-                                if(controls.right) { controls.prev_right = true; } else { controls.prev_right = false; }
-                                if(controls.up)    { controls.prev_up    = true; } else { controls.prev_up    = false; }
-                                if(controls.down)  { controls.prev_down  = true; } else { controls.prev_down  = false; }
-
-                                controls.left = true; controls.right = true; controls.up = true; controls.down = true;
-
                                 MSG msg;
                                 while(PeekMessageA(&msg, wnd, 0, 0, PM_REMOVE)) {
                                     switch(msg.message) {
@@ -218,6 +180,15 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, LPSTR Comma
                                                 case 'd': case VK_RIGHT: { controls.right = true; } break;
                                                 case 'w': case VK_UP:    { controls.up    = true; } break;
                                                 case 's': case VK_DOWN:  { controls.down  = true; } break;
+                                            }
+                                        } break;
+
+                                        case WM_KEYUP: {
+                                            switch(msg.wParam) {
+                                                case 'a': case VK_LEFT:  { controls.left  = false; } break;
+                                                case 'd': case VK_RIGHT: { controls.right = false; } break;
+                                                case 'w': case VK_UP:    { controls.up    = false; } break;
+                                                case 's': case VK_DOWN:  { controls.down  = false; } break;
                                             }
                                         } break;
 
