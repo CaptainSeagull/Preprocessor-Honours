@@ -47,7 +47,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
     if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.
 
-    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer.
+    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. 
     if(members_of_Something) {
         // Setup the indent buffer.
         char indent_buf[256] = {};
@@ -311,7 +311,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         } break; // case MetaType_Transform
 
                     } // switch(member->type)
-                } break; // default
+                } break; // default 
             }
         }
     }
@@ -340,7 +340,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         };
         return(members_of_TEST);
 
-        // thingy
+    // thingy
     } else if(type_compare(T, thingy)) {
         static MemberDefinition members_of_thingy[] = {
             {MetaType_int, "x", offset_of(&_thingy::x), false, 1},
@@ -348,7 +348,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         };
         return(members_of_thingy);
 
-        // V2
+    // V2
     } else if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
@@ -356,7 +356,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         };
         return(members_of_V2);
 
-        // Bar
+    // Bar
     } else if(type_compare(T, Bar)) {
         static MemberDefinition members_of_Bar[] = {
             {MetaType_short, "s", offset_of(&_Bar::s), false, 1},
@@ -367,28 +367,28 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         };
         return(members_of_Bar);
 
-        // A
+    // A
     } else if(type_compare(T, A)) {
         static MemberDefinition members_of_A[] = {
             {MetaType_float, "m", offset_of(&_A::m), false, 1},
         };
         return(members_of_A);
 
-        // B
+    // B
     } else if(type_compare(T, B)) {
         static MemberDefinition members_of_B[] = {
             {MetaType_float, "n", offset_of(&_B::n), false, 1},
         };
         return(members_of_B);
 
-        // C
+    // C
     } else if(type_compare(T, C)) {
         static MemberDefinition members_of_C[] = {
             {MetaType_float, "o", offset_of(&_C::o), false, 1},
         };
         return(members_of_C);
 
-        // Foo
+    // Foo
     } else if(type_compare(T, Foo)) {
         static MemberDefinition members_of_Foo[] = {
             {MetaType_char, "str", offset_of(&_Foo::str), true, 1},
@@ -397,45 +397,45 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_bool, "b", offset_of(&_Foo::b), true, 1},
             {MetaType_double, "p_array", offset_of(&_Foo::p_array), true, 10},
             // Members inherited from Bar.
-            {MetaType_short, "s", (size_t) &((_Foo *)0)->s, false, 1},
-            {MetaType_int, "i", (size_t) &((_Foo *)0)->i, false, 1},
-            {MetaType_float, "f", (size_t) &((_Foo *)0)->f, false, 1},
-            {MetaType_double, "d", (size_t) &((_Foo *)0)->d, false, 1},
-            {MetaType_V2, "v2", (size_t) &((_Foo *)0)->v2, false, 1},
+            {MetaType_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
+            {MetaType_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
+            {MetaType_float, "f", (size_t)&((_Foo *)0)->f, false, 1},
+            {MetaType_double, "d", (size_t)&((_Foo *)0)->d, false, 1},
+            {MetaType_V2, "v2", (size_t)&((_Foo *)0)->v2, false, 1},
             // Members inherited from thingy.
-            {MetaType_int, "x", (size_t) &((_Foo *)0)->x, false, 1},
-            {MetaType_int, "y", (size_t) &((_Foo *)0)->y, false, 1},
+            {MetaType_int, "x", (size_t)&((_Foo *)0)->x, false, 1},
+            {MetaType_int, "y", (size_t)&((_Foo *)0)->y, false, 1},
             // Members inherited from A.
-            {MetaType_float, "m", (size_t) &((_Foo *)0)->m, false, 1},
+            {MetaType_float, "m", (size_t)&((_Foo *)0)->m, false, 1},
             // Members inherited from B.
-            {MetaType_float, "n", (size_t) &((_Foo *)0)->n, false, 1},
+            {MetaType_float, "n", (size_t)&((_Foo *)0)->n, false, 1},
             // Members inherited from C.
-            {MetaType_float, "o", (size_t) &((_Foo *)0)->o, false, 1},
+            {MetaType_float, "o", (size_t)&((_Foo *)0)->o, false, 1},
         };
         return(members_of_Foo);
 
-        // X
+    // X
     } else if(type_compare(T, X)) {
         static MemberDefinition members_of_X[] = {
             {MetaType_int, "i", offset_of(&_X::i), false, 1},
             // Members inherited from Foo.
-            {MetaType_char, "str", (size_t) &((_X *)0)->str, true, 1},
-            {MetaType_int, "ip", (size_t) &((_X *)0)->ip, true, 1},
-            {MetaType_float, "fp", (size_t) &((_X *)0)->fp, true, 1},
-            {MetaType_bool, "b", (size_t) &((_X *)0)->b, true, 1},
-            {MetaType_double, "p_array", (size_t) &((_X *)0)->p_array, true, 10},
+            {MetaType_char, "str", (size_t)&((_X *)0)->str, true, 1},
+            {MetaType_int, "ip", (size_t)&((_X *)0)->ip, true, 1},
+            {MetaType_float, "fp", (size_t)&((_X *)0)->fp, true, 1},
+            {MetaType_bool, "b", (size_t)&((_X *)0)->b, true, 1},
+            {MetaType_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
         };
         return(members_of_X);
 
-        // Y
+    // Y
     } else if(type_compare(T, Y)) {
         static MemberDefinition members_of_Y[] = {
             // Members inherited from X.
-            {MetaType_int, "i", (size_t) &((_Y *)0)->i, false, 1},
+            {MetaType_int, "i", (size_t)&((_Y *)0)->i, false, 1},
         };
         return(members_of_Y);
 
-        // Transform
+    // Transform
     } else if(type_compare(T, Transform)) {
         static MemberDefinition members_of_Transform[] = {
             {MetaType_V2, "pos", offset_of(&_Transform::pos), false, 1},
@@ -473,7 +473,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_TEST);
 
-        // thingy
+    // thingy
     } if((strcmp(str, "thingy") == 0) || (strcmp(str, "thingy *") == 0) || (strcmp(str, "thingy **") == 0)) {
         static MemberDefinition members_of_thingy[] = {
             {MetaType_int, "x", offset_of(&_thingy::x), false, 1},
@@ -481,7 +481,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_thingy);
 
-        // V2
+    // V2
     } if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
         static MemberDefinition members_of_V2[] = {
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
@@ -489,7 +489,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_V2);
 
-        // Bar
+    // Bar
     } if((strcmp(str, "Bar") == 0) || (strcmp(str, "Bar *") == 0) || (strcmp(str, "Bar **") == 0)) {
         static MemberDefinition members_of_Bar[] = {
             {MetaType_short, "s", offset_of(&_Bar::s), false, 1},
@@ -500,28 +500,28 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_Bar);
 
-        // A
+    // A
     } if((strcmp(str, "A") == 0) || (strcmp(str, "A *") == 0) || (strcmp(str, "A **") == 0)) {
         static MemberDefinition members_of_A[] = {
             {MetaType_float, "m", offset_of(&_A::m), false, 1},
         };
         return(members_of_A);
 
-        // B
+    // B
     } if((strcmp(str, "B") == 0) || (strcmp(str, "B *") == 0) || (strcmp(str, "B **") == 0)) {
         static MemberDefinition members_of_B[] = {
             {MetaType_float, "n", offset_of(&_B::n), false, 1},
         };
         return(members_of_B);
 
-        // C
+    // C
     } if((strcmp(str, "C") == 0) || (strcmp(str, "C *") == 0) || (strcmp(str, "C **") == 0)) {
         static MemberDefinition members_of_C[] = {
             {MetaType_float, "o", offset_of(&_C::o), false, 1},
         };
         return(members_of_C);
 
-        // Foo
+    // Foo
     } if((strcmp(str, "Foo") == 0) || (strcmp(str, "Foo *") == 0) || (strcmp(str, "Foo **") == 0)) {
         static MemberDefinition members_of_Foo[] = {
             {MetaType_char, "str", offset_of(&_Foo::str), true, 1},
@@ -530,45 +530,45 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_bool, "b", offset_of(&_Foo::b), true, 1},
             {MetaType_double, "p_array", offset_of(&_Foo::p_array), true, 10},
             // Members inherited from Bar.
-            {MetaType_short, "s", (size_t) &((_Foo *)0)->s, false, 1},
-            {MetaType_int, "i", (size_t) &((_Foo *)0)->i, false, 1},
-            {MetaType_float, "f", (size_t) &((_Foo *)0)->f, false, 1},
-            {MetaType_double, "d", (size_t) &((_Foo *)0)->d, false, 1},
-            {MetaType_V2, "v2", (size_t) &((_Foo *)0)->v2, false, 1},
+            {MetaType_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
+            {MetaType_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
+            {MetaType_float, "f", (size_t)&((_Foo *)0)->f, false, 1},
+            {MetaType_double, "d", (size_t)&((_Foo *)0)->d, false, 1},
+            {MetaType_V2, "v2", (size_t)&((_Foo *)0)->v2, false, 1},
             // Members inherited from thingy.
-            {MetaType_int, "x", (size_t) &((_Foo *)0)->x, false, 1},
-            {MetaType_int, "y", (size_t) &((_Foo *)0)->y, false, 1},
+            {MetaType_int, "x", (size_t)&((_Foo *)0)->x, false, 1},
+            {MetaType_int, "y", (size_t)&((_Foo *)0)->y, false, 1},
             // Members inherited from A.
-            {MetaType_float, "m", (size_t) &((_Foo *)0)->m, false, 1},
+            {MetaType_float, "m", (size_t)&((_Foo *)0)->m, false, 1},
             // Members inherited from B.
-            {MetaType_float, "n", (size_t) &((_Foo *)0)->n, false, 1},
+            {MetaType_float, "n", (size_t)&((_Foo *)0)->n, false, 1},
             // Members inherited from C.
-            {MetaType_float, "o", (size_t) &((_Foo *)0)->o, false, 1},
+            {MetaType_float, "o", (size_t)&((_Foo *)0)->o, false, 1},
         };
         return(members_of_Foo);
 
-        // X
+    // X
     } if((strcmp(str, "X") == 0) || (strcmp(str, "X *") == 0) || (strcmp(str, "X **") == 0)) {
         static MemberDefinition members_of_X[] = {
             {MetaType_int, "i", offset_of(&_X::i), false, 1},
             // Members inherited from Foo.
-            {MetaType_char, "str", (size_t) &((_X *)0)->str, true, 1},
-            {MetaType_int, "ip", (size_t) &((_X *)0)->ip, true, 1},
-            {MetaType_float, "fp", (size_t) &((_X *)0)->fp, true, 1},
-            {MetaType_bool, "b", (size_t) &((_X *)0)->b, true, 1},
-            {MetaType_double, "p_array", (size_t) &((_X *)0)->p_array, true, 10},
+            {MetaType_char, "str", (size_t)&((_X *)0)->str, true, 1},
+            {MetaType_int, "ip", (size_t)&((_X *)0)->ip, true, 1},
+            {MetaType_float, "fp", (size_t)&((_X *)0)->fp, true, 1},
+            {MetaType_bool, "b", (size_t)&((_X *)0)->b, true, 1},
+            {MetaType_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
         };
         return(members_of_X);
 
-        // Y
+    // Y
     } if((strcmp(str, "Y") == 0) || (strcmp(str, "Y *") == 0) || (strcmp(str, "Y **") == 0)) {
         static MemberDefinition members_of_Y[] = {
             // Members inherited from X.
-            {MetaType_int, "i", (size_t) &((_Y *)0)->i, false, 1},
+            {MetaType_int, "i", (size_t)&((_Y *)0)->i, false, 1},
         };
         return(members_of_Y);
 
-        // Transform
+    // Transform
     } if((strcmp(str, "Transform") == 0) || (strcmp(str, "Transform *") == 0) || (strcmp(str, "Transform **") == 0)) {
         static MemberDefinition members_of_Transform[] = {
             {MetaType_V2, "pos", offset_of(&_Transform::pos), false, 1},

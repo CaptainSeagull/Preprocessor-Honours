@@ -44,7 +44,8 @@
 #include <string.h>
 
 #if defined(_MSC_VER)
-    #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
+    //#define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
+    #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #else
     #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #endif
@@ -148,6 +149,8 @@ Void push_error_(ErrorType type, Char *file, Int line) {
         e->line = line;
 
         ++global_error_count;
+
+        *(int *)0 = 0;
     }
 }
 
@@ -215,7 +218,9 @@ Bool system_check_for_debugger(void) {
 //
 
 #define alloc(Type) (Type *)calloc(sizeof(Type), 1)
-#define alloc_arr(Type, cnt) (Type *)calloc(sizeof(Type), cnt)
+#define alloc_arr(Type, cnt) (Type *)calloc(cnt * sizeof(Type), 1)
+
+#define free(...)
 
 #if 0
 #if MEM_CHECK
@@ -358,11 +363,14 @@ Int scratch_memory_index = 0;
 Int scratch_memory_size = 256 * 256;
 Void *global_scratch_memory = 0;
 Void *push_scratch_memory(Int size = scratch_memory_size) {
-    if(!global_scratch_memory) { global_scratch_memory = malloc(scratch_memory_size + 256); } // Allocate a little extra, just in case.
+    if(!global_scratch_memory) {
+        global_scratch_memory = malloc(scratch_memory_size + 1);
+        memset(global_scratch_memory, 0, scratch_memory_size + 1);
+    }
 
     Void *res = 0;
     if(global_scratch_memory) {
-        assert(scratch_memory_size + 256 > scratch_memory_index + size);
+        assert(scratch_memory_size + 1 > scratch_memory_index + size);
         res = cast(Byte *)global_scratch_memory + scratch_memory_index;
         scratch_memory_index += size;
     }
@@ -449,6 +457,8 @@ SwitchType get_switch_type(Char *str) {
 
                 default: { assert(0); } break;
             }
+        } else if((str[len - 1] == 'h') && (str[len - 2] == '.')) {
+            res = SwitchType_source_file;
         } else if((str[len - 1] == 'c') && (str[len - 2] == '.')) {
             res = SwitchType_source_file;
         } else if((str[len - 1] == 'p') && (str[len - 2] == 'p') && (str[len - 3] == 'c') && (str[len - 4] == '.') ) {
@@ -724,12 +734,15 @@ enum TokenType {
     TokenType_open_angle_bracket,
     TokenType_close_angle_bracket,
     TokenType_hash,
-    TokenType_equals,
+    TokenType_assign,
     TokenType_comma,
     TokenType_tilde,
     TokenType_period,
     TokenType_ampersand,
+    TokenType_inclusive_or,
+    TokenType_not,
     TokenType_var_args,
+
 
     TokenType_plus,
     TokenType_minus,
@@ -738,6 +751,11 @@ enum TokenType {
     TokenType_number,
     TokenType_identifier,
     TokenType_string,
+
+    TokenType_equal,
+    TokenType_not_equal,
+    TokenType_greater_than_or_equal,
+    TokenType_less_than_or_equal,
 
     TokenType_error,
 
@@ -935,27 +953,48 @@ TokenType get_token_type(String s) {
 
     TokenType res = TokenType_unknown;
     switch(s.e[0]) {
-        case 0:    { res = TokenType_end_of_stream;       } break;
+        case 0:   { res = TokenType_end_of_stream; } break;
 
-        case '(':  { res = TokenType_open_paren;          } break;
-        case ')':  { res = TokenType_close_param;         } break;
-        case ':':  { res = TokenType_colon;               } break;
-        case ';':  { res = TokenType_semi_colon;          } break;
-        case '*':  { res = TokenType_asterisk;            } break;
-        case '[':  { res = TokenType_open_bracket;        } break;
-        case ']':  { res = TokenType_close_bracket;       } break;
-        case '{':  { res = TokenType_open_brace;          } break;
-        case '}':  { res = TokenType_close_brace;         } break;
-        case '<':  { res = TokenType_open_angle_bracket;  } break;
-        case '>':  { res = TokenType_close_angle_bracket; } break;
-        case '=':  { res = TokenType_equals;              } break;
-        case ',':  { res = TokenType_comma;               } break;
-        case '~':  { res = TokenType_tilde;               } break;
-        case '#':  { res = TokenType_hash;                } break;
-        case '&':  { res = TokenType_ampersand;           } break;
-        case '+':  { res = TokenType_plus;                } break;
-        case '-':  { res = TokenType_minus;               } break;
-        case '/':  { res = TokenType_divide;              } break;
+        case '(': { res = TokenType_open_paren;    } break;
+        case ')': { res = TokenType_close_param;   } break;
+        case ':': { res = TokenType_colon;         } break;
+        case ';': { res = TokenType_semi_colon;    } break;
+        case '*': { res = TokenType_asterisk;      } break;
+        case '[': { res = TokenType_open_bracket;  } break;
+        case ']': { res = TokenType_close_bracket; } break;
+        case '{': { res = TokenType_open_brace;    } break;
+        case '}': { res = TokenType_close_brace;   } break;
+        case ',': { res = TokenType_comma;         } break;
+        case '~': { res = TokenType_tilde;         } break;
+        case '#': { res = TokenType_hash;          } break;
+        case '&': { res = TokenType_ampersand;     } break;
+        case '+': { res = TokenType_plus;          } break;
+        case '-': { res = TokenType_minus;         } break;
+        case '/': { res = TokenType_divide;        } break;
+        case '|': { res = TokenType_inclusive_or;  } break;
+
+        case '=': {
+            if(s.len == 1)                           { res = TokenType_assign; }
+            else if((s.len == 2) && (s.e[1] == '=')) { res = TokenType_equal;  }
+            else                                     { assert(0);              }
+        } break;
+
+        case '!': {
+            if(s.len == 1)                           { res = TokenType_not; }
+            else if((s.len == 2) && (s.e[1] == '=')) { res = TokenType_not_equal; }
+        } break;
+
+        case '>': {
+            if(s.len == 1)                           { res = TokenType_open_angle_bracket;    }
+            else if((s.len == 2) && (s.e[1] == '=')) { res = TokenType_greater_than_or_equal; }
+            else                                     { assert(0);                             }
+        } break;
+
+        case '<': {
+            if(s.len == 1)                           { res = TokenType_open_angle_bracket; }
+            else if((s.len == 2) && (s.e[1] == '=')) { res = TokenType_less_than_or_equal; }
+            else                                     { assert(0);                          }
+        } break;
 
         default: {
             if(is_num(s.e[0])) { res = TokenType_number;     }
@@ -971,40 +1010,12 @@ Token string_to_token(String str) {
 
     res.e = str.e;
     res.len = str.len;
-
-    // TODO(Jonny): This isn't foolproof.
-    switch(res.e[0]) {
-        case 0:    { res.type = TokenType_end_of_stream;       } break;
-
-        case '(':  { res.type = TokenType_open_paren;          } break;
-        case ')':  { res.type = TokenType_close_param;         } break;
-        case ':':  { res.type = TokenType_colon;               } break;
-        case ';':  { res.type = TokenType_semi_colon;          } break;
-        case '*':  { res.type = TokenType_asterisk;            } break;
-        case '[':  { res.type = TokenType_open_bracket;        } break;
-        case ']':  { res.type = TokenType_close_bracket;       } break;
-        case '{':  { res.type = TokenType_open_brace;          } break;
-        case '}':  { res.type = TokenType_close_brace;         } break;
-        case '<':  { res.type = TokenType_open_angle_bracket;  } break;
-        case '>':  { res.type = TokenType_close_angle_bracket; } break;
-        case '=':  { res.type = TokenType_equals;              } break;
-        case ',':  { res.type = TokenType_comma;               } break;
-        case '~':  { res.type = TokenType_tilde;               } break;
-        case '#':  { res.type = TokenType_hash;                } break;
-        case '&':  { res.type = TokenType_ampersand;           } break;
-        case '+':  { res.type = TokenType_plus;                } break;
-        case '-':  { res.type = TokenType_minus;               } break;
-        case '/':  { res.type = TokenType_divide;              } break;
-
-        default: {
-            if(is_num(res.e[0])) { res.type = TokenType_number;     }
-            else                 { res.type = TokenType_identifier; }
-        } break;
-    }
+    res.type = get_token_type(str);
 
     return(res);
 }
 
+Token peak_token(Tokenizer *tokenizer); // Because C++...
 Token get_token(Tokenizer *tokenizer) {
     eat_whitespace(tokenizer);
 
@@ -1015,27 +1026,49 @@ Token get_token(Tokenizer *tokenizer) {
     ++tokenizer->at;
 
     switch(c) {
-        case 0:    { res.type = TokenType_end_of_stream;       } break;
+        case 0:   { res.type = TokenType_end_of_stream; } break;
 
-        case '(':  { res.type = TokenType_open_paren;          } break;
-        case ')':  { res.type = TokenType_close_param;         } break;
-        case ':':  { res.type = TokenType_colon;               } break;
-        case ';':  { res.type = TokenType_semi_colon;          } break;
-        case '*':  { res.type = TokenType_asterisk;            } break;
-        case '[':  { res.type = TokenType_open_bracket;        } break;
-        case ']':  { res.type = TokenType_close_bracket;       } break;
-        case '{':  { res.type = TokenType_open_brace;          } break;
-        case '}':  { res.type = TokenType_close_brace;         } break;
-        case '<':  { res.type = TokenType_open_angle_bracket;  } break;
-        case '>':  { res.type = TokenType_close_angle_bracket; } break;
-        case '=':  { res.type = TokenType_equals;              } break;
-        case ',':  { res.type = TokenType_comma;               } break;
-        case '~':  { res.type = TokenType_tilde;               } break;
-        case '#':  { res.type = TokenType_hash;                } break;
-        case '&':  { res.type = TokenType_ampersand;           } break;
-        case '+':  { res.type = TokenType_plus;                } break;
-        case '-':  { res.type = TokenType_minus;               } break;
-        case '/':  { res.type = TokenType_divide;              } break;
+        case '(': { res.type = TokenType_open_paren;    } break;
+        case ')': { res.type = TokenType_close_param;   } break;
+        case ':': { res.type = TokenType_colon;         } break;
+        case ';': { res.type = TokenType_semi_colon;    } break;
+        case '*': { res.type = TokenType_asterisk;      } break;
+        case '[': { res.type = TokenType_open_bracket;  } break;
+        case ']': { res.type = TokenType_close_bracket; } break;
+        case '{': { res.type = TokenType_open_brace;    } break;
+        case '}': { res.type = TokenType_close_brace;   } break;
+        case ',': { res.type = TokenType_comma;         } break;
+        case '~': { res.type = TokenType_tilde;         } break;
+        case '#': { res.type = TokenType_hash;          } break;
+        case '&': { res.type = TokenType_ampersand;     } break;
+        case '+': { res.type = TokenType_plus;          } break;
+        case '-': { res.type = TokenType_minus;         } break;
+        case '/': { res.type = TokenType_divide;        } break;
+        case '|': { res.type = TokenType_inclusive_or;  } break;
+
+        case '=': {
+            Token next = peak_token(tokenizer);
+            if(next.type == TokenType_assign) { res.type = TokenType_equal;  res.len = 2; }
+            else                              { res.type = TokenType_assign;              }
+        } break;
+
+        case '!': {
+            Token next = peak_token(tokenizer);
+            if(next.type == TokenType_assign) { res.type = TokenType_not_equal; res.len = 2;}
+            else                              { res.type = TokenType_not;                   }
+        } break;
+
+        case '>': {
+            Token next = peak_token(tokenizer);
+            if(next.type == TokenType_assign) { res.type = TokenType_greater_than_or_equal; res.len = 2; }
+            else                              { res.type = TokenType_close_angle_bracket;                }
+        } break;
+
+        case '<': {
+            Token next = peak_token(tokenizer);
+            if(next.type == TokenType_assign) { res.type = TokenType_less_than_or_equal; res.len = 2; }
+            else                              { res.type = TokenType_open_angle_bracket;              }
+        } break;
 
         case '.':  {
             Bool var_args = false;
@@ -1081,7 +1114,7 @@ Token get_token(Tokenizer *tokenizer) {
         } break;
 
         default: {
-            if((is_alphabetical(c)) || (tokenizer->at[0] == '_')) {
+            if((is_alphabetical(c)) || (c == '_')) {
                 while((is_alphabetical(tokenizer->at[0])) || (is_num(tokenizer->at[0])) || (tokenizer->at[0] == '_')) {
                     ++tokenizer->at;
                 }
@@ -1115,7 +1148,7 @@ Token get_token(Tokenizer *tokenizer) {
         } while(changed);
     }
 
-    if(res.type == TokenType_unknown) { push_error(ErrorType_unknown_token_found); }
+    //if(res.type == TokenType_unknown) { push_error(ErrorType_unknown_token_found); }
 
     return(res);
 }
@@ -1435,7 +1468,7 @@ Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenT
 
     // Skip over any assignment at the end.
     // TODO(Jonny): This won't work if a variable is assigned to a function.
-    if(token.type == TokenType_equals) { eat_token(tokenizer); }
+    if(token.type == TokenType_assign) { eat_token(tokenizer); }
 
     return(res);
 }
@@ -1658,7 +1691,7 @@ ParseEnumResult parse_enum(Tokenizer *tokenizer) {
                     while(temp_token.type != TokenType_identifier) { temp_token = get_token(tokenizer); }
 
                     ev->name = token_to_string(temp_token);
-                    if(peak_token(tokenizer).type == TokenType_equals) {
+                    if(peak_token(tokenizer).type == TokenType_assign) {
                         eat_token(tokenizer);
                         Token num = get_token(tokenizer);
 
@@ -2107,7 +2140,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         // Recursive part for calling on members of structs.
         write_to_output_buffer(&ob, "\n\n");
 
-        Int def_struct_code_size = 20000;
+        Int def_struct_code_size = 10000;
         Char *def_struct_code_mem = alloc_arr(Char, def_struct_code_size);
         if(def_struct_code_mem) {
             Int index = 0;
@@ -2509,43 +2542,46 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "// Get the base type.\n"
                                "template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {\n");
 
-        for(Int i = 0, written_count = 0; (i < struct_count); ++i) {
-            StructData *sd = struct_data + i;
+        if(struct_count) {
+            for(Int i = 0, written_count = 0; (i < struct_count); ++i) {
+                StructData *sd = struct_data + i;
 
-            if(sd->inherited_count) {
-                // TODO(Jonny): Make the index return the inherited index.
-                if(!written_count) {
-                    write_to_output_buffer(&ob,
-                                           "    if(type_compare(T, %.*s)) {\n",
-                                           sd->name.len, sd->name.e);
-                } else {
-                    write_to_output_buffer(&ob,
-                                           "    } else if(type_compare(T, %.*s)) {\n",
-                                           sd->name.len, sd->name.e);
-                }
-
-                for(Int j = 0; (j < sd->inherited_count); ++j) {
-                    if(!j) {
+                if(sd->inherited_count) {
+                    // TODO(Jonny): Make the index return the inherited index.
+                    if(!written_count) {
                         write_to_output_buffer(&ob,
-                                               "        if(index == %d)      { return(\"%.*s\"); }\n",
-                                               j,
-                                               sd->inherited[j].len, sd->inherited[j].e);
+                                               "    if(type_compare(T, %.*s)) {\n",
+                                               sd->name.len, sd->name.e);
                     } else {
                         write_to_output_buffer(&ob,
-                                               "        else if(index == %d) { return(\"%.*s\"); }\n",
-                                               j,
-                                               sd->inherited[j].len, sd->inherited[j].e);
+                                               "    } else if(type_compare(T, %.*s)) {\n",
+                                               sd->name.len, sd->name.e);
                     }
 
-                }
+                    for(Int j = 0; (j < sd->inherited_count); ++j) {
+                        if(!j) {
+                            write_to_output_buffer(&ob,
+                                                   "        if(index == %d)      { return(\"%.*s\"); }\n",
+                                                   j,
+                                                   sd->inherited[j].len, sd->inherited[j].e);
+                        } else {
+                            write_to_output_buffer(&ob,
+                                                   "        else if(index == %d) { return(\"%.*s\"); }\n",
+                                                   j,
+                                                   sd->inherited[j].len, sd->inherited[j].e);
+                        }
 
-                ++written_count;
+                    }
+
+                    ++written_count;
+                }
             }
+
+            write_to_output_buffer(&ob,
+                                   "    }\n");
         }
 
-
         write_to_output_buffer(&ob,
-                               "    }\n"
                                "\n"
                                "    return(0); // Not found.\n"
                                "}\n");
