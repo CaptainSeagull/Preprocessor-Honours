@@ -46,7 +46,7 @@ if "%RUN_TEST%"=="true" (
 
 if "%RUN_BREAKOUT%"=="true" (
     pushd "breakout"
-    rem "../build/preprocessor.exe" win32.cpp game.cpp -p
+    "../build/preprocessor.exe" win32.cpp platform.h game.cpp -e
     popd
 
     pushd "build"
