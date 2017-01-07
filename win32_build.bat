@@ -1,7 +1,7 @@
 @echo off
 
-rem Variables to set. NOTE - Google Test uses _a lot_ of memory, so it's advised to run tests in 64-bit.
-set VISUAL_STUDIO_VERSION=14
+rem Variables to set.
+set VISUAL_STUDIO_VERSION=10
 set ENVIRONMENT=x86
 set RELEASE=false
 set RUN_CODE_AFTER_BUILDING=true
@@ -17,6 +17,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\V
 
 set COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 
+rem Build prepreprocessor.
 setlocal EnableDelayedExpansion
 set FILES="../preprocessor/preprocessor.cpp" "../preprocessor/google_test/gtest-all.cc"
 if "%RELEASE%"=="true" (
@@ -30,10 +31,12 @@ pushd "build"
 cl -FePreprocessor %COMMON_COMPILER_FLAGS% -Wall %FILES% -link -subsystem:console,5.2 kernel32.lib
 popd
 
+rem Run after building.
 if "%RUN_CODE_AFTER_BUILDING%"=="true" (
     "build/preprocessor.exe" -t
 )
 
+rem Test code.
 if "%RUN_TEST%"=="true" (
     pushd "test"
     "../build/preprocessor.exe" test_code.cpp -p
@@ -44,12 +47,14 @@ if "%RUN_TEST%"=="true" (
     popd
 )
 
+rem Breakout.
+set SDL_COMMON_COMPILER_FLAGS=-nologo -MDd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 if "%RUN_BREAKOUT%"=="true" (
     pushd "breakout"
-    "../build/preprocessor.exe" win32.cpp platform.h game.cpp -e
+    "../build/preprocessor.exe" breakout.cpp -e
     popd
 
     pushd "build"
-    cl -FeBreakout %COMMON_COMPILER_FLAGS% -wd4201 -Wall "../breakout/win32.cpp" "../breakout/game.cpp" -FmTest.map -link -subsystem:windows,5.2 kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib
+    cl -FeBreakout %SDL_COMMON_COMPILER_FLAGS% -MDd -Wall "../breakout/breakout.cpp" -FmTest.map -link -subsystem:windows,5.2 /NODEFAULTLIB:library kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib sdl2.lib sdl2main.lib
     popd
 )
