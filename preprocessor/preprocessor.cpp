@@ -551,15 +551,15 @@ Char *get_static_file(void) {
                 "\n"
                 "#define get_num_of_members(type) get_number_of_members_<type>()\n"
                 "\n"
-                "#define serialize_type(var, Type, buf, size) serialize_struct_(var, #var, type_to_string(Type), 0, buf, size, 0)\n"
+                "template<typename T> static char const *type_to_string_(void);\n"
+                "#define type_to_string(Type) type_to_string_<Type>()\n"
+                "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
+                "\n"
+                "#define serialize_type(var, Type, buf, size) serialize_struct_(&var, #var, pp::type_to_string(Type), 0, buf, size, 0)\n"
                 "#define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)\n"
                 "\n"
                 "static MemberDefinition *get_members_of_str(char const *str);\n"
                 "static int get_number_of_members_str(char const *str);\n"
-                "\n"
-                "template<typename T> static char const *type_to_string_(void);\n"
-                "#define type_to_string(Type) type_to_string_<Type>()\n"
-                "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
                 "\n"
                 "static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);\n"
                 "#define print_type(var, Type, ...) print_<Type>(&var, #var, ##__VA_ARGS__)\n"
@@ -2077,8 +2077,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         write_to_output_buffer(&ob,
                                "#if !defined(%s_GENERATED_H)\n"
                                "#define %s_GENERATED_H\n"
-                               "\n"
-                               "#include \"static_generated.h\"\n"
                                "\n",
                                name_buf, name_buf);
 
@@ -2096,6 +2094,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         }
 
         write_to_output_buffer(&ob,
+                               "\n"
+                               "#include \"static_generated.h\"\n"
                                "\n"
                                "namespace pp { // PreProcessor\n");
 
@@ -2543,10 +2543,12 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {\n");
 
         if(struct_count) {
+            Bool actually_written_anything = false;
             for(Int i = 0, written_count = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
                 if(sd->inherited_count) {
+                    actually_written_anything = true;
                     // TODO(Jonny): Make the index return the inherited index.
                     if(!written_count) {
                         write_to_output_buffer(&ob,
@@ -2577,8 +2579,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 }
             }
 
-            write_to_output_buffer(&ob,
-                                   "    }\n");
+            if(actually_written_anything) {
+                write_to_output_buffer(&ob,
+                                       "    }\n");
+            }
         }
 
         write_to_output_buffer(&ob,
@@ -2824,11 +2828,6 @@ Void print_help(void) {
 }
 
 Int main(Int argc, Char **argv) {
-    ResultInt calc_res = calculator_string_to_int("1 + 2 * 3");
-    if(calc_res.success) {
-        int i = 0;
-    }
-
     Int res = 0;
 
     Bool display_time_taken = false;
@@ -2841,9 +2840,6 @@ Int main(Int argc, Char **argv) {
         Bool should_log_errors = true;
         Bool should_run_tests = false;
         should_write_to_file = true;
-
-        // Get the total amount of memory needed to store all files.
-
 
         PtrSize largest_source_file_size = 0;
         Int number_of_files = 0;
@@ -3103,4 +3099,3 @@ Int run_tests(void) {
 }
 
 #endif
-
