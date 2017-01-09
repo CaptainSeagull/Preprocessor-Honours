@@ -2,7 +2,7 @@
 #include <string.h>
 #include "breakout_generated.h"
 
-#include "SDL/SDL.h"
+#include "sdl/SDL.h"
 
 int global_window_width = 640;
 int global_window_height = 480;
@@ -112,7 +112,7 @@ bool ball_paddle_collision(Ball b, Paddle p) {
 int
 main(int argc, char **argv) {
     if(SDL_Init(SDL_INIT_VIDEO) >= 0) {
-        SDL_Window *win = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        SDL_Window *win = SDL_CreateWindow("Breakout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                            global_window_width, global_window_height, SDL_WINDOW_SHOWN);
         if(win) {
             SDL_Surface *surface = SDL_GetWindowSurface(win);

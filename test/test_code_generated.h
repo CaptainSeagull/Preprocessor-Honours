@@ -1,8 +1,6 @@
 #if !defined(TEST_CODE_GENERATED_H)
 #define TEST_CODE_GENERATED_H
 
-#include "static_generated.h"
-
 // Forward declared structs (these must be declared outside the namespace...)
 struct TEST;
 struct thingy;
@@ -15,6 +13,8 @@ struct Foo;
 struct X;
 struct Y;
 struct Transform;
+
+#include "static_generated.h"
 
 namespace pp { // PreProcessor
 

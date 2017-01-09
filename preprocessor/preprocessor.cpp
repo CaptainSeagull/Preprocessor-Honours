@@ -149,8 +149,6 @@ Void push_error_(ErrorType type, Char *file, Int line) {
         e->line = line;
 
         ++global_error_count;
-
-        *(int *)0 = 0;
     }
 }
 

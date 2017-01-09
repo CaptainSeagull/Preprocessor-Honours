@@ -79,15 +79,15 @@ struct Variable {
 
 #define get_num_of_members(type) get_number_of_members_<type>()
 
-#define serialize_type(var, Type, buf, size) serialize_struct_(var, #var, type_to_string(Type), 0, buf, size, 0)
+template<typename T> static char const *type_to_string_(void);
+#define type_to_string(Type) type_to_string_<Type>()
+#define weak_type_to_string(Type) weak_type_to_string_<Type>()
+
+#define serialize_type(var, Type, buf, size) serialize_struct_(&var, #var, pp::type_to_string(Type), 0, buf, size, 0)
 #define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)
 
 static MemberDefinition *get_members_of_str(char const *str);
 static int get_number_of_members_str(char const *str);
-
-template<typename T> static char const *type_to_string_(void);
-#define type_to_string(Type) type_to_string_<Type>()
-#define weak_type_to_string(Type) weak_type_to_string_<Type>()
 
 static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);
 #define print_type(var, Type, ...) print_<Type>(&var, #var, ##__VA_ARGS__)
