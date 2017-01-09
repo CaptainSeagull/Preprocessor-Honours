@@ -218,9 +218,6 @@ Bool system_check_for_debugger(void) {
 #define alloc(Type) (Type *)calloc(sizeof(Type), 1)
 #define alloc_arr(Type, cnt) (Type *)calloc(cnt * sizeof(Type), 1)
 
-#define free(...)
-
-#if 0
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -231,27 +228,10 @@ struct MemList {
     Bool freed;
 };
 MemList *mem_list_root = 0;
-#endif
 
-Void *get_raw_pointer(Void *ptr)  { return(cast(PtrSize *)ptr - 1);    }
-PtrSize get_alloc_size(Void *ptr) { return(*(cast(PtrSize *)ptr - 1)); }
-#define get_alloc_size_arr(ptr) (get_alloc_size(ptr) / sizeof(*(ptr)))
+Void *malloc_(PtrSize size, Char *file, Int line) {
+    Void *res = malloc(size);
 
-#define alloc(Type, ...) cast(Type *)alloc_(sizeof(Type), __FILE__, __LINE__, ##__VA_ARGS__)
-Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1) {
-    Void *res = 0;
-
-    size *= count;
-    PtrSize *raw_ptr = cast(PtrSize *)malloc(size + sizeof(PtrSize) * 1);
-    if(!raw_ptr) {
-        if(file) { push_error_(ErrorType_ran_out_of_memory, file, line); }
-        else     { push_error_(ErrorType_ran_out_of_memory, __FILE__, __LINE__); }
-    } else {
-        *raw_ptr = size;
-        res = (raw_ptr + 1);
-        memset(res, 0, size);
-    }
-#if MEM_CHECK
     if(res) {
         MemList *cur = cast(MemList *)malloc(sizeof(MemList));
         if(!cur) { push_error(ErrorType_ran_out_of_memory); }
@@ -270,22 +250,14 @@ Void *alloc_(PtrSize size, Char *file = 0, Int line = 0, PtrSize count = 1) {
             }
         }
     }
-#endif
-
-#if MEM_CHECK
-    if(res) { assert(get_alloc_size(res) == size); }
-#endif
 
     return(res);
 }
 
 // Free Memory.
 Void free_(Void *ptr) {
-#if MEM_CHECK
+    free(ptr);
     if(ptr) {
-        Void *raw_ptr = get_raw_pointer(ptr);
-        free(raw_ptr);
-
         Bool found = false;
         MemList *next = mem_list_root;
         while(next) {
@@ -299,62 +271,29 @@ Void free_(Void *ptr) {
 
         assert(found);
     }
-#else
-    if(ptr) {
-        Void *raw_ptr = get_raw_pointer(ptr);
-        free(raw_ptr);
-    }
-#endif
 }
 
 // realloc
-Void *realloc_(Void *ptr, Char *file = 0, Int line = 0, PtrSize size = 0) {
-    Void *res = 0;
+Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
+    Void *res = realloc(ptr, file, size)
     if(ptr) {
-#if MEM_CHECK
         MemList *next = mem_list_root;
         while(next) {
             if(next->ptr == ptr) { break; } // while
             next = next->next;
         }
 
-        if(!next) {
-            if(file) { push_error_(ErrorType_could_not_find_mallocd_ptr, file, line); }
-            else     { push_error(ErrorType_could_not_find_mallocd_ptr); }
-        }
-#endif
-        PtrSize *old_raw_ptr = cast(PtrSize *)get_raw_pointer(ptr);
-        PtrSize old_size = *old_raw_ptr;
-        if(!size) { size = old_size * 2; }
-
-        if(size <= old_size) {
-            res = ptr;
-        } else {
-            PtrSize *raw_ptr = cast(PtrSize *)realloc(old_raw_ptr, size + sizeof(PtrSize) * 2);
-            if(!raw_ptr) { push_error(ErrorType_ran_out_of_memory); }
-            else {
-                *cast(PtrSize *)raw_ptr = size;
-                res = (PtrSize *)raw_ptr + 1;
-                memset(cast(Char *)res + old_size, 0, size - old_size);
-#if MEM_CHECK
-                if(next) { next->ptr = res; }
-#endif
-            }
-        }
-    } else {
-        if(!size) { size = sizeof(PtrSize); }
-
-        res = alloc_(size, file, line);
+        if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, file, line); }
+        else      { next->ptr = res;                                               }
     }
-
     return(res);
 }
 
 #define malloc(size) alloc_(size, __FILE__, __LINE__)
-#define calloc(size, count) alloc_(size, __FILE__, __LINE__, count)
-#define realloc(ptr, ...) realloc_(ptr, __FILE__, __LINE__, ##__VA_ARGS__)
+#define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
 #define free(ptr) free_(ptr)
-#endif
+
+#endif // MEM_CHECK
 
 // A quick-to-access temp region of memory. Should be frequently cleared.
 Int scratch_memory_index = 0;
