@@ -275,7 +275,7 @@ Void free_(Void *ptr) {
 
 // realloc
 Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
-    Void *res = realloc(ptr, file, size)
+    Void *res = realloc(ptr, size);
     if(ptr) {
         MemList *next = mem_list_root;
         while(next) {
@@ -289,7 +289,7 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
     return(res);
 }
 
-#define malloc(size) alloc_(size, __FILE__, __LINE__)
+#define malloc(size) malloc_(size, __FILE__, __LINE__)
 #define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
 #define free(ptr) free_(ptr)
 
@@ -2968,7 +2968,7 @@ TEST(StructTest, inhertiance_struct_test) {
     hardcoded.members = cast(Variable *)malloc(sizeof(Variable));
     *hardcoded.members = create_variable("int", "c");
     hardcoded.inherited_count = 2;
-    hardcoded.inherited = alloc(String, hardcoded.inherited_count);
+    hardcoded.inherited = alloc_arr(String, hardcoded.inherited_count);
     hardcoded.inherited[0] = create_string("BaseOne");
     hardcoded.inherited[1] = create_string("BaseTwo");
 
