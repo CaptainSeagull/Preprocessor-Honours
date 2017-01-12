@@ -155,9 +155,9 @@ Void push_error_(ErrorType type, Char *guid) {
 }
 
 #if INTERNAL
-    #define assert(Expression, ...) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
+    #define assert(Expression) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
-    #define assert(Expression, ...) {}
+    #define assert(Expression) {}
 #endif
 
 Uint32 safe_truncate_size_64(Uint64 v) {
