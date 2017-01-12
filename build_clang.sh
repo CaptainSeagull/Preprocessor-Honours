@@ -1,7 +1,7 @@
 #!/bin/bash
 # Batch File to compile the preprocessor on Linux.
 
-RELEASE=true
+RELEASE=false
 GTEST=false
 BUILD_TEST_CODE=false
 BUILD_BREAKOUT=false
