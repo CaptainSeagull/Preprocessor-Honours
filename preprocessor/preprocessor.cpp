@@ -145,7 +145,6 @@ Int global_error_count = 0;
     #define push_error(type) {}
 #endif
 
-// TODO(Jonny): Make a push_error version which takes a file and a line.
 Void push_error_(ErrorType type, Char *guid) {
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count++;
@@ -223,24 +222,21 @@ Bool system_check_for_debugger(void) {
 struct MemList {
     Void *ptr;
     MemList *next;
-    Char *file;
-
-    Int line;
+    Char *guid;
     Bool freed;
 };
 MemList *mem_list_root = 0;
 
-Void *malloc_(PtrSize size, Char *file, Int line) {
+Void *malloc_(PtrSize size, Char *guid) {
     Void *res = malloc(size);
 
     if(res) {
         MemList *cur = cast(MemList *)malloc(sizeof(MemList));
-        if(!cur) { /*push_error_(ErrorType_ran_out_of_memory);*/ }
+        if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
         else {
             memset(cur, 0, sizeof(MemList));
             cur->ptr = res;
-            cur->file = file;
-            cur->line = line;
+            cur->guid = guid;
 
             if(!mem_list_root) { mem_list_root = cur; }
             else {
@@ -275,7 +271,7 @@ Void free_(Void *ptr) {
 }
 
 // realloc
-Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
+Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
     Void *res = realloc(ptr, size);
     if(ptr) {
         MemList *next = mem_list_root;
@@ -284,14 +280,14 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
             next = next->next;
         }
 
-        if(!next) { /*push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);*/ }
+        if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, guid); }
         else      { next->ptr = res;                                               }
     }
     return(res);
 }
 
-#define malloc(size) malloc_(size, __FILE__, __LINE__)
-#define realloc(ptr, size) realloc_(ptr, size, __FILE__, __LINE__)
+#define malloc(size) malloc_(size, GUID(__FILE__, __LINE__))
+#define realloc(ptr, size) realloc_(ptr, size, GUID(__FILE__, __LINE__))
 #define free(ptr) free_(ptr)
 
 #endif // MEM_CHECK
@@ -2851,7 +2847,7 @@ Int main(Int argc, Char **argv) {
             // Check memory leaks.
             MemList *next = mem_list_root;
             while(next) {
-                if(!next->freed) { /*push_error_(ErrorType_memory_not_freed, next->file, next->line);*/ }
+                if(!next->freed) { push_error_(ErrorType_memory_not_freed, next->guid); }
 
                 next = next->next;
             }
