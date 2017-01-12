@@ -145,6 +145,7 @@ Int global_error_count = 0;
     #define push_error(type) {}
 #endif
 
+// TODO(Jonny): Make a push_error version which takes a file and a line.
 Void push_error_(ErrorType type, Char *guid) {
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count++;
@@ -217,9 +218,6 @@ Bool system_check_for_debugger(void) {
 // Memory stuff.
 //
 
-#define alloc(Type) (Type *)calloc(sizeof(Type), 1)
-#define alloc_arr(Type, cnt) (Type *)calloc(cnt * sizeof(Type), 1)
-
 // TODO(Jonny): Put a GUID in here too.
 #if MEM_CHECK
 struct MemList {
@@ -237,7 +235,7 @@ Void *malloc_(PtrSize size, Char *file, Int line) {
 
     if(res) {
         MemList *cur = cast(MemList *)malloc(sizeof(MemList));
-        if(!cur) { push_error_(ErrorType_ran_out_of_memory); }
+        if(!cur) { /*push_error_(ErrorType_ran_out_of_memory);*/ }
         else {
             memset(cur, 0, sizeof(MemList));
             cur->ptr = res;
@@ -297,6 +295,9 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
 #define free(ptr) free_(ptr)
 
 #endif // MEM_CHECK
+
+#define alloc(Type) (Type *)malloc(sizeof(Type), 1)
+#define alloc_arr(Type, cnt) (Type *)malloc(cnt * sizeof(Type))
 
 // A quick-to-access temp region of memory. Should be frequently cleared.
 Int scratch_memory_index = 0;
