@@ -35,6 +35,8 @@
     - Make a is_primitive function.
     - Make a function tell if something's a pointer or not. Could return false if not a pointer, and a positive integer
       for the level of pointer otherwise. Should work with references too.
+    - If the user puts a directory in front of the file name ("dir/source.cpp") then the outputted code will get
+      placed in the directories parent, not the directory with the code.
 */
 
 #include <stdio.h>
@@ -73,8 +75,8 @@ typedef float Float;
 typedef double Float64;
 
 #define cast(type) (type)
-
 #define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
+#define preprocessor_concat(a, b) a##b
 
 //
 // Error stuff.
@@ -126,29 +128,29 @@ Char *ErrorTypeToString(ErrorType e) {
     return(res);
 }
 
+#define GUID__(file, seperator, line) file seperator line
+#define GUID_(file, line) GUID__(file, " : ", #line)
+#define GUID(file, line) GUID_(file, line)
+
 struct Error {
     ErrorType type;
-    Char *file;
-    Int line;
+    Char *guid;
 };
 
 Error global_errors[32];
 Int global_error_count = 0;
 #if ERROR_LOGGING
-    #define push_error(type) push_error_(type, __FILE__, __LINE__)
+    #define push_error(type) push_error_(type, GUID(__FILE__, __LINE__))
 #else
     #define push_error(type) {}
 #endif
 
-Void push_error_(ErrorType type, Char *file, Int line) {
+Void push_error_(ErrorType type, Char *guid) {
     if(global_error_count + 1 < array_count(global_errors)) {
-        Error *e = global_errors + global_error_count;
+        Error *e = global_errors + global_error_count++;
 
         e->type = type;
-        e->file = file;
-        e->line = line;
-
-        ++global_error_count;
+        e->guid = guid;
     }
 }
 
@@ -218,6 +220,7 @@ Bool system_check_for_debugger(void) {
 #define alloc(Type) (Type *)calloc(sizeof(Type), 1)
 #define alloc_arr(Type, cnt) (Type *)calloc(cnt * sizeof(Type), 1)
 
+// TODO(Jonny): Put a GUID in here too.
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -234,7 +237,7 @@ Void *malloc_(PtrSize size, Char *file, Int line) {
 
     if(res) {
         MemList *cur = cast(MemList *)malloc(sizeof(MemList));
-        if(!cur) { push_error(ErrorType_ran_out_of_memory); }
+        if(!cur) { push_error_(ErrorType_ran_out_of_memory); }
         else {
             memset(cur, 0, sizeof(MemList));
             cur->ptr = res;
@@ -283,7 +286,7 @@ Void *realloc_(Void *ptr, PtrSize size, Char *file, Int line) {
             next = next->next;
         }
 
-        if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, file, line); }
+        if(!next) { /*push_error_(ErrorType_could_not_find_mallocd_ptr, file, line);*/ }
         else      { next->ptr = res;                                               }
     }
     return(res);
@@ -2765,6 +2768,11 @@ Void print_help(void) {
 }
 
 Int main(Int argc, Char **argv) {
+    //push_error(ErrorType_cannot_find_file);
+    //push_error(ErrorType_no_parameters);
+    //push_error(ErrorType_assert_failed);
+    //push_error(ErrorType_memory_not_freed);
+
     Int res = 0;
 
     Bool display_time_taken = false;
@@ -2842,7 +2850,7 @@ Int main(Int argc, Char **argv) {
             // Check memory leaks.
             MemList *next = mem_list_root;
             while(next) {
-                if(!next->freed) { push_error_(ErrorType_memory_not_freed, next->file, next->line); }
+                if(!next->freed) { /*push_error_(ErrorType_memory_not_freed, next->file, next->line);*/ }
 
                 next = next->next;
             }
@@ -2855,8 +2863,8 @@ Int main(Int argc, Char **argv) {
                     // TODO(Jonny): Write errors to disk.
                     fprintf(stderr, "\n\nList of errors:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
-                        fprintf(stderr, "    Error %d:\n        Type = %s\n        File = %s\n        Line = %d\n",
-                                i, ErrorTypeToString(global_errors[i].type), global_errors[i].file, global_errors[i].line);
+                        fprintf(stderr, "    Error %d: %s : %s\n\n",
+                                i, global_errors[i].guid, ErrorTypeToString(global_errors[i].type));
                     }
 
                     if(system_check_for_debugger()) { assert(0); }
