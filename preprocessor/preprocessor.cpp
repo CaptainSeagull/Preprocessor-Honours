@@ -1216,6 +1216,7 @@ struct Variable {
     String name;
     Bool is_ptr;
     Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
+    Bool is_inside_anonymous_struct;
 };
 
 Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1) {
@@ -1417,8 +1418,6 @@ Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenT
     return(res);
 }
 
-// TODO(Jonny): This needs some way to ignore member functions.
-
 struct ParseStructResult {
     StructData sd;
     Bool success;
@@ -1463,7 +1462,14 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
         res.success = true;
 
         res.sd.member_count = 0;
-        Char *member_pos[256] = {};
+
+        struct MemberInfo {
+            Char *pos;
+            Bool is_inside_anonymous_struct;
+        };
+
+        MemberInfo member_info[256] = {}; // TODO(Jonny): Random number.
+
 #if 0
         Int func_max = 8;
         res.sd.func_data = malloc_array(base_type(res.sd.func_data), func_max);
@@ -1471,12 +1477,26 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
             push_error(ErrorType_ran_out_of_memory);
         }
 #endif
+
+        // TODO(Jonny): Support anonymus (or however you spell it) structs in here...
+        Bool inside_anonymous_struct = false;
         for(;;) {
             Token token = get_token(tokenizer);
             if((!is_stupid_class_keyword(token))) {
+                // TODO(Jonny): This could be the end of an anonymous struct, so ignore it.
+                if(token_equals(token, "struct")) {
+                    eat_token(tokenizer); // Eat the open brace.
+                    token = get_token(tokenizer);
+                    inside_anonymous_struct = true;
+                }
+
                 if((token.type != TokenType_colon) && (token.type != TokenType_tilde)) {
                     if(token.type == TokenType_close_brace) {
-                        if(!have_name) {
+                        if(inside_anonymous_struct) {
+                            inside_anonymous_struct = false;
+                            eat_token(tokenizer); // Eat semi colon.
+                            continue;
+                        } else if(!have_name) {
                             name = get_token(tokenizer);
                             if(name.type == TokenType_identifier) { res.sd.name = token_to_string(name);                }
                             else                                  { push_error(ErrorType_could_not_detect_struct_name); }
@@ -1501,10 +1521,14 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
                             temp = get_token(&tokenizer_copy);
                         }
 
-                        if(!is_func) { member_pos[res.sd.member_count++] = token.e;                                         }
-                        else         { if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); } }
-                        /*
+                        if(!is_func) {
+                            MemberInfo *mi = member_info + res.sd.member_count++;
+
+                            mi->pos = token.e;
+                            mi->is_inside_anonymous_struct = inside_anonymous_struct;
                         } else {
+                            if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); }
+                        } /*else {
                             // This is commented out because I'm not sure I really _need_ member functions...
                             // TODO(Jonny): This fails for constructors (and probably destructors).
                             if(inline_func) {
@@ -1536,8 +1560,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
                                 // Now store the function data.
                                 res.sd.func_data[res.sd.func_count++] = fd;
                             }
-                        }
-                        */
+                        } */
 
                         *tokenizer = tokenizer_copy;
                     }
@@ -1549,8 +1572,9 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
             res.sd.members = alloc_arr(Variable, res.sd.member_count);
             if(res.sd.members) {
                 for(Int i = 0; (i < res.sd.member_count); ++i) {
-                    Tokenizer fake_tokenizer = { member_pos[i] };
+                    Tokenizer fake_tokenizer = { member_info[i].pos };
                     res.sd.members[i] = parse_member(&fake_tokenizer);
+                    res.sd.members[i].is_inside_anonymous_struct = member_info[i].is_inside_anonymous_struct;
                 }
             }
         }
@@ -2145,9 +2169,19 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             }
             write_to_output_buffer(&ob, " { ");
 
+            Bool is_inside_anonymous_struct = false;
             for(Int j = 0; (j < sd->member_count); ++j) {
                 Variable *md = sd->members + j;
-                Char *arr = "";//cast(Char *)((md->array_count > 1) ? "[%u]" : "");
+
+
+                if(md->is_inside_anonymous_struct != is_inside_anonymous_struct) {
+                    is_inside_anonymous_struct = !is_inside_anonymous_struct;
+
+                    if(is_inside_anonymous_struct) { write_to_output_buffer(&ob, " struct {"); }
+                    else                           { write_to_output_buffer(&ob, "};");        }
+                }
+
+                Char *arr = "";
                 Char arr_buffer[256] = {};
                 if(md->array_count > 1) {
                     my_sprintf(arr_buffer, 256, "[%u]", md->array_count);
@@ -2162,6 +2196,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             }
 
+            if(is_inside_anonymous_struct) { write_to_output_buffer(&ob, " };"); }
             write_to_output_buffer(&ob, " };\n");
         }
 
