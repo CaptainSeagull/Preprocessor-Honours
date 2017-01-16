@@ -29,7 +29,7 @@
     - Templates.
     - Allow mathematical macros (1 + 1) to be the index for an array.
     - Global consts for arrays.
-    - Typedefs.
+    - Handle typedefs.
     - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.
     - Make a variable_to_string macro (#define var_to_string(v) #v).
     - Make a is_primitive function.
@@ -1215,6 +1215,7 @@ struct Variable {
     String name;
     Bool is_ptr;
     Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
+    Bool is_inside_anonymous_struct;
 };
 
 Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1) {
@@ -1315,7 +1316,14 @@ struct FunctionData {
     Int param_count;
 };
 
-enum StructType { StructType_unknown, StructType_struct, StructType_class, StructType_count };
+enum StructType {
+    StructType_unknown,
+    StructType_struct,
+    StructType_class,
+    StructType_union,
+
+    StructType_count
+};
 
 struct StructData {
     String name;
@@ -1325,7 +1333,7 @@ struct StructData {
     Int inherited_count;
     String *inherited;
 
-    StructType struct_or_class;
+    StructType struct_type;
 
     //FunctionData *func_data;
     //Int func_count;
@@ -1409,16 +1417,14 @@ Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenT
     return(res);
 }
 
-// TODO(Jonny): This needs some way to ignore member functions.
-
 struct ParseStructResult {
     StructData sd;
     Bool success;
 };
-ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class) {
+ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
     ParseStructResult res = {};
 
-    res.sd.struct_or_class = struct_or_class;
+    res.sd.struct_type = struct_type;
 
     Bool have_name = false;
     Token name = peak_token(tokenizer);
@@ -1455,7 +1461,14 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
         res.success = true;
 
         res.sd.member_count = 0;
-        Char *member_pos[256] = {};
+
+        struct MemberInfo {
+            Char *pos;
+            Bool is_inside_anonymous_struct;
+        };
+
+        MemberInfo member_info[256] = {}; // TODO(Jonny): Random number.
+
 #if 0
         Int func_max = 8;
         res.sd.func_data = malloc_array(base_type(res.sd.func_data), func_max);
@@ -1463,12 +1476,26 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
             push_error(ErrorType_ran_out_of_memory);
         }
 #endif
+
+        // TODO(Jonny): Support anonymus (or however you spell it) structs in here...
+        Bool inside_anonymous_struct = false;
         for(;;) {
             Token token = get_token(tokenizer);
             if((!is_stupid_class_keyword(token))) {
+                // TODO(Jonny): This could be the end of an anonymous struct, so ignore it.
+                if(token_equals(token, "struct")) {
+                    eat_token(tokenizer); // Eat the open brace.
+                    token = get_token(tokenizer);
+                    inside_anonymous_struct = true;
+                }
+
                 if((token.type != TokenType_colon) && (token.type != TokenType_tilde)) {
                     if(token.type == TokenType_close_brace) {
-                        if(!have_name) {
+                        if(inside_anonymous_struct) {
+                            inside_anonymous_struct = false;
+                            eat_token(tokenizer); // Eat semi colon.
+                            continue;
+                        } else if(!have_name) {
                             name = get_token(tokenizer);
                             if(name.type == TokenType_identifier) { res.sd.name = token_to_string(name);                }
                             else                                  { push_error(ErrorType_could_not_detect_struct_name); }
@@ -1493,10 +1520,14 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
                             temp = get_token(&tokenizer_copy);
                         }
 
-                        if(!is_func) { member_pos[res.sd.member_count++] = token.e;                                         }
-                        else         { if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); } }
-                        /*
+                        if(!is_func) {
+                            MemberInfo *mi = member_info + res.sd.member_count++;
+
+                            mi->pos = token.e;
+                            mi->is_inside_anonymous_struct = inside_anonymous_struct;
                         } else {
+                            if(temp.type == TokenType_open_brace) { skip_to_matching_bracket(&tokenizer_copy); }
+                        } /*else {
                             // This is commented out because I'm not sure I really _need_ member functions...
                             // TODO(Jonny): This fails for constructors (and probably destructors).
                             if(inline_func) {
@@ -1528,8 +1559,7 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
                                 // Now store the function data.
                                 res.sd.func_data[res.sd.func_count++] = fd;
                             }
-                        }
-                        */
+                        } */
 
                         *tokenizer = tokenizer_copy;
                     }
@@ -1541,8 +1571,9 @@ ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class)
             res.sd.members = alloc_arr(Variable, res.sd.member_count);
             if(res.sd.members) {
                 for(Int i = 0; (i < res.sd.member_count); ++i) {
-                    Tokenizer fake_tokenizer = { member_pos[i] };
+                    Tokenizer fake_tokenizer = { member_info[i].pos };
                     res.sd.members[i] = parse_member(&fake_tokenizer);
+                    res.sd.members[i].is_inside_anonymous_struct = member_info[i].is_inside_anonymous_struct;
                 }
             }
         }
@@ -2024,8 +2055,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            if(sd->struct_or_class == StructType_struct)     { write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
-            else if(sd->struct_or_class == StructType_class) { write_to_output_buffer(&ob, "class %.*s;\n", sd->name.len, sd->name.e); }
+            if(sd->struct_type == StructType_struct)     { write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
+            else if(sd->struct_type == StructType_class) { write_to_output_buffer(&ob, "class %.*s;\n", sd->name.len, sd->name.e);  }
+            else if(sd->struct_type == StructType_union) { write_to_output_buffer(&ob, "union %.*s;\n", sd->name.len, sd->name.e);  }
             else { assert(0); }
         }
 
@@ -2089,6 +2121,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
+                // TODO(Jonny): This could support unions better...
                 index +=
                     my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
                                "                        case MetaType_%.*s: {\n"
@@ -2102,7 +2135,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "\n",
                                sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
                                sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
             }
 
             Char *switch_end = "                    } // switch(member->type)";
@@ -2121,7 +2153,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            write_to_output_buffer(&ob, "struct _%.*s", sd->name.len, sd->name.e);
+            write_to_output_buffer(&ob, "%s _%.*s", (sd->struct_type != StructType_union) ? "struct" : "union",
+                                   sd->name.len, sd->name.e);
             if(sd->inherited) {
                 write_to_output_buffer(&ob, " :");
 
@@ -2135,9 +2168,19 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             }
             write_to_output_buffer(&ob, " { ");
 
+            Bool is_inside_anonymous_struct = false;
             for(Int j = 0; (j < sd->member_count); ++j) {
                 Variable *md = sd->members + j;
-                Char *arr = "";//cast(Char *)((md->array_count > 1) ? "[%u]" : "");
+
+
+                if(md->is_inside_anonymous_struct != is_inside_anonymous_struct) {
+                    is_inside_anonymous_struct = !is_inside_anonymous_struct;
+
+                    if(is_inside_anonymous_struct) { write_to_output_buffer(&ob, " struct {"); }
+                    else                           { write_to_output_buffer(&ob, "};");        }
+                }
+
+                Char *arr = "";
                 Char arr_buffer[256] = {};
                 if(md->array_count > 1) {
                     my_sprintf(arr_buffer, 256, "[%u]", md->array_count);
@@ -2152,6 +2195,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             }
 
+            if(is_inside_anonymous_struct) { write_to_output_buffer(&ob, " };"); }
             write_to_output_buffer(&ob, " };\n");
         }
 
@@ -2672,7 +2716,7 @@ Void start_parsing(Char *fname, Char *file) {
         while(parsing) {
             Token token = get_token(&tokenizer);
             switch(token.type) {
-                case TokenType_end_of_stream: { parsing = false;                 } break;
+                case TokenType_end_of_stream: { parsing = false; } break;
 
                 case TokenType_hash: {
                     if(peak_require_token(&tokenizer, "define")) {
@@ -2695,15 +2739,20 @@ Void start_parsing(Char *fname, Char *file) {
                     if(token_equals(token, "template")) {
                         eat_token(&tokenizer);
                         parse_template(&tokenizer);
-                    } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
-                        StructType struct_or_class = token_equals(token, "struct") ? StructType_struct : StructType_class;
+                    } else if((token_equals(token, "struct")) || (token_equals(token, "class")) || (token_equals(token, "union"))) {
+                        StructType struct_type = StructType_unknown;
+
+                        if(token_equals(token, "struct"))     { struct_type = StructType_struct; }
+                        else if(token_equals(token, "class")) { struct_type = StructType_class;  }
+                        else if(token_equals(token, "union")) { struct_type = StructType_union;  }
+
                         if(struct_count + 1 >= struct_max) {
                             struct_max *= 2;
                             Void *p = realloc(struct_data, struct_max);
                             if(p) { struct_data = cast(StructData *)p; }
                         }
 
-                        ParseStructResult r = parse_struct(&tokenizer, struct_or_class);
+                        ParseStructResult r = parse_struct(&tokenizer, struct_type);
 
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
                         if(r.success) { struct_data[struct_count++] = r.sd; }
@@ -2716,6 +2765,19 @@ Void start_parsing(Char *fname, Char *file) {
 
                         ParseEnumResult r = parse_enum(&tokenizer);
                         if(r.success) { enum_data[enum_count++] = r.ed; }
+                    } else if(token_equals(token, "union")) {
+                        StructType struct_or_class =
+                            token_equals(token, "struct") ? StructType_struct : StructType_class;
+                        if(struct_count + 1 >= struct_max) {
+                            struct_max *= 2;
+                            Void *p = realloc(struct_data, struct_max);
+                            if(p) { struct_data = cast(StructData *)p; }
+                        }
+
+                        ParseStructResult r = parse_struct(&tokenizer, struct_or_class);
+
+                        // TODO(Jonny): This fails at a struct declared within a struct/union.
+                        if(r.success) { struct_data[struct_count++] = r.sd; }
                     }
                 } break;
             }

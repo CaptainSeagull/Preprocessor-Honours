@@ -3,7 +3,7 @@
 
 RELEASE=false
 GTEST=false
-BUILD_TEST_CODE=false
+BUILD_TEST_CODE=true
 BUILD_BREAKOUT=false
 
 # Preprocessor

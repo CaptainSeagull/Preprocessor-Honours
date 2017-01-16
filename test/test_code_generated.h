@@ -4,7 +4,7 @@
 // Forward declared structs (these must be declared outside the namespace...)
 struct TEST;
 struct thingy;
-struct V2;
+union V2;
 struct Bar;
 struct A;
 struct B;
@@ -321,7 +321,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 // Recreated structs (Clang in std=C++98 complains if these are local).
 struct _TEST {  _int i[10];  };
 struct _thingy {  _int x;  _int y;  };
-struct _V2 {  _int x;  _int y;  };
+union _V2 {  _int E[2];  struct { _int x;  _int y;  }; };
 struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
 struct _A {  _float m;  };
 struct _B {  _float n;  };
@@ -351,6 +351,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // V2
     } else if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
+            {MetaType_int, "E", offset_of(&_V2::E), false, 2},
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
             {MetaType_int, "y", offset_of(&_V2::y), false, 1},
         };
@@ -451,7 +452,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 template<typename T> static int get_number_of_members_(void) {
     if(type_compare(T, TEST)) { return(1); } // TEST
     else if(type_compare(T, thingy)) { return(2); } // thingy
-    else if(type_compare(T, V2)) { return(2); } // V2
+    else if(type_compare(T, V2)) { return(3); } // V2
     else if(type_compare(T, Bar)) { return(5); } // Bar
     else if(type_compare(T, A)) { return(1); } // A
     else if(type_compare(T, B)) { return(1); } // B
@@ -484,6 +485,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
     // V2
     } if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
         static MemberDefinition members_of_V2[] = {
+            {MetaType_int, "E", offset_of(&_V2::E), false, 2},
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
             {MetaType_int, "y", offset_of(&_V2::y), false, 1},
         };
@@ -584,7 +586,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
 static int get_number_of_members_str(char const *str) {
     if(strcmp(str, "TEST") == 0) { return(1); } // TEST
     else if(strcmp(str, "thingy") == 0) { return(2); } // thingy
-    else if(strcmp(str, "V2") == 0) { return(2); } // V2
+    else if(strcmp(str, "V2") == 0) { return(3); } // V2
     else if(strcmp(str, "Bar") == 0) { return(5); } // Bar
     else if(strcmp(str, "A") == 0) { return(1); } // A
     else if(strcmp(str, "B") == 0) { return(1); } // B
