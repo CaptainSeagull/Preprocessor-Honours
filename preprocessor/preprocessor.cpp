@@ -29,7 +29,7 @@
     - Templates.
     - Allow mathematical macros (1 + 1) to be the index for an array.
     - Global consts for arrays.
-    - Typedefs.
+    - Handle typedefs.
     - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.
     - Make a variable_to_string macro (#define var_to_string(v) #v).
     - Make a is_primitive function.
@@ -1316,7 +1316,14 @@ struct FunctionData {
     Int param_count;
 };
 
-enum StructType { StructType_unknown, StructType_struct, StructType_class, StructType_count };
+enum StructType {
+    StructType_unknown,
+    StructType_struct,
+    StructType_class,
+    StructType_union,
+
+    StructType_count
+};
 
 struct StructData {
     String name;
@@ -1326,7 +1333,7 @@ struct StructData {
     Int inherited_count;
     String *inherited;
 
-    StructType struct_or_class;
+    StructType struct_type;
 
     //FunctionData *func_data;
     //Int func_count;
@@ -1416,10 +1423,10 @@ struct ParseStructResult {
     StructData sd;
     Bool success;
 };
-ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_or_class) {
+ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
     ParseStructResult res = {};
 
-    res.sd.struct_or_class = struct_or_class;
+    res.sd.struct_type = struct_type;
 
     Bool have_name = false;
     Token name = peak_token(tokenizer);
@@ -2025,8 +2032,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            if(sd->struct_or_class == StructType_struct)     { write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
-            else if(sd->struct_or_class == StructType_class) { write_to_output_buffer(&ob, "class %.*s;\n", sd->name.len, sd->name.e); }
+            if(sd->struct_type == StructType_struct)     { write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
+            else if(sd->struct_type == StructType_class) { write_to_output_buffer(&ob, "class %.*s;\n", sd->name.len, sd->name.e);  }
+            else if(sd->struct_type == StructType_union) { write_to_output_buffer(&ob, "union %.*s;\n", sd->name.len, sd->name.e);  }
             else { assert(0); }
         }
 
@@ -2090,6 +2098,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
+                // TODO(Jonny): This could support unions better...
                 index +=
                     my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
                                "                        case MetaType_%.*s: {\n"
@@ -2103,7 +2112,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "\n",
                                sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
                                sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
             }
 
             Char *switch_end = "                    } // switch(member->type)";
@@ -2122,7 +2130,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            write_to_output_buffer(&ob, "struct _%.*s", sd->name.len, sd->name.e);
+            write_to_output_buffer(&ob, "%s _%.*s", (sd->struct_type != StructType_union) ? "struct" : "union",
+                                   sd->name.len, sd->name.e);
             if(sd->inherited) {
                 write_to_output_buffer(&ob, " :");
 
@@ -2673,7 +2682,7 @@ Void start_parsing(Char *fname, Char *file) {
         while(parsing) {
             Token token = get_token(&tokenizer);
             switch(token.type) {
-                case TokenType_end_of_stream: { parsing = false;                 } break;
+                case TokenType_end_of_stream: { parsing = false; } break;
 
                 case TokenType_hash: {
                     if(peak_require_token(&tokenizer, "define")) {
@@ -2696,15 +2705,20 @@ Void start_parsing(Char *fname, Char *file) {
                     if(token_equals(token, "template")) {
                         eat_token(&tokenizer);
                         parse_template(&tokenizer);
-                    } else if((token_equals(token, "struct")) || (token_equals(token, "class"))) {
-                        StructType struct_or_class = token_equals(token, "struct") ? StructType_struct : StructType_class;
+                    } else if((token_equals(token, "struct")) || (token_equals(token, "class")) || (token_equals(token, "union"))) {
+                        StructType struct_type = StructType_unknown;
+
+                        if(token_equals(token, "struct"))     { struct_type = StructType_struct; }
+                        else if(token_equals(token, "class")) { struct_type = StructType_class;  }
+                        else if(token_equals(token, "union")) { struct_type = StructType_union;  }
+
                         if(struct_count + 1 >= struct_max) {
                             struct_max *= 2;
                             Void *p = realloc(struct_data, struct_max);
                             if(p) { struct_data = cast(StructData *)p; }
                         }
 
-                        ParseStructResult r = parse_struct(&tokenizer, struct_or_class);
+                        ParseStructResult r = parse_struct(&tokenizer, struct_type);
 
                         // TODO(Jonny): This fails at a struct declared within a struct/union.
                         if(r.success) { struct_data[struct_count++] = r.sd; }
@@ -2717,6 +2731,19 @@ Void start_parsing(Char *fname, Char *file) {
 
                         ParseEnumResult r = parse_enum(&tokenizer);
                         if(r.success) { enum_data[enum_count++] = r.ed; }
+                    } else if(token_equals(token, "union")) {
+                        StructType struct_or_class =
+                            token_equals(token, "struct") ? StructType_struct : StructType_class;
+                        if(struct_count + 1 >= struct_max) {
+                            struct_max *= 2;
+                            Void *p = realloc(struct_data, struct_max);
+                            if(p) { struct_data = cast(StructData *)p; }
+                        }
+
+                        ParseStructResult r = parse_struct(&tokenizer, struct_or_class);
+
+                        // TODO(Jonny): This fails at a struct declared within a struct/union.
+                        if(r.success) { struct_data[struct_count++] = r.sd; }
                     }
                 } break;
             }
