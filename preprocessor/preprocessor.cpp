@@ -46,8 +46,7 @@
 #include <string.h>
 
 #if defined(_MSC_VER)
-    //#define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
-    #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
+    #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
 #else
     #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #endif
