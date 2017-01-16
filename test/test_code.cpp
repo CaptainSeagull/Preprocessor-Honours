@@ -27,7 +27,10 @@ struct thingy {
     int y;
 };
 
-struct V2 {int x; int y;};
+union V2 {
+    int x;
+    int y;
+};
 struct Bar {
     short s;
     int i;

@@ -4,7 +4,7 @@
 // Forward declared structs (these must be declared outside the namespace...)
 struct TEST;
 struct thingy;
-struct V2;
+union V2;
 struct Bar;
 struct A;
 struct B;
@@ -321,7 +321,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 // Recreated structs (Clang in std=C++98 complains if these are local).
 struct _TEST {  _int i[10];  };
 struct _thingy {  _int x;  _int y;  };
-struct _V2 {  _int x;  _int y;  };
+union _V2 {  _int x;  _int y;  };
 struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
 struct _A {  _float m;  };
 struct _B {  _float n;  };
