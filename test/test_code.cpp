@@ -19,6 +19,7 @@ struct TEST {
     int i[NUMBER_TEN];
 };
 
+
 //
 // struct test.
 //
@@ -28,8 +29,10 @@ struct thingy {
 };
 
 union V2 {
-    int x;
-    int y;
+    int E[2];
+    struct {
+        int x; int y;
+    };
 };
 struct Bar {
     short s;
