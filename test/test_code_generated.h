@@ -72,7 +72,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(double *)member_ptr[j] : member_ptr[j]);
+                                double v = (member->is_ptr) ? *(double *)member_ptr[j] : *(double *)member_ptr + j;
+                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
@@ -93,7 +94,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(float *)member_ptr[j] : member_ptr[j]);
+                                float v = (member->is_ptr) ? *(float *)member_ptr[j] : *(float *)member_ptr + j;
+                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
@@ -114,7 +116,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(int *)member_ptr[j] : (int)member_ptr[j]);
+                                int v = (member->is_ptr) ? *(int *)member_ptr[j] : *(int *)member_ptr + j;
+                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
@@ -135,7 +138,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(long *)member_ptr[j] : (long)member_ptr[j]);
+                                long v = (member->is_ptr) ? *(long *)member_ptr[j] : *(long *)member_ptr + j;
+                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
@@ -156,7 +160,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (member->is_ptr) ? *(short *)member_ptr[j] : (short)member_ptr[j]);
+                                short v = (member->is_ptr) ? *(short *)member_ptr[j] : *(short *)member_ptr + j;
+                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
@@ -178,8 +183,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + j)) : 0;
                             if(is_null) {
-                                size_t value_to_print = (member->is_ptr) ? **(bool **)(member_ptr + j) : member_ptr[j];
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (value_to_print) ? "true" : "false");
+                                size_t v = (member->is_ptr) ? **(bool **)(member_ptr + j) : *(bool *)member_ptr + j;
+                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (v) ? "true" : "false");
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
                             }
@@ -321,12 +326,12 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 // Recreated structs (Clang in std=C++98 complains if these are local).
 struct _TEST {  _int i[10];  };
 struct _thingy {  _int x;  _int y;  };
-union _V2 {  _int E[2];  struct { _int x;  _int y;  }; };
+union _V2 {  _int e[2];  struct { _int x;  _int y;  }; };
 struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
 struct _A {  _float m;  };
 struct _B {  _float n;  };
 struct _C {  _float o;  };
-struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[10];  };
+struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[10];  _int i_array[5];  };
 struct _X : public _Foo {  _int i;  };
 struct _Y : public _X {  };
 struct _Transform {  _V2 pos;  _V2 size;  };
@@ -351,7 +356,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // V2
     } else if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
-            {MetaType_int, "E", offset_of(&_V2::E), false, 2},
+            {MetaType_int, "e", offset_of(&_V2::e), false, 2},
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
             {MetaType_int, "y", offset_of(&_V2::y), false, 1},
         };
@@ -397,6 +402,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_float, "fp", offset_of(&_Foo::fp), true, 1},
             {MetaType_bool, "b", offset_of(&_Foo::b), true, 1},
             {MetaType_double, "p_array", offset_of(&_Foo::p_array), true, 10},
+            {MetaType_int, "i_array", offset_of(&_Foo::i_array), false, 5},
             // Members inherited from Bar.
             {MetaType_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
             {MetaType_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
@@ -425,6 +431,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_float, "fp", (size_t)&((_X *)0)->fp, true, 1},
             {MetaType_bool, "b", (size_t)&((_X *)0)->b, true, 1},
             {MetaType_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
+            {MetaType_int, "i_array", (size_t)&((_X *)0)->i_array, false, 5},
         };
         return(members_of_X);
 
@@ -457,8 +464,8 @@ template<typename T> static int get_number_of_members_(void) {
     else if(type_compare(T, A)) { return(1); } // A
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, C)) { return(1); } // C
-    else if(type_compare(T, Foo)) { return(15); } // Foo
-    else if(type_compare(T, X)) { return(6); } // X
+    else if(type_compare(T, Foo)) { return(16); } // Foo
+    else if(type_compare(T, X)) { return(7); } // X
     else if(type_compare(T, Y)) { return(1); } // Y
     else if(type_compare(T, Transform)) { return(2); } // Transform
 
@@ -485,7 +492,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
     // V2
     } if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
         static MemberDefinition members_of_V2[] = {
-            {MetaType_int, "E", offset_of(&_V2::E), false, 2},
+            {MetaType_int, "e", offset_of(&_V2::e), false, 2},
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
             {MetaType_int, "y", offset_of(&_V2::y), false, 1},
         };
@@ -531,6 +538,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_float, "fp", offset_of(&_Foo::fp), true, 1},
             {MetaType_bool, "b", offset_of(&_Foo::b), true, 1},
             {MetaType_double, "p_array", offset_of(&_Foo::p_array), true, 10},
+            {MetaType_int, "i_array", offset_of(&_Foo::i_array), false, 5},
             // Members inherited from Bar.
             {MetaType_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
             {MetaType_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
@@ -559,6 +567,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_float, "fp", (size_t)&((_X *)0)->fp, true, 1},
             {MetaType_bool, "b", (size_t)&((_X *)0)->b, true, 1},
             {MetaType_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
+            {MetaType_int, "i_array", (size_t)&((_X *)0)->i_array, false, 5},
         };
         return(members_of_X);
 
@@ -591,8 +600,8 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "A") == 0) { return(1); } // A
     else if(strcmp(str, "B") == 0) { return(1); } // B
     else if(strcmp(str, "C") == 0) { return(1); } // C
-    else if(strcmp(str, "Foo") == 0) { return(15); } // Foo
-    else if(strcmp(str, "X") == 0) { return(6); } // X
+    else if(strcmp(str, "Foo") == 0) { return(16); } // Foo
+    else if(strcmp(str, "X") == 0) { return(7); } // X
     else if(strcmp(str, "Y") == 0) { return(1); } // Y
     else if(strcmp(str, "Transform") == 0) { return(2); } // Transform
 
