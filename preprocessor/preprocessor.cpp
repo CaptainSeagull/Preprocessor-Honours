@@ -127,8 +127,8 @@ Char *ErrorTypeToString(ErrorType e) {
     return(res);
 }
 
-#define GUID__(file, seperator, line) file seperator line
-#define GUID_(file, line) GUID__(file, " : ", #line)
+#define GUID__(file, seperator, line) file seperator line ")"
+#define GUID_(file, line) GUID__(file, "(", #line)
 #define GUID(file, line) GUID_(file, line)
 
 struct Error {
@@ -2723,6 +2723,7 @@ Void start_parsing(Char *fname, Char *file) {
                         eat_token(&tokenizer);
 
                         MacroData *md = macro_data + macro_count++;
+                        memset(md, 0, sizeof(*md));
 
                         md->iden = token_to_string(get_token(&tokenizer));
                         eat_whitespace(&tokenizer);
@@ -2919,10 +2920,10 @@ Int main(Int argc, Char **argv) {
 
                 if(should_log_errors) {
                     // TODO(Jonny): Write errors to disk.
-                    fprintf(stderr, "\n\nList of errors:\n");
+                    fprintf(stderr, "\n\nList of errors in preprocessor:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
-                        fprintf(stderr, "    Error %d: %s : %s\n\n",
-                                i, global_errors[i].guid, ErrorTypeToString(global_errors[i].type));
+                        fprintf(stderr, "    %s : %s\n\n",
+                                global_errors[i].guid, ErrorTypeToString(global_errors[i].type));
                     }
 
                     if(system_check_for_debugger()) { assert(0); }
