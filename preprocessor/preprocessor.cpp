@@ -2827,11 +2827,6 @@ Void print_help(void) {
 }
 
 Int main(Int argc, Char **argv) {
-    //push_error(ErrorType_cannot_find_file);
-    //push_error(ErrorType_no_parameters);
-    //push_error(ErrorType_assert_failed);
-    //push_error(ErrorType_memory_not_freed);
-
     Int res = 0;
 
     Bool display_time_taken = false;
@@ -2922,6 +2917,7 @@ Int main(Int argc, Char **argv) {
                     // TODO(Jonny): Write errors to disk.
                     fprintf(stderr, "\n\nList of errors in preprocessor:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
+                        // TODO(Jonny): Check if Clang likes errors in this format, or if Clang/GCC would prefer them a different way.
                         fprintf(stderr, "    %s : %s\n\n",
                                 global_errors[i].guid, ErrorTypeToString(global_errors[i].type));
                     }
