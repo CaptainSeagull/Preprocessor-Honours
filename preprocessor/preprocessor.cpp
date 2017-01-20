@@ -130,6 +130,7 @@ Char *ErrorTypeToString(ErrorType e) {
 #define GUID__(file, seperator, line) file seperator line ")"
 #define GUID_(file, line) GUID__(file, "(", #line)
 #define GUID(file, line) GUID_(file, line)
+#define MAKE_GUID GUID(__FILE__, __LINE__)
 
 struct Error {
     ErrorType type;
@@ -139,7 +140,7 @@ struct Error {
 Error global_errors[32];
 Int global_error_count = 0;
 #if ERROR_LOGGING
-    #define push_error(type) push_error_(type, GUID(__FILE__, __LINE__))
+    #define push_error(type) push_error_(type, MAKE_GUID)
 #else
     #define push_error(type) {}
 #endif
@@ -216,7 +217,6 @@ Bool system_check_for_debugger(void) {
 // Memory stuff.
 //
 
-// TODO(Jonny): Put a GUID in here too.
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -226,6 +226,7 @@ struct MemList {
 };
 MemList *mem_list_root = 0;
 
+// malloc
 Void *malloc_(PtrSize size, Char *guid) {
     Void *res = malloc(size);
 
@@ -250,7 +251,32 @@ Void *malloc_(PtrSize size, Char *guid) {
     return(res);
 }
 
-// Free Memory.
+// calloc
+Void *calloc_(PtrSize size, PtrSize cnt, Char *guid) {
+    Void *res = calloc(size, cnt);
+
+    if(res) {
+        MemList *cur = cast(MemList *)malloc(sizeof(MemList));
+        if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
+        else {
+            memset(cur, 0, sizeof(MemList));
+            cur->ptr = res;
+            cur->guid = guid;
+
+            if(!mem_list_root) { mem_list_root = cur; }
+            else {
+                MemList *next = mem_list_root;
+                while(next->next) { next = next->next; }
+
+                next->next = cur;
+            }
+        }
+    }
+
+    return(res);
+}
+
+// free
 Void free_(Void *ptr) {
     free(ptr);
     if(ptr) {
@@ -280,13 +306,33 @@ Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
         }
 
         if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, guid); }
-        else      { next->ptr = res;                                               }
+        else      { next->ptr = res;                                         }
     }
     return(res);
 }
 
-#define malloc(size) malloc_(size, GUID(__FILE__, __LINE__))
-#define realloc(ptr, size) realloc_(ptr, size, GUID(__FILE__, __LINE__))
+// malloc
+#if defined(malloc)
+    #undef malloc
+#endif
+#define malloc(size) malloc_(size, MAKE_GUID)
+
+// calloc
+#if defined(calloc)
+    #undef calloc
+#endif
+#define calloc(size, cnt) malloc_(size, cnt, MAKE_GUID)
+
+// realloc
+#if defined(realloc)
+    #undef realloc
+#endif
+#define realloc(ptr, size) realloc_(ptr, size, MAKE_GUID)
+
+// free
+#if defined(free)
+    #undef free
+#endif
 #define free(ptr) free_(ptr)
 
 #endif // MEM_CHECK
