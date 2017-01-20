@@ -4,7 +4,7 @@
 RELEASE=false
 GTEST=false
 BUILD_TEST_CODE=true
-BUILD_BREAKOUT=false
+BUILD_BREAKOUT=true
 
 # Preprocessor
 WARNINGS="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter -Wno-writable-strings -Wno-unknown-escape-sequence"  
@@ -46,4 +46,3 @@ if [ "$BUILD_BREAKOUT" = "true" ]; then
     clang++-3.8 -Wall -Wextra "breakout/breakout.cpp" -std=c++11 -o breakout_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl -lSDL2
     mv "./breakout_exe" "build/breakout"
 fi
-
