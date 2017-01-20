@@ -2642,6 +2642,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                    "// Enum meta data.\n"
                                    "//\n");
 
+            Int half_scratch_memory_size = cast(Int)(cast(Float)scratch_memory_size * 0.5f);
             for(Int i = 0; (i < enum_count); ++i) {
                 EnumData *ed = enum_data + i;
                 write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
@@ -2672,19 +2673,18 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 // enum_to_string.
                 {
-                    Int size = scratch_memory_size / 2;
-                    Char *buf1 = cast(Char *)push_scratch_memory(size);
-                    Char *buf2 = cast(Char *)push_scratch_memory(size);
-                    Int index = 0;
+                    Char *buf1 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
+                    Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
 
+                    Int index = 0;
                     for(int j = 0; (j < ed->no_of_values); ++j) {
-                        index += my_sprintf(buf2 + index, size - index,
+                        index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
                                             "        case %d: { return(\"%.*s\"); } break;\n",
                                             ed->values[j].value,
                                             ed->values[j].name.len, ed->values[j].name.e);
                     }
 
-                    Int bytes_written = my_sprintf(buf1, size,
+                    Int bytes_written = my_sprintf(buf2, half_scratch_memory_size,
                                                    "\nstatic char const *enum_to_string_%.*s(%s v) {\n"
                                                    "    switch(v) {\n"
                                                    "%s"
@@ -2694,47 +2694,46 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                    "}\n",
                                                    ed->name.len, ed->name.e,
                                                    type,
-                                                   buf2);
-                    assert(bytes_written < size);
+                                                   buf1);
+                    assert(bytes_written < half_scratch_memory_size);
 
-                    write_to_output_buffer(&ob, buf1);
+                    write_to_output_buffer(&ob, buf2);
 
                     clear_scratch_memory();
                 }
 
                 // string_to_enum.
                 {
-                    Int size = scratch_memory_size / 2;
-                    Char *buf1 = cast(Char *)push_scratch_memory(size);
-                    Char *buf2 = cast(Char *)push_scratch_memory(size);
+                    Char *buf1 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
+                    Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
 
                     Int index = 0;
-                    for(int j = 0; (j < ed->no_of_values); ++j) {
-                        if(!j) {
-                            index += my_sprintf(buf2 + index, size - index,
-                                                "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                                ed->values[0].name.len, ed->values[0].name.e,
-                                                ed->values[0].value);
-                        } else {
-                            index += my_sprintf(buf2 + index, size - index,
-                                                "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                                ed->values[j].name.len, ed->values[j].name.e,
-                                                ed->values[j].value);
-                        }
+                    index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
+                                        "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                        ed->values[0].name.len, ed->values[0].name.e,
+                                        ed->values[0].value);
+                    for(int j = 1; (j < ed->no_of_values); ++j) {
+                        index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
+                                            "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                            ed->values[j].name.len, ed->values[j].name.e,
+                                            ed->values[j].value);
                     }
+                    assert(index < half_scratch_memory_size);
 
-                    my_sprintf(buf1, scratch_memory_size,
-                               "static %s string_to_enum_%.*s(char const *str) {\n"
-                               "    if(str) {\n"
-                               "%s"
-                               "    }\n"
-                               "\n"
-                               "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
-                               "}\n",
-                               type,
-                               ed->name.len, ed->name.e, buf2);
+                    Int bytes_written = my_sprintf(buf2, half_scratch_memory_size,
+                                                   "static %s string_to_enum_%.*s(char const *str) {\n"
+                                                   "    if(str) {\n"
+                                                   "%s"
+                                                   "    }\n"
+                                                   "\n"
+                                                   "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
+                                                   "}\n",
+                                                   type,
+                                                   ed->name.len, ed->name.e, buf1);
+                    assert(bytes_written < half_scratch_memory_size);
 
-                    write_to_output_buffer(&ob, buf1);
+
+                    write_to_output_buffer(&ob, buf2);
 
                     clear_scratch_memory();
                 }
