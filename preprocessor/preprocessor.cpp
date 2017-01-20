@@ -77,6 +77,8 @@ typedef double Float64;
 #define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
 #define preprocessor_concat(a, b) a##b
 
+Int string_length(Char *str);
+
 //
 // Error stuff.
 //
@@ -122,15 +124,28 @@ Char *ErrorTypeToString(ErrorType e) {
         case ERROR_TYPE_TO_STRING(ErrorType_could_not_detect_struct_name);
     }
 
+    if(res) {
+        Int offset = string_length("ErrorType_");
+        res += offset;
+    }
+
 #undef ERROR_TYPE_TO_STRING
 
     return(res);
 }
 
-#define GUID__(file, seperator, line) file seperator line ")"
-#define GUID_(file, line) GUID__(file, "(", #line)
-#define GUID(file, line) GUID_(file, line)
-#define MAKE_GUID GUID(__FILE__, __LINE__)
+// TODO(Jonny): This should probably be a flag, rather than compiled into the preprocessor.
+#if COMPILER_MSVC
+    #define GUID__(file, seperator, line) file seperator line ")"
+    #define GUID_(file, line) GUID__(file, "(", #line)
+    #define GUID(file, line) GUID_(file, line)
+    #define MAKE_GUID GUID(__FILE__, __LINE__)
+#else
+    #define GUID__(file, seperator, line) file seperator line ":1: error:"
+    #define GUID_(file, line) GUID__(file, ":", #line)
+    #define GUID(file, line) GUID_(file, line)
+    #define MAKE_GUID GUID(__FILE__, __LINE__)
+#endif
 
 struct Error {
     ErrorType type;
@@ -2961,12 +2976,13 @@ Int main(Int argc, Char **argv) {
 
                 if(should_log_errors) {
                     // TODO(Jonny): Write errors to disk.
-                    fprintf(stderr, "\n\nList of errors in preprocessor:\n");
+                    fprintf(stderr, "\nPreprocessor errors:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
                         // TODO(Jonny): Check if Clang likes errors in this format, or if Clang/GCC would prefer them a different way.
-                        fprintf(stderr, "    %s : %s\n\n",
+                        fprintf(stderr, "%s %s\n\n",
                                 global_errors[i].guid, ErrorTypeToString(global_errors[i].type));
                     }
+                    fprintf(stderr, "Preprocessor finished with %d error(s).\n\n\n", global_error_count);
 
                     if(system_check_for_debugger()) { assert(0); }
                 }
