@@ -11,14 +11,15 @@
 
 // File: test_code.cpp
 
+#define PP_DEBUG
 #include "test_code_generated.h"
 
 #define NUMBER_TEN 10
+#define NUMBER_FIVE 5
 
 struct TEST {
     int i[NUMBER_TEN];
 };
-
 
 //
 // struct test.
@@ -29,7 +30,7 @@ struct thingy {
 };
 
 union V2 {
-    int E[2];
+    int e[2];
     struct {
         int x; int y;
     };
@@ -52,6 +53,7 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     float *fp;
     bool *b;
     double *p_array[NUMBER_TEN];
+    int i_array[NUMBER_FIVE];
 };
 
 struct X : public Foo {
@@ -78,10 +80,14 @@ void test_struct(void) {
     foo.p_array[1] = new double; *foo.p_array[1] = 2.2;
     foo.p_array[2] = new double; *foo.p_array[2] = 3.3;
     foo.p_array[3] = new double; *foo.p_array[3] = 4.4;
-    // Leave foo.p_array blank.
-    foo.s = 10;
 
-    V2 v1 = {};
+    foo.i_array[0] = 11;
+    foo.i_array[1] = 22;
+    foo.i_array[2] = 33;
+    foo.i_array[3] = 44;
+    foo.i_array[4] = 55;
+
+    foo.s = 10;
 
     foo.i = 3;
     foo.f = 3.14f;
@@ -157,7 +163,7 @@ int main(int /*argc*/, char ** /*argv*/) {
     printf("\n");
 
     test_struct();
-    test_enum();
+    //test_enum();
 
     bool a = pp::type_compare(int, int);
     bool b = pp::type_compare(int, float);

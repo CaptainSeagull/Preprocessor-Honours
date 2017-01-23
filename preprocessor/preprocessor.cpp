@@ -77,6 +77,8 @@ typedef double Float64;
 #define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
 #define preprocessor_concat(a, b) a##b
 
+Int string_length(Char *str);
+
 //
 // Error stuff.
 //
@@ -122,14 +124,28 @@ Char *ErrorTypeToString(ErrorType e) {
         case ERROR_TYPE_TO_STRING(ErrorType_could_not_detect_struct_name);
     }
 
+    if(res) {
+        Int offset = string_length("ErrorType_");
+        res += offset;
+    }
+
 #undef ERROR_TYPE_TO_STRING
 
     return(res);
 }
 
-#define GUID__(file, seperator, line) file seperator line ")"
-#define GUID_(file, line) GUID__(file, "(", #line)
-#define GUID(file, line) GUID_(file, line)
+// TODO(Jonny): This should probably be a flag, rather than compiled into the preprocessor.
+#if COMPILER_MSVC
+    #define GUID__(file, seperator, line) file seperator line ")"
+    #define GUID_(file, line) GUID__(file, "(", #line)
+    #define GUID(file, line) GUID_(file, line)
+    #define MAKE_GUID GUID(__FILE__, __LINE__)
+#else
+    #define GUID__(file, seperator, line) file seperator line ":1: error:"
+    #define GUID_(file, line) GUID__(file, ":", #line)
+    #define GUID(file, line) GUID_(file, line)
+    #define MAKE_GUID GUID(__FILE__, __LINE__)
+#endif
 
 struct Error {
     ErrorType type;
@@ -139,7 +155,7 @@ struct Error {
 Error global_errors[32];
 Int global_error_count = 0;
 #if ERROR_LOGGING
-    #define push_error(type) push_error_(type, GUID(__FILE__, __LINE__))
+    #define push_error(type) push_error_(type, MAKE_GUID)
 #else
     #define push_error(type) {}
 #endif
@@ -216,7 +232,6 @@ Bool system_check_for_debugger(void) {
 // Memory stuff.
 //
 
-// TODO(Jonny): Put a GUID in here too.
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -226,6 +241,7 @@ struct MemList {
 };
 MemList *mem_list_root = 0;
 
+// malloc
 Void *malloc_(PtrSize size, Char *guid) {
     Void *res = malloc(size);
 
@@ -250,7 +266,32 @@ Void *malloc_(PtrSize size, Char *guid) {
     return(res);
 }
 
-// Free Memory.
+// calloc
+Void *calloc_(PtrSize size, PtrSize cnt, Char *guid) {
+    Void *res = calloc(size, cnt);
+
+    if(res) {
+        MemList *cur = cast(MemList *)malloc(sizeof(MemList));
+        if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
+        else {
+            memset(cur, 0, sizeof(MemList));
+            cur->ptr = res;
+            cur->guid = guid;
+
+            if(!mem_list_root) { mem_list_root = cur; }
+            else {
+                MemList *next = mem_list_root;
+                while(next->next) { next = next->next; }
+
+                next->next = cur;
+            }
+        }
+    }
+
+    return(res);
+}
+
+// free
 Void free_(Void *ptr) {
     free(ptr);
     if(ptr) {
@@ -280,13 +321,33 @@ Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
         }
 
         if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, guid); }
-        else      { next->ptr = res;                                               }
+        else      { next->ptr = res;                                         }
     }
     return(res);
 }
 
-#define malloc(size) malloc_(size, GUID(__FILE__, __LINE__))
-#define realloc(ptr, size) realloc_(ptr, size, GUID(__FILE__, __LINE__))
+// malloc
+#if defined(malloc)
+    #undef malloc
+#endif
+#define malloc(size) malloc_(size, MAKE_GUID)
+
+// calloc
+#if defined(calloc)
+    #undef calloc
+#endif
+#define calloc(size, cnt) malloc_(size, cnt, MAKE_GUID)
+
+// realloc
+#if defined(realloc)
+    #undef realloc
+#endif
+#define realloc(ptr, size) realloc_(ptr, size, MAKE_GUID)
+
+// free
+#if defined(free)
+    #undef free
+#endif
 #define free(ptr) free_(ptr)
 
 #endif // MEM_CHECK
@@ -1712,7 +1773,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(double *)member_ptr[j] : member_ptr[j]);\n"
+        "                                double v = (member->is_ptr) ? *(double *)member_ptr[j] : *(double *)member_ptr + j;\n"
+        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, v);\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sdouble %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
@@ -1733,7 +1795,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(float *)member_ptr[j] : member_ptr[j]);\n"
+        "                                float v = (member->is_ptr) ? *(float *)member_ptr[j] : *(float *)member_ptr + j;\n"
+        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = %%f\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, v);\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sfloat %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
@@ -1754,7 +1817,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(int *)member_ptr[j] : (int)member_ptr[j]);\n"
+        "                                int v = (member->is_ptr) ? *(int *)member_ptr[j] : *(int *)member_ptr + j;\n"
+        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, v);\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
@@ -1775,7 +1839,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%ld\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(long *)member_ptr[j] : (long)member_ptr[j]);\n"
+        "                                long v = (member->is_ptr) ? *(long *)member_ptr[j] : *(long *)member_ptr + j;\n"
+        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%ld\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, v);\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
@@ -1796,7 +1861,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (member->is_ptr) ? *(short *)member_ptr[j] : (short)member_ptr[j]);\n"
+        "                                short v = (member->is_ptr) ? *(short *)member_ptr[j] : *(short *)member_ptr + j;\n"
+        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, v);\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
@@ -1818,8 +1884,8 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + j)) : 0;\n"
         "                            if(is_null) {\n"
-        "                                size_t value_to_print = (member->is_ptr) ? **(bool **)(member_ptr + j) : member_ptr[j];\n"
-        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (value_to_print) ? \"true\" : \"false\");\n"
+        "                                size_t v = (member->is_ptr) ? **(bool **)(member_ptr + j) : *(bool *)member_ptr + j;\n"
+        "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = %%s\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, (v) ? \"true\" : \"false\");\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sbool %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
         "                            }\n"
@@ -2581,6 +2647,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                    "// Enum meta data.\n"
                                    "//\n");
 
+            Int half_scratch_memory_size = cast(Int)(cast(Float)scratch_memory_size * 0.5f);
             for(Int i = 0; (i < enum_count); ++i) {
                 EnumData *ed = enum_data + i;
                 write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
@@ -2611,19 +2678,18 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 // enum_to_string.
                 {
-                    Int size = scratch_memory_size / 2;
-                    Char *buf1 = cast(Char *)push_scratch_memory(size);
-                    Char *buf2 = cast(Char *)push_scratch_memory(size);
-                    Int index = 0;
+                    Char *buf1 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
+                    Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
 
+                    Int index = 0;
                     for(int j = 0; (j < ed->no_of_values); ++j) {
-                        index += my_sprintf(buf2 + index, size - index,
+                        index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
                                             "        case %d: { return(\"%.*s\"); } break;\n",
                                             ed->values[j].value,
                                             ed->values[j].name.len, ed->values[j].name.e);
                     }
 
-                    Int bytes_written = my_sprintf(buf1, size,
+                    Int bytes_written = my_sprintf(buf2, half_scratch_memory_size,
                                                    "\nstatic char const *enum_to_string_%.*s(%s v) {\n"
                                                    "    switch(v) {\n"
                                                    "%s"
@@ -2633,47 +2699,46 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                    "}\n",
                                                    ed->name.len, ed->name.e,
                                                    type,
-                                                   buf2);
-                    assert(bytes_written < size);
+                                                   buf1);
+                    assert(bytes_written < half_scratch_memory_size);
 
-                    write_to_output_buffer(&ob, buf1);
+                    write_to_output_buffer(&ob, buf2);
 
                     clear_scratch_memory();
                 }
 
                 // string_to_enum.
                 {
-                    Int size = scratch_memory_size / 2;
-                    Char *buf1 = cast(Char *)push_scratch_memory(size);
-                    Char *buf2 = cast(Char *)push_scratch_memory(size);
+                    Char *buf1 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
+                    Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
 
                     Int index = 0;
-                    for(int j = 0; (j < ed->no_of_values); ++j) {
-                        if(!j) {
-                            index += my_sprintf(buf2 + index, size - index,
-                                                "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                                ed->values[0].name.len, ed->values[0].name.e,
-                                                ed->values[0].value);
-                        } else {
-                            index += my_sprintf(buf2 + index, size - index,
-                                                "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                                ed->values[j].name.len, ed->values[j].name.e,
-                                                ed->values[j].value);
-                        }
+                    index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
+                                        "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                        ed->values[0].name.len, ed->values[0].name.e,
+                                        ed->values[0].value);
+                    for(int j = 1; (j < ed->no_of_values); ++j) {
+                        index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
+                                            "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                            ed->values[j].name.len, ed->values[j].name.e,
+                                            ed->values[j].value);
                     }
+                    assert(index < half_scratch_memory_size);
 
-                    my_sprintf(buf1, scratch_memory_size,
-                               "static %s string_to_enum_%.*s(char const *str) {\n"
-                               "    if(str) {\n"
-                               "%s"
-                               "    }\n"
-                               "\n"
-                               "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
-                               "}\n",
-                               type,
-                               ed->name.len, ed->name.e, buf2);
+                    Int bytes_written = my_sprintf(buf2, half_scratch_memory_size,
+                                                   "static %s string_to_enum_%.*s(char const *str) {\n"
+                                                   "    if(str) {\n"
+                                                   "%s"
+                                                   "    }\n"
+                                                   "\n"
+                                                   "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
+                                                   "}\n",
+                                                   type,
+                                                   ed->name.len, ed->name.e, buf1);
+                    assert(bytes_written < half_scratch_memory_size);
 
-                    write_to_output_buffer(&ob, buf1);
+
+                    write_to_output_buffer(&ob, buf2);
 
                     clear_scratch_memory();
                 }
@@ -2915,12 +2980,13 @@ Int main(Int argc, Char **argv) {
 
                 if(should_log_errors) {
                     // TODO(Jonny): Write errors to disk.
-                    fprintf(stderr, "\n\nList of errors in preprocessor:\n");
+                    fprintf(stderr, "\nPreprocessor errors:\n");
                     for(Int i = 0; (i < global_error_count); ++i) {
                         // TODO(Jonny): Check if Clang likes errors in this format, or if Clang/GCC would prefer them a different way.
-                        fprintf(stderr, "    %s : %s\n\n",
+                        fprintf(stderr, "%s %s\n\n",
                                 global_errors[i].guid, ErrorTypeToString(global_errors[i].type));
                     }
+                    fprintf(stderr, "Preprocessor finished with %d error(s).\n\n\n", global_error_count);
 
                     if(system_check_for_debugger()) { assert(0); }
                 }
