@@ -1,16 +1,16 @@
 @echo off
 
 rem Variables to set.
-set VISUAL_STUDIO_VERSION=10
+set VISUAL_STUDIO_VERSION=12
 set ENVIRONMENT=x86
-set RELEASE=false
+set RELEASE=true
 set RUN_CODE_AFTER_BUILDING=true
 
-set RUN_TEST=false
+set RUN_TEST=true
 set RUN_BREAKOUT=true
 
 rem Warnings to ignore.
-set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4820 -wd4365 -wd4514 -wd4062 -wd4061 -wd4668 -wd4389 -wd4018 -wd4711 -wd4987 -wd4710 -wd4625 -wd4626 -wd4350 -wd4826 -wd4640 -wd4571 -wd4986 -wd4388 -wd4129
+set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4820 -wd4365 -wd4514 -wd4062 -wd4061 -wd4668 -wd4389 -wd4018 -wd4711 -wd4987 -wd4710 -wd4625 -wd4626 -wd4350 -wd4826 -wd4640 -wd4571 -wd4986 -wd4388 -wd4129 -wd4201
  
 rem 32/64 bit builds.
 call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\VC\vcvarsall.bat" %ENVIRONMENT%
@@ -55,6 +55,6 @@ if "%RUN_BREAKOUT%"=="true" (
     popd
 
     pushd "build"
-    cl -FeBreakout %SDL_COMMON_COMPILER_FLAGS% -MDd -Wall "../breakout/breakout.cpp" -FmTest.map -link -subsystem:windows,5.2 /NODEFAULTLIB:library kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib sdl2.lib sdl2main.lib
+    cl -FeBreakout %SDL_COMMON_COMPILER_FLAGS% -MDd -Wall "../breakout/breakout.cpp" -FmTest.map -link -subsystem:windows,5.2 -NODEFAULTLIB:msvcrt.lib kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib sdl2.lib sdl2main.lib
     popd
 )
