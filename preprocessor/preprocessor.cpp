@@ -45,6 +45,60 @@
 #include <stdint.h>
 #include <string.h>
 
+//
+// Detect compiler/platform.
+//
+#define COMPILER_WIN32 0
+#define COMPILER_CLANG 0
+#define COMPILER_GCC 0
+
+#define ENVIRONMENT64 0
+#define ENVIRONMENT32 0
+
+#define OS_WIN32 0
+#define OS_LINUX 0
+
+#if defined(__clang__)
+    #undef COMPILER_CLANG
+    #define COMPILER_CLANG 1
+#elif defined(_MSC_VER)
+    #undef COMPILER_WIN32
+    #define COMPILER_WIN32 1
+#elif (defined(__GNUC__) || defined(__GNUG__)) // This has to be after __clang__, because Clang also defines this.
+    #undef COMPILER_GCC
+    #define COMPILER_GCC 1
+#else
+    #error "Could not detect compiler."
+#endif
+
+#if defined(__linux__)
+    #undef OS_LINUX
+    #define OS_LINUX 1
+#elif defined(_WIN32)
+    #undef OS_WIN32
+    #define OS_WIN32
+#else
+    #error "Could not detect OS"
+#endif
+
+#if OS_LINUX
+    #if (__x86_64__ || __ppc64__)
+        #undef ENVIRONMENT64
+        #define ENVIRONMENT64 1
+    #else
+        #undef ENVIRONMENT32
+        #define ENVIRONMENT32 1
+    #endif
+#elif OS_WIN32
+    #if defined(_WIN64)
+        #undef ENVIRONMENT64
+        #define ENVIRONMENT64 1
+    #else
+        #undef ENVIRONMENT32
+        #define ENVIRONMENT32 1
+    #endif
+#endif
+
 #if defined(_MSC_VER)
     #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
 #else
@@ -65,7 +119,7 @@ typedef bool Bool;
 typedef void Void;
 typedef char Char;
 
-typedef Int32 Int; // Int guaranteed to be bits = 32.
+typedef Int32 Int; // Int guaranteed to be 4 bytes.
 
 typedef Uint8 Byte;
 typedef intptr_t PtrSize;
