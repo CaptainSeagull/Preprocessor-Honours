@@ -3,8 +3,9 @@
 rem Variables to set.
 set VISUAL_STUDIO_VERSION=12
 set ENVIRONMENT=x86
-set RELEASE=true
+set RELEASE=false
 set RUN_CODE_AFTER_BUILDING=true
+set GTEST=false
 
 set RUN_TEST=true
 set RUN_BREAKOUT=true
@@ -15,20 +16,23 @@ set COMMON_WARNINGS=-wd4189 -wd4706 -wd4996 -wd4100 -wd4127 -wd4267 -wd4505 -wd4
 rem 32/64 bit builds.
 call "C:\Program Files (x86)\Microsoft Visual Studio %VISUAL_STUDIO_VERSION%.0\VC\vcvarsall.bat" %ENVIRONMENT%
 
-set COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
+IF NOT EXIST "build" mkdir "build"
+
+set DEBUG_COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WARNINGS% -DERROR_LOGGING=1 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
+set RELEASE_COMMON_COMPILER_FLAGS=-nologo -MT -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 
 rem Build prepreprocessor.
-setlocal EnableDelayedExpansion
-set FILES="../preprocessor/preprocessor.cpp" "../preprocessor/google_test/gtest-all.cc"
-if "%RELEASE%"=="true" (
-    set COMMON_COMPILER_FLAGS=-nologo -MT -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DINTERNAL=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
-    set FILES="../preprocessor/preprocessor.cpp"
-)
-
-IF NOT EXIST "build" mkdir "build"
+set FILES="../preprocessor/main.cpp" "../preprocessor/utils.cpp" "../preprocessor/lexer.cpp"
 pushd "build"
-
-cl -FePreprocessor %COMMON_COMPILER_FLAGS% -Wall %FILES% -link -subsystem:console,5.2 kernel32.lib
+if "%RELEASE%"=="true" (
+    cl -FePreprocessor %RELEASE_COMMON_COMPILER_FLAGS% -Wall %FILES% -link -subsystem:console,5.2 kernel32.lib
+) else (
+    if "%GTEST%"=="true" (
+        cl -FePreprocessor %DEBUG_COMMON_COMPILER_FLAGS% -DRUN_TESTS=1 -Wall %FILES% "../preprocessor/google_test/gtest-all.cc" -link -subsystem:console,5.2 kernel32.lib
+    ) else (
+        cl -FePreprocessor %DEBUG_COMMON_COMPILER_FLAGS% -DRUN_TESTS=0 -Wall %FILES% -link -subsystem:console,5.2 kernel32.lib
+    )
+)
 popd
 
 rem Run after building.
@@ -43,7 +47,7 @@ if "%RUN_TEST%"=="true" (
     popd
 
     pushd "build"
-    cl -FeTestCode %COMMON_COMPILER_FLAGS% -Wall "../test/test_code.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
+    cl -FeTestCode %DEBUG_COMMON_COMPILER_FLAGS% -Wall "../test/test_code.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
     popd
 )
 
