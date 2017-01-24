@@ -160,7 +160,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         for(int j = 0; (j < member->arr_size); ++j) {
                             bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;
                             if(!is_null) {
-                                short v = (member->is_ptr) ? *(short *)member_ptr[j] : *(short *)member_ptr + j;
+                                short v = (short)((member->is_ptr) ? (*(short *)member_ptr[j]) : (*(short *)member_ptr + j));
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
                             } else {
                                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
