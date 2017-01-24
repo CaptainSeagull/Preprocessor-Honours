@@ -536,7 +536,7 @@ Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *
         "                        for(int j = 0; (j < member->arr_size); ++j) {\n"
         "                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;\n"
         "                            if(!is_null) {\n"
-        "                                short v = (member->is_ptr) ? *(short *)member_ptr[j] : *(short *)member_ptr + j;\n"
+        "                                short v = (short)((member->is_ptr) ? (*(short *)member_ptr[j]) : (*(short *)member_ptr + j));\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = %%d\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j, v);\n"
         "                            } else {\n"
         "                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%sint %%s%%s[%%d] = (null)\", indent_buf, (member->is_ptr) ? \"*\" : \"\", member->name, j);\n"
