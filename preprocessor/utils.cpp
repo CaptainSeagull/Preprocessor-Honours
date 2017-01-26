@@ -285,3 +285,32 @@ Uint32 safe_truncate_size_64(Uint64 v) {
 
     return(res);
 }
+
+Variable create_variable(Char *type, Char *name, Bool is_ptr/*= false*/, Int array_count/*= 1*/) {
+    Variable res;
+    res.type = create_string(type);
+    res.name = create_string(name);
+    res.is_ptr = is_ptr;
+    res.array_count = array_count;
+
+    return(res);
+}
+
+Bool compare_variable(Variable a, Variable b) {
+    Bool res = true;
+
+    if(!string_compare(a.type, b.type))      { res = false; }
+    else if(!string_compare(a.name, b.name)) { res = false; }
+    else if(a.is_ptr != b.is_ptr)            { res = false; }
+    else if(a.array_count != b.array_count)  { res = false; }
+
+    return(res);
+}
+
+Bool compare_variable_array(Variable *a, Variable *b, Int count) {
+    for(Int i = 0; (i < count); ++i) {
+        if(!compare_variable(a[i], b[i])) { return(false); }
+    }
+
+    return(true);
+}

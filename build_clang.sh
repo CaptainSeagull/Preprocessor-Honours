@@ -17,7 +17,7 @@ else
     if [ "$GTEST" = "false" ]; then
         clang++-3.8 -Wall -Wextra $FILES -std=c++98 -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl
     else
-        clang++-3.8 -Wall -Wextra $FILES "preprocessor/google_test/gtest-all.cc" -std=c++98 -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl -pthread
+        clang++-3.8 -Wall -Wextra $FILES "preprocessor/test.cpp" "preprocessor/google_test/gtest-all.cc" -std=c++98 -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl -pthread
     fi
 fi
 mv "./preprocessor_exe" "build/preprocessor"

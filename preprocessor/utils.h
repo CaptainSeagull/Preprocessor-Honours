@@ -10,6 +10,7 @@
   ===================================================================================================*/
 
 #if !defined(_UTILS_H)
+#define _UTILS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -42,6 +43,8 @@ typedef double Float64;
 #define cast(type) (type)
 #define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
 #define preprocessor_concat(a, b) a##b
+
+#define internal_func static
 
 //
 // Detect compiler/platform.
@@ -155,6 +158,9 @@ Void push_error_(ErrorType type, Char *guid);
 Char *ErrorTypeToString(ErrorType e);
 Bool print_errors(void);
 
+#if defined(assert)
+    #undef assert
+#endif
 #if INTERNAL
     #define assert(Expression) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
@@ -332,5 +338,17 @@ ResultInt calculator_string_to_int(Char *str);
 
 Uint32 safe_truncate_size_64(Uint64 v);
 
-#define _UTILS_H
+struct Variable {
+    String type;
+    String name;
+    Bool is_ptr;
+    Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
+    Bool is_inside_anonymous_struct;
+};
+
+Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1);
+Bool compare_variable(Variable a, Variable b);
+Bool compare_variable_array(Variable *a, Variable *b, Int count);
+
+
 #endif
