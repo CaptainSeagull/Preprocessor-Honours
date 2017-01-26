@@ -15,8 +15,8 @@ struct MacroData {
     String iden;
     String res;
 };
-static MacroData *macro_data = 0;
-static Int macro_count = 0;
+internal MacroData *macro_data = 0;
+internal Int macro_count = 0;
 
 // TODO(Jonny): Rename some of these so they're more clear.
 enum TokenType {
@@ -75,38 +75,38 @@ struct Tokenizer {
     // TODO(Jonny): Might be nice to have a line variable in here.
 };
 
-static Bool is_end_of_line(Char c) {
+internal Bool is_end_of_line(Char c) {
     Bool res = ((c == '\n') || (c == '\r'));
 
     return(res);
 }
 
-static Bool is_whitespace(Char c) {
+internal Bool is_whitespace(Char c) {
     Bool res = ((c == ' ') || (c == '\t') || (c == '\v') || (c == '\f') || (is_end_of_line(c)));
 
     return(res);
 }
 
-static Void skip_to_end_of_line(Tokenizer *tokenizer) {
+internal Void skip_to_end_of_line(Tokenizer *tokenizer) {
     while(is_end_of_line(*tokenizer->at)) {
         ++tokenizer->at;
     }
 }
 
-static String token_to_string(Token token) {
+internal String token_to_string(Token token) {
     String res = { token.e, token.len };
 
     return(res);
 }
 
-static Void token_to_string(Token token, Char *buf, Int size) {
+internal Void token_to_string(Token token, Char *buf, Int size) {
     assert(size > token.len);
     for(Int i = 0; (i < token.len); ++i, ++buf) { *buf = token.e[i]; }
 
     *buf = 0;
 }
 
-static Bool token_compare(Token a, Token b) {
+internal Bool token_compare(Token a, Token b) {
     Bool res = false;
 
     if(a.len == b.len) {
@@ -123,16 +123,16 @@ static Bool token_compare(Token a, Token b) {
     return(res);
 }
 
-static ResultInt token_to_int(Token t) {
+internal ResultInt token_to_int(Token t) {
     String str = token_to_string(t);
     ResultInt res = string_to_int(str);
 
     return(res);
 }
 
-static Token get_token(Tokenizer *tokenizer); // Because C++...
+internal Token get_token(Tokenizer *tokenizer); // Because C++...
 
-static Variable parse_member(Tokenizer *tokenizer) {
+internal Variable parse_member(Tokenizer *tokenizer) {
     Variable res = {};
     res.array_count = 1;
     res.type = token_to_string(get_token(tokenizer));
@@ -166,7 +166,7 @@ static Variable parse_member(Tokenizer *tokenizer) {
     return(res);
 }
 
-static Void eat_whitespace(Tokenizer *tokenizer) {
+internal Void eat_whitespace(Tokenizer *tokenizer) {
     for(;;) {
         if(is_whitespace(tokenizer->at[0])) { // Whitespace
             ++tokenizer->at;
@@ -269,37 +269,37 @@ static Void eat_whitespace(Tokenizer *tokenizer) {
     }
 }
 
-static Bool is_alphabetical(Char c) {
+internal Bool is_alphabetical(Char c) {
     Bool res = (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')));
 
     return(res);
 }
 
-static Bool is_num(Char c) {
+internal Bool is_num(Char c) {
     Bool res = ((c >= '0') && (c <= '9'));
 
     return(res);
 }
 
-static Void parse_number(Tokenizer *tokenizer) {
+internal Void parse_number(Tokenizer *tokenizer) {
     // TODO(Jonny): Implement.
 }
 
 #define eat_token(tokenizer) eat_tokens(tokenizer, 1)
-static Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat) {
+internal Void eat_tokens(Tokenizer *tokenizer, Int num_tokens_to_eat) {
     for(Int i = 0; (i < num_tokens_to_eat); ++i) {
         get_token(tokenizer);
     }
 }
 
-static Bool require_token(Tokenizer *tokenizer, TokenType desired_type) {
+internal Bool require_token(Tokenizer *tokenizer, TokenType desired_type) {
     Token token = get_token(tokenizer);
     Bool res = (token.type == desired_type);
 
     return(res);
 }
 
-static Bool peak_require_token(Tokenizer *tokenizer, Char *str) {
+internal Bool peak_require_token(Tokenizer *tokenizer, Char *str) {
     Bool res = false;
     Tokenizer cpy = *tokenizer;
     Token token = get_token(&cpy);
@@ -309,7 +309,7 @@ static Bool peak_require_token(Tokenizer *tokenizer, Char *str) {
     return(res);
 }
 
-static Bool is_stupid_class_keyword(Token t) {
+internal Bool is_stupid_class_keyword(Token t) {
     Char *keywords[] = { "private", "public", "protected" };
     for(Int i = 0, cnt = array_count(keywords); (i < cnt); ++i) {
         if(string_compare(keywords[i], t.e, t.len)) { return(true); }
@@ -318,7 +318,7 @@ static Bool is_stupid_class_keyword(Token t) {
     return(false);
 }
 
-static Void skip_to_matching_bracket(Tokenizer *tokenizer) {
+internal Void skip_to_matching_bracket(Tokenizer *tokenizer) {
     Int brace_count = 1;
     Token token = {};
     Bool should_loop = true;
@@ -337,7 +337,7 @@ static Void skip_to_matching_bracket(Tokenizer *tokenizer) {
     }
 }
 
-static Void parse_template(Tokenizer *tokenizer) {
+internal Void parse_template(Tokenizer *tokenizer) {
     Int angle_bracket_count = 1;
     Token token;
     Bool should_loop = true;
@@ -356,14 +356,14 @@ static Void parse_template(Tokenizer *tokenizer) {
     }
 }
 
-static Token peak_token(Tokenizer *tokenizer) {
+internal Token peak_token(Tokenizer *tokenizer) {
     Tokenizer cpy = *tokenizer;
     Token res = get_token(&cpy);
 
     return(res);
 }
 
-static Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_token_type_2 = TokenType_unknown) {
+internal Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1, TokenType end_token_type_2 = TokenType_unknown) {
     Variable res = {};
 
     // Return type.
@@ -408,7 +408,7 @@ static Variable parse_variable(Tokenizer *tokenizer, TokenType end_token_type_1,
 // TODO(Jonny): Create a token_equals_keyword function. This could also test macro'd aliases for keywords,
 //              as well as the actual keyword.
 
-static Bool token_equals(Token token, Char *str) {
+internal Bool token_equals(Token token, Char *str) {
     Bool res = false;
 
     Int len = string_length(str);
@@ -421,7 +421,7 @@ struct ParseStructResult {
     StructData sd;
     Bool success;
 };
-static ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
+internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
     ParseStructResult res = {};
 
     res.sd.struct_type = struct_type;
@@ -586,7 +586,7 @@ struct ParseEnumResult {
     EnumData ed;
     Bool success;
 };
-static ParseEnumResult parse_enum(Tokenizer *tokenizer) {
+internal ParseEnumResult parse_enum(Tokenizer *tokenizer) {
     ParseEnumResult res = {};
 
     Token name = get_token(tokenizer);
@@ -664,7 +664,7 @@ static ParseEnumResult parse_enum(Tokenizer *tokenizer) {
     return(res);
 }
 
-static TokenType get_token_type(String s) {
+internal TokenType get_token_type(String s) {
     assert(s.len);
 
     TokenType res = TokenType_unknown;
@@ -721,7 +721,7 @@ static TokenType get_token_type(String s) {
     return(res);
 }
 
-static Token string_to_token(String str) {
+internal Token string_to_token(String str) {
     Token res = {};
 
     res.e = str.e;
@@ -731,7 +731,7 @@ static Token string_to_token(String str) {
     return(res);
 }
 
-static Token get_token(Tokenizer *tokenizer) {
+internal Token get_token(Tokenizer *tokenizer) {
     eat_whitespace(tokenizer);
 
     Token res = {};
