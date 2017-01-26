@@ -321,7 +321,8 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len);
 Bool string_compare(Char *a, Char *b, Int len);
 Bool string_compare(Char *a, Char *b);
 Bool string_compare(String a, String b);
-Bool string_compare_array(String *a, String *b, Int len);
+Bool string_compare_array(String *a, String *b, Int cnt);
+Bool string_contains(String str, Char *target);
 
 //
 // Maths.

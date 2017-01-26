@@ -178,9 +178,9 @@ Bool string_compare(String a, String b) {
     return(res);
 }
 
-Bool string_compare_array(String *a, String *b, Int len) {
+Bool string_compare_array(String *a, String *b, Int cnt) {
     Bool res = true;
-    for(Int i = 0; (i < len); ++i) {
+    for(Int i = 0; (i < cnt); ++i) {
         if(!string_compare(a[i], b[i])) {
             res = false;
             break; // for
@@ -188,6 +188,26 @@ Bool string_compare_array(String *a, String *b, Int len) {
     }
 
     return(res);
+}
+
+Bool string_contains(String str, Char *target) {
+    Int target_len = string_length(target);
+
+    for(Int i = 0; (i < str.len); ++i) {
+        if(str.e[i] == target[0]) {
+            for(int j = 0; (j < target_len); ++j) {
+                if(str.e[i + j] != target[j]) {
+                    break; // for j
+                }
+
+                if(j == target_len - 1) {
+                    return(true);
+                }
+            }
+        }
+    }
+
+    return(false);
 }
 
 //
