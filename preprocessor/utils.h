@@ -44,7 +44,7 @@ typedef double Float64;
 #define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
 #define preprocessor_concat(a, b) a##b
 
-#define internal_func static
+#define internal static
 
 //
 // Detect compiler/platform.
@@ -324,7 +324,7 @@ Bool string_compare(String a, String b);
 Bool string_compare_array(String *a, String *b, Int len);
 
 //
-// Stuff
+// Maths.
 //
 struct ResultInt {
     Int e;
@@ -338,6 +338,9 @@ ResultInt calculator_string_to_int(Char *str);
 
 Uint32 safe_truncate_size_64(Uint64 v);
 
+//
+// Variable.
+//
 struct Variable {
     String type;
     String name;

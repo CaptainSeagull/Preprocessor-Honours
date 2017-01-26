@@ -15,8 +15,8 @@
 //
 // Error stuff.
 //
-static Error global_errors[32];
-static Int global_error_count = 0;
+internal Error global_errors[32];
+internal Int global_error_count = 0;
 
 Char *ErrorTypeToString(ErrorType e) {
     Char *res = 0;
@@ -84,8 +84,8 @@ Bool print_errors(void) {
 // Scratch memory.
 //
 // A quick-to-access temp region of memory. Should be frequently cleared.
-static Int scratch_memory_index = 0;
-static Void *global_scratch_memory = 0;
+internal Int scratch_memory_index = 0;
+internal Void *global_scratch_memory = 0;
 Void *push_scratch_memory(Int size/*= scratch_memory_size*/) {
     if(!global_scratch_memory) {
         global_scratch_memory = malloc(scratch_memory_size + 1);
@@ -145,7 +145,11 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
 }
 
 Bool string_compare(Char *a, Char *b, Int len) {
-    for(Int i = 0; (i < len); ++i, ++a, ++b) { if(*a != *b) { return(false); } }
+    for(Int i = 0; (i < len); ++i, ++a, ++b) {
+        if(*a != *b) {
+            return(false);
+        }
+    }
 
     return(true);
 }
