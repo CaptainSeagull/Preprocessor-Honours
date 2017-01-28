@@ -37,6 +37,7 @@
       for the level of pointer otherwise. Should work with references too.
     - If the user puts a directory in front of the file name ("dir/source.cpp") then the outputted code will get
       placed in the directories parent, not the directory with the code.
+    - I don't think #if 1 #else blocks work correctly...
 */
 
 #include "utils.h"
@@ -734,61 +735,80 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         if(def_struct_code_mem) {
             Int index = 0;
 
-            Char *switch_start = "                    switch(member->type) {\n";
-            strcpy(def_struct_code_mem + index, switch_start);
-            index += string_length(switch_start);
-
-            // Add structs.
-            for(Int i = 0; (i < struct_count); ++i) {
-                StructData *sd = struct_data + i;
-
-                // TODO(Jonny): This could support unions better...
-                index +=
-                    my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                               "                        case MetaType_%.*s: {\n"
-                               "                            // %.*s\n"
-                               "                            if(member->is_ptr) {\n"
-                               "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s *\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                               "                            } else {\n"
-                               "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                               "                            }\n"
-                               "                        } break; // case MetaType_%.*s\n"
-                               "\n",
-                               sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                               sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-            }
-
-            // Add std things.
+            Bool any_stds = false;
             for(Int i = 0; (i < type_count); ++i) {
                 String *type = types + i;
 
                 StdResult std_res = get_std_information(*type);
-
                 switch(std_res.type) {
-                    case StdTypes_vector: {
-                        index += my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                            "                        case MetaType_std_vector_%.*s: {\n"
-                                            "                            std::vector<%.*s> temp = *(std::vector<%.*s> *)member_ptr;\n"
-                                            "                            size_t size = temp.size();\n"
-                                            //"                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \".size() = %%d\", size);\n"
-                                            "                            for(size_t i = 0; (i < size); ++i) {\n"
-                                            "                                bytes_written = serialize_struct_((void *)&temp[i], member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                            "                            }\n"
-                                            "                        } break;\n"
-                                            "\n",
-                                            std_res.stored_type.len, std_res.stored_type.e,
-                                            std_res.stored_type.len, std_res.stored_type.e,
-                                            std_res.stored_type.len, std_res.stored_type.e,
-                                            std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
+                    case StdTypes_vector: { any_stds = true; } break;
+                }
+
+                if(any_stds) {
+                    break; // for
                 }
             }
 
-            Char *switch_end = "                    } // switch(member->type)";
-            strcpy(def_struct_code_mem + index, switch_end);
-            index += string_length(switch_end);
 
-            assert(index < def_struct_code_size);
+            if((struct_count) || (any_stds)) {
+                Char *switch_start = "                    switch(member->type) {\n";
+                strcpy(def_struct_code_mem + index, switch_start);
+                index += string_length(switch_start);
+
+                // Add structs.
+                for(Int i = 0; (i < struct_count); ++i) {
+                    StructData *sd = struct_data + i;
+
+                    // TODO(Jonny): This could support unions better...
+                    index +=
+                        my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                                   "                        case MetaType_%.*s: {\n"
+                                   "                            // %.*s\n"
+                                   "                            if(member->is_ptr) {\n"
+                                   "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s *\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                                   "                            } else {\n"
+                                   "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                                   "                            }\n"
+                                   "                        } break; // case MetaType_%.*s\n"
+                                   "\n",
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
+                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+                }
+
+                // Add std things.
+                for(Int i = 0; (i < type_count); ++i) {
+                    String *type = types + i;
+
+                    StdResult std_res = get_std_information(*type);
+
+                    switch(std_res.type) {
+                        case StdTypes_vector: {
+                            index += my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                                                "                        case MetaType_std_vector_%.*s: {\n"
+                                                "                            std::vector<%.*s> temp = *(std::vector<%.*s> *)member_ptr;\n"
+                                                "                            size_t size = temp.size();\n"
+                                                "                            for(size_t i = 0; (i < size); ++i) {\n"
+                                                "                                bytes_written = serialize_struct_((void *)&temp[i], member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                                                "                            }\n"
+                                                "                        } break;\n"
+                                                "\n",
+                                                std_res.stored_type.len, std_res.stored_type.e,
+                                                std_res.stored_type.len, std_res.stored_type.e,
+                                                std_res.stored_type.len, std_res.stored_type.e,
+                                                std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
+                    }
+                }
+
+                Char *switch_end = "                    } // switch(member->type)";
+                strcpy(def_struct_code_mem + index, switch_end);
+                index += string_length(switch_end);
+
+                assert(index < def_struct_code_size);
+            } else {
+                index += my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                                    "                    // NOTE: No types found.");
+            }
 
             write_serialize_struct_implementation(def_struct_code_mem, &ob);
 
@@ -909,13 +929,13 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                             switch(std_res.type) {
                                 case StdTypes_not: {
                                     write_to_output_buffer(&ob,
-                                                           "            {MetaType_%.*s)",
+                                                           "            {MetaType_%.*s",
                                                            base_class_var->type.len, base_class_var->type.e);
                                 } break;
 
                                 case StdTypes_vector: {
                                     write_to_output_buffer(&ob,
-                                                           "            {MetaType_std_vector_int%.*s)",
+                                                           "            {MetaType_std_vector_int%.*s",
                                                            base_class_var->type.len, base_class_var->type.e);
                                 } break;
 
@@ -1095,8 +1115,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                        sd->name.len, sd->name.e);
             }
 
-            write_to_output_buffer(&ob, "    }\n");
         }
+        write_to_output_buffer(&ob, "    }\n");
 
         write_to_output_buffer(&ob,
                                "\n"

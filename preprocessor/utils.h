@@ -176,6 +176,31 @@ Void *system_malloc(PtrSize size, PtrSize cnt = 1);
 Bool system_free(Void *ptr);
 Void *system_realloc(Void *ptr, PtrSize size);
 
+#if defined(malloc)
+    #undef malloc
+#endif
+#define malloc system_malloc
+
+#if defined(calloc)
+    #undef calloc
+#endif
+#define calloc system_malloc
+
+#if defined(realloc)
+    #undef realloc
+#endif
+#define realloc system_realloc
+
+#if defined(free)
+    #undef free
+#endif
+#define free system_free
+
+#if defined(alloc)
+    #undef alloc
+#endif
+#define alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
+
 #if MEM_CHECK
 struct MemList {
     Void *ptr;
@@ -190,38 +215,13 @@ struct MemList {
 #endif
 
 // malloc.
-static Void *malloc_(PtrSize size, Char *guid) {
-    Void *res = system_malloc(size);
-
-    if(res) {
-        MemList *cur = cast(MemList *)system_malloc(sizeof(MemList));
-        if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
-        else {
-            cur->ptr = res;
-            cur->guid = guid;
-
-            if(!mem_list_root) { mem_list_root = cur; }
-            else {
-                MemList *next = mem_list_root;
-                while(next->next) { next = next->next; }
-
-                next->next = cur;
-            }
-        }
-    }
-
-    return(res);
-}
-
-// calloc
-static Void *calloc_(PtrSize size, PtrSize cnt, Char *guid) {
+static Void *malloc_(PtrSize size, Char *guid, PtrSize cnt = 1) {
     Void *res = system_malloc(size * cnt);
 
     if(res) {
         MemList *cur = cast(MemList *)system_malloc(sizeof(MemList));
         if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
         else {
-            memset(cur, 0, sizeof(MemList));
             cur->ptr = res;
             cur->guid = guid;
 
@@ -283,7 +283,7 @@ static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
 #if defined(calloc)
     #undef calloc
 #endif
-#define calloc(size, cnt) malloc_(size, cnt, MAKE_GUID)
+#define calloc(size, cnt) malloc_(size, MAKE_GUID, cnt)
 
 // realloc
 #if defined(realloc)
@@ -297,9 +297,13 @@ static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
 #endif
 #define free(ptr) free_(ptr)
 
-#endif // MEM_CHECK
+// alloc
+#if defined(alloc)
+    #undef alloc
+#endif
+#define alloc(Type, ...) (Type *)malloc_(sizeof(Type), MAKE_GUID, ##__VA_ARGS__)
 
-#define alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
+#endif // MEM_CHECK
 
 //
 // Scratch memory

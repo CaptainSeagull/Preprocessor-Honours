@@ -10,8 +10,6 @@
   ===================================================================================================*/
 
 // File: test_code.cpp
-
-#if 0
 #include "test_code_generated.h"
 
 #define NUMBER_TEN 10
@@ -174,22 +172,6 @@ int main(int /*argc*/, char ** /*argv*/) {
     char const *str = pp::type_to_string(Bar **);
 
     printf("\n");
-
-    return(0);
-}
-#endif
-
-#include "test_code_generated.h"
-
-struct SomeStruct {
-    std::vector<int> v;
-};
-
-int main(int /*argc*/, char ** /*argv*/) {
-    SomeStruct s = {};
-
-    for(int i = 0; (i < 10); ++i) { s.v.push_back(i); }
-    pp::print(s);
 
     return(0);
 }

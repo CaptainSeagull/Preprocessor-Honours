@@ -976,7 +976,7 @@ ParseResult parse_stream(Char *stream) {
             }
         }
 
-        //free(macro_data); // TODO(Jonny): There's some memory issue here...
+        free(macro_data); // TODO(Jonny): There's some memory issue here...
     }
 
 
