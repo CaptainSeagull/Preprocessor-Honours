@@ -8,7 +8,7 @@ BUILD_BREAKOUT=true
 # Preprocessor
 WARNINGS="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter -Wno-writable-strings -Wno-unknown-escape-sequence"  
 
-FILES="preprocessor/preprocessor.cpp preprocessor/utils.cpp preprocessor/lexer.cpp"
+FILES="preprocessor/main.cpp preprocessor/utils.cpp preprocessor/lexer.cpp"
 
 echo "Building preprocessor"
 if [ "$RELEASE" = "true" ]; then
