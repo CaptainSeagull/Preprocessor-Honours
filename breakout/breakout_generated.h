@@ -12,7 +12,7 @@ struct GameState;
 #include "static_generated.h"
 
 namespace pp { // PreProcessor
-
+#define _std std
 // Enum with field for every type detected.
 enum MetaType {
     MetaType_char,
@@ -345,8 +345,58 @@ template<typename T> static int get_number_of_members_(void) {
 
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
+    // char
+    if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
+        static MemberDefinition members_of_char[] = {
+            {MetaType_char, "", 0, false, 1}
+        };
+        return(members_of_char);
+
+    // short
+    } else if((strcmp(str, "short") == 0) || (strcmp(str, "short *") == 0) || (strcmp(str, "short **") == 0)) {
+        static MemberDefinition members_of_short[] = {
+            {MetaType_short, "", 0, false, 1}
+        };
+        return(members_of_short);
+
+    // int
+    } else if((strcmp(str, "int") == 0) || (strcmp(str, "int *") == 0) || (strcmp(str, "int **") == 0)) {
+        static MemberDefinition members_of_int[] = {
+            {MetaType_int, "", 0, false, 1}
+        };
+        return(members_of_int);
+
+    // long
+    } else if((strcmp(str, "long") == 0) || (strcmp(str, "long *") == 0) || (strcmp(str, "long **") == 0)) {
+        static MemberDefinition members_of_long[] = {
+            {MetaType_long, "", 0, false, 1}
+        };
+        return(members_of_long);
+
+    // float
+    } else if((strcmp(str, "float") == 0) || (strcmp(str, "float *") == 0) || (strcmp(str, "float **") == 0)) {
+        static MemberDefinition members_of_float[] = {
+            {MetaType_float, "", 0, false, 1}
+        };
+        return(members_of_float);
+
+    // double
+    } else if((strcmp(str, "double") == 0) || (strcmp(str, "double *") == 0) || (strcmp(str, "double **") == 0)) {
+        static MemberDefinition members_of_double[] = {
+            {MetaType_double, "", 0, false, 1}
+        };
+        return(members_of_double);
+
+    // bool
+    } else if((strcmp(str, "bool") == 0) || (strcmp(str, "bool *") == 0) || (strcmp(str, "bool **") == 0)) {
+        static MemberDefinition members_of_bool[] = {
+            {MetaType_bool, "", 0, false, 1}
+        };
+        return(members_of_bool);
+
+
     // V2
-    if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
+    } else if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
         static MemberDefinition members_of_V2[] = {
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
             {MetaType_int, "y", offset_of(&_V2::y), false, 1},
@@ -354,7 +404,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
         return(members_of_V2);
 
     // V2f
-    } if((strcmp(str, "V2f") == 0) || (strcmp(str, "V2f *") == 0) || (strcmp(str, "V2f **") == 0)) {
+    } else if((strcmp(str, "V2f") == 0) || (strcmp(str, "V2f *") == 0) || (strcmp(str, "V2f **") == 0)) {
         static MemberDefinition members_of_V2f[] = {
             {MetaType_float, "x", offset_of(&_V2f::x), false, 1},
             {MetaType_float, "y", offset_of(&_V2f::y), false, 1},
@@ -362,7 +412,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
         return(members_of_V2f);
 
     // Transform
-    } if((strcmp(str, "Transform") == 0) || (strcmp(str, "Transform *") == 0) || (strcmp(str, "Transform **") == 0)) {
+    } else if((strcmp(str, "Transform") == 0) || (strcmp(str, "Transform *") == 0) || (strcmp(str, "Transform **") == 0)) {
         static MemberDefinition members_of_Transform[] = {
             {MetaType_V2, "pos", offset_of(&_Transform::pos), false, 1},
             {MetaType_V2, "size", offset_of(&_Transform::size), false, 1},
@@ -370,7 +420,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
         return(members_of_Transform);
 
     // Ball
-    } if((strcmp(str, "Ball") == 0) || (strcmp(str, "Ball *") == 0) || (strcmp(str, "Ball **") == 0)) {
+    } else if((strcmp(str, "Ball") == 0) || (strcmp(str, "Ball *") == 0) || (strcmp(str, "Ball **") == 0)) {
         static MemberDefinition members_of_Ball[] = {
             {MetaType_V2f, "pos", offset_of(&_Ball::pos), false, 1},
             {MetaType_V2f, "speed", offset_of(&_Ball::speed), false, 1},
@@ -379,14 +429,14 @@ static MemberDefinition *get_members_of_str(char const *str) {
         return(members_of_Ball);
 
     // Paddle
-    } if((strcmp(str, "Paddle") == 0) || (strcmp(str, "Paddle *") == 0) || (strcmp(str, "Paddle **") == 0)) {
+    } else if((strcmp(str, "Paddle") == 0) || (strcmp(str, "Paddle *") == 0) || (strcmp(str, "Paddle **") == 0)) {
         static MemberDefinition members_of_Paddle[] = {
             {MetaType_Transform, "trans", offset_of(&_Paddle::trans), false, 1},
         };
         return(members_of_Paddle);
 
     // GameState
-    } if((strcmp(str, "GameState") == 0) || (strcmp(str, "GameState *") == 0) || (strcmp(str, "GameState **") == 0)) {
+    } else if((strcmp(str, "GameState") == 0) || (strcmp(str, "GameState *") == 0) || (strcmp(str, "GameState **") == 0)) {
         static MemberDefinition members_of_GameState[] = {
             {MetaType_Paddle, "paddle", offset_of(&_GameState::paddle), false, 1},
             {MetaType_Ball, "ball", offset_of(&_GameState::ball), false, 1},
@@ -400,7 +450,14 @@ static MemberDefinition *get_members_of_str(char const *str) {
 
 // Get the number of members for a type.
 static int get_number_of_members_str(char const *str) {
-    if(strcmp(str, "V2") == 0) { return(2); } // V2
+    if(strcmp(str, "char") == 0) { return(1); }
+    else if(strcmp(str, "short") == 0) { return(1); }
+    else if(strcmp(str, "int") == 0) { return(1); }
+    else if(strcmp(str, "long") == 0) { return(1); }
+    else if(strcmp(str, "float") == 0) { return(1); }
+    else if(strcmp(str, "double") == 0) { return(1); }
+    else if(strcmp(str, "bool") == 0) { return(1); }
+    else if(strcmp(str, "V2") == 0) { return(2); } // V2
     else if(strcmp(str, "V2f") == 0) { return(2); } // V2f
     else if(strcmp(str, "Transform") == 0) { return(2); } // Transform
     else if(strcmp(str, "Ball") == 0) { return(3); } // Ball
@@ -518,6 +575,7 @@ template<typename T> static char const *get_base_type_as_string_(int index/*= 0*
     return(0); // Not found.
 }
 
+#undef _std
 } // namespace pp
 
 #endif // Header guard.

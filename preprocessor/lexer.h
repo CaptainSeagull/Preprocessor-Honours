@@ -13,14 +13,6 @@
 
 #include "utils.h"
 
-struct Variable {
-    String type;
-    String name;
-    Bool is_ptr;
-    Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
-    Bool is_inside_anonymous_struct;
-};
-
 enum StructType {
     StructType_unknown,
     StructType_struct,

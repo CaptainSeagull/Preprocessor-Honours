@@ -53,6 +53,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <vector> // TODO(Jonny): Only include this if it's needed.
 
 namespace pp { // PreProcessor
 

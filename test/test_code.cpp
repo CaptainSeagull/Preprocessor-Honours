@@ -11,15 +11,11 @@
 
 // File: test_code.cpp
 
-#define PP_DEBUG
+#if 0
 #include "test_code_generated.h"
 
 #define NUMBER_TEN 10
 #define NUMBER_FIVE 5
-
-struct TEST {
-    int i[NUMBER_TEN];
-};
 
 //
 // struct test.
@@ -159,18 +155,41 @@ void test_enum(void) {
     }
 }
 
+struct TEST {
+    std::vector<int> i;
+};
+
 int main(int /*argc*/, char ** /*argv*/) {
     printf("\n");
 
-    test_struct();
+    TEST t = {};
+    pp::print(t);
+
+    //test_struct();
     //test_enum();
 
-    bool a = pp::type_compare(int, int);
-    bool b = pp::type_compare(int, float);
+    //bool a = pp::type_compare(int, int);
+    //bool b = pp::type_compare(int, float);
 
     char const *str = pp::type_to_string(Bar **);
 
     printf("\n");
+
+    return(0);
+}
+#endif
+
+#include "test_code_generated.h"
+
+struct SomeStruct {
+    std::vector<int> v;
+};
+
+int main(int /*argc*/, char ** /*argv*/) {
+    SomeStruct s = {};
+
+    for(int i = 0; (i < 10); ++i) { s.v.push_back(i); }
+    pp::print(s);
 
     return(0);
 }

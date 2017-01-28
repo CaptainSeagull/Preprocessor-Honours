@@ -1,5 +1,5 @@
 /*===================================================================================================
-  File:                    lexer.h
+  File:                    utils.cpp
   Author:                  Jonathan Livingstone
   Email:                   seagull127@ymail.com
   Licence:                 Public Domain
@@ -15,8 +15,8 @@
 //
 // Error stuff.
 //
-static Error global_errors[32];
-static Int global_error_count = 0;
+internal Error global_errors[32];
+internal Int global_error_count = 0;
 
 Char *ErrorTypeToString(ErrorType e) {
     Char *res = 0;
@@ -84,11 +84,11 @@ Bool print_errors(void) {
 // Scratch memory.
 //
 // A quick-to-access temp region of memory. Should be frequently cleared.
-static Int scratch_memory_index = 0;
-static Void *global_scratch_memory = 0;
+internal Int scratch_memory_index = 0;
+internal Void *global_scratch_memory = 0;
 Void *push_scratch_memory(Int size/*= scratch_memory_size*/) {
     if(!global_scratch_memory) {
-        global_scratch_memory = malloc(scratch_memory_size + 1);
+        global_scratch_memory = alloc(Byte, scratch_memory_size + 1);
         memset(global_scratch_memory, 0, scratch_memory_size + 1);
     }
 
@@ -145,7 +145,11 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
 }
 
 Bool string_compare(Char *a, Char *b, Int len) {
-    for(Int i = 0; (i < len); ++i, ++a, ++b) { if(*a != *b) { return(false); } }
+    for(Int i = 0; (i < len); ++i, ++a, ++b) {
+        if(*a != *b) {
+            return(false);
+        }
+    }
 
     return(true);
 }
@@ -174,9 +178,9 @@ Bool string_compare(String a, String b) {
     return(res);
 }
 
-Bool string_compare_array(String *a, String *b, Int len) {
+Bool string_compare_array(String *a, String *b, Int cnt) {
     Bool res = true;
-    for(Int i = 0; (i < len); ++i) {
+    for(Int i = 0; (i < cnt); ++i) {
         if(!string_compare(a[i], b[i])) {
             res = false;
             break; // for
@@ -184,6 +188,26 @@ Bool string_compare_array(String *a, String *b, Int len) {
     }
 
     return(res);
+}
+
+Bool string_contains(String str, Char *target) {
+    Int target_len = string_length(target);
+
+    for(Int i = 0; (i < str.len); ++i) {
+        if(str.e[i] == target[0]) {
+            for(int j = 0; (j < target_len); ++j) {
+                if(str.e[i + j] != target[j]) {
+                    break; // for j
+                }
+
+                if(j == target_len - 1) {
+                    return(true);
+                }
+            }
+        }
+    }
+
+    return(false);
 }
 
 //
@@ -239,7 +263,7 @@ ResultInt calculator_string_to_int(Char *str) {
         - Make sure each element in the string is either a number or a operator.
         - Do the calculator in order (multiply, divide, add, subtract).
     */
-    String *arr = alloc_arr(String, 256); // TODO(Jonny): Random size.
+    String *arr = alloc(String, 256); // TODO(Jonny): Random size.
     if(arr) {
         Char *at = str;
         arr[0].e = at;
@@ -252,8 +276,8 @@ ResultInt calculator_string_to_int(Char *str) {
         }
         ++cnt;
 
-        Int *nums = alloc_arr(Int, cnt);
-        Char *ops = alloc_arr(Char, cnt);
+        Int *nums = alloc(Int, cnt);
+        Char *ops = alloc(Char, cnt);
         if((nums) && (ops)) {
             for(Int i = 0, j = 0; (j < cnt); ++i, j += 2) {
                 ResultInt r = string_to_int(arr[j]);
@@ -284,4 +308,33 @@ Uint32 safe_truncate_size_64(Uint64 v) {
     Uint32 res = cast(Uint32)v;
 
     return(res);
+}
+
+Variable create_variable(Char *type, Char *name, Bool is_ptr/*= false*/, Int array_count/*= 1*/) {
+    Variable res;
+    res.type = create_string(type);
+    res.name = create_string(name);
+    res.is_ptr = is_ptr;
+    res.array_count = array_count;
+
+    return(res);
+}
+
+Bool compare_variable(Variable a, Variable b) {
+    Bool res = true;
+
+    if(!string_compare(a.type, b.type))      { res = false; }
+    else if(!string_compare(a.name, b.name)) { res = false; }
+    else if(a.is_ptr != b.is_ptr)            { res = false; }
+    else if(a.array_count != b.array_count)  { res = false; }
+
+    return(res);
+}
+
+Bool compare_variable_array(Variable *a, Variable *b, Int count) {
+    for(Int i = 0; (i < count); ++i) {
+        if(!compare_variable(a[i], b[i])) { return(false); }
+    }
+
+    return(true);
 }

@@ -10,6 +10,7 @@
   ===================================================================================================*/
 
 #if !defined(_UTILS_H)
+#define _UTILS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -42,6 +43,8 @@ typedef double Float64;
 #define cast(type) (type)
 #define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
 #define preprocessor_concat(a, b) a##b
+
+#define internal static
 
 //
 // Detect compiler/platform.
@@ -155,6 +158,9 @@ Void push_error_(ErrorType type, Char *guid);
 Char *ErrorTypeToString(ErrorType e);
 Bool print_errors(void);
 
+#if defined(assert)
+    #undef assert
+#endif
 #if INTERNAL
     #define assert(Expression) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
@@ -164,6 +170,11 @@ Bool print_errors(void);
 //
 // Memory stuff.
 //
+
+// These are implemented in Platform code... but defined here.
+Void *system_malloc(PtrSize size, PtrSize cnt = 1);
+Bool system_free(Void *ptr);
+Void *system_realloc(Void *ptr, PtrSize size);
 
 #if MEM_CHECK
 struct MemList {
@@ -180,13 +191,12 @@ struct MemList {
 
 // malloc.
 static Void *malloc_(PtrSize size, Char *guid) {
-    Void *res = malloc(size);
+    Void *res = system_malloc(size);
 
     if(res) {
-        MemList *cur = cast(MemList *)malloc(sizeof(MemList));
+        MemList *cur = cast(MemList *)system_malloc(sizeof(MemList));
         if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
         else {
-            memset(cur, 0, sizeof(MemList));
             cur->ptr = res;
             cur->guid = guid;
 
@@ -205,10 +215,10 @@ static Void *malloc_(PtrSize size, Char *guid) {
 
 // calloc
 static Void *calloc_(PtrSize size, PtrSize cnt, Char *guid) {
-    Void *res = calloc(size, cnt);
+    Void *res = system_malloc(size * cnt);
 
     if(res) {
-        MemList *cur = cast(MemList *)malloc(sizeof(MemList));
+        MemList *cur = cast(MemList *)system_malloc(sizeof(MemList));
         if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
         else {
             memset(cur, 0, sizeof(MemList));
@@ -230,7 +240,7 @@ static Void *calloc_(PtrSize size, PtrSize cnt, Char *guid) {
 
 // free
 static Void free_(Void *ptr) {
-    free(ptr);
+    system_free(ptr);
     if(ptr) {
         Bool found = false;
         MemList *next = mem_list_root;
@@ -249,7 +259,7 @@ static Void free_(Void *ptr) {
 
 // realloc
 static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
-    Void *res = realloc(ptr, size);
+    Void *res = system_realloc(ptr, size);
     if(ptr) {
         MemList *next = mem_list_root;
         while(next) {
@@ -289,8 +299,7 @@ static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
 
 #endif // MEM_CHECK
 
-#define alloc(Type) (Type *)malloc(sizeof(Type), 1)
-#define alloc_arr(Type, cnt) (Type *)malloc(cnt * sizeof(Type))
+#define alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
 
 //
 // Scratch memory
@@ -315,10 +324,11 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len);
 Bool string_compare(Char *a, Char *b, Int len);
 Bool string_compare(Char *a, Char *b);
 Bool string_compare(String a, String b);
-Bool string_compare_array(String *a, String *b, Int len);
+Bool string_compare_array(String *a, String *b, Int cnt);
+Bool string_contains(String str, Char *target);
 
 //
-// Stuff
+// Maths.
 //
 struct ResultInt {
     Int e;
@@ -332,5 +342,20 @@ ResultInt calculator_string_to_int(Char *str);
 
 Uint32 safe_truncate_size_64(Uint64 v);
 
-#define _UTILS_H
+//
+// Variable.
+//
+struct Variable {
+    String type;
+    String name;
+    Bool is_ptr;
+    Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
+    Bool is_inside_anonymous_struct;
+};
+
+Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1);
+Bool compare_variable(Variable a, Variable b);
+Bool compare_variable_array(Variable *a, Variable *b, Int count);
+
+
 #endif
