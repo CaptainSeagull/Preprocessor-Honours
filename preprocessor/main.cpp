@@ -935,8 +935,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                                 case StdTypes_vector: {
                                     write_to_output_buffer(&ob,
-                                                           "            {MetaType_std_vector_int%.*s",
-                                                           base_class_var->type.len, base_class_var->type.e);
+                                                           "            {MetaType_std_vector_%.*s",
+                                                           std_res.stored_type.len, std_res.stored_type.e);
                                 } break;
 
                                 default: { assert(0); } break;
@@ -1034,16 +1034,34 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                        s->len, s->e);
             }
 
+            Int len = 0;
+            Char *output_string = 0;
+
+            StdResult std_res = get_std_information(*s);
+            switch(std_res.type) {
+                case StdTypes_not: {
+                    output_string = s->e;
+                    len = s->len;
+                } break;
+
+                case StdTypes_vector: {
+                    output_string = std_res.stored_type.e;
+                    len = std_res.stored_type.len;
+                } break;
+
+                default: { assert(0); } break;
+            }
+
             write_to_output_buffer(&ob,
                                    "        static MemberDefinition members_of_%.*s[] = {\n"
                                    "            {MetaType_%.*s, \"\", 0, false, 1}\n"
                                    "        };\n"
                                    "        return(members_of_%.*s);\n"
                                    "\n",
-                                   s->len, s->e,
-                                   s->len, s->e,
-                                   s->len, s->e,
-                                   s->len, s->e);
+                                   len, output_string,
+                                   len, output_string,
+                                   len, output_string,
+                                   len, output_string);
 
         }
         //if((strcmp(str, "SomeStruct") == 0) || (strcmp(str, "SomeStruct *") == 0) || (strcmp(str, "SomeStruct **") == 0)) {
@@ -1098,8 +1116,21 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                         for(Int k = 0; (k < base_class->member_count); ++k) {
                             Variable *base_class_var = base_class->members + k;
 
-                            write_to_output_buffer(&ob, "            {MetaType_%.*s, \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
-                                                   base_class_var->type.len, base_class_var->type.e,
+                            StdResult std_res = get_std_information(base_class_var->type);
+                            switch(std_res.type) {
+                                case StdTypes_not: {
+                                    write_to_output_buffer(&ob, "            {MetaType_%.*s",
+                                                           base_class_var->type.len, base_class_var->type.e);
+                                } break;
+
+                                case StdTypes_vector: {
+                                    write_to_output_buffer(&ob, "            {MetaType_std_vector_%.*s",
+                                                           std_res.stored_type.len, std_res.stored_type.e);
+                                } break;
+                            }
+
+
+                            write_to_output_buffer(&ob, ", \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
                                                    base_class_var->name.len, base_class_var->name.e,
                                                    sd->name.len, sd->name.e,
                                                    base_class_var->name.len, base_class_var->name.e,
