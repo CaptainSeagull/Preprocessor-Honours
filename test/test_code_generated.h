@@ -34,6 +34,7 @@ enum MetaType {
     MetaType_B,
     MetaType_C,
     MetaType_Foo,
+    MetaType_std_vector_float,
     MetaType_X,
     MetaType_Y,
     MetaType_Transform,
@@ -316,6 +317,14 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                             }
                         } break; // case MetaType_TEST
 
+                        case MetaType_std_vector_float: {
+                            std::vector<float> temp = *(std::vector<float> *)member_ptr;
+                            size_t size = temp.size();
+                            for(size_t i = 0; (i < size); ++i) {
+                                bytes_written = serialize_struct_((void *)&temp[i], member->name, "float", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break;
+
                         case MetaType_std_vector_int: {
                             std::vector<int> temp = *(std::vector<int> *)member_ptr;
                             size_t size = temp.size();
@@ -339,7 +348,7 @@ struct _Bar {  _short s;  _int i;  _float f;  _double d;  _V2 v2;  };
 struct _A {  _float m;  };
 struct _B {  _float n;  };
 struct _C {  _float o;  };
-struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[10];  _int i_array[5];  };
+struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _char *str;  _int *ip;  _float *fp;  _bool *b;  _double *p_array[10];  _int i_array[5];  _std::vector<float> vec_int;  };
 struct _X : public _Foo {  _int i;  };
 struct _Y : public _X {  };
 struct _Transform {  _V2 pos;  _V2 size;  };
@@ -405,6 +414,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_bool, "b", offset_of(&_Foo::b), true, 1},
             {MetaType_double, "p_array", offset_of(&_Foo::p_array), true, 10},
             {MetaType_int, "i_array", offset_of(&_Foo::i_array), false, 5},
+            {MetaType_std_vector_float, "vec_int", offset_of(&_Foo::vec_int), false, 1},
             // Members inherited from Bar.
             {MetaType_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
             {MetaType_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
@@ -434,6 +444,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_bool, "b", (size_t)&((_X *)0)->b, true, 1},
             {MetaType_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
             {MetaType_int, "i_array", (size_t)&((_X *)0)->i_array, false, 5},
+            {MetaType_std_vector_float, "vec_int", (size_t)&((_X *)0)->vec_int, false, 1},
         };
         return(members_of_X);
 
@@ -472,8 +483,8 @@ template<typename T> static int get_number_of_members_(void) {
     else if(type_compare(T, A)) { return(1); } // A
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, C)) { return(1); } // C
-    else if(type_compare(T, Foo)) { return(16); } // Foo
-    else if(type_compare(T, X)) { return(7); } // X
+    else if(type_compare(T, Foo)) { return(17); } // Foo
+    else if(type_compare(T, X)) { return(8); } // X
     else if(type_compare(T, Y)) { return(1); } // Y
     else if(type_compare(T, Transform)) { return(2); } // Transform
     else if(type_compare(T, TEST)) { return(1); } // TEST
@@ -591,6 +602,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_bool, "b", offset_of(&_Foo::b), true, 1},
             {MetaType_double, "p_array", offset_of(&_Foo::p_array), true, 10},
             {MetaType_int, "i_array", offset_of(&_Foo::i_array), false, 5},
+            {MetaType_std_vector_float, "vec_int", offset_of(&_Foo::vec_int), false, 1},
             // Members inherited from Bar.
             {MetaType_short, "s", (size_t)&((_Foo *)0)->s, false, 1},
             {MetaType_int, "i", (size_t)&((_Foo *)0)->i, false, 1},
@@ -620,6 +632,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_bool, "b", (size_t)&((_X *)0)->b, true, 1},
             {MetaType_double, "p_array", (size_t)&((_X *)0)->p_array, true, 10},
             {MetaType_int, "i_array", (size_t)&((_X *)0)->i_array, false, 5},
+            {MetaType_std_vector_float, "vec_int", (size_t)&((_X *)0)->vec_int, false, 1},
         };
         return(members_of_X);
 
@@ -665,8 +678,8 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "A") == 0) { return(1); } // A
     else if(strcmp(str, "B") == 0) { return(1); } // B
     else if(strcmp(str, "C") == 0) { return(1); } // C
-    else if(strcmp(str, "Foo") == 0) { return(16); } // Foo
-    else if(strcmp(str, "X") == 0) { return(7); } // X
+    else if(strcmp(str, "Foo") == 0) { return(17); } // Foo
+    else if(strcmp(str, "X") == 0) { return(8); } // X
     else if(strcmp(str, "Y") == 0) { return(1); } // Y
     else if(strcmp(str, "Transform") == 0) { return(2); } // Transform
     else if(strcmp(str, "TEST") == 0) { return(1); } // TEST

@@ -48,6 +48,7 @@ struct Foo : public Bar, public thingy, public A, public B, public C {
     bool *b;
     double *p_array[NUMBER_TEN];
     int i_array[NUMBER_FIVE];
+    std::vector<float> vec_int;
 };
 
 struct X : public Foo {
