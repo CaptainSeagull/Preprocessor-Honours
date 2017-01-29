@@ -11,7 +11,9 @@
 #if !defined(_WRTIE_FILE_H)
 
 #include "utils.h"
-#include "lexer.h"
+
+struct StructData;
+struct EnumData;
 
 File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count);
 

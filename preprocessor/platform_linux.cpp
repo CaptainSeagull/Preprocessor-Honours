@@ -32,7 +32,9 @@ Bool system_check_for_debugger(void) {
 #endif
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
     Void *res = malloc(size * cnt);
-    if(res) { memset(res, 0, size * cnt); }
+    if(res) {
+        memset(res, 0, size * cnt);
+    }
 
     return(res);
 }
@@ -53,8 +55,9 @@ Bool system_free(Void *ptr) {
 #if defined(realloc)
     #undef realloc
 #endif
-Void *system_realloc(Void *ptr, PtrSize size) {
-    Void *res = realloc(ptr, size);
+Void *system_realloc(Void *ptr, PtrSize new_size) {
+    Void *res = realloc(ptr, new_size);
+    // TODO(Jonny): Is there a realloc and zero for linux?
 
     return(res);
 }

@@ -10,6 +10,7 @@
   ===================================================================================================*/
 
 #include "write_file.h"
+#include "lexer.h"
 
 struct OutputBuffer {
     Char *buffer;
@@ -287,6 +288,43 @@ internal StdResult get_std_information(String str) {
     return(res);
 }
 
+internal void forward_declare_structs(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
+    // Forward declare structs.
+    write_to_output_buffer(ob,
+                           "// Forward declared structs (these must be declared outside the namespace...)\n");
+    for(Int i = 0; (i < struct_count); ++i) {
+        StructData *sd = struct_data + i;
+
+        if(sd->struct_type == StructType_struct)     { write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
+        else if(sd->struct_type == StructType_class) { write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);  }
+        else if(sd->struct_type == StructType_union) { write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);  }
+        else { assert(0); }
+    }
+}
+
+internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_count, StructData *struct_data, Int struct_count) {
+    write_to_output_buffer(ob, "\n// Enum with field for every type detected.\n");
+    write_to_output_buffer(ob, "enum MetaType {\n");
+    for(Int i = 0; (i < type_count); ++i) {
+        String *type = types + i;
+
+        StdResult std_res = get_std_information(*type);
+        switch(std_res.type) {
+            case StdTypes_not: {
+                write_to_output_buffer(ob, "    MetaType_%.*s,\n", type->len, type->e);
+            } break;
+
+            case StdTypes_vector: {
+                write_to_output_buffer(ob, "    MetaType_std_vector_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
+            default: { assert(0); } break;
+        }
+    }
+
+    write_to_output_buffer(ob, "};");
+}
+
 File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
     File res = {};
 
@@ -294,7 +332,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
     ob.size = 256 * 256;
     ob.buffer = alloc(Char, ob.size);
     if(ob.buffer) {
-
         Char *name_buf = cast(Char *)push_scratch_memory();
         Int len_wo_extension = string_length(fname) - 4; // TODO(Jonny): Do properly.
         for(Int i = 0; (i < len_wo_extension); ++i) {
@@ -309,17 +346,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
         clear_scratch_memory();
 
-        // Forward declare structs.
-        write_to_output_buffer(&ob,
-                               "// Forward declared structs (these must be declared outside the namespace...)\n");
-        for(Int i = 0; (i < struct_count); ++i) {
-            StructData *sd = struct_data + i;
-
-            if(sd->struct_type == StructType_struct)     { write_to_output_buffer(&ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
-            else if(sd->struct_type == StructType_class) { write_to_output_buffer(&ob, "class %.*s;\n", sd->name.len, sd->name.e);  }
-            else if(sd->struct_type == StructType_union) { write_to_output_buffer(&ob, "union %.*s;\n", sd->name.len, sd->name.e);  }
-            else { assert(0); }
-        }
+        forward_declare_structs(&ob, struct_data, struct_count);
 
         write_to_output_buffer(&ob,
                                "\n"
@@ -333,6 +360,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         //
         // Get the absolute max number of meta types. This will be significantly bigger than the
         // actual number of unique types...
+
         Int max_type_count = get_num_of_primitive_types();
         for(Int i = 0; (i < struct_count); ++i) {
             max_type_count += struct_data[i].member_count + 1;
@@ -361,27 +389,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
         assert(type_count <= max_type_count);
 
-        // Write the meta type enum to file.
-        write_to_output_buffer(&ob, "\n// Enum with field for every type detected.\n");
-        write_to_output_buffer(&ob, "enum MetaType {\n");
-        for(Int i = 0; (i < type_count); ++i) {
-            String *type = types + i;
-
-            StdResult std_res = get_std_information(*type);
-            switch(std_res.type) {
-                case StdTypes_not: {
-                    write_to_output_buffer(&ob, "    MetaType_%.*s,\n", type->len, type->e);
-                } break;
-
-                case StdTypes_vector: {
-                    write_to_output_buffer(&ob, "    MetaType_std_vector_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
-                } break;
-
-                default: { assert(0); } break;
-            }
-        }
-
-        write_to_output_buffer(&ob, "};");
+        write_meta_type_enum(&ob, types, type_count, struct_data, struct_count);
 
         //
         // Struct Meta Data

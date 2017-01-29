@@ -61,3 +61,49 @@ Void *system_realloc(Void *ptr, PtrSize size) {
 
     return(res);
 }
+
+File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
+    File res = {};
+
+    FILE *file = fopen(fname, "r");
+    if(file) {
+        fseek(file, 0, SEEK_END);
+        res.size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        res.data = cast(Char *)memory;
+        fread(res.data, 1, res.size, file);
+        fclose(file);
+    }
+
+    return(res);
+}
+
+Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
+    assert(data_size > 0);
+
+    Bool res = false;
+
+    FILE *file = fopen(fname, "w");
+    if(file) {
+        fwrite(data, 1, data_size, file);
+        fclose(file);
+        res = true;
+    }
+
+    return(res);
+}
+
+PtrSize get_file_size(Char *fname) {
+    PtrSize size = 0;
+
+    FILE *file = fopen(fname, "r");
+    if(file) {
+        fseek(file, 0, SEEK_END);
+        size = ftell(file) + 1;
+        fseek(file, 0, SEEK_SET);
+        fclose(file);
+    }
+
+    return(size);
+}
