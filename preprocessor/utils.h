@@ -167,6 +167,11 @@ Bool print_errors(void);
     #define assert(Expression) {}
 #endif
 
+struct File {
+    Char *data;
+    Int size;
+};
+
 //
 // Memory stuff.
 //
@@ -361,5 +366,9 @@ Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_
 Bool compare_variable(Variable a, Variable b);
 Bool compare_variable_array(Variable *a, Variable *b, Int count);
 
+//
+// Utils.
+//
+Char to_caps(Char c);
 
 #endif

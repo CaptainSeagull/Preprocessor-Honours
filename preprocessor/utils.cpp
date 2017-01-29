@@ -338,3 +338,10 @@ Bool compare_variable_array(Variable *a, Variable *b, Int count) {
 
     return(true);
 }
+
+Char to_caps(Char c) {
+    Char res = c;
+    if((c >= 'a') && (c <= 'z')) { res += ('A' - 'a'); }
+
+    return(res);
+}
