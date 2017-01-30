@@ -5,20 +5,15 @@
 
 This is a simple project which aims to provide some meta programming functionality not currently in C++. The utility generates code, which should be included in the relevant .cpp file.
 
-The reason for doing C++ this way, as opposed to some other ways, include.
-- The ability to target multiple compilers with the output.
-
-All generate code strictly follows the C++11 specification, and should compile correctly under MSVC, Clang, or GCC, even with `-Wall` enabled. If you're using a pre-C++11 compiler, then the preprocessor can still be used, but some functions will not compile. They, however, have alternatives which can be used.
+All generate code strictly follows the C++11 specification, and should compile correctly under MSVC, Clang, or GCC, even with `-Wall` enabled. If you're using a pre-C++11 compiler, then the preprocessor can still be used, but some functions will not compile. All the functions which require C++11 features have alternatives which can be used and are compiant with the C++98 specification.
 
 #Build instructions
 
 ##Windows
-Call win32_build.bat from the command line, which should generate the exe inside the `build` directory. This uses Visual Studio 2013 to build (MSVC 12), so if you're using a different version of visual studio then change the line `set VISUAL_STUDIO_VERSION=12` to whatever version of Visual Studio you're using.
+Call `win32_build.bat` from the command line, which should generate the executable inside the `build` directory. This uses Visual Studio 2013 to build (MSVC 12), so if you're using a different version of visual studio then change the line `set VISUAL_STUDIO_VERSION=12` inside `.bat` file to match whatever version of Visual Studio you're using.
 
 ##Linux
-Call build_clang.sh from the command line This should generate the app file inside the `build` directory. This uses Clang version 3.8, so if you don't have that version installed on our computer, you'll need to change all the lines that say `Clang++-3.8` to match the version you've got.
-
-There is currently no build version which uses GCC, but in order to build all you have to do if build all the files located in the `preprocessor` directory, excluding `platform_win32.cpp`.
+Call `build_clang.sh` from the command line, which should generate the app file inside the `build` directory. This uses Clang version 3.8, so if you don't have that version installed on your computer, then you'll need to change all the lines that say `Clang++-3.8` to match the version you've got.
 
 ##Mac
 N/A
@@ -143,7 +138,7 @@ pp::type_compare(int, short); // returns false
 ```C++
 
 char const *str1 = pp::type_to_string(int *); // Returns "int *"
-char const *str2 = pp::type_to_string(int *); // Returns "int"
+char const *str2 = pp::weak_type_to_string(int *); // Returns "int"
 ```
 
 ##Base Type
@@ -157,9 +152,7 @@ char const *str = pp::get_base_type_as_string(Sub); // Returns "Base".
 ##Print
 ```C++
 struct V2 { int x, y; };
-```
-...
-```C++
+
 V2 v;
 v.x = 1;
 v.y = 2;
