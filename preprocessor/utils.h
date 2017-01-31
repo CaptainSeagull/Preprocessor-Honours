@@ -386,7 +386,7 @@ Char to_caps(Char c);
 //
 // memset and memcpy
 //
-extern "C" void *memcpy(void *Dest, void const *Source, size_t Size);
-extern "C" void *memset(void *Dest, int Value, size_t NumBytesToSet);
+extern "C" void *memcpy(void *Dest, void const *Source, PtrSize Size);
+extern "C" void *memset(void *Dest, int Value, PtrSize NumBytesToSet);
 
 #endif

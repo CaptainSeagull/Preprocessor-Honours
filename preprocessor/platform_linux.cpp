@@ -9,6 +9,8 @@
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
 
+#include <stdlib.h>
+#include <stdio.h>
 #include "platform.h"
 
 Uint64 system_get_performance_counter(void) {
@@ -106,4 +108,12 @@ PtrSize get_file_size(Char *fname) {
     }
 
     return(size);
+}
+
+Void system_write_to_console(Char *str) {
+    printf("%s", str);
+}
+
+Void system_write_to_stderr(Char *str) {
+    fprintf(stderr, "%s", str);
 }

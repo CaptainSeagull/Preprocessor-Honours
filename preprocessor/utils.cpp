@@ -425,9 +425,11 @@ Char to_caps(Char c) {
 //
 // memset and memcpy.
 //
-#pragma function(memcpy)
+#if COMPILER_MSVC
+    #pragma function(memcpy)
+#endif
 extern "C" void *
-memcpy(void *dest, void const *src, size_t size) {
+memcpy(void *dest, void const *src, PtrSize size) {
     Int i;
     Byte *dest8, *src8;
 
@@ -440,9 +442,11 @@ memcpy(void *dest, void const *src, size_t size) {
     return(dest);
 }
 
-#pragma function(memset)
+#if COMPILER_MSVC
+    #pragma function(memset)
+#endif
 extern "C" void *
-memset(void *dest, int v, size_t n) {
+memset(void *dest, int v, PtrSize n) {
     Int i;
     Byte *dest8;
 
