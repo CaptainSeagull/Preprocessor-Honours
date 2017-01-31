@@ -11,18 +11,13 @@
 
 #include <windows.h>
 #include "platform.h"
+#include "stdio.h"
 
 Uint64 system_get_performance_counter(void) {
     Uint64 res = 0;
-
-#if 0
-    res = __rdtsc();
-#else
     LARGE_INTEGER large_int;
-    if(QueryPerformanceCounter(&large_int)) {
-        res = large_int.QuadPart;
-    }
-#endif
+
+    if(QueryPerformanceCounter(&large_int)) res = large_int.QuadPart;
 
     return(res);
 }
@@ -36,74 +31,97 @@ Void system_print_timer(Uint64 value) {
 }
 
 Bool system_check_for_debugger(void) {
-    Bool res = IsDebuggerPresent() != 0;
-
-    return(res);
+    return IsDebuggerPresent() != 0;
 }
 
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
-    Void *res = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size * cnt);
-
-    return(res);
+    return HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size * cnt);
 }
 
 Bool system_free(Void *ptr) {
-    Bool res = false;
-    if(ptr) {
-        res = HeapFree(GetProcessHeap(), 0, ptr) != 0;
-    }
-
-    return(res);
+    if(ptr) return HeapFree(GetProcessHeap(), 0, ptr) != 0;
+    else    return false;
 }
 
 Void *system_realloc(Void *ptr, PtrSize size) {
-    Void *res = HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ptr, size);
-
-    return(res);
+    return HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ptr, size);
 }
 
 File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     File res = {};
+    HANDLE fhandle;
+    LARGE_INTEGER fsize;
+    DWORD fsize32, bytes_read;
 
-    FILE *file = fopen(fname, "r");
-    if(file) {
-        fseek(file, 0, SEEK_END);
-        res.size = ftell(file);
-        fseek(file, 0, SEEK_SET);
+    fhandle = CreateFileA(fname, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    if(fhandle != INVALID_HANDLE_VALUE) {
+        if(GetFileSizeEx(fhandle, &fsize)) {
+            fsize32 = safe_truncate_size_64(fsize.QuadPart);
+            if(ReadFile(fhandle, memory, fsize32, &bytes_read, 0)) {
+                if(bytes_read != fsize32) {
+                    push_error(ErrorType_did_not_read_entire_file);
+                } else {
+                    res.size = fsize32;
+                    res.data = cast(Char *)memory;
+                    res.data[res.size] = 0;
+                }
+            }
 
-        res.data = cast(Char *)memory;
-        fread(res.data, 1, res.size, file);
-        fclose(file);
+            CloseHandle(fhandle);
+        }
     }
 
     return(res);
 }
 
 Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
-    assert(data_size > 0);
-
     Bool res = false;
+    HANDLE fhandle;
+    DWORD fsize32, bytes_written;
 
-    FILE *file = fopen(fname, "w");
-    if(file) {
-        fwrite(data, 1, data_size, file);
-        fclose(file);
-        res = true;
+    fhandle = CreateFileA(fname, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CREATE_ALWAYS, 0, 0);
+    if(fhandle != INVALID_HANDLE_VALUE) {
+#if ENVIRONMENT32
+        fsize32 = data_size;
+#else
+        fsize32 = safe_truncate_size_64(data_size);
+#endif
+        if(WriteFile(fhandle, data, fsize32, &bytes_written, 0)) {
+            if(bytes_written != fsize32) push_error(ErrorType_did_not_write_entire_file);
+            else                         res = true;
+        }
+
+        CloseHandle(fhandle);
+    }
+
+    return res;
+}
+
+PtrSize get_file_size(Char *fname) {
+    PtrSize res = 0;
+    HANDLE fhandle;
+    LARGE_INTEGER large_int;
+
+    fhandle = CreateFileA(fname, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    if(fhandle != INVALID_HANDLE_VALUE) {
+        if(GetFileSizeEx(fhandle, &large_int)) {
+#if ENVIRONMENT32
+            res = safe_truncate_size_64(large_int.QuadPart);
+#else
+            res = large_int.QuadPart;
+#endif
+        }
+
+        CloseHandle(fhandle);
     }
 
     return(res);
 }
 
-PtrSize get_file_size(Char *fname) {
-    PtrSize size = 0;
+Void system_write_to_console(Char *str) {
+    printf("%s", str);
+}
 
-    FILE *file = fopen(fname, "r");
-    if(file) {
-        fseek(file, 0, SEEK_END);
-        size = ftell(file) + 1;
-        fseek(file, 0, SEEK_SET);
-        fclose(file);
-    }
-
-    return(size);
+Void system_write_to_stderr(Char *str) {
+    fprintf(stderr, "%s", str);
 }

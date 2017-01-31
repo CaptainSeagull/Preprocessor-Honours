@@ -13,10 +13,9 @@
 #define _UTILS_H
 
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
+
+#include "stb_sprintf.h"
 
 typedef uint64_t Uint64;
 typedef uint32_t Uint32;
@@ -138,6 +137,8 @@ enum ErrorType {
     ErrorType_failed_to_parse_enum,
     ErrorType_failed_parsing_variable,
     ErrorType_failed_to_find_size_of_array,
+    ErrorType_did_not_write_entire_file,
+    ErrorType_did_not_read_entire_file,
 
     ErrorType_count,
 };
@@ -169,7 +170,7 @@ Bool print_errors(void);
 
 struct File {
     Char *data;
-    Int size;
+    PtrSize size;
 };
 
 //
@@ -225,15 +226,19 @@ static Void *malloc_(PtrSize size, Char *guid, PtrSize cnt = 1) {
 
     if(res) {
         MemList *cur = cast(MemList *)system_malloc(sizeof(MemList));
-        if(!cur) { push_error_(ErrorType_ran_out_of_memory, guid); }
-        else {
+        if(!cur) {
+            push_error_(ErrorType_ran_out_of_memory, guid);
+        } else {
             cur->ptr = res;
             cur->guid = guid;
 
-            if(!mem_list_root) { mem_list_root = cur; }
-            else {
+            if(!mem_list_root) {
+                mem_list_root = cur;
+            } else {
                 MemList *next = mem_list_root;
-                while(next->next) { next = next->next; }
+                while(next->next) {
+                    next = next->next;
+                }
 
                 next->next = cur;
             }
@@ -268,12 +273,17 @@ static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
     if(ptr) {
         MemList *next = mem_list_root;
         while(next) {
-            if(next->ptr == ptr) { break; } // while
+            if(next->ptr == ptr) {
+                break;    // while
+            }
             next = next->next;
         }
 
-        if(!next) { push_error_(ErrorType_could_not_find_mallocd_ptr, guid); }
-        else      { next->ptr = res;                                         }
+        if(!next) {
+            push_error_(ErrorType_could_not_find_mallocd_ptr, guid);
+        } else      {
+            next->ptr = res;
+        }
     }
     return(res);
 }
@@ -332,6 +342,7 @@ Int string_length(Char *str);
 Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len);
 Bool string_compare(Char *a, Char *b, Int len);
 Bool string_compare(Char *a, Char *b);
+Void string_copy(Char *dest, Char *src);
 Bool string_compare(String a, String b);
 Bool string_compare_array(String *a, String *b, Int cnt);
 Bool string_contains(String str, Char *target);
@@ -370,5 +381,12 @@ Bool compare_variable_array(Variable *a, Variable *b, Int count);
 // Utils.
 //
 Char to_caps(Char c);
+
+
+//
+// memset and memcpy
+//
+extern "C" void *memcpy(void *Dest, void const *Source, size_t Size);
+extern "C" void *memset(void *Dest, int Value, size_t NumBytesToSet);
 
 #endif

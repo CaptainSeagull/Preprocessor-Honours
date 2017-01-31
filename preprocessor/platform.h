@@ -18,14 +18,17 @@ Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/);
 Bool system_free(Void *ptr);
 Void *system_realloc(Void *ptr, PtrSize size);
 
+// File IO.
+File read_entire_file_and_null_terminate(Char *fname, Void *memory);
+Bool write_to_file(Char *fname, Void *data, PtrSize data_size);
+PtrSize get_file_size(Char *fname);
+
 // Utility stuff.
 Uint64 system_get_performance_counter(void);
 Void system_print_timer(Uint64 value);
 Bool system_check_for_debugger(void);
-
-File read_entire_file_and_null_terminate(Char *fname, Void *memory);
-Bool write_to_file(Char *fname, Void *data, PtrSize data_size);
-PtrSize get_file_size(Char *fname);
+Void system_write_to_console(Char *str);
+Void system_write_to_stderr(Char *str);
 
 #define _PLATFORM_H
 #endif

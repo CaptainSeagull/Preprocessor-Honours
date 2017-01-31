@@ -21,7 +21,7 @@ struct OutputBuffer {
 internal Void write_to_output_buffer(OutputBuffer *ob, Char *format, ...) {
     va_list args;
     va_start(args, format);
-    ob->index += vsnprintf(ob->buffer + ob->index, ob->size - ob->index, format, args);
+    ob->index += stbsp_vsnprintf(ob->buffer + ob->index, ob->size - ob->index, format, args);
     va_end(args);
 }
 
@@ -256,7 +256,9 @@ internal StructData *find_struct(String str, StructData *structs, Int struct_cou
         }
     }
 
-    if(!res) { push_error(ErrorType_could_not_find_struct); }
+    if(!res) {
+        push_error(ErrorType_could_not_find_struct);
+    }
 
     return(res);
 }
@@ -295,10 +297,15 @@ internal void forward_declare_structs(OutputBuffer *ob, StructData *struct_data,
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;
 
-        if(sd->struct_type == StructType_struct)     { write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
-        else if(sd->struct_type == StructType_class) { write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);  }
-        else if(sd->struct_type == StructType_union) { write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);  }
-        else { assert(0); }
+        if(sd->struct_type == StructType_struct)     {
+            write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e);
+        } else if(sd->struct_type == StructType_class) {
+            write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);
+        } else if(sd->struct_type == StructType_union) {
+            write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);
+        } else {
+            assert(0);
+        }
     }
 }
 
@@ -318,7 +325,9 @@ internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
                 write_to_output_buffer(ob, "    MetaType_std_vector_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
-            default: { assert(0); } break;
+            default: {
+                assert(0);
+            } break;
         }
     }
 
@@ -409,7 +418,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 StdResult std_res = get_std_information(*type);
                 switch(std_res.type) {
-                    case StdTypes_vector: { any_stds = true; } break;
+                    case StdTypes_vector: {
+                        any_stds = true;
+                    } break;
                 }
 
                 if(any_stds) {
@@ -420,7 +431,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             if((struct_count) || (any_stds)) {
                 Char *switch_start = "                    switch(member->type) {\n";
-                strcpy(def_struct_code_mem + index, switch_start);
+                string_copy(def_struct_code_mem + index, switch_start);
                 index += string_length(switch_start);
 
                 // Add structs.
@@ -429,18 +440,18 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                     // TODO(Jonny): This could support unions better...
                     index +=
-                        my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                   "                        case MetaType_%.*s: {\n"
-                                   "                            // %.*s\n"
-                                   "                            if(member->is_ptr) {\n"
-                                   "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s *\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                   "                            } else {\n"
-                                   "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                   "                            }\n"
-                                   "                        } break; // case MetaType_%.*s\n"
-                                   "\n",
-                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                                   sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+                        stbsp_snprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                                       "                        case MetaType_%.*s: {\n"
+                                       "                            // %.*s\n"
+                                       "                            if(member->is_ptr) {\n"
+                                       "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s *\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                                       "                            } else {\n"
+                                       "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                                       "                            }\n"
+                                       "                        } break; // case MetaType_%.*s\n"
+                                       "\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
                 }
 
                 // Add std things.
@@ -451,31 +462,31 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                     switch(std_res.type) {
                         case StdTypes_vector: {
-                            index += my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                                "                        case MetaType_std_vector_%.*s: {\n"
-                                                "                            std::vector<%.*s> temp = *(std::vector<%.*s> *)member_ptr;\n"
-                                                "                            size_t size = temp.size();\n"
-                                                "                            for(size_t i = 0; (i < size); ++i) {\n"
-                                                "                                bytes_written = serialize_struct_((void *)&temp[i], member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                                "                            }\n"
-                                                "                        } break;\n"
-                                                "\n",
-                                                std_res.stored_type.len, std_res.stored_type.e,
-                                                std_res.stored_type.len, std_res.stored_type.e,
-                                                std_res.stored_type.len, std_res.stored_type.e,
-                                                std_res.stored_type.len, std_res.stored_type.e);
+                            index += stbsp_snprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                                                    "                        case MetaType_std_vector_%.*s: {\n"
+                                                    "                            std::vector<%.*s> temp = *(std::vector<%.*s> *)member_ptr;\n"
+                                                    "                            size_t size = temp.size();\n"
+                                                    "                            for(size_t i = 0; (i < size); ++i) {\n"
+                                                    "                                bytes_written = serialize_struct_((void *)&temp[i], member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                                                    "                            }\n"
+                                                    "                        } break;\n"
+                                                    "\n",
+                                                    std_res.stored_type.len, std_res.stored_type.e,
+                                                    std_res.stored_type.len, std_res.stored_type.e,
+                                                    std_res.stored_type.len, std_res.stored_type.e,
+                                                    std_res.stored_type.len, std_res.stored_type.e);
                         } break;
                     }
                 }
 
                 Char *switch_end = "                    } // switch(member->type)";
-                strcpy(def_struct_code_mem + index, switch_end);
+                string_copy(def_struct_code_mem + index, switch_end);
                 index += string_length(switch_end);
 
                 assert(index < def_struct_code_size);
             } else {
-                index += my_sprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                    "                    // NOTE: No types found.");
+                index += stbsp_snprintf(def_struct_code_mem + index, def_struct_code_size - index,
+                                        "                    // NOTE: No types found.");
             }
 
             write_serialize_struct_implementation(def_struct_code_mem, &ob);
@@ -496,7 +507,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 for(Int j = 0; (j < sd->inherited_count); ++j) {
                     String *inherited = sd->inherited + j;
 
-                    if(j) { write_to_output_buffer(&ob, ","); }
+                    if(j) {
+                        write_to_output_buffer(&ob, ",");
+                    }
 
                     write_to_output_buffer(&ob, " public _%.*s", inherited->len, inherited->e);
                 }
@@ -511,14 +524,17 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 if(md->is_inside_anonymous_struct != is_inside_anonymous_struct) {
                     is_inside_anonymous_struct = !is_inside_anonymous_struct;
 
-                    if(is_inside_anonymous_struct) { write_to_output_buffer(&ob, " struct {"); }
-                    else                           { write_to_output_buffer(&ob, "};");        }
+                    if(is_inside_anonymous_struct) {
+                        write_to_output_buffer(&ob, " struct {");
+                    } else                           {
+                        write_to_output_buffer(&ob, "};");
+                    }
                 }
 
                 Char *arr = "";
                 Char arr_buffer[256] = {};
                 if(md->array_count > 1) {
-                    my_sprintf(arr_buffer, 256, "[%u]", md->array_count);
+                    stbsp_snprintf(arr_buffer, 256, "[%u]", md->array_count);
                     arr = arr_buffer;
                 }
 
@@ -530,7 +546,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             }
 
-            if(is_inside_anonymous_struct) { write_to_output_buffer(&ob, " };"); }
+            if(is_inside_anonymous_struct) {
+                write_to_output_buffer(&ob, " };");
+            }
             write_to_output_buffer(&ob, " };\n");
         }
 
@@ -573,7 +591,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                             write_to_output_buffer(&ob, "            {MetaType_std_vector_%.*s", std_res.stored_type.len, std_res.stored_type.e);
                         } break;
 
-                        default: { assert(0); } break;
+                        default: {
+                            assert(0);
+                        } break;
                     }
 
                     write_to_output_buffer(&ob, ", \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
@@ -607,7 +627,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                            std_res.stored_type.len, std_res.stored_type.e);
                                 } break;
 
-                                default: { assert(0); } break;
+                                default: {
+                                    assert(0);
+                                } break;
                             }
 
                             write_to_output_buffer(&ob, ", \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
@@ -717,7 +739,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                     len = std_res.stored_type.len;
                 } break;
 
-                default: { assert(0); } break;
+                default: {
+                    assert(0);
+                } break;
             }
 
             write_to_output_buffer(&ob,
@@ -764,7 +788,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                    std_res.stored_type.len, std_res.stored_type.e);
                         } break;
 
-                        default: { assert(0); } break;
+                        default: {
+                            assert(0);
+                        } break;
                     }
 
                     write_to_output_buffer(&ob, ", \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
@@ -1037,7 +1063,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 Char type[32];
                 if(ed->type.len) {
-                    for(int j = 0; (j < ed->type.len); ++j) { type[j] = ed->type.e[j]; }
+                    for(int j = 0; (j < ed->type.len); ++j) {
+                        type[j] = ed->type.e[j];
+                    }
                     type[ed->type.len] = 0;
                 } else {
                     type[0] = 'i'; type[1] = 'n'; type[2] = 't'; type[3] = 0;
@@ -1047,11 +1075,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 {
                     Char *buf = cast(Char *)push_scratch_memory();
 
-                    int bytes_written = my_sprintf(buf, scratch_memory_size,
-                                                   "static %s number_of_elements_in_enum_%.*s = %d;",
-                                                   type,
-                                                   ed->name.len, ed->name.e,
-                                                   ed->no_of_values);
+                    int bytes_written = stbsp_snprintf(buf, scratch_memory_size,
+                                                       "static %s number_of_elements_in_enum_%.*s = %d;",
+                                                       type,
+                                                       ed->name.len, ed->name.e,
+                                                       ed->no_of_values);
                     assert(bytes_written < scratch_memory_size);
 
                     write_to_output_buffer(&ob, buf);
@@ -1066,23 +1094,23 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                     Int index = 0;
                     for(int j = 0; (j < ed->no_of_values); ++j) {
-                        index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
-                                            "        case %d: { return(\"%.*s\"); } break;\n",
-                                            ed->values[j].value,
-                                            ed->values[j].name.len, ed->values[j].name.e);
+                        index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
+                                                "        case %d: { return(\"%.*s\"); } break;\n",
+                                                ed->values[j].value,
+                                                ed->values[j].name.len, ed->values[j].name.e);
                     }
 
-                    Int bytes_written = my_sprintf(buf2, half_scratch_memory_size,
-                                                   "\nstatic char const *enum_to_string_%.*s(%s v) {\n"
-                                                   "    switch(v) {\n"
-                                                   "%s"
-                                                   "    }\n"
-                                                   "\n"
-                                                   "    return(0); // v is out of bounds.\n"
-                                                   "}\n",
-                                                   ed->name.len, ed->name.e,
-                                                   type,
-                                                   buf1);
+                    Int bytes_written = stbsp_snprintf(buf2, half_scratch_memory_size,
+                                                       "\nstatic char const *enum_to_string_%.*s(%s v) {\n"
+                                                       "    switch(v) {\n"
+                                                       "%s"
+                                                       "    }\n"
+                                                       "\n"
+                                                       "    return(0); // v is out of bounds.\n"
+                                                       "}\n",
+                                                       ed->name.len, ed->name.e,
+                                                       type,
+                                                       buf1);
                     assert(bytes_written < half_scratch_memory_size);
 
                     write_to_output_buffer(&ob, buf2);
@@ -1096,28 +1124,28 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                     Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
 
                     Int index = 0;
-                    index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
-                                        "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                        ed->values[0].name.len, ed->values[0].name.e,
-                                        ed->values[0].value);
+                    index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
+                                            "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                            ed->values[0].name.len, ed->values[0].name.e,
+                                            ed->values[0].value);
                     for(int j = 1; (j < ed->no_of_values); ++j) {
-                        index += my_sprintf(buf1 + index, half_scratch_memory_size - index,
-                                            "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
-                                            ed->values[j].name.len, ed->values[j].name.e,
-                                            ed->values[j].value);
+                        index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
+                                                "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                                ed->values[j].name.len, ed->values[j].name.e,
+                                                ed->values[j].value);
                     }
                     assert(index < half_scratch_memory_size);
 
-                    Int bytes_written = my_sprintf(buf2, half_scratch_memory_size,
-                                                   "static %s string_to_enum_%.*s(char const *str) {\n"
-                                                   "    if(str) {\n"
-                                                   "%s"
-                                                   "    }\n"
-                                                   "\n"
-                                                   "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
-                                                   "}\n",
-                                                   type,
-                                                   ed->name.len, ed->name.e, buf1);
+                    Int bytes_written = stbsp_snprintf(buf2, half_scratch_memory_size,
+                                                       "static %s string_to_enum_%.*s(char const *str) {\n"
+                                                       "    if(str) {\n"
+                                                       "%s"
+                                                       "    }\n"
+                                                       "\n"
+                                                       "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
+                                                       "}\n",
+                                                       type,
+                                                       ed->name.len, ed->name.e, buf1);
                     assert(bytes_written < half_scratch_memory_size);
 
 

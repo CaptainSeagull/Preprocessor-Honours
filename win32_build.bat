@@ -22,7 +22,7 @@ set DEBUG_COMMON_COMPILER_FLAGS=-nologo -MTd -Gm- -GR- -EHsc- -Od -Oi %COMMON_WA
 set RELEASE_COMMON_COMPILER_FLAGS=-nologo -MT -fp:fast -Gm- -GR- -EHa- -O2 -Oi %COMMON_WARNINGS% -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 -DWIN32=1 -DLINUX=0 -FC -Zi -GS- -Gs9999999
 
 rem Build prepreprocessor.
-set FILES="../preprocessor/main.cpp" "../preprocessor/utils.cpp" "../preprocessor/lexer.cpp" "../preprocessor/platform_win32.cpp"
+set FILES="../preprocessor/main.cpp" "../preprocessor/utils.cpp" "../preprocessor/lexer.cpp" "../preprocessor/platform_win32.cpp" "../preprocessor/write_file.cpp"
 pushd "build"
 if "%RELEASE%"=="true" (
     cl -FePreprocessor %RELEASE_COMMON_COMPILER_FLAGS% -Wall %FILES% -link -subsystem:console,5.2 kernel32.lib
