@@ -386,9 +386,12 @@ Char to_caps(Char c);
 //
 // memset and memcpy
 //
-//extern "C" void *memcpy(void *Dest, void const *Source, PtrSize Size);
-//extern "C" void *memset(void *Dest, int Value, PtrSize NumBytesToSet);
-extern "C" void   *__cdecl memcpy(_Out_writes_bytes_all_(_Size) void *_Dst, _In_reads_bytes_(_Size) const void *_Src, _In_ size_t _Size);
-extern "C" void   *__cdecl memset(_Out_writes_bytes_all_(_Size) void *_Dst, _In_ int _Val, _In_ size_t _Size);
+#if OS_WIN32
+    extern "C" void   *__cdecl memcpy(_Out_writes_bytes_all_(_Size) void *_Dst, _In_reads_bytes_(_Size) const void *_Src, _In_ size_t _Size);
+    extern "C" void   *__cdecl memset(_Out_writes_bytes_all_(_Size) void *_Dst, _In_ int _Val, _In_ size_t _Size);
+#else
+    extern "C" void *memcpy(void *Dest, void const *Source, PtrSize Size);
+    extern "C" void *memset(void *Dest, int Value, PtrSize NumBytesToSet);
+#endif
 
 #endif

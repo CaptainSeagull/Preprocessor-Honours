@@ -180,10 +180,18 @@ void test_vector(void) {
         vt.floating.push_back(i);
     }
 
-    vt.vector2.push_back({1, 4});
-    vt.vector2.push_back({2, 3});
-    vt.vector2.push_back({3, 2});
-    vt.vector2.push_back({4, 1});
+    {
+        V2 temp;
+
+        temp.x = 1; temp.y = 4;
+        vt.vector2.push_back(temp);
+        temp.x = 2; temp.y = 3;
+        vt.vector2.push_back(temp);
+        temp.x = 3; temp.y = 2;
+        vt.vector2.push_back(temp);
+        temp.x = 4; temp.y = 1;
+        vt.vector2.push_back(temp);
+    }
 
     pp::print(vt);
 
@@ -193,8 +201,6 @@ int main(int /*argc*/, char ** /*argv*/) {
     //test_struct();
     //test_enum();
     test_vector();
-
-    char const *str = pp::type_to_string(Bar **);
 
     printf("\n");
     return(0);

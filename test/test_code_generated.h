@@ -321,9 +321,9 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         case MetaType_std_vector_float: {
                             std::vector<float> temp = *(std::vector<float> *)member_ptr;
                             size_t size = temp.size();
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, size);
+                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, (int)size);
                             for(size_t i = 0; (i < size); ++i) {
-                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", i);
+                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", (int)i);
                                 bytes_written = serialize_struct_((void *)&temp[i], member->name, "float", indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break;
@@ -331,9 +331,9 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         case MetaType_std_vector_int: {
                             std::vector<int> temp = *(std::vector<int> *)member_ptr;
                             size_t size = temp.size();
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, size);
+                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, (int)size);
                             for(size_t i = 0; (i < size); ++i) {
-                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", i);
+                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", (int)i);
                                 bytes_written = serialize_struct_((void *)&temp[i], member->name, "int", indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break;
@@ -341,9 +341,9 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         case MetaType_std_vector_V2: {
                             std::vector<V2> temp = *(std::vector<V2> *)member_ptr;
                             size_t size = temp.size();
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, size);
+                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, (int)size);
                             for(size_t i = 0; (i < size); ++i) {
-                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", i);
+                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", (int)i);
                                 bytes_written = serialize_struct_((void *)&temp[i], member->name, "V2", indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break;
