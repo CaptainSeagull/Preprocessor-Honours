@@ -12,7 +12,7 @@ struct Foo;
 struct X;
 struct Y;
 struct Transform;
-struct TEST;
+struct VectorTest;
 
 #include "static_generated.h"
 
@@ -38,8 +38,9 @@ enum MetaType {
     MetaType_X,
     MetaType_Y,
     MetaType_Transform,
-    MetaType_TEST,
+    MetaType_VectorTest,
     MetaType_std_vector_int,
+    MetaType_std_vector_V2,
 };
 
 // Function to serialize a struct to a char array buffer.
@@ -308,19 +309,21 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                             }
                         } break; // case MetaType_Transform
 
-                        case MetaType_TEST: {
-                            // TEST
+                        case MetaType_VectorTest: {
+                            // VectorTest
                             if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "TEST *", indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_(member_ptr, member->name, "VectorTest *", indent, buffer, buf_size - bytes_written, bytes_written);
                             } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "TEST", indent, buffer, buf_size - bytes_written, bytes_written);
+                                bytes_written = serialize_struct_(member_ptr, member->name, "VectorTest", indent, buffer, buf_size - bytes_written, bytes_written);
                             }
-                        } break; // case MetaType_TEST
+                        } break; // case MetaType_VectorTest
 
                         case MetaType_std_vector_float: {
                             std::vector<float> temp = *(std::vector<float> *)member_ptr;
                             size_t size = temp.size();
+                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, size);
                             for(size_t i = 0; (i < size); ++i) {
+                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", i);
                                 bytes_written = serialize_struct_((void *)&temp[i], member->name, "float", indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break;
@@ -328,8 +331,20 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         case MetaType_std_vector_int: {
                             std::vector<int> temp = *(std::vector<int> *)member_ptr;
                             size_t size = temp.size();
+                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, size);
                             for(size_t i = 0; (i < size); ++i) {
+                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", i);
                                 bytes_written = serialize_struct_((void *)&temp[i], member->name, "int", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break;
+
+                        case MetaType_std_vector_V2: {
+                            std::vector<V2> temp = *(std::vector<V2> *)member_ptr;
+                            size_t size = temp.size();
+                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s Size = %d", member->name, size);
+                            for(size_t i = 0; (i < size); ++i) {
+                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n[%d]", i);
+                                bytes_written = serialize_struct_((void *)&temp[i], member->name, "V2", indent, buffer, buf_size - bytes_written, bytes_written);
                             }
                         } break;
 
@@ -352,7 +367,7 @@ struct _Foo : public _Bar, public _thingy, public _A, public _B, public _C {  _c
 struct _X : public _Foo {  _int i;  };
 struct _Y : public _X {  };
 struct _Transform {  _V2 pos;  _V2 size;  };
-struct _TEST {  _std::vector<int> i;  };
+struct _VectorTest {  _std::vector<int> integer;  _std::vector<float> floating;  _std::vector<V2> vector2;  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
@@ -464,12 +479,14 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         };
         return(members_of_Transform);
 
-    // TEST
-    } else if(type_compare(T, TEST)) {
-        static MemberDefinition members_of_TEST[] = {
-            {MetaType_std_vector_int, "i", offset_of(&_TEST::i), false, 1},
+    // VectorTest
+    } else if(type_compare(T, VectorTest)) {
+        static MemberDefinition members_of_VectorTest[] = {
+            {MetaType_std_vector_int, "integer", offset_of(&_VectorTest::integer), false, 1},
+            {MetaType_std_vector_float, "floating", offset_of(&_VectorTest::floating), false, 1},
+            {MetaType_std_vector_V2, "vector2", offset_of(&_VectorTest::vector2), false, 1},
         };
-        return(members_of_TEST);
+        return(members_of_VectorTest);
     }
 
     return(0); // Error.
@@ -487,7 +504,7 @@ template<typename T> static int get_number_of_members_(void) {
     else if(type_compare(T, X)) { return(8); } // X
     else if(type_compare(T, Y)) { return(1); } // Y
     else if(type_compare(T, Transform)) { return(2); } // Transform
-    else if(type_compare(T, TEST)) { return(1); } // TEST
+    else if(type_compare(T, VectorTest)) { return(3); } // VectorTest
 
     return(-1); // Error.
 }
@@ -652,12 +669,14 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_Transform);
 
-    // TEST
-    } else if((strcmp(str, "TEST") == 0) || (strcmp(str, "TEST *") == 0) || (strcmp(str, "TEST **") == 0)) {
-        static MemberDefinition members_of_TEST[] = {
-            {MetaType_std_vector_int, "i", offset_of(&_TEST::i), false, 1},
+    // VectorTest
+    } else if((strcmp(str, "VectorTest") == 0) || (strcmp(str, "VectorTest *") == 0) || (strcmp(str, "VectorTest **") == 0)) {
+        static MemberDefinition members_of_VectorTest[] = {
+            {MetaType_std_vector_int, "integer", offset_of(&_VectorTest::integer), false, 1},
+            {MetaType_std_vector_float, "floating", offset_of(&_VectorTest::floating), false, 1},
+            {MetaType_std_vector_V2, "vector2", offset_of(&_VectorTest::vector2), false, 1},
         };
-        return(members_of_TEST);
+        return(members_of_VectorTest);
     }
 
     return(0); // Error.
@@ -682,7 +701,7 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "X") == 0) { return(8); } // X
     else if(strcmp(str, "Y") == 0) { return(1); } // Y
     else if(strcmp(str, "Transform") == 0) { return(2); } // Transform
-    else if(strcmp(str, "TEST") == 0) { return(1); } // TEST
+    else if(strcmp(str, "VectorTest") == 0) { return(3); } // VectorTest
 
     return(-1); // Error.
 }
@@ -743,9 +762,9 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, Transform)) { return("Transform"); }
     else if(type_compare(T, Transform *)) { return("Transform *"); }
     else if(type_compare(T, Transform **)) { return("Transform **"); }
-    else if(type_compare(T, TEST)) { return("TEST"); }
-    else if(type_compare(T, TEST *)) { return("TEST *"); }
-    else if(type_compare(T, TEST **)) { return("TEST **"); }
+    else if(type_compare(T, VectorTest)) { return("VectorTest"); }
+    else if(type_compare(T, VectorTest *)) { return("VectorTest *"); }
+    else if(type_compare(T, VectorTest **)) { return("VectorTest **"); }
 
     else { return(0); } // Unknown Type.
 }
@@ -806,9 +825,9 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, Transform)) { return("Transform"); }
     else if(type_compare(T, Transform *)) { return("Transform"); }
     else if(type_compare(T, Transform **)) { return("Transform"); }
-    else if(type_compare(T, TEST)) { return("TEST"); }
-    else if(type_compare(T, TEST *)) { return("TEST"); }
-    else if(type_compare(T, TEST **)) { return("TEST"); }
+    else if(type_compare(T, VectorTest)) { return("VectorTest"); }
+    else if(type_compare(T, VectorTest *)) { return("VectorTest"); }
+    else if(type_compare(T, VectorTest **)) { return("VectorTest"); }
 
     else { return(0); } // Unknown Type.
 }

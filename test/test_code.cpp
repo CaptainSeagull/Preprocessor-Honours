@@ -37,9 +37,15 @@ struct Bar {
     V2 v2;
 };
 
-struct A { float m; };
-struct B { float n; };
-struct C { float o; };
+struct A {
+    float m;
+};
+struct B {
+    float n;
+};
+struct C {
+    float o;
+};
 
 struct Foo : public Bar, public thingy, public A, public B, public C {
     char const *str;
@@ -59,7 +65,10 @@ struct Y: public X {
 
 };
 
-struct Transform {V2 pos; V2 size;};
+struct Transform {
+    V2 pos;
+    V2 size;
+};
 void test_struct(void) {
     // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
     //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
@@ -154,25 +163,39 @@ void test_enum(void) {
     }
 }
 
-struct TEST {
-    std::vector<int> i;
+struct VectorTest {
+    std::vector<int> integer;
+    std::vector<float> floating;
+    std::vector<V2> vector2;
 };
 
+void test_vector(void) {
+    VectorTest vt;
+
+    for(int i = 0; (i < 10); ++i) {
+        vt.integer.push_back(i);
+    }
+
+    for(float i = 0; (i < 10.0f); i += 0.5f) {
+        vt.floating.push_back(i);
+    }
+
+    vt.vector2.push_back({1, 4});
+    vt.vector2.push_back({2, 3});
+    vt.vector2.push_back({3, 2});
+    vt.vector2.push_back({4, 1});
+
+    pp::print(vt);
+
+}
+
 int main(int /*argc*/, char ** /*argv*/) {
-    printf("\n");
-
-    TEST t = {};
-    pp::print(t);
-
     //test_struct();
     //test_enum();
-
-    //bool a = pp::type_compare(int, int);
-    //bool b = pp::type_compare(int, float);
+    test_vector();
 
     char const *str = pp::type_to_string(Bar **);
 
     printf("\n");
-
     return(0);
 }

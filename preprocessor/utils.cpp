@@ -425,6 +425,7 @@ Char to_caps(Char c) {
 //
 // memset and memcpy.
 //
+#if 0
 #if COMPILER_MSVC
     #pragma function(memcpy)
 #endif
@@ -459,3 +460,4 @@ memset(void *dest, int v, PtrSize n) {
 
     return(dest);
 }
+#endif
