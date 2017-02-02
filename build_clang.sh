@@ -44,8 +44,8 @@ fi
 # Breakout.
 if [ "$BUILD_BREAKOUT" = "true" ]; then
     echo "Building Breakout."
-    pushd "test"
-    "../build/preprocessor" test_code.cpp
+    pushd "breakout"
+    "../build/preprocessor" breakout.cpp
     popd
 
     clang++-3.8 -Wall -Wextra "breakout/breakout.cpp" -std=c++11 -o breakout_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl -lSDL2
