@@ -1,10 +1,10 @@
 #!/bin/bash
 
+CLANG_VERSION=3.8
 RELEASE=false
 GTEST=false
 BUILD_TEST_CODE=true
 BUILD_BREAKOUT=true
-CLANG_VERSION=3.8
 
 # Preprocessor
 WARNINGS="-Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-parameter -Wno-writable-strings -Wno-unknown-escape-sequence"
