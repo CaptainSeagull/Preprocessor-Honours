@@ -15,10 +15,6 @@
 //
 // struct test.
 //
-struct thingy {
-    int x;
-    int y;
-};
 
 union V2 {
     int e[2];
@@ -26,61 +22,66 @@ union V2 {
         int x; int y;
     };
 };
-struct Bar {
-    short s;
-    int i;
-    float f;
-    double d;
-    V2 v2;
+
+struct A {
+    int a;
 };
 
-#define NUMBER_FIVE 5
+struct B {
+    double b;
+};
+
 #define NUMBER_FOUR 4
-struct Foo : public Bar, public thingy {
+#define NUMBER_FIVE 5
+struct Foo : public A, public B {
     char const *str;
     int *int_ptr;
     float *float_ptr;
     bool *bool_ptr;
-    double *double_ptr_array[NUMBER_FIVE];
     int int_array[NUMBER_FOUR];
-    std::vector<int> vec_int;
+    double *double_ptr_array[NUMBER_FIVE];
+    int *int_ptr_array[6];
+    V2 v2;
 };
 
-struct Transform {
-    V2 pos;
-    V2 size;
-};
 void test_struct(void) {
     Foo foo;
     memset(&foo, 0, sizeof(foo));
 
     foo.str = "Hello World";
+
     foo.int_ptr = new int; *foo.int_ptr = 10;
+
     foo.float_ptr = new float; *foo.float_ptr = 10.5f;
+
     foo.bool_ptr = new bool; *foo.bool_ptr = true;
+
+    foo.int_array[0] = 10;
+    foo.int_array[1] = 9;
+    foo.int_array[2] = 8;
+    foo.int_array[3] = 7;
+
     foo.double_ptr_array[0] = new double; *foo.double_ptr_array[0] = 1.1;
     foo.double_ptr_array[1] = new double; *foo.double_ptr_array[1] = 2.2;
     foo.double_ptr_array[2] = new double; *foo.double_ptr_array[2] = 3.3;
     foo.double_ptr_array[3] = NULL;
     foo.double_ptr_array[4] = new double; *foo.double_ptr_array[4] = 5.5;
 
-    foo.int_array[0] = 11;
-    foo.int_array[1] = 22;
-    foo.int_array[2] = 33;
-    foo.int_array[3] = 44;
+    foo.int_ptr_array[0] = new int; *foo.int_ptr_array[0] = 3;
+    foo.int_ptr_array[1] = new int; *foo.int_ptr_array[1] = 2;
+    foo.int_ptr_array[2] = new int; *foo.int_ptr_array[2] = 1;
+    foo.int_ptr_array[3] = new int; *foo.int_ptr_array[3] = 0;
+    foo.int_ptr_array[4] = NULL;
+    foo.int_ptr_array[5] = new int; *foo.int_ptr_array[5] = -2;
 
-    foo.s = 10;
+    foo.v2.x = 10;
+    foo.v2.y = 20;
 
-    foo.i = 3;
-    foo.f = 3.14f;
-    foo.d = 3.1415;
-    foo.v2.x = 0;
-    foo.v2.y = 1;
-    foo.x = 101;
+    // From struct A.
+    foo.a = 1;
 
-    foo.vec_int.push_back(1);
-    foo.vec_int.push_back(2);
-    foo.vec_int.push_back(3);
+    // From struct B.
+    foo.b = 3.1415f;
 
     pp::print(foo);
 }
@@ -88,7 +89,6 @@ void test_struct(void) {
 //
 // enum test.
 //
-
 enum Letters {
     letter_a,
     letter_b,
@@ -113,7 +113,10 @@ void test_enum(void) {
         int b = pp::string_to_enum(Letters, "letter_b");
         int c = pp::string_to_enum(Letters, "letter_c");
 
-        printf("\na = %d\nb = %d\nc = %d\n", a, b, c);
+        // TODO(Jonny): No test to see if the string is _actually_ an enum or not. So should return 0 for now...
+        int d = pp::string_to_enum(Letters, "letter_d");
+
+        printf("\na = %d\nb = %d\nc = %d\nd = %d", a, b, c, d);
     }
 }
 
@@ -124,6 +127,12 @@ struct V3 {
     int x;
     int y;
     int z;
+
+    V3(int x, int y, int z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
 };
 
 struct VectorTest {
@@ -145,25 +154,18 @@ void test_vector(void) {
         vt.floating.push_back(i);
     }
 
-    {
-        V3 temp;
-
-        temp.x = 1; temp.y = 2; temp.z = 3;
-        vt.vector3.push_back(temp);
-        temp.x = 3; temp.y = 2; temp.z = 1;
-        vt.vector3.push_back(temp);
-        temp.x = 10; temp.y = 11; temp.z = 12;
-        vt.vector3.push_back(temp);
-    }
+    vt.vector3.push_back({1, 2, 3});
+    vt.vector3.push_back({3, 2, 1});
+    vt.vector3.push_back({2, 3, 1});
 
     pp::print(vt);
 
 }
 
 int main(int /*argc*/, char ** /*argv*/) {
-    ///test_struct();
-    //test_enum();
-    test_vector();
+    //test_struct();
+    test_enum();
+    //test_vector();
 
     printf("\n");
     return(0);
