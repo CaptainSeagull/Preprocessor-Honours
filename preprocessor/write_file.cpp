@@ -466,9 +466,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                     "                        case MetaType_std_vector_%.*s: {\n"
                                                     "                            std::vector<%.*s> temp = *(std::vector<%.*s> *)member_ptr;\n"
                                                     "                            size_t size = temp.size();\n"
-                                                    "                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%s Size = %s\", member->name, (int)size);\n"
+                                                    "                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%sstd::vector<%.*s> %s\", indent_buf, member->name);\n"
+                                                    "                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%sSize = %s\", indent_buf, (int)size);\n"
                                                     "                            for(size_t i = 0; (i < size); ++i) {\n"
-                                                    "                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n[%s]\", (int)i);\n"
+                                                    "                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%s[%s]\", indent_buf, (int)i);\n"
                                                     "                                bytes_written = serialize_struct_((void *)&temp[i], member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
                                                     "                            }\n"
                                                     "                        } break;\n"
@@ -477,7 +478,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                     std_res.stored_type.len, std_res.stored_type.e,
                                                     std_res.stored_type.len, std_res.stored_type.e,
                                                     "%%s",
+                                                    std_res.stored_type.len, std_res.stored_type.e,
+                                                    "%%s",
+                                                    "%%s",
                                                     "%%d",
+                                                    "%%s",
                                                     "%%d",
                                                     std_res.stored_type.len, std_res.stored_type.e);
                         } break;

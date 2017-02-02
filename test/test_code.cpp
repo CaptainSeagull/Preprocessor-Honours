@@ -12,9 +12,6 @@
 // File: test_code.cpp
 #include "test_code_generated.h"
 
-#define NUMBER_TEN 10
-#define NUMBER_FIVE 5
-
 //
 // struct test.
 //
@@ -37,32 +34,16 @@ struct Bar {
     V2 v2;
 };
 
-struct A {
-    float m;
-};
-struct B {
-    float n;
-};
-struct C {
-    float o;
-};
-
-struct Foo : public Bar, public thingy, public A, public B, public C {
+#define NUMBER_FIVE 5
+#define NUMBER_FOUR 4
+struct Foo : public Bar, public thingy {
     char const *str;
-    int *ip;
-    float *fp;
-    bool *b;
-    double *p_array[NUMBER_TEN];
-    int i_array[NUMBER_FIVE];
-    std::vector<float> vec_int;
-};
-
-struct X : public Foo {
-    int i;
-};
-
-struct Y: public X {
-
+    int *int_ptr;
+    float *float_ptr;
+    bool *bool_ptr;
+    double *double_ptr_array[NUMBER_FIVE];
+    int int_array[NUMBER_FOUR];
+    std::vector<int> vec_int;
 };
 
 struct Transform {
@@ -70,26 +51,23 @@ struct Transform {
     V2 size;
 };
 void test_struct(void) {
-    // TODO(Jonny): If structs aren't initialzied to zero, then pointers often to point to invalid memory
-    //              which causes a crash. Could I somehow use this, parhaps with exception handles, to test if a
-    //              struct has been initialized??
     Foo foo;
     memset(&foo, 0, sizeof(foo));
 
-    foo.str = "Hello World"; // TODO(Jonny): Why does this fail?
-    foo.ip = new int; *foo.ip = 10;
-    foo.fp = new float; *foo.fp = 10.5f;
-    foo.b = new bool; *foo.b = true;
-    foo.p_array[0] = new double; *foo.p_array[0] = 1.1;
-    foo.p_array[1] = new double; *foo.p_array[1] = 2.2;
-    foo.p_array[2] = new double; *foo.p_array[2] = 3.3;
-    foo.p_array[3] = new double; *foo.p_array[3] = 4.4;
+    foo.str = "Hello World";
+    foo.int_ptr = new int; *foo.int_ptr = 10;
+    foo.float_ptr = new float; *foo.float_ptr = 10.5f;
+    foo.bool_ptr = new bool; *foo.bool_ptr = true;
+    foo.double_ptr_array[0] = new double; *foo.double_ptr_array[0] = 1.1;
+    foo.double_ptr_array[1] = new double; *foo.double_ptr_array[1] = 2.2;
+    foo.double_ptr_array[2] = new double; *foo.double_ptr_array[2] = 3.3;
+    foo.double_ptr_array[3] = NULL;
+    foo.double_ptr_array[4] = new double; *foo.double_ptr_array[4] = 5.5;
 
-    foo.i_array[0] = 11;
-    foo.i_array[1] = 22;
-    foo.i_array[2] = 33;
-    foo.i_array[3] = 44;
-    foo.i_array[4] = 55;
+    foo.int_array[0] = 11;
+    foo.int_array[1] = 22;
+    foo.int_array[2] = 33;
+    foo.int_array[3] = 44;
 
     foo.s = 10;
 
@@ -100,35 +78,11 @@ void test_struct(void) {
     foo.v2.y = 1;
     foo.x = 101;
 
+    foo.vec_int.push_back(1);
+    foo.vec_int.push_back(2);
+    foo.vec_int.push_back(3);
+
     pp::print(foo);
-
-    char *buf = new char[256 * 256];
-    //pp::print(foo, buf, 256 * 256);
-    delete[] buf;
-
-
-    for(int i = 0; (i < pp::get_base_type_count(Foo)); ++i) {
-        char const *str = pp::get_base_type_as_string_index(Foo, i);
-
-        int j = 0;
-    }
-
-    bool a = pp::fuzzy_type_compare(X, Foo);
-    bool b = pp::fuzzy_type_compare(Foo, X);
-    bool c = pp::fuzzy_type_compare(A, B);
-
-    {
-        char const *a = pp::type_to_string(Foo);
-        char const *b = pp::type_to_string(Foo *);
-        char const *c = pp::weak_type_to_string(Foo);
-        char const *d = pp::weak_type_to_string(Foo *);
-
-        bool one = pp::type_compare(Foo, Foo *);
-        bool two = pp::weak_type_compare(Foo, Foo *);
-
-        int i = 0;
-    }
-
 }
 
 //
@@ -149,9 +103,9 @@ void test_enum(void) {
         char const *a = pp::enum_to_string(Letters, letter_a);
         char const *b = pp::enum_to_string(Letters, letter_b);
         char const *c = pp::enum_to_string(Letters, letter_c);
-        char const *d = pp::enum_to_string(Letters, 7);
+        char const *d = pp::enum_to_string(Letters, 7); // Should be null, because it's out of range.
 
-        printf("a = %s\nb = %s\nc = %s\nd = %s\n", a, b, c, d);
+        printf("\na = %s\nb = %s\nc = %s\nd = %s\n", a, b, c, d);
     }
 
     {
@@ -159,38 +113,47 @@ void test_enum(void) {
         int b = pp::string_to_enum(Letters, "letter_b");
         int c = pp::string_to_enum(Letters, "letter_c");
 
-        printf("a = %d\nb = %d\nc = %d\n", a, b, c);
+        printf("\na = %d\nb = %d\nc = %d\n", a, b, c);
     }
 }
+
+//
+// std::vector test.
+//
+struct V3 {
+    int x;
+    int y;
+    int z;
+};
 
 struct VectorTest {
     std::vector<int> integer;
     std::vector<float> floating;
-    std::vector<V2> vector2;
+    std::vector<V3> vector3;
 };
 
 void test_vector(void) {
     VectorTest vt;
 
-    for(int i = 0; (i < 10); ++i) {
+    // TODO(Jonny): There's an issue with outputting the name of primitives for vectors. I think it's because
+    //              primitives don't have any members, and the preprocessor's getting a little confused.
+    for(int i = 0; (i < 5); ++i) {
         vt.integer.push_back(i);
     }
 
-    for(float i = 0; (i < 10.0f); i += 0.5f) {
+    for(float i = 0; (i < 4.0f); i += 0.5f) {
         vt.floating.push_back(i);
     }
 
     {
-        V2 temp;
+        V3 temp;
 
-        temp.x = 1; temp.y = 4;
-        vt.vector2.push_back(temp);
-        temp.x = 2; temp.y = 3;
-        vt.vector2.push_back(temp);
-        temp.x = 3; temp.y = 2;
-        vt.vector2.push_back(temp);
-        temp.x = 4; temp.y = 1;
-        vt.vector2.push_back(temp);
+        temp.x = 1; temp.y = 2; temp.z = 3;
+        vt.vector3.push_back(temp);
+        temp.x = 3; temp.y = 2; temp.z = 1;
+        vt.vector3.push_back(temp);
+        temp.x = 10; temp.y = 11; temp.z = 12;
+        vt.vector3.push_back(temp);
     }
 
     pp::print(vt);
@@ -198,7 +161,7 @@ void test_vector(void) {
 }
 
 int main(int /*argc*/, char ** /*argv*/) {
-    //test_struct();
+    ///test_struct();
     //test_enum();
     test_vector();
 
