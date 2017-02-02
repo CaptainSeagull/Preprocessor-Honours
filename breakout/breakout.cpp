@@ -8,23 +8,12 @@ int global_window_width = 640;
 int global_window_height = 480;
 
 struct V2 {
-    int x;
-    int y;
-};
-
-struct V2f {
     float x;
     float y;
 };
 
-V2 v2(int x, int y) {
+V2 v2(float x, float y) {
     V2 res = {x, y};
-
-    return(res);
-}
-
-V2f v2f(float x, float y) {
-    V2f res = {x, y};
 
     return(res);
 }
@@ -35,9 +24,8 @@ struct Transform {
 };
 
 struct Ball {
-    V2f pos;
-    V2f speed;
-    int radius;
+    Transform trans;
+    V2 speed;
 };
 
 struct Paddle {
@@ -62,10 +50,10 @@ void draw_paddle(Paddle p, SDL_Surface *surface) {
 
 void draw_ball(Ball b, SDL_Surface *surface) {
     SDL_Rect rect = {};
-    rect.x = (int)b.pos.x;
-    rect.y = (int)b.pos.y;
-    rect.w = b.radius;
-    rect.h = b.radius;
+    rect.x = b.trans.pos.x;
+    rect.y = b.trans.pos.y;
+    rect.w = b.trans.size.x;
+    rect.h = b.trans.size.y;
 
     SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 255, 255, 255));
 }
@@ -83,8 +71,8 @@ bool paddle_clicked(int x, int y, Paddle p) {
 
 bool ball_clicked(int x, int y, Ball b) {
     bool res = false;
-    if((b.pos.x < x) && (b.pos.x + b.radius > x)) {
-        if ((b.pos.y < y) && (b.pos.y + b.radius > y)) {
+    if((b.trans.pos.x < x) && (b.trans.pos.x + b.trans.size.x > x)) {
+        if ((b.trans.pos.y < y) && (b.trans.pos.y + b.trans.size.y > y)) {
             res = true;
         }
     }
@@ -95,9 +83,9 @@ bool ball_clicked(int x, int y, Ball b) {
 Ball create_ball(void) {
     Ball res = {};
 
-    res.radius = 40;
-    res.speed = v2f(0.25f, 0.25f);
-    res.pos = v2f((float)(global_window_width / 2), (float)(global_window_height / 2));
+    res.speed = v2(0.1f, 0.1f);
+    res.trans.pos = v2((float)(global_window_width / 2), (float)(global_window_height / 2));
+    res.trans.size = {20, 20};
 
     return(res);
 }
@@ -105,8 +93,17 @@ Ball create_ball(void) {
 bool ball_paddle_collision(Ball b, Paddle p) {
     bool res = false;
 
+    if(b.trans.pos.x + b.trans.size.x > p.trans.pos.x) {
+        if(p.trans.pos.x + p.trans.size.x > b.trans.pos.x) {
+            if(b.trans.pos.y + b.trans.size.y > p.trans.pos.y) {
+                if(p.trans.pos.y + p.trans.size.y > b.trans.pos.y) {
+                    res = true;
+                }
+            }
+        }
+    }
 
-    { return(res); }
+    return(res);
 }
 
 int
@@ -137,6 +134,7 @@ main(int argc, char **argv) {
                     memset(buf, 0, buf_size);
 
                     bool controls_right = false, controls_left = false;
+                    bool pause = false;
                     while(running) {
                         bool clicked = false;
                         bool display_game_state = false;
@@ -159,6 +157,8 @@ main(int argc, char **argv) {
                                     switch(event.key.keysym.sym) {
                                         case SDLK_LEFT:  { controls_right = false; } break;
                                         case SDLK_RIGHT: { controls_left  = false; } break;
+
+                                        case SDLK_SPACE: { pause = !pause; } break;
                                     }
                                 } break;
 
@@ -174,33 +174,42 @@ main(int argc, char **argv) {
                         // Updating
                         //
 
-                        // Paddle.
-                        {
-                            Paddle *paddle = &game_state.paddle;
+                        if(!pause) {
+                            // Paddle.
+                            {
+                                Paddle *paddle = &game_state.paddle;
 
-                            int movement_speed = 1;
-                            if(controls_right) { paddle->trans.pos.x -= movement_speed; }
-                            if(controls_left)  { paddle->trans.pos.x += movement_speed; }
-                        }
-
-                        // Ball.
-                        {
-                            Ball *ball = &game_state.ball;
-
-                            V2f fake_ball_pos = ball->pos;
-                            fake_ball_pos.x += ball->speed.x;
-                            fake_ball_pos.y += ball->speed.y;
-
-                            if((fake_ball_pos.x < 0) || (fake_ball_pos.x > global_window_width))  {
-                                ball->speed.x *= -1;
-                                fake_ball_pos.x = ball->pos.x;
-                            }
-                            if((fake_ball_pos.y < 0) || (fake_ball_pos.y > global_window_height)) {
-                                ball->speed.y *= -1;
-                                fake_ball_pos.y = ball->pos.y;
+                                float movement_speed = 0.5f;
+                                if(controls_right) { paddle->trans.pos.x -= movement_speed; }
+                                if(controls_left)  { paddle->trans.pos.x += movement_speed; }
                             }
 
-                            ball->pos = fake_ball_pos;
+                            // Ball.
+                            {
+                                Ball *ball = &game_state.ball;
+
+                                V2 fake_ball_pos = ball->trans.pos;
+                                fake_ball_pos.x += ball->speed.x;
+                                fake_ball_pos.y += ball->speed.y;
+
+                                if((fake_ball_pos.x < 0) || (fake_ball_pos.x > global_window_width))  {
+                                    ball->speed.x *= -1;
+                                    fake_ball_pos.x = ball->trans.pos.x;
+                                }
+                                if((fake_ball_pos.y < 0) || (fake_ball_pos.y > global_window_height)) {
+                                    ball->speed.y *= -1;
+                                    fake_ball_pos.y = ball->trans.pos.y;
+                                }
+
+                                if(ball_paddle_collision(*ball, game_state.paddle)) {
+                                    if(ball->speed.y > 0) {
+                                        fake_ball_pos = ball->trans.pos;
+                                        ball->speed.y *= -1.0f;
+                                    }
+                                }
+
+                                ball->trans.pos = fake_ball_pos;
+                            }
                         }
 
 
