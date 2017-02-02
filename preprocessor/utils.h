@@ -10,10 +10,10 @@
   ===================================================================================================*/
 
 #if !defined(_UTILS_H)
-#define _UTILS_H
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "stb_sprintf.h"
 
@@ -386,12 +386,18 @@ Char to_caps(Char c);
 //
 // memset and memcpy
 //
-#if OS_WIN32
-    extern "C" void   *__cdecl memcpy(_Out_writes_bytes_all_(_Size) void *_Dst, _In_reads_bytes_(_Size) const void *_Src, _In_ size_t _Size);
-    extern "C" void   *__cdecl memset(_Out_writes_bytes_all_(_Size) void *_Dst, _In_ int _Val, _In_ size_t _Size);
-#else
-    extern "C" void *memcpy(void *Dest, void const *Source, PtrSize Size);
-    extern "C" void *memset(void *Dest, int Value, PtrSize NumBytesToSet);
+#if 0
+    #if !RUN_TESTS
+        #if OS_WIN32
+            extern "C" void   *__cdecl memcpy(_Out_writes_bytes_all_(_Size) void *_Dst, _In_reads_bytes_(_Size) const void *_Src, _In_ size_t _Size);
+            extern "C" void   *__cdecl memset(_Out_writes_bytes_all_(_Size) void *_Dst, _In_ int _Val, _In_ size_t _Size);
+        #else
+            extern "C" void *memcpy(void *Dest, void const *Source, PtrSize Size);
+            extern "C" void *memset(void *Dest, int Value, PtrSize NumBytesToSet);
+        #endif
+
+    #endif
 #endif
 
+#define _UTILS_H
 #endif

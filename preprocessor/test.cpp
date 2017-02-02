@@ -106,7 +106,7 @@ TEST(StructTest, inhertiance_struct_test) {
     hardcoded.members = cast(Variable *)malloc(sizeof(Variable));
     *hardcoded.members = create_variable("int", "c");
     hardcoded.inherited_count = 2;
-    hardcoded.inherited = alloc_arr(String, hardcoded.inherited_count);
+    hardcoded.inherited = alloc(String, hardcoded.inherited_count);
     hardcoded.inherited[0] = create_string("BaseOne");
     hardcoded.inherited[1] = create_string("BaseTwo");
 
