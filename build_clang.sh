@@ -23,7 +23,7 @@ else
 fi
 mv "./preprocessor_exe" "build/preprocessor"
 
-# Run code after building.
+# Run test code after building.
 if [ "$GTEST" = "true" ]; then
     if [ "$RELEASE" = "false" ]; then      
         echo "Running Preprocessor tests"
