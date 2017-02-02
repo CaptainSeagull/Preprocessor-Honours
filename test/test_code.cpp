@@ -164,7 +164,7 @@ void test_vector(void) {
 
 int main(int /*argc*/, char ** /*argv*/) {
     //test_struct();
-    test_enum();
+    //test_enum()
     //test_vector();
 
     printf("\n");
