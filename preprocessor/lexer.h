@@ -11,6 +11,7 @@
 
 #if !defined(_LEXER_H)
 
+#include "shared.h"
 #include "utils.h"
 
 enum StructType {

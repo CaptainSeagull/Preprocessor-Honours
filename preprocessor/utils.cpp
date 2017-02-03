@@ -102,7 +102,7 @@ internal Void *global_scratch_memory = 0;
 Void *push_scratch_memory(Int size/*= scratch_memory_size*/) {
     if(!global_scratch_memory) {
         global_scratch_memory = alloc(Byte, scratch_memory_size + 1);
-        memset(global_scratch_memory, 0, scratch_memory_size + 1);
+        zero(global_scratch_memory, scratch_memory_size + 1);
     }
 
     Void *res = 0;
@@ -117,7 +117,7 @@ Void *push_scratch_memory(Int size/*= scratch_memory_size*/) {
 
 Void clear_scratch_memory(void) {
     if(global_scratch_memory) {
-        memset(global_scratch_memory, 0, scratch_memory_index);
+        zero(global_scratch_memory, scratch_memory_index);
         scratch_memory_index = 0;
     }
 }
@@ -139,6 +139,7 @@ String create_string(Char *str, Int len/*= 0*/) {
 
 Int string_length(Char *str) {
     Int res = 0;
+
     while(*str++) {
         ++res;
     }
@@ -148,14 +149,11 @@ Int string_length(Char *str) {
 
 Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) {
     Bool res = false;
+    Int i;
 
     if(len > a_len + b_len) {
-        for(Int i = 0; (i < a_len); ++i) {
-            *dest++ = *a++;
-        }
-        for(Int i = 0; (i < b_len); ++i) {
-            *dest++ = *b++;
-        }
+        for(i = 0; (i < a_len); ++i) *dest++ = *a++;
+        for(i = 0; (i < b_len); ++i) *dest++ = *b++;
 
         res = true;
     }
@@ -175,11 +173,8 @@ Bool string_compare(Char *a, Char *b, Int len) {
 
 Bool string_compare(Char *a, Char *b) {
     for(;; ++a, ++b) {
-        if((*a == 0) && (*b == 0)) {
-            return(true);
-        } else if(*a != *b)          {
-            return(false);
-        }
+        if((*a == 0) && (*b == 0)) return(true);
+        else if(*a != *b)          return(false);
     }
 }
 
@@ -200,7 +195,7 @@ Bool string_compare(String a, String b) {
         for(Int i = 0; (i < a.len); ++i) {
             if(a.e[i] != b.e[i]) {
                 res = false;
-                break; // for
+                break;
             }
         }
     }
@@ -213,7 +208,7 @@ Bool string_compare_array(String *a, String *b, Int cnt) {
     for(Int i = 0; (i < cnt); ++i) {
         if(!string_compare(a[i], b[i])) {
             res = false;
-            break; // for
+            break;
         }
     }
 
@@ -227,10 +222,10 @@ Bool string_contains(String str, Char *target) {
         if(str.e[i] == target[0]) {
             for(int j = 0; (j < target_len); ++j) {
                 if(str.e[i + j] != target[j]) {
-                    break; // for j
+                    break;
                 }
 
-                if(j == target_len - 1) {
+                if(j == (target_len - 1)) {
                     return(true);
                 }
             }
@@ -246,46 +241,16 @@ Bool string_contains(String str, Char *target) {
 ResultInt char_to_int(Char c) {
     ResultInt res = {};
     switch(c) {
-        case '0': {
-            res.e = 0;
-            res.success = true;
-        } break;
-        case '1': {
-            res.e = 1;
-            res.success = true;
-        } break;
-        case '2': {
-            res.e = 2;
-            res.success = true;
-        } break;
-        case '3': {
-            res.e = 3;
-            res.success = true;
-        } break;
-        case '4': {
-            res.e = 4;
-            res.success = true;
-        } break;
-        case '5': {
-            res.e = 5;
-            res.success = true;
-        } break;
-        case '6': {
-            res.e = 6;
-            res.success = true;
-        } break;
-        case '7': {
-            res.e = 7;
-            res.success = true;
-        } break;
-        case '8': {
-            res.e = 8;
-            res.success = true;
-        } break;
-        case '9': {
-            res.e = 9;
-            res.success = true;
-        } break;
+        case '0': res.e = 0; res.success = true; break;
+        case '1': res.e = 1; res.success = true; break;
+        case '2': res.e = 2; res.success = true; break;
+        case '3': res.e = 3; res.success = true; break;
+        case '4': res.e = 4; res.success = true; break;
+        case '5': res.e = 5; res.success = true; break;
+        case '6': res.e = 6; res.success = true; break;
+        case '7': res.e = 7; res.success = true; break;
+        case '8': res.e = 8; res.success = true; break;
+        case '9': res.e = 9; res.success = true; break;
     }
 
     return(res);
@@ -296,14 +261,12 @@ ResultInt string_to_int(String str) {
 
     for(Int i = 0; (i < str.len); ++i) {
         ResultInt temp_int = char_to_int(str.e[i]);
-        if(!temp_int.success) {
-            break;    // for
-        }
+        if(!temp_int.success) break;
 
         res.e *= 10;
         res.e += temp_int.e;
 
-        if(i == str.len - 1) {
+        if(i == (str.len - 1)) {
             res.success = true;
         }
     }
@@ -390,15 +353,10 @@ Variable create_variable(Char *type, Char *name, Bool is_ptr/*= false*/, Int arr
 Bool compare_variable(Variable a, Variable b) {
     Bool res = true;
 
-    if(!string_compare(a.type, b.type))      {
-        res = false;
-    } else if(!string_compare(a.name, b.name)) {
-        res = false;
-    } else if(a.is_ptr != b.is_ptr)            {
-        res = false;
-    } else if(a.array_count != b.array_count)  {
-        res = false;
-    }
+    if(!string_compare(a.type, b.type))      res = false;
+    else if(!string_compare(a.name, b.name)) res = false;
+    else if(a.is_ptr != b.is_ptr)            res = false;
+    else if(a.array_count != b.array_count)  res = false;
 
     return(res);
 }
@@ -416,48 +374,24 @@ Bool compare_variable_array(Variable *a, Variable *b, Int count) {
 Char to_caps(Char c) {
     Char res = c;
     if((c >= 'a') && (c <= 'z')) {
-        res += ('A' - 'a');
+        res -= 32;
     }
 
     return(res);
 }
 
-//
-// memset and memcpy.
-//
-#if 0
-#if COMPILER_MSVC
-    #pragma function(memcpy)
-#endif
-extern "C" void *
-memcpy(void *dest, void const *src, PtrSize size) {
-    Int i;
-    Byte *dest8, *src8;
+Void copy(Void *dest, Void *src, PtrSize size) {
+    Byte *dest8 = cast(Byte *)dest;
+    Byte *src8 = cast(Byte *)src;
 
-    dest8 = cast(Byte *)dest;
-    src8 = cast(Byte *)src;
-    for(i = 0; (i < size); ++i, ++dest8, ++src8) {
+    for(Int i = 0; (i < size); ++i, ++dest8, ++src8) {
         *dest8 = *src8;
     }
-
-    return(dest);
 }
 
-#if COMPILER_MSVC
-    #pragma function(memset)
-#endif
-extern "C" void *
-memset(void *dest, int v, PtrSize n) {
-    Int i;
-    Byte *dest8;
-
-    assert(v < 0xFF);
-
-    dest8 = cast(Byte *)dest;
-    for(i = 0; (i < n); ++i, ++dest8) {
+Void set(void *dest, Byte v, PtrSize n) {
+    Byte *dest8 = cast(Byte *)dest;
+    for(Int i = 0; (i < n); ++i, ++dest8) {
         *dest8 = cast(Byte)v;
     }
-
-    return(dest);
 }
-#endif

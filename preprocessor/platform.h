@@ -11,7 +11,7 @@
 
 #if !defined(_PLATFORM_H)
 
-#include "utils.h"
+#include "shared.h"
 
 // Memory.
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/);
@@ -19,6 +19,7 @@ Bool system_free(Void *ptr);
 Void *system_realloc(Void *ptr, PtrSize size);
 
 // File IO.
+struct File;
 File read_entire_file_and_null_terminate(Char *fname, Void *memory);
 Bool write_to_file(Char *fname, Void *data, PtrSize data_size);
 PtrSize get_file_size(Char *fname);

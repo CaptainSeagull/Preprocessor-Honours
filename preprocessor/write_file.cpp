@@ -11,6 +11,7 @@
 
 #include "write_file.h"
 #include "lexer.h"
+#include "stb_sprintf.h"
 
 struct OutputBuffer {
     Char *buffer;
@@ -31,9 +32,11 @@ internal Char *primitive_types[] = {"char", "short", "int", "long", "float", "do
 internal Int set_primitive_type(String *array) {
     Int res = array_count(primitive_types);
 
-    for(int i = 0; (i < res); ++i) {
-        array[i].e = primitive_types[i];
-        array[i].len = string_length(primitive_types[i]);
+    for(Int i = 0; (i < res); ++i) {
+        String *index = array + i;
+
+        index->e = primitive_types[i];
+        index->len = string_length(primitive_types[i]);
     }
 
     return(res);

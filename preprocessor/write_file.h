@@ -8,12 +8,14 @@
                            The use of this code is at your own risk
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
+
 #if !defined(_WRTIE_FILE_H)
 
-#include "utils.h"
+#include "shared.h"
 
 struct StructData;
 struct EnumData;
+struct File;
 
 File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count);
 

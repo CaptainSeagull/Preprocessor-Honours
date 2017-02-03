@@ -9,6 +9,6 @@
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
 
-#include "utils.h"
+#include "shared.h"
 
 Int run_tests(void);

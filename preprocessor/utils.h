@@ -11,99 +11,7 @@
 
 #if !defined(_UTILS_H)
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <string.h>
-
-#include "stb_sprintf.h"
-
-typedef uint64_t Uint64;
-typedef uint32_t Uint32;
-typedef uint16_t Uint16;
-typedef uint8_t Uint8;
-
-typedef int64_t Int64;
-typedef int32_t Int32;
-typedef int16_t Int16;
-typedef int8_t Int8;
-
-typedef bool Bool;
-typedef void Void;
-typedef char Char;
-
-typedef Int32 Int; // Int guaranteed to be 4 bytes.
-
-typedef Uint8 Byte;
-typedef intptr_t PtrSize;
-
-typedef float Float;
-typedef double Float64;
-
-#define cast(type) (type)
-#define array_count(arr) (sizeof(arr) / (sizeof(*(arr))))
-#define preprocessor_concat(a, b) a##b
-
-#define internal static
-
-//
-// Detect compiler/platform.
-//
-#define COMPILER_WIN32 0
-#define COMPILER_CLANG 0
-#define COMPILER_GCC 0
-
-#define ENVIRONMENT64 0
-#define ENVIRONMENT32 0
-
-#define OS_WIN32 0
-#define OS_LINUX 0
-
-#if defined(__clang__)
-    #undef COMPILER_CLANG
-    #define COMPILER_CLANG 1
-#elif defined(_MSC_VER)
-    #undef COMPILER_WIN32
-    #define COMPILER_WIN32 1
-#elif (defined(__GNUC__) || defined(__GNUG__)) // This has to be after __clang__, because Clang also defines this.
-    #undef COMPILER_GCC
-    #define COMPILER_GCC 1
-#else
-    #error "Could not detect compiler."
-#endif
-
-#if defined(__linux__)
-    #undef OS_LINUX
-    #define OS_LINUX 1
-#elif defined(_WIN32)
-    #undef OS_WIN32
-    #define OS_WIN32 1
-#else
-    #error "Could not detect OS"
-#endif
-
-#if OS_LINUX
-    #if (__x86_64__ || __ppc64__)
-        #undef ENVIRONMENT64
-        #define ENVIRONMENT64 1
-    #else
-        #undef ENVIRONMENT32
-        #define ENVIRONMENT32 1
-    #endif
-#elif OS_WIN32
-    #if defined(_WIN64)
-        #undef ENVIRONMENT64
-        #define ENVIRONMENT64 1
-    #else
-        #undef ENVIRONMENT32
-        #define ENVIRONMENT32 1
-    #endif
-#endif
-
-#if defined(_MSC_VER)
-    #define my_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
-#else
-    #define my_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
-#endif
+#include "shared.h"
 
 // TODO(Jonny): This should probably be a flag, rather than compiled into the preprocessor.
 #if COMPILER_MSVC
@@ -148,7 +56,6 @@ struct Error {
     Char *guid;
 };
 
-
 #if ERROR_LOGGING
     #define push_error(type) push_error_(type, MAKE_GUID)
 #else
@@ -159,9 +66,6 @@ Void push_error_(ErrorType type, Char *guid);
 Char *ErrorTypeToString(ErrorType e);
 Bool print_errors(void);
 
-#if defined(assert)
-    #undef assert
-#endif
 #if INTERNAL
     #define assert(Expression) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
@@ -236,9 +140,7 @@ static Void *malloc_(PtrSize size, Char *guid, PtrSize cnt = 1) {
                 mem_list_root = cur;
             } else {
                 MemList *next = mem_list_root;
-                while(next->next) {
-                    next = next->next;
-                }
+                while(next->next) next = next->next;
 
                 next->next = cur;
             }
@@ -273,17 +175,12 @@ static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
     if(ptr) {
         MemList *next = mem_list_root;
         while(next) {
-            if(next->ptr == ptr) {
-                break;    // while
-            }
+            if(next->ptr == ptr) break;
             next = next->next;
         }
 
-        if(!next) {
-            push_error_(ErrorType_could_not_find_mallocd_ptr, guid);
-        } else      {
-            next->ptr = res;
-        }
+        if(next) next->ptr = res;
+        else     push_error_(ErrorType_could_not_find_mallocd_ptr, guid);
     }
     return(res);
 }
@@ -386,6 +283,11 @@ Char to_caps(Char c);
 //
 // memset and memcpy
 //
+
+Void copy(Void *dst, Void *src, PtrSize size);
+#define zero(dst, size) set(dst, 0, size)
+Void set(Void *dst, Byte v, PtrSize size);
+
 #if 0
     #if !RUN_TESTS
         #if OS_WIN32

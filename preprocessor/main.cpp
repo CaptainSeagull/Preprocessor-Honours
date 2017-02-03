@@ -31,7 +31,6 @@
     - Global consts for arrays.
     - Handle typedefs.
     - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.
-    - Make a variable_to_string macro (#define var_to_string(v) #v).
     - Make a is_primitive function.
     - Make a function tell if something's a pointer or not. Could return false if not a pointer, and a positive integer
       for the level of pointer otherwise. Should work with references too.
@@ -68,27 +67,14 @@ SwitchType get_switch_type(Char *str) {
     if(len >= 2) {
         if(str[0] == '-') {
             switch(str[1]) {
-                case 'e': {
-                    res = SwitchType_log_errors;
-                } break;
-                case 'h': {
-                    res = SwitchType_print_help;
-                } break;
-                case 'p': {
-                    res = SwitchType_display_time_taken;
-                } break;
+                case 'e': res = SwitchType_log_errors;         break;
+                case 'h': res = SwitchType_print_help;         break;
+                case 'p': res = SwitchType_display_time_taken; break;
 #if INTERNAL
-                case 's': {
-                    res = SwitchType_silent;
-                } break;
-                case 't': {
-                    res = SwitchType_run_tests;
-                } break;
+                case 's': res = SwitchType_silent;    break;
+                case 't': res = SwitchType_run_tests; break;
 #endif
-
-                default: {
-                    assert(0);
-                } break;
+                default: assert(0); break;
             }
         } else if((str[len - 1] == 'h') && (str[len - 2] == '.')) {
             res = SwitchType_source_file;
@@ -316,25 +302,17 @@ Void start_parsing(Char *fname, Char *file) {
                          generated_extension, string_length(generated_extension))) {
 
             Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
-            if(!header_write_success) {
-                push_error(ErrorType_could_not_write_to_disk);
-            }
+            if(!header_write_success) push_error(ErrorType_could_not_write_to_disk);
 
             free(file_to_write.data);
         }
     }
 
-    for(Int i = 0; (i < parse_res.struct_cnt); ++i) {
-        free(parse_res.struct_data[i].members);
-    }
-    for(Int i = 0; (i < parse_res.struct_cnt); ++i) {
-        free(parse_res.struct_data[i].inherited);
-    }
+    for(Int i = 0; (i < parse_res.struct_cnt); ++i) free(parse_res.struct_data[i].members);
+    for(Int i = 0; (i < parse_res.struct_cnt); ++i) free(parse_res.struct_data[i].inherited);
     free(parse_res.struct_data);
 
-    for(Int i = 0; (i < parse_res.enum_cnt); ++i) {
-        free(parse_res.enum_data[i].values);
-    }
+    for(Int i = 0; (i < parse_res.enum_cnt); ++i) free(parse_res.enum_data[i].values);
     free(parse_res.enum_data);
 }
 
@@ -354,6 +332,11 @@ Void print_help(void) {
 }
 
 Int main(Int argc, Char **argv) {
+
+    Int i = 'A' - 'a';
+    Int a = 'a';
+    Int A = 'A';
+
     Int res = 0;
 
     Bool display_time_taken = false;
@@ -374,21 +357,11 @@ Int main(Int argc, Char **argv) {
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
-                case SwitchType_silent:             {
-                    should_write_to_file = false;
-                } break;
-                case SwitchType_log_errors:         {
-                    should_log_errors = true;
-                } break;
-                case SwitchType_run_tests:          {
-                    should_run_tests = true;
-                } break;
-                case SwitchType_print_help:         {
-                    print_help();
-                } break;
-                case SwitchType_display_time_taken: {
-                    display_time_taken = true;
-                } break;
+                case SwitchType_silent:             should_write_to_file = false; break;
+                case SwitchType_log_errors:         should_log_errors = true;     break;
+                case SwitchType_run_tests:          should_run_tests = true;      break;
+                case SwitchType_print_help:         print_help();                 break;
+                case SwitchType_display_time_taken: display_time_taken = true;    break;
 
                 case SwitchType_source_file: {
                     PtrSize file_size = get_file_size(switch_name);
@@ -420,24 +393,22 @@ Int main(Int argc, Char **argv) {
                         Char *static_file_data = get_static_file();
                         Int static_file_len = string_length(static_file_data);
                         Bool static_write_success = write_to_file("static_generated.h", static_file_data, static_file_len);
-                        if(!static_write_success) {
-                            push_error(ErrorType_could_not_write_to_disk);
-                        }
+
+                        if(!static_write_success) push_error(ErrorType_could_not_write_to_disk);
                     }
 
                     // Parse files
                     for(Int i = 1; (i < argc); ++i) {
                         Char *file_name = argv[i];
-                        memset(file_memory, 0, largest_source_file_size);
+                        zero(file_memory, largest_source_file_size);
 
                         SwitchType type = get_switch_type(file_name);
                         if(type == SwitchType_source_file) {
                             File file = read_entire_file_and_null_terminate(file_name, file_memory);
-                            if(file.data) {
-                                start_parsing(file_name, file.data);
-                            } else          {
-                                push_error(ErrorType_could_not_load_file);
-                            }
+
+                            if(file.data) start_parsing(file_name, file.data);
+                            else          push_error(ErrorType_could_not_load_file);
+
                         }
                     }
 
@@ -450,9 +421,7 @@ Int main(Int argc, Char **argv) {
             // Check memory leaks.
             MemList *next = mem_list_root;
             while(next) {
-                if(!next->freed) {
-                    push_error_(ErrorType_memory_not_freed, next->guid);
-                }
+                if(!next->freed) push_error_(ErrorType_memory_not_freed, next->guid);
 
                 next = next->next;
             }
@@ -460,16 +429,13 @@ Int main(Int argc, Char **argv) {
             // Output errors.
         }
 
-        //if(should_log_errors) {
-        //    Bool any_errors = print_errors();
-        //    if(any_errors) { res = 255; }
-        //}
+        if(should_log_errors) {
+            if(print_errors()) res = 255;
+        }
     }
 
     Uint64 end_time = system_get_performance_counter();
-    if(display_time_taken) {
-        system_print_timer(end_time - start_time);
-    }
+    if(display_time_taken) system_print_timer(end_time - start_time);
 
     return(res);
 }

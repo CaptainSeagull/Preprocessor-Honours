@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "platform.h"
+#include "utils.h"
 
 Uint64 system_get_performance_counter(void) {
     Uint64 res = 0;
@@ -35,7 +36,7 @@ Bool system_check_for_debugger(void) {
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
     Void *res = malloc(size * cnt);
     if(res) {
-        memset(res, 0, size * cnt);
+        zero(res, size * cnt);
     }
 
     return(res);
