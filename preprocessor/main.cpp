@@ -36,6 +36,9 @@
       for the level of pointer otherwise. Should work with references too.
     - If the user puts a directory in front of the file name ("dir/source.cpp") then the outputted code will get
       placed in the directories parent, not the directory with the code.
+    - I could handle user-defined containers, assuming they conform to some strict set of rules. These could be:
+        - Does it implement the nessessary member functions to use the C++11 range-based for loops?
+        - It it a template struct where the template can only take one type?
     - I don't think #if 1 #else blocks work correctly...
 */
 
