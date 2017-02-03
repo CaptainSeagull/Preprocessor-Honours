@@ -42,6 +42,9 @@ internal Int set_primitive_type(String *array) {
     return(res);
 }
 
+// TODO(Jonny): Maybe I could split this out into a serialize primitve and serialize struct code. For serialize primitive, it could be mostly templated,
+//              with just a utility thing to get the printf modifier (%s for string, %d for ints). And I think most of the code for serializing structs
+//              could be generalized through templates too. Maybe I could even add a third method, serialize container, as well?
 internal Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob) {
     Char *top =
         "// Function to serialize a struct to a char array buffer.\n"
