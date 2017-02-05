@@ -3,17 +3,19 @@
 
 #Overview
 
-This is a simple project which aims to provide some meta programming functionality not currently in C++. The utility generates code, which should be included in the relevant .cpp file.
+This is a simple project which aims to provide some meta programming functionality not currently avaiable in C++. The utility generates code, which should be included in the relevant .cpp files.
 
-All generate code strictly follows the C++11 specification, and should compile correctly under MSVC, Clang, or GCC, even with `-Wall` enabled. If you're using a pre-C++11 compiler, then the preprocessor can still be used, but some functions will not compile. All the functions which require C++11 features have alternatives which can be used and are compiant with the C++98 specification.
+All generated code strictly follows the C++11 specification, and should compile correctly under MSVC, Clang, or GCC, even with `-Wall` enabled. If you're using a pre-C++11 compiler, then the preprocessor can still be used, but some functions will not compile. All the functions which require C++11 features have alternatives which can be used and are compiant with the C++98 specification.
 
 #Build instructions
 
 ##Windows
-Call `win32_build.bat` from the command line, which should generate the executable inside the `build` directory. This uses Visual Studio 2013 to build (MSVC 12), so if you're using a different version of visual studio then change the line `set VISUAL_STUDIO_VERSION=12` inside `.bat` file to match whatever version of Visual Studio you're using.
+Call `win32_build.bat` from the command line, which should generate the executable inside the `build` directory. This uses Visual Studio 2013 to build (MSVC 12), so if you're using a different version of visual studio then change the line `set VISUAL_STUDIO_VERSION=12` inside `win32_build.bat` to match whatever version of Visual Studio you're using. It has not ever been tested with GCC or Clang or Windows, and there are currently no plans to easily support them.
 
 ##Linux
 Call `build_clang.sh` from the command line, which should generate the app file inside the `build` directory. This uses Clang version 3.8, so if you don't have that version installed on your computer, then you'll need to change all the lines that say `Clang++-3.8` to match the version you've got.
+
+There is currently no simple way to build using GCC on Linux, but there are plans to support this soon.
 
 ##Mac
 N/A
@@ -32,12 +34,12 @@ Get the number of elements in a struct. This also counts members added through i
 size_t pp::get_num_of_members(TYPE);
 ```
 
-Convert a type into a string. This keeps information about the type, like if it's a pointer.
+Convert a type into a string. This keeps information about the type; for example, if the type is a pointer.
 ```C++
 char const * pp::type_to_string(TYPE);
 ```
 
-Convert a type into a string. This ignores information about the type, like if it's a pointer.
+Convert a type into a string. This ignores extra information about the type; for example, if the type is a pointer.
 ```C++
 char const * pp::weak_type_to_string(TYPE);
 ```
@@ -69,7 +71,7 @@ If you're using a C++11-compliant compiler, you should consider using `pp::seria
 size_t serialize_type(TYPE variable, TYPE, char *buffer, size_t buffer_size);
 ```
 
-Get the number of base-types the struct inherits from.
+Get the number of structs the struct `TYPE` inherits from.
 ```C++
 size_t pp::get_base_type_count(TYPE);
 ```
@@ -79,9 +81,9 @@ Get the base type for the struct as a string.
 char const * pp::get_base_type_as_string(TYPE);
 ```
 
-Get the base type for the struct, as a specific index, as a string.
+Get the base type for the struct, at a specific index, as a string.
 ```C++
-char const * pp::get_base_type_as_string_index(TYPE, index);
+char const * pp::get_base_type_as_string_index(TYPE, int index);
 ```
 
 Compare two types to see if they're the same or not. Works the same as a `std::is_same`.
@@ -89,12 +91,12 @@ Compare two types to see if they're the same or not. Works the same as a `std::i
 bool pp::type_compare(TYPE_A, TYPE_B);
 ```
 
-Compare two types to see if they're the same or not. If one type is a base class of another, then this function will return `true`.
+Compare two types to see if they're the same or not. If one struct is a base class of another, then this function will return `true`.
 ```C++
 bool pp::fuzzy_type_compare(TYPE_A, TYPE_B);
 ```
 
-Compare two types to see if they're the same or not. If one type is a pointer and one isn't, like comparing `int *` and `int`, then this function will return `true`.
+Compare two types to see if they're the same or not. If one struct is a pointer and one isn't, like comparing `int *` and `int`, then this function will return `true`.
 ```C++
 bool pp::weak_type_compare(TYPE_A, TYPE_B);
 ```
@@ -189,4 +191,4 @@ Letters l = pp::string_to_enum("a"); // returns b (1).
 #Current Limitations
 - It doesn't support templates.
 - There is currently no introspection support for functions.
-- Only limited support for introspection of C++ STL containers.
+- Only limited support for introspection of C++ STL containers (std::vector).
