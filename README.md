@@ -10,10 +10,10 @@ All generated code strictly follows the C++11 specification, and should compile 
 #Build instructions
 
 ##Windows
-Call `win32_build.bat` from the command line, which should generate the executable inside the `build` directory. This uses Visual Studio 2013 to build (MSVC 12), so if you're using a different version of visual studio then change the line `set VISUAL_STUDIO_VERSION=12` inside `win32_build.bat` to match whatever version of Visual Studio you're using. It has not ever been tested with GCC or Clang or Windows, and there are currently no plans to easily support them.
+Call `win32_msvc.bat` from the command line, which should generate the executable inside the `build` directory. This uses Visual Studio 2013 to build (MSVC 12), so if you're using a different version of visual studio then change the line `set VISUAL_STUDIO_VERSION=12` inside `win32_msvc.bat` to match whatever version of Visual Studio you're using. It has not ever been tested with GCC or Clang or Windows, and there are currently no plans to easily support them.
 
 ##Linux
-Call `build_clang.sh` from the command line, which should generate the app file inside the `build` directory. This uses Clang version 3.8, so if you don't have that version installed on your computer, then you'll need to change all the lines that say `Clang++-3.8` to match the version you've got.
+Call `linux_clang.sh` from the command line, which should generate the app file inside the `build` directory. This uses Clang version 3.8, so if you don't have that version installed on your computer, then you'll need to change the line that says `CLANG_VERSION=3.8` to match the version you've got.
 
 There is currently no simple way to build using GCC on Linux, but there are plans to support this soon.
 
