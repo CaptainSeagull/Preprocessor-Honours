@@ -68,27 +68,15 @@ SwitchType get_switch_type(Char *str) {
     if(len >= 2) {
         if(str[0] == '-') {
             switch(str[1]) {
-                case 'e': {
-                    res = SwitchType_log_errors;
-                } break;
-                case 'h': {
-                    res = SwitchType_print_help;
-                } break;
-                case 'p': {
-                    res = SwitchType_display_time_taken;
-                } break;
+                case 'e': res = SwitchType_log_errors;          break;
+                case 'h': res = SwitchType_print_help;          break;
+                case 'p': res = SwitchType_display_time_taken; break;
 #if INTERNAL
-                case 's': {
-                    res = SwitchType_silent;
-                } break;
-                case 't': {
-                    res = SwitchType_run_tests;
-                } break;
+                case 's': res = SwitchType_silent;    break;
+                case 't': res = SwitchType_run_tests; break;
 #endif
 
-                default: {
-                    assert(0);
-                } break;
+                default: assert(0); break;
             }
         } else if((str[len - 1] == 'h') && (str[len - 2] == '.')) {
             res = SwitchType_source_file;
@@ -273,14 +261,64 @@ Char *get_static_file(void) {
                 "\n"
                 "    return(false);\n"
                 "}\n"
-                "\n"
-                "template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }\n"
-                "\n"
                 "#if defined(_MSC_VER)\n"
                 "    #define pp_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)\n"
                 "#else\n"
                 "    #define pp_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)\n"
                 "#endif\n"
+                "\n"
+                "template<typename T>static size_t\n"
+                "serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
+                "    char const *type_as_string = type_to_string(T);\n"
+                "    char indent_buf[256] = {};\n"
+                "    for(int i = 0; (i < indent); ++i) indent_buf[i] = ' ';\n"
+                "\n"
+                "    if(arr_size > 1) {\n"
+                "        for(int j = 0; (j < arr_size); ++j) {\n"
+                "            size_t *member_ptr_as_size_t = (size_t *)member_ptr; // For arrays of pointers.\n"
+                "            bool is_null = (is_ptr) ? member_ptr_as_size_t[j] == 0 : false;\n"
+                "            if(!is_null) {\n"
+                "                T v;\n"
+                "                if(is_ptr) {\n"
+                "                   v = *(T *)member_ptr_as_size_t[j];\n"
+                "                } else {\n"
+                "                    v = member_ptr[j];\n"
+                "                }\n"
+                "\n"
+                "#define print_prim_arr(x) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s %s[%d] = \" x \"\", indent_buf, (is_ptr) ? \"*\" : \"\", type_as_string, name, j, v)\n"
+                "                if(type_compare(T, double))     print_prim_arr(\"%f\");\n"
+                "                else if(type_compare(T, float)) print_prim_arr(\"%f\");\n"
+                "                else if(type_compare(T, int))   print_prim_arr(\"%d\");\n"
+                "                else if(type_compare(T, long))  print_prim_arr(\"%ld\");\n"
+                "                else if(type_compare(T, short)) print_prim_arr(\"%d\");\n"
+                "                else if(type_compare(T, bool))  print_prim_arr(\"%d\");\n"
+                "#undef print_prim_arr\n"
+                "            } else {\n"
+                "                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s %s[%d] = (null)\", indent_buf, (is_ptr) ? \"*\" : \"\", type_as_string, name, j);"
+                "            }\n"
+                "        }\n"
+                "    } else {\n"
+                "        T *v = (is_ptr) ? *(T **)member_ptr : (T *)member_ptr;\n"
+                "        if(v) {\n"
+                "#define print_prim(x) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s %s = \" x \"\", indent_buf, (is_ptr) ? \"*\" : \"\", type_as_string, name, *v)\n"
+                "            if(type_compare(T, double))     print_prim(\"%f\");\n"
+                "            else if(type_compare(T, float)) print_prim(\"%f\");\n"
+                "            else if(type_compare(T, int))   print_prim(\"%d\");\n"
+                "            else if(type_compare(T, long))  print_prim(\"%ld\");\n"
+                "            else if(type_compare(T, short)) print_prim(\"%d\");\n"
+                "            else if(type_compare(T, bool))  print_prim(\"%d\");\n"
+                "#undef print_prim\n"
+                "        } else {\n"
+                "            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s *%%s = (null)\", indent_buf, type_as_string, name);\n"
+                "        }\n"
+                "    }\n"
+                "\n"
+                "    return(bytes_written);\n"
+                "\n"
+                "}"
+                "\n"
+                "\n"
+                "template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }\n"
                 "\n"
                 "} // namespace pp\n"
                 "\n"

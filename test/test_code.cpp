@@ -35,7 +35,7 @@ struct B {
 #define NUMBER_FIVE 5
 struct Foo : public A, public B {
     char const *str;
-    int *int_ptr;
+    int **int_ptr;
     float *float_ptr;
     bool *bool_ptr;
     int int_array[NUMBER_FOUR];
@@ -50,7 +50,9 @@ void test_struct(void) {
 
     foo.str = "Hello World";
 
-    foo.int_ptr = new int; *foo.int_ptr = 10;
+    static int i = 100;
+    static int *j = &i;
+    foo.int_ptr = &j;;
 
     foo.float_ptr = new float; *foo.float_ptr = 10.5f;
 
@@ -84,6 +86,8 @@ void test_struct(void) {
     foo.b = 3.1415f;
 
     pp::print(foo);
+
+    int k = 0;
 }
 
 //
@@ -163,9 +167,9 @@ void test_vector(void) {
 }
 
 int main(int /*argc*/, char ** /*argv*/) {
-    //test_struct();
-    //test_enum()
-    //test_vector();
+    test_struct();
+    test_enum();
+    test_vector();
 
     printf("\n");
     return(0);
