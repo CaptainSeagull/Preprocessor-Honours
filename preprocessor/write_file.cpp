@@ -193,15 +193,10 @@ internal void forward_declare_structs(OutputBuffer *ob, StructData *struct_data,
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;
 
-        if(sd->struct_type == StructType_struct)     {
-            write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e);
-        } else if(sd->struct_type == StructType_class) {
-            write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);
-        } else if(sd->struct_type == StructType_union) {
-            write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);
-        } else {
-            assert(0);
-        }
+        if(sd->struct_type == StructType_struct)     write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e);
+        else if(sd->struct_type == StructType_class) write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);
+        else if(sd->struct_type == StructType_union) write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);
+        else                                         assert(0);
     }
 }
 
@@ -239,9 +234,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
     if(ob.buffer) {
         Char *name_buf = cast(Char *)push_scratch_memory();
         Int len_wo_extension = string_length(fname) - 4; // TODO(Jonny): Do properly.
-        for(Int i = 0; (i < len_wo_extension); ++i) {
-            name_buf[i] = to_caps(fname[i]);
-        }
+
+        for(Int i = 0; (i < len_wo_extension); ++i) name_buf[i] = to_caps(fname[i]);
 
         write_to_output_buffer(&ob,
                                "#if !defined(%s_GENERATED_H)\n"
@@ -413,9 +407,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 for(Int j = 0; (j < sd->inherited_count); ++j) {
                     String *inherited = sd->inherited + j;
 
-                    if(j) {
-                        write_to_output_buffer(&ob, ",");
-                    }
+                    if(j) write_to_output_buffer(&ob, ",");
 
                     write_to_output_buffer(&ob, " public _%.*s", inherited->len, inherited->e);
                 }
@@ -430,11 +422,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 if(md->is_inside_anonymous_struct != is_inside_anonymous_struct) {
                     is_inside_anonymous_struct = !is_inside_anonymous_struct;
 
-                    if(is_inside_anonymous_struct) {
-                        write_to_output_buffer(&ob, " struct {");
-                    } else                           {
-                        write_to_output_buffer(&ob, "};");
-                    }
+                    if(is_inside_anonymous_struct) write_to_output_buffer(&ob, " struct {");
+                    else                           write_to_output_buffer(&ob, "};");
                 }
 
                 Char *arr = "";
@@ -452,9 +441,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             }
 
-            if(is_inside_anonymous_struct) {
-                write_to_output_buffer(&ob, " };");
-            }
+            if(is_inside_anonymous_struct) write_to_output_buffer(&ob, " };");
+
             write_to_output_buffer(&ob, " };\n");
         }
 

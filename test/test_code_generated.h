@@ -2,6 +2,7 @@
 #define TEST_CODE_GENERATED_H
 
 // Forward declared structs (these must be declared outside the namespace...)
+struct Test;
 union V2;
 struct A;
 struct B;
@@ -22,6 +23,7 @@ enum MetaType {
     MetaType_float,
     MetaType_double,
     MetaType_bool,
+    MetaType_Test,
     MetaType_V2,
     MetaType_A,
     MetaType_B,
@@ -99,6 +101,15 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                 // Then that should recursively call this function again.
                 default: {
                     switch(member->type) {
+                        case MetaType_Test: {
+                            // Test
+                            if(member->is_ptr) {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Test *", indent, buffer, buf_size - bytes_written, bytes_written);
+                            } else {
+                                bytes_written = serialize_struct_(member_ptr, member->name, "Test", indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        } break; // case MetaType_Test
+
                         case MetaType_V2: {
                             // V2
                             if(member->is_ptr) {
@@ -195,6 +206,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
     return(bytes_written);
 }
 // Recreated structs (Clang in std=C++98 complains if these are local).
+struct _Test {  _int i;  _int j;  };
 union _V2 {  _int e[2];  struct { _int x;  _int y;  }; };
 struct _A {  _int a;  };
 struct _B {  _double b;  };
@@ -204,8 +216,16 @@ struct _VectorTest {  _std::vector<int> integer;  _std::vector<float> floating; 
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
+    // Test
+    if(type_compare(T, Test)) {
+        static MemberDefinition members_of_Test[] = {
+            {MetaType_int, "i", offset_of(&_Test::i), false, 1},
+            {MetaType_int, "j", offset_of(&_Test::j), false, 1},
+        };
+        return(members_of_Test);
+
     // V2
-    if(type_compare(T, V2)) {
+    } else if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
             {MetaType_int, "e", offset_of(&_V2::e), false, 2},
             {MetaType_int, "x", offset_of(&_V2::x), false, 1},
@@ -269,7 +289,8 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, V2)) { return(3); } // V2
+    if(type_compare(T, Test)) { return(2); } // Test
+    else if(type_compare(T, V2)) { return(3); } // V2
     else if(type_compare(T, A)) { return(1); } // A
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, Foo)) { return(10); } // Foo
@@ -330,6 +351,14 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_bool);
 
+
+    // Test
+    } else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {
+        static MemberDefinition members_of_Test[] = {
+            {MetaType_int, "i", offset_of(&_Test::i), false, 1},
+            {MetaType_int, "j", offset_of(&_Test::j), false, 1},
+        };
+        return(members_of_Test);
 
     // V2
     } else if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
@@ -403,6 +432,7 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "float") == 0) { return(1); }
     else if(strcmp(str, "double") == 0) { return(1); }
     else if(strcmp(str, "bool") == 0) { return(1); }
+    else if(strcmp(str, "Test") == 0) { return(2); } // Test
     else if(strcmp(str, "V2") == 0) { return(3); } // V2
     else if(strcmp(str, "A") == 0) { return(1); } // A
     else if(strcmp(str, "B") == 0) { return(1); } // B
@@ -439,6 +469,9 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, bool **)) { return("bool **"); }
 
     // Struct types.
+    else if(type_compare(T, Test)) { return("Test"); }
+    else if(type_compare(T, Test *)) { return("Test *"); }
+    else if(type_compare(T, Test **)) { return("Test **"); }
     else if(type_compare(T, V2)) { return("V2"); }
     else if(type_compare(T, V2 *)) { return("V2 *"); }
     else if(type_compare(T, V2 **)) { return("V2 **"); }
@@ -487,6 +520,9 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, bool **)) { return("bool"); }
 
     // Struct types.
+    else if(type_compare(T, Test)) { return("Test"); }
+    else if(type_compare(T, Test *)) { return("Test"); }
+    else if(type_compare(T, Test **)) { return("Test"); }
     else if(type_compare(T, V2)) { return("V2"); }
     else if(type_compare(T, V2 *)) { return("V2"); }
     else if(type_compare(T, V2 **)) { return("V2"); }

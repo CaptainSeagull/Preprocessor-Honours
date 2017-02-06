@@ -16,6 +16,10 @@
 // struct test.
 //
 
+struct Test {
+    int i, j;
+};
+
 union V2 {
     int e[2];
     struct {

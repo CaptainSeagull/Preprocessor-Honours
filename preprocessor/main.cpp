@@ -281,7 +281,7 @@ Char *get_static_file(void) {
                 "            if(!is_null) {\n"
                 "                T v;\n"
                 "                if(is_ptr) {\n"
-                "                   v = *(T *)member_ptr_as_size_t[j];\n"
+                "                    v = *(T *)member_ptr_as_size_t[j];\n"
                 "                } else {\n"
                 "                    v = member_ptr[j];\n"
                 "                }\n"
@@ -295,7 +295,7 @@ Char *get_static_file(void) {
                 "                else if(type_compare(T, bool))  print_prim_arr(\"%d\",  bool);\n"
                 "#undef print_prim_arr\n"
                 "            } else {\n"
-                "                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s %s[%d] = (null)\", indent_buf, (is_ptr) ? \"*\" : \"\", type_as_string, name, j);"
+                "                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s %s[%d] = (null)\", indent_buf, (is_ptr) ? \"*\" : \"\", type_as_string, name, j);\n"
                 "            }\n"
                 "        }\n"
                 "    } else {\n"
@@ -353,7 +353,6 @@ Void start_parsing(Char *fname, Char *file) {
         if(string_concat(generated_file_name, array_count(generated_file_name),
                          fname, string_length(fname) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                          generated_extension, string_length(generated_extension))) {
-
             Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
             if(!header_write_success) push_error(ErrorType_could_not_write_to_disk);
 
@@ -385,11 +384,6 @@ Void print_help(void) {
 }
 
 Int main(Int argc, Char **argv) {
-
-    Int i = 'A' - 'a';
-    Int a = 'a';
-    Int A = 'A';
-
     Int res = 0;
 
     Bool display_time_taken = false;

@@ -187,7 +187,7 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
             if(!is_null) {
                 T v;
                 if(is_ptr) {
-                   v = *(T *)member_ptr_as_size_t[j];
+                    v = *(T *)member_ptr_as_size_t[j];
                 } else {
                     v = member_ptr[j];
                 }
@@ -201,7 +201,8 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
                 else if(type_compare(T, bool))  print_prim_arr("%d",  bool);
 #undef print_prim_arr
             } else {
-                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = (null)", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j);            }
+                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = (null)", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j);
+            }
         }
     } else {
         T *v = (is_ptr) ? *(T **)member_ptr : (T *)member_ptr;
