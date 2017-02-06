@@ -40,20 +40,20 @@ struct GameState {
 
 void draw_paddle(Paddle p, SDL_Surface *surface) {
     SDL_Rect rect;
-    rect.x = p.trans.pos.x;
-    rect.y = p.trans.pos.y;
-    rect.w = p.trans.size.x;
-    rect.h = p.trans.size.y;
+    rect.x = (int)p.trans.pos.x;
+    rect.y = (int)p.trans.pos.y;
+    rect.w = (int)p.trans.size.x;
+    rect.h = (int)p.trans.size.y;
 
     SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 255, 255, 255));
 }
 
 void draw_ball(Ball b, SDL_Surface *surface) {
     SDL_Rect rect = {};
-    rect.x = b.trans.pos.x;
-    rect.y = b.trans.pos.y;
-    rect.w = b.trans.size.x;
-    rect.h = b.trans.size.y;
+    rect.x = (int)b.trans.pos.x;
+    rect.y = (int)b.trans.pos.y;
+    rect.w = (int)b.trans.size.x;
+    rect.h = (int)b.trans.size.y;
 
     SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, 255, 255, 255));
 }

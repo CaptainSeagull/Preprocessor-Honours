@@ -52,142 +52,32 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
         for(int i = 0; (i < num_members); ++i) {
             MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.
             size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.
-            // TODO(Jonny): Go through and check all the pointers are correct on these.
             switch(member->type) {
-                // double.
-                case MetaType_double: {
-                    if(member->arr_size > 1) {
-                        for(int j = 0; (j < member->arr_size); ++j) {
-                            bool is_null = (member->is_ptr) ? !(*(double **)(member_ptr + j)) : 0;
-                            if(!is_null) {
-                                double v = (member->is_ptr) ? *(double *)member_ptr[j] : *((double *)member_ptr + j);
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
-                            } else {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
-                            }
-                        }
-                    } else {
-                        double *double_value = (member->is_ptr) ? *(double **)member_ptr : (double *)member_ptr;
-                        if(double_value) {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, *double_value);
-                        } else {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sdouble *%s = (null)", indent_buf, member->name);
-                        }
-                    }
-                } break; // case MetaType_double
+                case MetaType_double: { // double.
+                    bytes_written = serialize_primitive_((double *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
+                } break;
 
-                // float.
-                case MetaType_float: {
-                    if(member->arr_size > 1) {
-                        for(int j = 0; (j < member->arr_size); ++j) {
-                            bool is_null = (member->is_ptr) ? !(*(float **)(member_ptr + j)) : 0;
-                            if(!is_null) {
-                                float v = (member->is_ptr) ? *(float *)member_ptr[j] : *((float *)member_ptr + j);
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
-                            } else {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
-                            }
-                        }
-                    } else {
-                        float *float_value = (member->is_ptr) ? *(float **)member_ptr : (float *)member_ptr;
-                        if(float_value) {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat %s%s = %f", indent_buf, (member->is_ptr) ? "*" : "", member->name, *float_value);
-                        } else {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sfloat *%s = (null)", indent_buf, member->name);
-                        }
-                    }
-                } break; // case MetaType_float
+                case MetaType_float: { // float.
+                    bytes_written = serialize_primitive_((float *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
+                } break;
 
-                // int.
-                case MetaType_int: {
-                    if(member->arr_size > 1) {
-                        for(int j = 0; (j < member->arr_size); ++j) {
-                            bool is_null = (member->is_ptr) ? !(*(int **)(member_ptr + j)) : 0;
-                            if(!is_null) {
-                                int v = (member->is_ptr) ? *(int *)member_ptr[j] : *((int *)member_ptr + j);
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
-                            } else {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
-                            }
-                        }
-                    } else {
-                        int *int_value = (member->is_ptr) ? *(int **)member_ptr : (int *)member_ptr;
-                        if(int_value) {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, *int_value);
-                        } else {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
-                        }
-                    }
-                } break; // case MetaType_int
+                case MetaType_int: { // int.
+                    bytes_written = serialize_primitive_((int *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
+                } break;
 
-                // long.
-                case MetaType_long: {
-                    if(member->arr_size > 1) {
-                        for(int j = 0; (j < member->arr_size); ++j) {
-                            bool is_null = (member->is_ptr) ? !(*(long **)(member_ptr + j)) : 0;
-                            if(!is_null) {
-                                long v = (member->is_ptr) ? *(long *)member_ptr[j] : *((long *)member_ptr + j);
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
-                            } else {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
-                            }
-                        }
-                    } else {
-                        long *long_value = (member->is_ptr) ? *(long **)member_ptr : (long *)member_ptr;
-                        if(long_value) {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s = %ld", indent_buf, (member->is_ptr) ? "*" : "", member->name, *long_value);
-                        } else {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
-                        }
-                    }
-                } break; // case MetaType_long
+                case MetaType_long: { // long.
+                    bytes_written = serialize_primitive_((long *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
+                } break;
 
-                // short.
-                case MetaType_short: {
-                    if(member->arr_size > 1) {
-                        for(int j = 0; (j < member->arr_size); ++j) {
-                            bool is_null = (member->is_ptr) ? !(*(short **)(member_ptr + j)) : 0;
-                            if(!is_null) {
-                                short v = (short)((member->is_ptr) ? (*(short *)member_ptr[j]) : (*(short *)member_ptr + j));
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, v);
-                            } else {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
-                            }
-                        }
-                    } else {
-                        short *short_value = (member->is_ptr) ? *(short **)member_ptr : (short *)member_ptr;
-                        if(short_value) {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint %s%s = %d", indent_buf, (member->is_ptr) ? "*" : "", member->name, *short_value);
-                        } else {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sint *%s = (null)", indent_buf, member->name);
-                        }
-                    }
-                } break; // case MetaType_short
+                case MetaType_short: { // short.
+                    bytes_written = serialize_primitive_((short *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
+                } break;
 
-                // bool.
-                case MetaType_bool: {
-                    bool *bool_value = 0;
-                    if(member->arr_size > 1) {
-                        for(int j = 0; (j < member->arr_size); ++j) {
-                            bool is_null = (member->is_ptr) ? !(*(bool **)(member_ptr + j)) : 0;
-                            if(is_null) {
-                                size_t v = (member->is_ptr) ? **(bool **)(member_ptr + j) : *((bool *)member_ptr + j);
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, j, (v) ? "true" : "false");
-                            } else {
-                                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s[%d] = (null)", indent_buf, (member->is_ptr) ? "*" : "", member->name, j);
-                            }
-                        }
-                    } else {
-                        bool_value = (member->is_ptr) ? *(bool **)member_ptr : (bool *)member_ptr;
-                        if(bool_value) {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool %s%s = %s", indent_buf, (member->is_ptr) ? "*" : "", member->name, (bool_value) ? "true" : "false");
-                        } else {
-                            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%sbool *%s = (null)", indent_buf, member->name);
-                        }
-                    }
-                } break; // case MetaType_bool
+                case MetaType_bool: { // bool.
+                    bytes_written = serialize_primitive_((bool *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
+                } break;
 
-                // char.
+                // char (special case).
                 case MetaType_char: {
                     if(member_ptr) {
                         if(member->is_ptr) {

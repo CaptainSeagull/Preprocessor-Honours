@@ -168,14 +168,62 @@ template<typename T, typename U> bool weak_type_compare_(void) {
 
     return(false);
 }
-
-template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }
-
 #if defined(_MSC_VER)
     #define pp_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
 #else
     #define pp_sprintf(buf, size, format, ...) sprintf(buf, format, ##__VA_ARGS__)
 #endif
+
+template<typename T>static size_t
+serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    char const *type_as_string = type_to_string(T);
+    char indent_buf[256] = {};
+    for(int i = 0; (i < indent); ++i) indent_buf[i] = ' ';
+
+    if(arr_size > 1) {
+        for(int j = 0; (j < arr_size); ++j) {
+            size_t *member_ptr_as_size_t = (size_t *)member_ptr; // For arrays of pointers.
+            bool is_null = (is_ptr) ? member_ptr_as_size_t[j] == 0 : false;
+            if(!is_null) {
+                T v;
+                if(is_ptr) {
+                   v = *(T *)member_ptr_as_size_t[j];
+                } else {
+                    v = member_ptr[j];
+                }
+
+#define print_prim_arr(x) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = " x "", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j, v)
+                if(type_compare(T, double))     print_prim_arr("%f");
+                else if(type_compare(T, float)) print_prim_arr("%f");
+                else if(type_compare(T, int))   print_prim_arr("%d");
+                else if(type_compare(T, long))  print_prim_arr("%ld");
+                else if(type_compare(T, short)) print_prim_arr("%d");
+                else if(type_compare(T, bool))  print_prim_arr("%d");
+#undef print_prim_arr
+            } else {
+                bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = (null)", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j);            }
+        }
+    } else {
+        T *v = (is_ptr) ? *(T **)member_ptr : (T *)member_ptr;
+        if(v) {
+#define print_prim(x) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s = " x "", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, *v)
+            if(type_compare(T, double))     print_prim("%f");
+            else if(type_compare(T, float)) print_prim("%f");
+            else if(type_compare(T, int))   print_prim("%d");
+            else if(type_compare(T, long))  print_prim("%ld");
+            else if(type_compare(T, short)) print_prim("%d");
+            else if(type_compare(T, bool))  print_prim("%d");
+#undef print_prim
+        } else {
+            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%%s *%%s = (null)", indent_buf, type_as_string, name);
+        }
+    }
+
+    return(bytes_written);
+
+}
+
+template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }
 
 } // namespace pp
 
