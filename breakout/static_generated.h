@@ -192,13 +192,13 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
                     v = member_ptr[j];
                 }
 
-#define print_prim_arr(x) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = " x "", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j, v)
-                if(type_compare(T, double))     print_prim_arr("%f");
-                else if(type_compare(T, float)) print_prim_arr("%f");
-                else if(type_compare(T, int))   print_prim_arr("%d");
-                else if(type_compare(T, long))  print_prim_arr("%ld");
-                else if(type_compare(T, short)) print_prim_arr("%d");
-                else if(type_compare(T, bool))  print_prim_arr("%d");
+#define print_prim_arr(m, type) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s " #type " %s[%d] = " m "", indent_buf, (is_ptr) ? "*" : "", name, j, (type)v)
+                if(type_compare(T, double))     print_prim_arr("%f",  double);
+                else if(type_compare(T, float)) print_prim_arr("%f",  float);
+                else if(type_compare(T, int))   print_prim_arr("%d",  int);
+                else if(type_compare(T, long))  print_prim_arr("%ld", long);
+                else if(type_compare(T, short)) print_prim_arr("%d",  short);
+                else if(type_compare(T, bool))  print_prim_arr("%d",  bool);
 #undef print_prim_arr
             } else {
                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = (null)", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j);            }
@@ -206,16 +206,16 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
     } else {
         T *v = (is_ptr) ? *(T **)member_ptr : (T *)member_ptr;
         if(v) {
-#define print_prim(x) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s = " x "", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, *v)
-            if(type_compare(T, double))     print_prim("%f");
-            else if(type_compare(T, float)) print_prim("%f");
-            else if(type_compare(T, int))   print_prim("%d");
-            else if(type_compare(T, long))  print_prim("%ld");
-            else if(type_compare(T, short)) print_prim("%d");
-            else if(type_compare(T, bool))  print_prim("%d");
+#define print_prim(m, type) bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s " #type " %s = " m "", indent_buf, (is_ptr) ? "*" : "", name, (type)*v)
+            if(type_compare(T, double))     print_prim("%f",  double);
+            else if(type_compare(T, float)) print_prim("%f",  float);
+            else if(type_compare(T, int))   print_prim("%d",  int);
+            else if(type_compare(T, long))  print_prim("%ld", long);
+            else if(type_compare(T, short)) print_prim("%d",  short);
+            else if(type_compare(T, bool))  print_prim("%d",  bool);
 #undef print_prim
         } else {
-            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%%s *%%s = (null)", indent_buf, type_as_string, name);
+            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s %s *%s = (null)", indent_buf, type_as_string, name);
         }
     }
 

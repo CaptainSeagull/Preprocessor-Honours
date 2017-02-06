@@ -35,7 +35,7 @@ struct B {
 #define NUMBER_FIVE 5
 struct Foo : public A, public B {
     char const *str;
-    int **int_ptr;
+    int *int_ptr;
     float *float_ptr;
     bool *bool_ptr;
     int int_array[NUMBER_FOUR];
@@ -50,9 +50,7 @@ void test_struct(void) {
 
     foo.str = "Hello World";
 
-    static int i = 100;
-    static int *j = &i;
-    foo.int_ptr = &j;;
+    foo.int_ptr = new int; *foo.int_ptr = 10;
 
     foo.float_ptr = new float; *foo.float_ptr = 10.5f;
 
