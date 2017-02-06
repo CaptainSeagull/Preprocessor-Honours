@@ -508,119 +508,88 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
             Bool is_inside_anonymous_struct;
         };
 
-        MemberInfo member_info[256] = {}; // TODO(Jonny): Random number.
+        //MemberInfo member_info[256] = {}; // TODO(Jonny): Random number.
+        PtrSize member_info_mem_cnt = 256;
+        MemberInfo *member_info = alloc(MemberInfo, 256);
+        if(member_info) {
+            Bool inside_anonymous_struct = false;
+            for(;;) {
+                Token token = get_token(tokenizer);
+                if((!is_stupid_class_keyword(token))) {
+                    // TODO(Jonny): This could be the end of an anonymous struct, so ignore it.
+                    if(token_equals(token, "struct")) {
+                        eat_token(tokenizer); // Eat the open brace.
+                        token = get_token(tokenizer);
+                        inside_anonymous_struct = true;
+                    }
 
-#if 0
-        Int func_max = 8;
-        res.sd.func_data = malloc_array(base_type(res.sd.func_data), func_max);
-        if(!res.sd.func_data) {
-            push_error(ErrorType_ran_out_of_memory);
-        }
-#endif
-
-        Bool inside_anonymous_struct = false;
-        for(;;) {
-            Token token = get_token(tokenizer);
-            if((!is_stupid_class_keyword(token))) {
-                // TODO(Jonny): This could be the end of an anonymous struct, so ignore it.
-                if(token_equals(token, "struct")) {
-                    eat_token(tokenizer); // Eat the open brace.
-                    token = get_token(tokenizer);
-                    inside_anonymous_struct = true;
-                }
-
-                if((token.type != TokenType_colon) && (token.type != TokenType_tilde)) {
-                    if(token.type == TokenType_close_brace) {
-                        if(inside_anonymous_struct) {
-                            inside_anonymous_struct = false;
-                            eat_token(tokenizer); // Eat semi colon.
-                            continue;
-                        } else if(!have_name) {
-                            name = get_token(tokenizer);
-                            if(name.type == TokenType_identifier) res.sd.name = token_to_string(name);
-                            else                                  push_error(ErrorType_could_not_detect_struct_name);
-                        }
-
-                        break; // for
-                    } else if(token.type == TokenType_hash) {
-                        // TODO(Jonny): Support macros with '/' to extend their lines?
-                        while(!is_end_of_line(tokenizer->at[0])) {
-                            ++tokenizer->at;
-                        }
-                    } else {
-                        Bool is_func = false;
-
-                        Tokenizer tokenizer_copy = *tokenizer;
-                        Token temp = get_token(&tokenizer_copy);
-                        while(temp.type != TokenType_semi_colon) {
-                            if(temp.type == TokenType_open_paren) {
-                                is_func = true;
+                    if((token.type != TokenType_colon) && (token.type != TokenType_tilde)) {
+                        if(token.type == TokenType_close_brace) {
+                            if(inside_anonymous_struct) {
+                                inside_anonymous_struct = false;
+                                eat_token(tokenizer); // Eat semi colon.
+                                continue;
+                            } else if(!have_name) {
+                                name = get_token(tokenizer);
+                                if(name.type == TokenType_identifier) res.sd.name = token_to_string(name);
+                                else                                  push_error(ErrorType_could_not_detect_struct_name);
                             }
 
-                            if(temp.type == TokenType_open_brace) {
-                                is_func = true;
-                                break; // while
+                            break; // for
+                        } else if(token.type == TokenType_hash) {
+                            // TODO(Jonny): Support macros with '/' to extend their lines?
+                            while(!is_end_of_line(tokenizer->at[0])) {
+                                ++tokenizer->at;
                             }
-
-                            temp = get_token(&tokenizer_copy);
-                        }
-
-                        if(!is_func) {
-                            MemberInfo *mi = member_info + member_cnt++;
-
-                            mi->pos = token.e;
-                            mi->is_inside_anonymous_struct = inside_anonymous_struct;
                         } else {
-                            if(temp.type == TokenType_open_brace) {
-                                skip_to_matching_bracket(&tokenizer_copy);
-                            }
-                        } /*else {
-                            // This is commented out because I'm not sure I really _need_ member functions...
-                            // TODO(Jonny): This fails for constructors (and probably destructors).
-                            if(inline_func) {
-                                skip_to_matching_bracket(&tokenizer_copy);
-                            }
+                            Bool is_func = false;
 
-                            if(!token_compare(token, name)) {
-                                // Get member function name and return type.
-                                Tokenizer second_copy = *tokenizer;
-                                FunctionData fd = {};
-                                //fd.linkage = ;
-                                fd.ret_type = token_to_string(token);
-                                fd.name = token_to_string(get_token(&second_copy));
-
-                                eat_token(&second_copy);
-
-                                // Parse the parameters.
-                                Token next = peak_token(&second_copy);
-                                while(next.type != TokenType_close_param) {
-                                    fd.params[fd.param_count++] = parse_variable(&second_copy, TokenType_comma, TokenType_close_param);
-
-                                    next = peak_token(&second_copy);
-                                    assert((next.type == TokenType_comma) || (next.type == TokenType_close_param));
-                                    if(next.type == TokenType_comma) {
-                                        eat_token(&second_copy);
-                                    }
+                            Tokenizer tokenizer_copy = *tokenizer;
+                            Token temp = get_token(&tokenizer_copy);
+                            while(temp.type != TokenType_semi_colon) {
+                                if(temp.type == TokenType_open_paren) {
+                                    is_func = true;
                                 }
 
-                                // Now store the function data.
-                                res.sd.func_data[res.sd.func_count++] = fd;
-                            }
-                        } */
+                                if(temp.type == TokenType_open_brace) {
+                                    is_func = true;
+                                    break; // while
+                                }
 
-                        *tokenizer = tokenizer_copy;
+                                temp = get_token(&tokenizer_copy);
+                            }
+
+                            if(!is_func) {
+                                if(member_cnt >= member_info_mem_cnt) {
+                                    member_info_mem_cnt *= 2;
+                                    Void *p = realloc(member_info, sizeof(MemberInfo) * member_info_mem_cnt);
+
+                                    if(p) member_info = cast(MemberInfo *)p;
+                                }
+
+                                MemberInfo *mi = member_info + member_cnt++;
+
+                                mi->pos = token.e;
+                                mi->is_inside_anonymous_struct = inside_anonymous_struct;
+                            } else {
+                                if(temp.type == TokenType_open_brace) {
+                                    skip_to_matching_bracket(&tokenizer_copy);
+                                }
+                            }
+
+                            *tokenizer = tokenizer_copy;
+                        }
                     }
                 }
             }
-        }
 
-        if(member_cnt > 0) {
-            res.sd.members = alloc(Variable, member_cnt * 2/*HACKY!!*/); // TODO(Jonny): This may not be correct. May need a realloc.
-            if(res.sd.members) {
-                Int member_index = 0;
-                for(Int i = 0; (i < member_cnt); ++i) {
-                    Int var_cnt = 1;
-                    {
+            if(member_cnt > 0) {
+                res.sd.members = alloc(Variable, member_cnt * 2/*HACKY!!*/); // TODO(Jonny): This may not be correct. May need a realloc.
+                if(res.sd.members) {
+                    Int member_index = 0;
+                    for(Int i = 0; (i < member_cnt); ++i) {
+                        // Count the number of variables
+                        Int var_cnt = 1;
                         Char *at = member_info[i].pos;
                         while(*at != ';') {
                             if(*at == ',') {
@@ -629,18 +598,21 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
 
                             ++at;
                         }
+
+                        // Actually parse each member now.
+                        for(Int j = 0; (j < var_cnt); ++j) {
+                            Tokenizer fake_tokenizer = { member_info[i].pos };
+                            res.sd.members[member_index] = parse_member(&fake_tokenizer, j);
+                            res.sd.members[member_index].is_inside_anonymous_struct = member_info[i].is_inside_anonymous_struct;
+                            ++member_index;
+                        }
                     }
 
-                    for(Int j = 0; (j < var_cnt); ++j) {
-                        Tokenizer fake_tokenizer = { member_info[i].pos };
-                        res.sd.members[member_index] = parse_member(&fake_tokenizer, j);
-                        res.sd.members[member_index].is_inside_anonymous_struct = member_info[i].is_inside_anonymous_struct;
-                        ++member_index;
-                    }
+                    res.sd.member_count = member_index;
                 }
-
-                res.sd.member_count = member_index;
             }
+
+            free(member_info);
         }
     }
 
