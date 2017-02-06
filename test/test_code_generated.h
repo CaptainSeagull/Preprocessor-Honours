@@ -206,7 +206,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
     return(bytes_written);
 }
 // Recreated structs (Clang in std=C++98 complains if these are local).
-struct _Test {  _int i;  _int j;  };
+struct _Test {  _int i;  _int *j;  };
 union _V2 {  _int e[2];  struct { _int x;  _int y;  }; };
 struct _A {  _int a;  };
 struct _B {  _double b;  };
@@ -220,7 +220,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     if(type_compare(T, Test)) {
         static MemberDefinition members_of_Test[] = {
             {MetaType_int, "i", offset_of(&_Test::i), false, 1},
-            {MetaType_int, "j", offset_of(&_Test::j), false, 1},
+            {MetaType_int, "j", offset_of(&_Test::j), true, 1},
         };
         return(members_of_Test);
 
@@ -356,7 +356,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
     } else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {
         static MemberDefinition members_of_Test[] = {
             {MetaType_int, "i", offset_of(&_Test::i), false, 1},
-            {MetaType_int, "j", offset_of(&_Test::j), false, 1},
+            {MetaType_int, "j", offset_of(&_Test::j), true, 1},
         };
         return(members_of_Test);
 

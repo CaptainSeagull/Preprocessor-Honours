@@ -17,7 +17,7 @@
 //
 
 struct Test {
-    int i, j;
+    int i, *j; // TODO(Jonny): Three things doesn't work... for some reason.
 };
 
 union V2 {
