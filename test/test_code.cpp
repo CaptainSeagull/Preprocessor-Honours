@@ -50,7 +50,7 @@ void test_struct(void) {
 
     foo.str = "Hello World";
 
-    foo.int_ptr = new int; *foo.int_ptr = 10;
+    foo.int_ptr = NULL;
 
     foo.float_ptr = new float; *foo.float_ptr = 10.5f;
 
