@@ -198,7 +198,7 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
                 else if(type_compare(T, int))   print_prim_arr("%d",  int);
                 else if(type_compare(T, long))  print_prim_arr("%ld", long);
                 else if(type_compare(T, short)) print_prim_arr("%d",  short);
-                else if(type_compare(T, bool))  print_prim_arr("%d",  bool);
+                else if(type_compare(T, bool))  print_prim_arr("%d",  int); // This is int to avoid warning C4800 on MSVC. Bool values get serialized as int (1 or 0) anyway.
 #undef print_prim_arr
             } else {
                 bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s %s[%d] = (null)", indent_buf, (is_ptr) ? "*" : "", type_as_string, name, j);
@@ -213,7 +213,7 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
             else if(type_compare(T, int))   print_prim("%d",  int);
             else if(type_compare(T, long))  print_prim("%ld", long);
             else if(type_compare(T, short)) print_prim("%d",  short);
-            else if(type_compare(T, bool))  print_prim("%d",  bool);
+            else if(type_compare(T, bool))  print_prim("%d",  int);// This is int to avoid warning C4800 on MSVC. Bool values get serialized as int (1 or 0) anyway.
 #undef print_prim
         } else {
             bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s %s *%s = (null)", indent_buf, type_as_string, name);
