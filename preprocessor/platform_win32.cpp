@@ -11,6 +11,7 @@
 
 #include <windows.h>
 #include "platform.h"
+#include "utils.h"
 #include "stdio.h"
 
 Uint64 system_get_performance_counter(void) {
