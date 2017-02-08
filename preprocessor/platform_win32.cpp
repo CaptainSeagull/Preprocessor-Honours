@@ -119,6 +119,14 @@ PtrSize get_file_size(Char *fname) {
     return(res);
 }
 
+Bool create_folder(Char *name) {
+    Int create_dir_res = CreateDirectory(name, 0);
+
+    Bool res = (create_dir_res == 0);
+
+    return(res);
+}
+
 Void system_write_to_console(Char *str) {
     printf("%s", str);
 }

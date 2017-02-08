@@ -24,6 +24,8 @@ File read_entire_file_and_null_terminate(Char *fname, Void *memory);
 Bool write_to_file(Char *fname, Void *data, PtrSize data_size);
 PtrSize get_file_size(Char *fname);
 
+Bool create_folder(Char *name);
+
 // Utility stuff.
 Uint64 system_get_performance_counter(void);
 Void system_print_timer(Uint64 value);

@@ -347,10 +347,12 @@ Void start_parsing(Char *fname, Char *file) {
                                     parse_res.enum_data, parse_res.enum_cnt);
 
     if(should_write_to_file) {
-        Char generated_file_name[256] = {};
+        Char generated_file_name[256] = dir_name "/"; // TODO(Jonny): MAX_PATH?
+        Int start = string_length(dir_name "/");
         Char *generated_extension = "_generated.h";
 
-        if(string_concat(generated_file_name, array_count(generated_file_name),
+        // Add _generated.h to the filename.
+        if(string_concat(generated_file_name + start, array_count(generated_file_name) - start,
                          fname, string_length(fname) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                          generated_extension, string_length(generated_extension))) {
             Bool header_write_success = write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
@@ -433,15 +435,23 @@ Int main(Int argc, Char **argv) {
             if(!number_of_files) {
                 push_error(ErrorType_no_files_pass_in);
             } else {
+                create_folder(dir_name);
+
                 Byte *file_memory = alloc(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
                     if(should_write_to_file) {
-                        Char *static_file_data = get_static_file();
-                        Int static_file_len = string_length(static_file_data);
-                        Bool static_write_success = write_to_file("static_generated.h", static_file_data, static_file_len);
+                        Bool create_folder_success = create_folder(dir_name);
 
-                        if(!static_write_success) push_error(ErrorType_could_not_write_to_disk);
+                        if(!create_folder_success) {
+                            push_error(ErrorType_could_not_create_directory);
+                        } else {
+                            Char *static_file_data = get_static_file();
+                            Int static_file_len = string_length(static_file_data);
+                            Bool static_write_success = write_to_file(dir_name "/static_generated.h", static_file_data, static_file_len);
+
+                            if(!static_write_success) push_error(ErrorType_could_not_write_to_disk);
+                        }
                     }
 
                     // Parse files

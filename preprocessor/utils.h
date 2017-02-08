@@ -26,6 +26,8 @@
     #define MAKE_GUID GUID(__FILE__, __LINE__)
 #endif
 
+#define dir_name "pp_generated"
+
 //
 // Error stuff.
 //
@@ -47,6 +49,7 @@ enum ErrorType {
     ErrorType_failed_to_find_size_of_array,
     ErrorType_did_not_write_entire_file,
     ErrorType_did_not_read_entire_file,
+    ErrorType_could_not_create_directory,
 
     ErrorType_count,
 };

@@ -10,7 +10,7 @@
   ===================================================================================================*/
 
 // File: test_code.cpp
-#include "test_code_generated.h"
+#include "pp_generated/test_code_generated.h"
 
 //
 // struct test.
