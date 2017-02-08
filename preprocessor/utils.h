@@ -26,7 +26,7 @@
     #define MAKE_GUID GUID(__FILE__, __LINE__)
 #endif
 
-#define dir_name "pp_generated"
+#define dir_name "pp_generated" // The directory the generated code goes in.
 
 //
 // Error stuff.
@@ -245,7 +245,9 @@ Bool string_compare(Char *a, Char *b);
 Void string_copy(Char *dest, Char *src);
 Bool string_compare(String a, String b);
 Bool string_compare_array(String *a, String *b, Int cnt);
+
 Bool string_contains(String str, Char *target);
+Bool string_contains(Char *str, Char *target);
 
 //
 // Maths.

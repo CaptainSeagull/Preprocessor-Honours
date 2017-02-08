@@ -385,6 +385,7 @@ Void print_help(void) {
     system_write_to_console(help);
 }
 
+// TODO(Jonny): Support wildcards.
 Int main(Int argc, Char **argv) {
     Int res = 0;
 
@@ -413,15 +414,14 @@ Int main(Int argc, Char **argv) {
                 case SwitchType_display_time_taken: display_time_taken = true;    break;
 
                 case SwitchType_source_file: {
-                    // TODO(Jonny): Add a test in here to make sure we're not generating metadata _on_ metadata. Maybe just test if the
-                    //              file passed in is inside the pp_generated folder?
-                    PtrSize file_size = get_file_size(switch_name);
-                    if(!file_size) {
-                        push_error(ErrorType_cannot_find_file);
-                    } else {
-                        ++number_of_files;
-                        if(file_size > largest_source_file_size) {
-                            largest_source_file_size = file_size;
+                    if(!string_contains(switch_name, dir_name)) {
+                        PtrSize file_size = get_file_size(switch_name);
+                        if(!file_size) {
+                            push_error(ErrorType_cannot_find_file);
+                        } else {
+                            ++number_of_files;
+
+                            if(file_size > largest_source_file_size) largest_source_file_size = file_size;
                         }
                     }
                 } break;

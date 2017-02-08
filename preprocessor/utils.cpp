@@ -236,6 +236,11 @@ Bool string_contains(String str, Char *target) {
     return(false);
 }
 
+Bool string_contains(Char *str, Char *target) {
+    String s = {str, string_length(str)};
+    return(string_contains(s, target));
+}
+
 //
 // Stuff
 //
