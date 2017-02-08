@@ -413,6 +413,8 @@ Int main(Int argc, Char **argv) {
                 case SwitchType_display_time_taken: display_time_taken = true;    break;
 
                 case SwitchType_source_file: {
+                    // TODO(Jonny): Add a test in here to make sure we're not generating metadata _on_ metadata. Maybe just test if the
+                    //              file passed in is inside the pp_generated folder?
                     PtrSize file_size = get_file_size(switch_name);
                     if(!file_size) {
                         push_error(ErrorType_cannot_find_file);
