@@ -437,8 +437,6 @@ Int main(Int argc, Char **argv) {
             if(!number_of_files) {
                 push_error(ErrorType_no_files_pass_in);
             } else {
-                create_folder(dir_name);
-
                 Byte *file_memory = alloc(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
