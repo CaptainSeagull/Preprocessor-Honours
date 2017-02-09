@@ -45,8 +45,10 @@ internal Int set_primitive_type(String *array) {
 // TODO(Jonny): Maybe I could split this out into a serialize primitve and serialize struct code. For serialize primitive, it could be mostly templated,
 //              with just a utility thing to get the printf modifier (%s for string, %d for ints). And I think most of the code for serializing structs
 //              could be generalized through templates too. Maybe I could even add a third method, serialize container, as well?
-internal Void write_serialize_struct_implementation(Char *def_struct_code, OutputBuffer *ob) {
-    Char *top =
+internal Void write_serialize_struct_implementation(OutputBuffer *ob) {
+    // TODO(Jonny): Since nothing in this is generated anymore, I could move it out to static_generated. Wait until I've fixed container
+    //              serialization first though.
+    Char *func =
         "// Function to serialize a struct to a char array buffer.\n"
         "static size_t\nserialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
         "    assert((name) && (buffer) && (buf_size > 0)); // Check params.\n"
@@ -57,20 +59,22 @@ internal Void write_serialize_struct_implementation(Char *def_struct_code, Outpu
         "    if(members_of_Something) {\n"
         "        // Setup the indent buffer.\n"
         "        char indent_buf[256] = {};\n"
-        "        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
+        "        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
         "\n"
         "        // Write the name and the type.\n"
         "        bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_as_str, name);\n"
         "        indent += 4;\n"
         "\n"
         "        // Add 4 to the indent.\n"
-        "        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }\n"
+        "        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
         "\n"
         "        int num_members = get_number_of_members_str(type_as_str); assert(num_members != -1); // Get the number of members for the for loop.\n"
         "        for(int i = 0; (i < num_members); ++i) {\n"
         "            MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.\n"
         "            size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.\n"
         "            switch(member->type) {\n"
+        "                // This is a little verbose so I can get the right template overload for serialize_primitive. I should just\n"
+        "                // make it a macro though.\n"
         "                case MetaType_double: { // double.\n"
         "                    bytes_written = serialize_primitive_((double *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);\n"
         "                } break;\n"
@@ -110,19 +114,18 @@ internal Void write_serialize_struct_implementation(Char *def_struct_code, Outpu
         "\n"
         "                // If the type wasn't a primtive, do a switchon the type again, but search for structs.\n"
         "                // Then that should recursively call this function again.\n"
-        "                default: {\n";
-    Char *bottom = "\n"
-                   "                } break; // default \n"
-                   "            }\n"
-                   "        }\n"
-                   "    }\n"
-                   "\n"
-                   "    return(bytes_written);\n"
-                   "}\n";
+        "                default: {\n"
+        "                    char const *name = meta_type_to_name(member->type, member->is_ptr);\n"
+        "                    bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+        "                } break; // default \n"
+        "            }\n"
+        "        }\n"
+        "    }\n"
+        "\n"
+        "    return(bytes_written);\n"
+        "}\n";
 
-    write_to_output_buffer(ob, top);
-    write_to_output_buffer(ob, def_struct_code);
-    write_to_output_buffer(ob, bottom);
+    write_to_output_buffer(ob, func);
 }
 
 internal Bool is_meta_type_already_in_array(String *array, Int len, String test) {
@@ -225,6 +228,42 @@ internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
     write_to_output_buffer(ob, "};");
 }
 
+internal Void
+write_meta_type_to_name(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
+    write_to_output_buffer(ob,
+                           "static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {\n");
+    for(Int i = 0; (i < struct_count); ++i) {
+        StructData *sd = struct_data + i;
+
+        if(!i) {
+            write_to_output_buffer(ob,
+                                   "    if(mt == MetaType_%.*s) {\n"
+                                   "        if(is_ptr) {return(\"%.*s *\");}\n"
+                                   "        else       {return(\"%.*s\");  }\n"
+                                   "    }",
+                                   sd->name.len, sd->name.e,
+                                   sd->name.len, sd->name.e,
+                                   sd->name.len, sd->name.e);
+        } else {
+            write_to_output_buffer(ob,
+                                   " else if(mt == MetaType_%.*s) {\n"
+                                   "        if(is_ptr) {return(\"%.*s *\");}\n"
+                                   "        else       {return(\"%.*s\");  }\n"
+                                   "    }",
+                                   sd->name.len, sd->name.e,
+                                   sd->name.len, sd->name.e,
+                                   sd->name.len, sd->name.e);
+        }
+    }
+
+    write_to_output_buffer(ob,
+                           "\n"
+                           "    assert(0); \n"
+                           "    return(0); // Not found\n"
+                           "}\n");
+
+}
+
 File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
     File res = {};
 
@@ -290,109 +329,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
         write_meta_type_enum(&ob, types, type_count, struct_data, struct_count);
 
-        //
-        // Struct Meta Data
-        //
-
-        // Recursive part for calling on members of structs.
         write_to_output_buffer(&ob, "\n\n");
 
-        Int def_struct_code_size = 10000;
-        Char *def_struct_code_mem = alloc(Char, def_struct_code_size);
-        if(def_struct_code_mem) {
-            Int index = 0;
+        write_meta_type_to_name(&ob, struct_data, struct_count);
 
-            Bool any_stds = false;
-            for(Int i = 0; (i < type_count); ++i) {
-                String *type = types + i;
-
-                StdResult std_res = get_std_information(*type);
-                switch(std_res.type) {
-                    case StdTypes_vector: {
-                        any_stds = true;
-                    } break;
-                }
-
-                if(any_stds) {
-                    break; // for
-                }
-            }
-
-
-            if((struct_count) || (any_stds)) {
-                Char *switch_start = "                    switch(member->type) {\n";
-                string_copy(def_struct_code_mem + index, switch_start);
-                index += string_length(switch_start);
-
-                // Add structs.
-                for(Int i = 0; (i < struct_count); ++i) {
-                    StructData *sd = struct_data + i;
-
-                    // TODO(Jonny): This could support unions better...
-                    index +=
-                        stbsp_snprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                       "                        case MetaType_%.*s: {\n"
-                                       "                            // %.*s\n"
-                                       "                            if(member->is_ptr) {\n"
-                                       "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s *\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                       "                            } else {\n"
-                                       "                                bytes_written = serialize_struct_(member_ptr, member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                       "                            }\n"
-                                       "                        } break; // case MetaType_%.*s\n"
-                                       "\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e, sd->name.len, sd->name.e,
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-                }
-
-                // Add std things.
-                for(Int i = 0; (i < type_count); ++i) {
-                    String *type = types + i;
-
-                    StdResult std_res = get_std_information(*type);
-
-                    switch(std_res.type) {
-                        case StdTypes_vector: {
-                            index += stbsp_snprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                                    "                        case MetaType_std_vector_%.*s: {\n"
-                                                    "                            std::vector<%.*s> temp = *(std::vector<%.*s> *)member_ptr;\n"
-                                                    "                            size_t size = temp.size();\n"
-                                                    "                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%sstd::vector<%.*s> %s\", indent_buf, member->name);\n"
-                                                    "                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%sSize = %s\", indent_buf, (int)size);\n"
-                                                    "                            for(size_t i = 0; (i < size); ++i) {\n"
-                                                    "                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%s[%s]\", indent_buf, (int)i);\n"
-                                                    "                                bytes_written = serialize_struct_((void *)&temp[i], member->name, \"%.*s\", indent, buffer, buf_size - bytes_written, bytes_written);\n"
-                                                    "                            }\n"
-                                                    "                        } break;\n"
-                                                    "\n",
-                                                    std_res.stored_type.len, std_res.stored_type.e,
-                                                    std_res.stored_type.len, std_res.stored_type.e,
-                                                    std_res.stored_type.len, std_res.stored_type.e,
-                                                    "%%s",
-                                                    std_res.stored_type.len, std_res.stored_type.e,
-                                                    "%%s",
-                                                    "%%s",
-                                                    "%%d",
-                                                    "%%s",
-                                                    "%%d",
-                                                    std_res.stored_type.len, std_res.stored_type.e);
-                        } break;
-                    }
-                }
-
-                Char *switch_end = "                    } // switch(member->type)";
-                string_copy(def_struct_code_mem + index, switch_end);
-                index += string_length(switch_end);
-
-                assert(index < def_struct_code_size);
-            } else {
-                index += stbsp_snprintf(def_struct_code_mem + index, def_struct_code_size - index,
-                                        "                    // NOTE: No types found.");
-            }
-
-            write_serialize_struct_implementation(def_struct_code_mem, &ob);
-
-            free(def_struct_code_mem);
-        }
+        write_serialize_struct_implementation(&ob);
 
         // Recreated structs.
         write_to_output_buffer(&ob, "// Recreated structs (Clang in std=C++98 complains if these are local).\n");
