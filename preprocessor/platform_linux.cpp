@@ -13,6 +13,9 @@
 #include <stdio.h>
 #include "platform.h"
 #include "utils.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 Uint64 system_get_performance_counter(void) {
     Uint64 res = 0;
@@ -109,6 +112,16 @@ PtrSize get_file_size(Char *fname) {
     }
 
     return(size);
+}
+
+Bool create_folder(Char *name) {
+    Bool res = false;
+    struct stat st = {};
+
+    if(stat(name, &st) == -1) res = (mkdir(name, 0700) == 0);
+    else                      res = true;
+
+    return(res);
 }
 
 Void system_write_to_console(Char *str) {
