@@ -19,6 +19,7 @@ struct OutputBuffer {
     Int size;
 };
 
+#define empty_line(ob) write_to_output_buffer(ob, "\n")
 internal Void write_to_output_buffer(OutputBuffer *ob, Char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -53,7 +54,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob) {
         "static size_t\nserialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
         "    assert((name) && (buffer) && (buf_size > 0)); // Check params.\n"
         "\n"
-        "    if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.\n"
+        "    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.\n"
         "\n"
         "    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. \n"
         "    if(members_of_Something) {\n"
@@ -112,8 +113,6 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob) {
         "                    }\n"
         "                } break; // case MetaType_char\n"
         "\n"
-        "                // If the type wasn't a primtive, do a switchon the type again, but search for structs.\n"
-        "                // Then that should recursively call this function again.\n"
         "                default: {\n"
         "                    char const *name = meta_type_to_name(member->type, member->is_ptr);\n"
         "                    bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
@@ -155,9 +154,7 @@ internal StructData *find_struct(String str, StructData *structs, Int struct_cou
         }
     }
 
-    if(!res) {
-        push_error(ErrorType_could_not_find_struct);
-    }
+    if(!res) assert(0);
 
     return(res);
 }
@@ -196,10 +193,10 @@ internal void forward_declare_structs(OutputBuffer *ob, StructData *struct_data,
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;
 
-        if(sd->struct_type == StructType_struct)     write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e);
-        else if(sd->struct_type == StructType_class) write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);
-        else if(sd->struct_type == StructType_union) write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);
-        else                                         assert(0);
+        if(sd->struct_type == StructType_struct)     { write_to_output_buffer(ob, "struct %.*s;\n", sd->name.len, sd->name.e); }
+        else if(sd->struct_type == StructType_class) { write_to_output_buffer(ob, "class %.*s;\n", sd->name.len, sd->name.e);  }
+        else if(sd->struct_type == StructType_union) { write_to_output_buffer(ob, "union %.*s;\n", sd->name.len, sd->name.e);  }
+        else                                         { assert(0);                                                              }
     }
 }
 
@@ -225,7 +222,7 @@ internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
         }
     }
 
-    write_to_output_buffer(ob, "};");
+    write_to_output_buffer(ob, "};\n");
 }
 
 internal Void
@@ -261,7 +258,6 @@ write_meta_type_to_name(OutputBuffer *ob, StructData *struct_data, Int struct_co
                            "    assert(0); \n"
                            "    return(0); // Not found\n"
                            "}\n");
-
 }
 
 File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
@@ -274,7 +270,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         Char *name_buf = cast(Char *)push_scratch_memory();
         Int len_wo_extension = string_length(fname) - 4; // TODO(Jonny): Do properly.
 
-        for(Int i = 0; (i < len_wo_extension); ++i) name_buf[i] = to_caps(fname[i]);
+        for(Int i = 0; (i < len_wo_extension); ++i) {
+            name_buf[i] = to_caps(fname[i]);
+        }
 
         write_to_output_buffer(&ob,
                                "#if !defined(%s_GENERATED_H)\n"
@@ -291,7 +289,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "#include \"static_generated.h\"\n"
                                "\n"
                                "namespace pp { // PreProcessor\n"
-                               "#define _std std");
+                               "#define _std std // TODO(Jonny): This is really stupid...");
 
         //
         // MetaTypes enum.
@@ -305,32 +303,32 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         }
 
         String *types = alloc(String, max_type_count);
+        if(types) {
+            Int type_count = set_primitive_type(types);
 
-        Int type_count = set_primitive_type(types);
+            // Fill out the enum meta type enum.
+            for(Int i = 0; (i < struct_count); ++i) {
+                StructData *sd = struct_data + i;
 
-        // Fill out the enum meta type enum.
-        for(Int i = 0; (i < struct_count); ++i) {
-            StructData *sd = struct_data + i;
+                if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
+                    types[type_count++] = sd->name;
+                }
 
-            if(!is_meta_type_already_in_array(types, type_count, sd->name)) {
-                types[type_count++] = sd->name;
-            }
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
 
-            for(Int j = 0; (j < sd->member_count); ++j) {
-                Variable *md = sd->members + j;
-
-                if(!is_meta_type_already_in_array(types, type_count, md->type)) {
-                    types[type_count++] = md->type;
+                    if(!is_meta_type_already_in_array(types, type_count, md->type)) {
+                        types[type_count++] = md->type;
+                    }
                 }
             }
+
+            assert(type_count <= max_type_count);
+
+            write_meta_type_enum(&ob, types, type_count, struct_data, struct_count);
+
+            free(types);
         }
-
-        assert(type_count <= max_type_count);
-
-        write_meta_type_enum(&ob, types, type_count, struct_data, struct_count);
-
-        write_to_output_buffer(&ob, "\n\n");
-
         write_meta_type_to_name(&ob, struct_data, struct_count);
 
         write_serialize_struct_implementation(&ob);
@@ -348,7 +346,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 for(Int j = 0; (j < sd->inherited_count); ++j) {
                     String *inherited = sd->inherited + j;
 
-                    if(j) write_to_output_buffer(&ob, ",");
+                    if(j > 0) {
+                        write_to_output_buffer(&ob, ",");
+                    }
 
                     write_to_output_buffer(&ob, " public _%.*s", inherited->len, inherited->e);
                 }
@@ -359,12 +359,14 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             for(Int j = 0; (j < sd->member_count); ++j) {
                 Variable *md = sd->members + j;
 
-
                 if(md->is_inside_anonymous_struct != is_inside_anonymous_struct) {
                     is_inside_anonymous_struct = !is_inside_anonymous_struct;
 
-                    if(is_inside_anonymous_struct) write_to_output_buffer(&ob, " struct {");
-                    else                           write_to_output_buffer(&ob, "};");
+                    if(is_inside_anonymous_struct) {
+                        write_to_output_buffer(&ob, " struct {");
+                    } else {
+                        write_to_output_buffer(&ob, "};");
+                    }
                 }
 
                 Char *arr = "";
@@ -694,7 +696,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         for(Int i = 0, cnt = array_count(prim); (i < cnt); ++i) {
             String *p = prim + i;
 
-            if(!i) {
+            if(i == 0) {
                 write_to_output_buffer(&ob,
                                        "    if(strcmp(str, \"%.*s\") == 0) { return(1); }\n",
                                        p->len, p->e);
@@ -705,7 +707,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             }
         }
 
-
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
@@ -715,7 +716,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             for(Int j = 0; (j < sd->inherited_count); ++j) {
                 StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
 
-                member_count += base_class->member_count;
+                if(base_class) {
+                    member_count += base_class->member_count;
+                }
             }
 
             write_to_output_buffer(&ob,
@@ -727,7 +730,9 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "\n    return(-1); // Error.\n"
                                "}\n");
 
-        // type_to_string.
+        //
+        // Type to string.
+        //
         write_to_output_buffer(&ob,
                                "\n// Convert a type to a string.\n"
                                "template<typename T> static char const *type_to_string_(void) {\n"
@@ -807,7 +812,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             StructData *sd = struct_data + i;
 
             if(sd->inherited_count) {
-                if(!written_count) {
+                if(written_count == 0) {
                     write_to_output_buffer(&ob, "    if(type_compare(T, %.*s))    { return(%d); }\n",
                                            sd->name.len, sd->name.e, sd->inherited_count);
                 } else {
@@ -870,8 +875,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             }
 
             if(actually_written_anything) {
-                write_to_output_buffer(&ob,
-                                       "    }\n");
+                write_to_output_buffer(&ob, "    }\n");
             }
         }
 
@@ -883,7 +887,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         // Enum Meta data.
         //
 
-        // TODO(Jonny): Can I make the enum meta data templates as well, similar to the structs?
         if(enum_count) {
             write_to_output_buffer(&ob,
                                    "\n"
@@ -891,7 +894,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                    "// Enum meta data.\n"
                                    "//\n");
 
-            Int half_scratch_memory_size = cast(Int)(cast(Float)scratch_memory_size * 0.5f);
+            Int half_scratch_memory_size = scratch_memory_size / 2;
             for(Int i = 0; (i < enum_count); ++i) {
                 EnumData *ed = enum_data + i;
                 write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
@@ -1004,8 +1007,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
         res.size = ob.index;
         res.data = ob.buffer;
-
-        free(types);
     }
 
     return(res);

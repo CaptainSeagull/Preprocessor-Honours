@@ -11,7 +11,7 @@ struct GameState;
 #include "static_generated.h"
 
 namespace pp { // PreProcessor
-#define _std std
+#define _std std // TODO(Jonny): This is really stupid...
 // Enum with field for every type detected.
 enum MetaType {
     MetaType_char,
@@ -27,7 +27,6 @@ enum MetaType {
     MetaType_Paddle,
     MetaType_GameState,
 };
-
 static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     if(mt == MetaType_V2) {
         if(is_ptr) {return("V2 *");}
@@ -53,7 +52,7 @@ static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     assert((name) && (buffer) && (buf_size > 0)); // Check params.
 
-    if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.
+    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.
 
     MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. 
     if(members_of_Something) {
@@ -112,8 +111,6 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                     }
                 } break; // case MetaType_char
 
-                // If the type wasn't a primtive, do a switchon the type again, but search for structs.
-                // Then that should recursively call this function again.
                 default: {
                     char const *name = meta_type_to_name(member->type, member->is_ptr);
                     bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
