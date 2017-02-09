@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <string.h>
-#include "breakout_generated.h"
+#include "pp_generated/breakout_generated.h"
 
 #include "sdl/SDL.h"
 
