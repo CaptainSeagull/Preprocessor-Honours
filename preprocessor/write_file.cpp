@@ -103,6 +103,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
         }
     }
 
+    // TODO(Jonny): Allow "name" to be null in serialize_struct.
     write_to_output_buffer(ob,
                            "static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);"
                            "template<typename T, typename U> static size_t\n"
