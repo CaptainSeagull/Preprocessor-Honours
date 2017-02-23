@@ -272,7 +272,7 @@ Char *get_static_file(void) {
                 "serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
                 "    char const *type_as_string = type_to_string(T);\n"
                 "    char indent_buf[256] = {};\n"
-                "    for(int i = 0; (i < indent); ++i) indent_buf[i] = ' ';\n"
+                "    for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
                 "\n"
                 "    if(arr_size > 1) {\n"
                 "        for(int j = 0; (j < arr_size); ++j) {\n"

@@ -42,7 +42,9 @@ static bool is_meta_type_container(int type) {
     else if(type == MetaType_Paddle) {return(false);} // false
     else if(type == MetaType_GameState) {return(false);} // false
 
-    assert(0); // Should not be reached.
+    // Should not be reached.
+    assert(0);
+    return(0);
 }
 static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     if(mt == MetaType_V2) {
@@ -66,18 +68,19 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
 }
 static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
 serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
-    T &container = *(T *)member_ptr;
+    T container = *(T *)member_ptr;
     for(auto &iter : container) {
-        bytes_written += print_type(iter, U, buffer + bytes_written, buf_size - bytes_written);
+        bytes_written = serialize_struct_((void *)&iter, name, type_to_string(U), indent, buffer, buf_size, bytes_written);
     }
 
-    return(bytes_written);}
+    return(bytes_written);
+}
 
 
 // Function to serialize a struct to a char array buffer.
 static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
-    assert((name) && (buffer) && (buf_size > 0)); // Check params.
+    assert((buffer) && (buf_size > 0)); // Check params.
 
     if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.
 
@@ -88,7 +91,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
         for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
         // Write the name and the type.
-        bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_as_str, name);
+        if(name) {bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_as_str, name);}
         indent += 4;
 
         // Add 4 to the indent.
@@ -142,7 +145,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                     if(is_meta_type_container(member->type)) {
 
                     } else {
-                        char const *name = meta_type_to_name(member->type, member->is_ptr);
+                        char const *name = meta_type_to_name(member->type, member->is_ptr != 0);
                         bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
                     }
                 } break; // default 

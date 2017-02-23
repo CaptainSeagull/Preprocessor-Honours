@@ -178,7 +178,7 @@ template<typename T>static size_t
 serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     char const *type_as_string = type_to_string(T);
     char indent_buf[256] = {};
-    for(int i = 0; (i < indent); ++i) indent_buf[i] = ' ';
+    for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
     if(arr_size > 1) {
         for(int j = 0; (j < arr_size); ++j) {

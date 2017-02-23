@@ -79,15 +79,26 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
     char *temp = alloc(Char, temp_max);
     Int temp_cnt = 0;
 
+    Int written_count = 0;
+
     for(Int i = 0; (i < type_count); ++i) {
         String *type = types + i;
 
         StdResult std_res = get_std_information(*type);
         switch(std_res.type) {
             case StdTypes_vector: {
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "                        bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);\n",
+                if(written_count) {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "                        else ");
+                } else {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "                        ");
+                }
+
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "if(member->type == MetaType_std_vector_%.*s) {bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                                           std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
+
+                ++written_count;
             } break;
         }
     }
@@ -96,18 +107,18 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);"
                            "template<typename T, typename U> static size_t\n"
                            "serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
-                           "    T &container = *(T *)member_ptr;\n"
+                           "    T container = *(T *)member_ptr;\n"
                            "    for(auto &iter : container) {\n"
-                           "        bytes_written += print_type(iter, U, buffer + bytes_written, buf_size - bytes_written);\n"
+                           "        bytes_written = serialize_struct_((void *)&iter, name, type_to_string(U), indent, buffer, buf_size, bytes_written);\n"
                            "    }\n"
                            "\n"
-                           "    return(bytes_written);"
+                           "    return(bytes_written);\n"
                            "}\n"
                            "\n"
                            "\n"
                            "// Function to serialize a struct to a char array buffer.\n"
                            "static size_t\nserialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
-                           "    assert((name) && (buffer) && (buf_size > 0)); // Check params.\n"
+                           "    assert((buffer) && (buf_size > 0)); // Check params.\n"
                            "\n"
                            "    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.\n"
                            "\n"
@@ -118,7 +129,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
                            "\n"
                            "        // Write the name and the type.\n"
-                           "        bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_as_str, name);\n"
+                           "        if(name) {bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_as_str, name);}\n"
                            "        indent += 4;\n"
                            "\n"
                            "        // Add 4 to the indent.\n"
@@ -172,7 +183,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "                    if(is_meta_type_container(member->type)) {\n"
                            "%s\n" // serialize container stuff.
                            "                    } else {\n"
-                           "                        char const *name = meta_type_to_name(member->type, member->is_ptr);\n"
+                           "                        char const *name = meta_type_to_name(member->type, member->is_ptr != 0);\n"
                            "                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                            "                    }\n"
                            "                } break; // default \n"
@@ -320,7 +331,9 @@ static void write_is_container(OutputBuffer *ob, String *types, Int type_count) 
 
     write_to_output_buffer(ob,
                            "\n"
-                           "    assert(0); // Should not be reached.\n"
+                           "    // Should not be reached.\n"
+                           "    assert(0);\n"
+                           "    return(0);\n"
                            "}\n");
 }
 
