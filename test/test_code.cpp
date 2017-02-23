@@ -144,7 +144,7 @@ struct V3 {
 struct VectorTest {
     std::vector<int> integer;
     std::vector<float> floating;
-    std::vector<V3> vector3;
+    //std::vector<V3> vector3;
 };
 
 void test_vector(void) {
@@ -160,17 +160,17 @@ void test_vector(void) {
         vt.floating.push_back(i);
     }
 
-    vt.vector3.push_back({1, 2, 3});
-    vt.vector3.push_back({3, 2, 1});
-    vt.vector3.push_back({2, 3, 1});
+    //vt.vector3.push_back({1, 2, 3});
+    //vt.vector3.push_back({3, 2, 1});
+    //vt.vector3.push_back({2, 3, 1});
 
     pp::print(vt);
 
 }
 
 int main(int /*argc*/, char ** /*argv*/) {
-    test_struct();
-    test_enum();
+    //test_struct();
+    //test_enum();
     test_vector();
 
     printf("\n");

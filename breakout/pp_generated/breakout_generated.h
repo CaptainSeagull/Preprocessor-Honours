@@ -27,6 +27,23 @@ enum MetaType {
     MetaType_Paddle,
     MetaType_GameState,
 };
+
+static bool is_meta_type_container(int type) {
+    if(type == MetaType_char) {return(false);} // false
+    else if(type == MetaType_short) {return(false);} // false
+    else if(type == MetaType_int) {return(false);} // false
+    else if(type == MetaType_long) {return(false);} // false
+    else if(type == MetaType_float) {return(false);} // false
+    else if(type == MetaType_double) {return(false);} // false
+    else if(type == MetaType_bool) {return(false);} // false
+    else if(type == MetaType_V2) {return(false);} // false
+    else if(type == MetaType_Transform) {return(false);} // false
+    else if(type == MetaType_Ball) {return(false);} // false
+    else if(type == MetaType_Paddle) {return(false);} // false
+    else if(type == MetaType_GameState) {return(false);} // false
+
+    assert(0); // Should not be reached.
+}
 static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     if(mt == MetaType_V2) {
         if(is_ptr) {return("V2 *");}
@@ -47,6 +64,16 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     assert(0); 
     return(0); // Not found
 }
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    T &container = *(T *)member_ptr;
+    for(auto &iter : container) {
+        bytes_written += print_type(iter, U, buffer + bytes_written, buf_size - bytes_written);
+    }
+
+    return(bytes_written);}
+
+
 // Function to serialize a struct to a char array buffer.
 static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
@@ -112,8 +139,12 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                 } break; // case MetaType_char
 
                 default: {
-                    char const *name = meta_type_to_name(member->type, member->is_ptr);
-                    bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                    if(is_meta_type_container(member->type)) {
+
+                    } else {
+                        char const *name = meta_type_to_name(member->type, member->is_ptr);
+                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                    }
                 } break; // default 
             }
         }

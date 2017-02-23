@@ -32,8 +32,28 @@ enum MetaType {
     MetaType_VectorTest,
     MetaType_std_vector_int,
     MetaType_std_vector_float,
-    MetaType_std_vector_V3,
 };
+
+static bool is_meta_type_container(int type) {
+    if(type == MetaType_char) {return(false);} // false
+    else if(type == MetaType_short) {return(false);} // false
+    else if(type == MetaType_int) {return(false);} // false
+    else if(type == MetaType_long) {return(false);} // false
+    else if(type == MetaType_float) {return(false);} // false
+    else if(type == MetaType_double) {return(false);} // false
+    else if(type == MetaType_bool) {return(false);} // false
+    else if(type == MetaType_Test) {return(false);} // false
+    else if(type == MetaType_V2) {return(false);} // false
+    else if(type == MetaType_A) {return(false);} // false
+    else if(type == MetaType_B) {return(false);} // false
+    else if(type == MetaType_Foo) {return(false);} // false
+    else if(type == MetaType_V3) {return(false);} // false
+    else if(type == MetaType_VectorTest) {return(false);} // false
+    else if(type == MetaType_std_vector_int) {return(true);} // true
+    else if(type == MetaType_std_vector_float) {return(true);} // true
+
+    assert(0); // Should not be reached.
+}
 static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     if(mt == MetaType_Test) {
         if(is_ptr) {return("Test *");}
@@ -60,6 +80,16 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     assert(0); 
     return(0); // Not found
 }
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    T &container = *(T *)member_ptr;
+    for(auto &iter : container) {
+        bytes_written += print_type(iter, U, buffer + bytes_written, buf_size - bytes_written);
+    }
+
+    return(bytes_written);}
+
+
 // Function to serialize a struct to a char array buffer.
 static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
@@ -125,8 +155,14 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                 } break; // case MetaType_char
 
                 default: {
-                    char const *name = meta_type_to_name(member->type, member->is_ptr);
-                    bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                    if(is_meta_type_container(member->type)) {
+                        bytes_written = serialize_container<std::vector<int>, int>(member_ptr, name, indent, buffer, buf_size, bytes_written);
+                        bytes_written = serialize_container<std::vector<float>, float>(member_ptr, name, indent, buffer, buf_size, bytes_written);
+
+                    } else {
+                        char const *name = meta_type_to_name(member->type, member->is_ptr);
+                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                    }
                 } break; // default 
             }
         }
@@ -141,7 +177,7 @@ struct _A {  _int a;  };
 struct _B {  _double b;  };
 struct _Foo : public _A, public _B {  _char *str;  _int *int_ptr;  _float *float_ptr;  _bool *bool_ptr;  _int int_array[4];  _double *double_ptr_array[5];  _int *int_ptr_array[6];  _V2 v2;  };
 struct _V3 {  _int x;  _int y;  _int z;  };
-struct _VectorTest {  _std::vector<int> integer;  _std::vector<float> floating;  _std::vector<V3> vector3;  };
+struct _VectorTest {  _std::vector<int> integer;  _std::vector<float> floating;  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
@@ -208,7 +244,6 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         static MemberDefinition members_of_VectorTest[] = {
             {MetaType_std_vector_int, "integer", offset_of(&_VectorTest::integer), false, 1},
             {MetaType_std_vector_float, "floating", offset_of(&_VectorTest::floating), false, 1},
-            {MetaType_std_vector_V3, "vector3", offset_of(&_VectorTest::vector3), false, 1},
         };
         return(members_of_VectorTest);
     }
@@ -224,7 +259,7 @@ template<typename T> static int get_number_of_members_(void) {
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, Foo)) { return(10); } // Foo
     else if(type_compare(T, V3)) { return(3); } // V3
-    else if(type_compare(T, VectorTest)) { return(3); } // VectorTest
+    else if(type_compare(T, VectorTest)) { return(2); } // VectorTest
 
     return(-1); // Error.
 }
@@ -344,7 +379,6 @@ static MemberDefinition *get_members_of_str(char const *str) {
         static MemberDefinition members_of_VectorTest[] = {
             {MetaType_std_vector_int, "integer", offset_of(&_VectorTest::integer), false, 1},
             {MetaType_std_vector_float, "floating", offset_of(&_VectorTest::floating), false, 1},
-            {MetaType_std_vector_V3, "vector3", offset_of(&_VectorTest::vector3), false, 1},
         };
         return(members_of_VectorTest);
     }
@@ -367,7 +401,7 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "B") == 0) { return(1); } // B
     else if(strcmp(str, "Foo") == 0) { return(10); } // Foo
     else if(strcmp(str, "V3") == 0) { return(3); } // V3
-    else if(strcmp(str, "VectorTest") == 0) { return(3); } // VectorTest
+    else if(strcmp(str, "VectorTest") == 0) { return(2); } // VectorTest
 
     return(-1); // Error.
 }
