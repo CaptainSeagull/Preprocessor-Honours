@@ -13,7 +13,7 @@ struct VectorTest;
 #include "static_generated.h"
 
 namespace pp { // PreProcessor
-#define _std std
+#define _std std // TODO(Jonny): This is really stupid...
 // Enum with field for every type detected.
 enum MetaType {
     MetaType_char,
@@ -32,34 +32,91 @@ enum MetaType {
     MetaType_VectorTest,
     MetaType_std_vector_int,
     MetaType_std_vector_float,
-    MetaType_std_vector_V3,
 };
+
+static bool is_meta_type_container(int type) {
+    if(type == MetaType_char) {return(false);} // false
+    else if(type == MetaType_short) {return(false);} // false
+    else if(type == MetaType_int) {return(false);} // false
+    else if(type == MetaType_long) {return(false);} // false
+    else if(type == MetaType_float) {return(false);} // false
+    else if(type == MetaType_double) {return(false);} // false
+    else if(type == MetaType_bool) {return(false);} // false
+    else if(type == MetaType_Test) {return(false);} // false
+    else if(type == MetaType_V2) {return(false);} // false
+    else if(type == MetaType_A) {return(false);} // false
+    else if(type == MetaType_B) {return(false);} // false
+    else if(type == MetaType_Foo) {return(false);} // false
+    else if(type == MetaType_V3) {return(false);} // false
+    else if(type == MetaType_VectorTest) {return(false);} // false
+    else if(type == MetaType_std_vector_int) {return(true);} // true
+    else if(type == MetaType_std_vector_float) {return(true);} // true
+
+    assert(0); // Should not be reached.
+}
+static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
+    if(mt == MetaType_Test) {
+        if(is_ptr) {return("Test *");}
+        else       {return("Test");  }
+    } else if(mt == MetaType_V2) {
+        if(is_ptr) {return("V2 *");}
+        else       {return("V2");  }
+    } else if(mt == MetaType_A) {
+        if(is_ptr) {return("A *");}
+        else       {return("A");  }
+    } else if(mt == MetaType_B) {
+        if(is_ptr) {return("B *");}
+        else       {return("B");  }
+    } else if(mt == MetaType_Foo) {
+        if(is_ptr) {return("Foo *");}
+        else       {return("Foo");  }
+    } else if(mt == MetaType_V3) {
+        if(is_ptr) {return("V3 *");}
+        else       {return("V3");  }
+    } else if(mt == MetaType_VectorTest) {
+        if(is_ptr) {return("VectorTest *");}
+        else       {return("VectorTest");  }
+    }
+    assert(0); 
+    return(0); // Not found
+}
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    T &container = *(T *)member_ptr;
+    for(auto &iter : container) {
+        bytes_written += print_type(iter, U, buffer + bytes_written, buf_size - bytes_written);
+    }
+
+    return(bytes_written);}
+
 
 // Function to serialize a struct to a char array buffer.
 static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     assert((name) && (buffer) && (buf_size > 0)); // Check params.
 
-    if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.
+    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.
 
     MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. 
     if(members_of_Something) {
         // Setup the indent buffer.
         char indent_buf[256] = {};
-        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
+        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
         // Write the name and the type.
         bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_as_str, name);
         indent += 4;
 
         // Add 4 to the indent.
-        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
+        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
         int num_members = get_number_of_members_str(type_as_str); assert(num_members != -1); // Get the number of members for the for loop.
         for(int i = 0; (i < num_members); ++i) {
             MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.
             size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.
             switch(member->type) {
+                // This is a little verbose so I can get the right template overload for serialize_primitive. I should just
+                // make it a macro though.
                 case MetaType_double: { // double.
                     bytes_written = serialize_primitive_((double *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
@@ -97,107 +154,15 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                     }
                 } break; // case MetaType_char
 
-                // If the type wasn't a primtive, do a switchon the type again, but search for structs.
-                // Then that should recursively call this function again.
                 default: {
-                    switch(member->type) {
-                        case MetaType_Test: {
-                            // Test
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Test *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Test", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_Test
+                    if(is_meta_type_container(member->type)) {
+                        bytes_written = serialize_container<std::vector<int>, int>(member_ptr, name, indent, buffer, buf_size, bytes_written);
+                        bytes_written = serialize_container<std::vector<float>, float>(member_ptr, name, indent, buffer, buf_size, bytes_written);
 
-                        case MetaType_V2: {
-                            // V2
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "V2 *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "V2", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_V2
-
-                        case MetaType_A: {
-                            // A
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "A *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "A", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_A
-
-                        case MetaType_B: {
-                            // B
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "B *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "B", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_B
-
-                        case MetaType_Foo: {
-                            // Foo
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Foo *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Foo", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_Foo
-
-                        case MetaType_V3: {
-                            // V3
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "V3 *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "V3", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_V3
-
-                        case MetaType_VectorTest: {
-                            // VectorTest
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "VectorTest *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "VectorTest", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_VectorTest
-
-                        case MetaType_std_vector_int: {
-                            std::vector<int> temp = *(std::vector<int> *)member_ptr;
-                            size_t size = temp.size();
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%sstd::vector<int> %s", indent_buf, member->name);
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%sSize = %d", indent_buf, (int)size);
-                            for(size_t i = 0; (i < size); ++i) {
-                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s[%d]", indent_buf, (int)i);
-                                bytes_written = serialize_struct_((void *)&temp[i], member->name, "int", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break;
-
-                        case MetaType_std_vector_float: {
-                            std::vector<float> temp = *(std::vector<float> *)member_ptr;
-                            size_t size = temp.size();
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%sstd::vector<float> %s", indent_buf, member->name);
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%sSize = %d", indent_buf, (int)size);
-                            for(size_t i = 0; (i < size); ++i) {
-                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s[%d]", indent_buf, (int)i);
-                                bytes_written = serialize_struct_((void *)&temp[i], member->name, "float", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break;
-
-                        case MetaType_std_vector_V3: {
-                            std::vector<V3> temp = *(std::vector<V3> *)member_ptr;
-                            size_t size = temp.size();
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%sstd::vector<V3> %s", indent_buf, member->name);
-                            bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%sSize = %d", indent_buf, (int)size);
-                            for(size_t i = 0; (i < size); ++i) {
-                                bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s[%d]", indent_buf, (int)i);
-                                bytes_written = serialize_struct_((void *)&temp[i], member->name, "V3", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break;
-
-                    } // switch(member->type)
+                    } else {
+                        char const *name = meta_type_to_name(member->type, member->is_ptr);
+                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                    }
                 } break; // default 
             }
         }
@@ -212,7 +177,7 @@ struct _A {  _int a;  };
 struct _B {  _double b;  };
 struct _Foo : public _A, public _B {  _char *str;  _int *int_ptr;  _float *float_ptr;  _bool *bool_ptr;  _int int_array[4];  _double *double_ptr_array[5];  _int *int_ptr_array[6];  _V2 v2;  };
 struct _V3 {  _int x;  _int y;  _int z;  };
-struct _VectorTest {  _std::vector<int> integer;  _std::vector<float> floating;  _std::vector<V3> vector3;  };
+struct _VectorTest {  _std::vector<int> integer;  _std::vector<float> floating;  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
@@ -279,7 +244,6 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
         static MemberDefinition members_of_VectorTest[] = {
             {MetaType_std_vector_int, "integer", offset_of(&_VectorTest::integer), false, 1},
             {MetaType_std_vector_float, "floating", offset_of(&_VectorTest::floating), false, 1},
-            {MetaType_std_vector_V3, "vector3", offset_of(&_VectorTest::vector3), false, 1},
         };
         return(members_of_VectorTest);
     }
@@ -295,7 +259,7 @@ template<typename T> static int get_number_of_members_(void) {
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, Foo)) { return(10); } // Foo
     else if(type_compare(T, V3)) { return(3); } // V3
-    else if(type_compare(T, VectorTest)) { return(3); } // VectorTest
+    else if(type_compare(T, VectorTest)) { return(2); } // VectorTest
 
     return(-1); // Error.
 }
@@ -415,7 +379,6 @@ static MemberDefinition *get_members_of_str(char const *str) {
         static MemberDefinition members_of_VectorTest[] = {
             {MetaType_std_vector_int, "integer", offset_of(&_VectorTest::integer), false, 1},
             {MetaType_std_vector_float, "floating", offset_of(&_VectorTest::floating), false, 1},
-            {MetaType_std_vector_V3, "vector3", offset_of(&_VectorTest::vector3), false, 1},
         };
         return(members_of_VectorTest);
     }
@@ -438,7 +401,7 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "B") == 0) { return(1); } // B
     else if(strcmp(str, "Foo") == 0) { return(10); } // Foo
     else if(strcmp(str, "V3") == 0) { return(3); } // V3
-    else if(strcmp(str, "VectorTest") == 0) { return(3); } // VectorTest
+    else if(strcmp(str, "VectorTest") == 0) { return(2); } // VectorTest
 
     return(-1); // Error.
 }

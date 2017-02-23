@@ -107,7 +107,7 @@ Void *system_realloc(Void *ptr, PtrSize size);
 #if defined(free)
     #undef free
 #endif
-#define free system_free
+#define free(x) system_free(x)
 
 #if defined(alloc)
     #undef alloc

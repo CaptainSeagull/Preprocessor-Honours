@@ -11,7 +11,7 @@ struct GameState;
 #include "static_generated.h"
 
 namespace pp { // PreProcessor
-#define _std std
+#define _std std // TODO(Jonny): This is really stupid...
 // Enum with field for every type detected.
 enum MetaType {
     MetaType_char,
@@ -28,31 +28,79 @@ enum MetaType {
     MetaType_GameState,
 };
 
+static bool is_meta_type_container(int type) {
+    if(type == MetaType_char) {return(false);} // false
+    else if(type == MetaType_short) {return(false);} // false
+    else if(type == MetaType_int) {return(false);} // false
+    else if(type == MetaType_long) {return(false);} // false
+    else if(type == MetaType_float) {return(false);} // false
+    else if(type == MetaType_double) {return(false);} // false
+    else if(type == MetaType_bool) {return(false);} // false
+    else if(type == MetaType_V2) {return(false);} // false
+    else if(type == MetaType_Transform) {return(false);} // false
+    else if(type == MetaType_Ball) {return(false);} // false
+    else if(type == MetaType_Paddle) {return(false);} // false
+    else if(type == MetaType_GameState) {return(false);} // false
+
+    assert(0); // Should not be reached.
+}
+static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
+    if(mt == MetaType_V2) {
+        if(is_ptr) {return("V2 *");}
+        else       {return("V2");  }
+    } else if(mt == MetaType_Transform) {
+        if(is_ptr) {return("Transform *");}
+        else       {return("Transform");  }
+    } else if(mt == MetaType_Ball) {
+        if(is_ptr) {return("Ball *");}
+        else       {return("Ball");  }
+    } else if(mt == MetaType_Paddle) {
+        if(is_ptr) {return("Paddle *");}
+        else       {return("Paddle");  }
+    } else if(mt == MetaType_GameState) {
+        if(is_ptr) {return("GameState *");}
+        else       {return("GameState");  }
+    }
+    assert(0); 
+    return(0); // Not found
+}
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    T &container = *(T *)member_ptr;
+    for(auto &iter : container) {
+        bytes_written += print_type(iter, U, buffer + bytes_written, buf_size - bytes_written);
+    }
+
+    return(bytes_written);}
+
+
 // Function to serialize a struct to a char array buffer.
 static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     assert((name) && (buffer) && (buf_size > 0)); // Check params.
 
-    if(!indent) { memset(buffer + bytes_written, 0, buf_size - bytes_written); } // If this is the first time through, zero the buffer.
+    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.
 
     MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. 
     if(members_of_Something) {
         // Setup the indent buffer.
         char indent_buf[256] = {};
-        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
+        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
         // Write the name and the type.
         bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_as_str, name);
         indent += 4;
 
         // Add 4 to the indent.
-        for(int i = 0; (i < indent); ++i) { indent_buf[i] = ' '; }
+        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
         int num_members = get_number_of_members_str(type_as_str); assert(num_members != -1); // Get the number of members for the for loop.
         for(int i = 0; (i < num_members); ++i) {
             MemberDefinition *member = members_of_Something + i; // Get the member pointer with meta data.
             size_t *member_ptr = (size_t *)((char *)var + member->offset); // Get the actual pointer to the memory address.
             switch(member->type) {
+                // This is a little verbose so I can get the right template overload for serialize_primitive. I should just
+                // make it a macro though.
                 case MetaType_double: { // double.
                     bytes_written = serialize_primitive_((double *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
@@ -90,56 +138,13 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                     }
                 } break; // case MetaType_char
 
-                // If the type wasn't a primtive, do a switchon the type again, but search for structs.
-                // Then that should recursively call this function again.
                 default: {
-                    switch(member->type) {
-                        case MetaType_V2: {
-                            // V2
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "V2 *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "V2", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_V2
+                    if(is_meta_type_container(member->type)) {
 
-                        case MetaType_Transform: {
-                            // Transform
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Transform *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Transform", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_Transform
-
-                        case MetaType_Ball: {
-                            // Ball
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Ball *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Ball", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_Ball
-
-                        case MetaType_Paddle: {
-                            // Paddle
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Paddle *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "Paddle", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_Paddle
-
-                        case MetaType_GameState: {
-                            // GameState
-                            if(member->is_ptr) {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "GameState *", indent, buffer, buf_size - bytes_written, bytes_written);
-                            } else {
-                                bytes_written = serialize_struct_(member_ptr, member->name, "GameState", indent, buffer, buf_size - bytes_written, bytes_written);
-                            }
-                        } break; // case MetaType_GameState
-
-                    } // switch(member->type)
+                    } else {
+                        char const *name = meta_type_to_name(member->type, member->is_ptr);
+                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                    }
                 } break; // default 
             }
         }
