@@ -12,6 +12,7 @@ struct GameState;
 
 namespace pp { // PreProcessor
 #define _std std // TODO(Jonny): This is really stupid...
+
 // Enum with field for every type detected.
 enum MetaType {
     MetaType_char,
@@ -63,6 +64,7 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
         if(is_ptr) {return("GameState *");}
         else       {return("GameState");  }
     }
+
     assert(0); 
     return(0); // Not found
 }
@@ -201,11 +203,11 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, V2)) { return(2); } // V2
-    else if(type_compare(T, Transform)) { return(2); } // Transform
-    else if(type_compare(T, Ball)) { return(2); } // Ball
-    else if(type_compare(T, Paddle)) { return(1); } // Paddle
-    else if(type_compare(T, GameState)) { return(3); } // GameState
+    if(type_compare(T, V2)) {return(2);} // V2
+    else if(type_compare(T, Transform)) {return(2);} // Transform
+    else if(type_compare(T, Ball)) {return(2);} // Ball
+    else if(type_compare(T, Paddle)) {return(1);} // Paddle
+    else if(type_compare(T, GameState)) {return(3);} // GameState
 
     return(-1); // Error.
 }
@@ -308,18 +310,18 @@ static MemberDefinition *get_members_of_str(char const *str) {
 
 // Get the number of members for a type.
 static int get_number_of_members_str(char const *str) {
-    if(strcmp(str, "char") == 0) { return(1); }
-    else if(strcmp(str, "short") == 0) { return(1); }
-    else if(strcmp(str, "int") == 0) { return(1); }
-    else if(strcmp(str, "long") == 0) { return(1); }
-    else if(strcmp(str, "float") == 0) { return(1); }
-    else if(strcmp(str, "double") == 0) { return(1); }
-    else if(strcmp(str, "bool") == 0) { return(1); }
-    else if(strcmp(str, "V2") == 0) { return(2); } // V2
-    else if(strcmp(str, "Transform") == 0) { return(2); } // Transform
-    else if(strcmp(str, "Ball") == 0) { return(2); } // Ball
-    else if(strcmp(str, "Paddle") == 0) { return(1); } // Paddle
-    else if(strcmp(str, "GameState") == 0) { return(3); } // GameState
+    if(strcmp(str, "char") == 0) {return(1);}
+    else if(strcmp(str, "short") == 0) {return(1);}
+    else if(strcmp(str, "int") == 0) {return(1);}
+    else if(strcmp(str, "long") == 0) {return(1);}
+    else if(strcmp(str, "float") == 0) {return(1);}
+    else if(strcmp(str, "double") == 0) {return(1);}
+    else if(strcmp(str, "bool") == 0) {return(1);}
+    else if(strcmp(str, "V2") == 0) {return(2);} // V2
+    else if(strcmp(str, "Transform") == 0) {return(2);} // Transform
+    else if(strcmp(str, "Ball") == 0) {return(2);} // Ball
+    else if(strcmp(str, "Paddle") == 0) {return(1);} // Paddle
+    else if(strcmp(str, "GameState") == 0) {return(3);} // GameState
 
     return(-1); // Error.
 }
@@ -327,74 +329,96 @@ static int get_number_of_members_str(char const *str) {
 // Convert a type to a string.
 template<typename T> static char const *type_to_string_(void) {
     // Primitives.
-    if(type_compare(T, char)) { return("char"); }
-    else if(type_compare(T, char *)) { return("char *"); }
-    else if(type_compare(T, char **)) { return("char **"); }
-    else if(type_compare(T, short)) { return("short"); }
-    else if(type_compare(T, short *)) { return("short *"); }
-    else if(type_compare(T, short **)) { return("short **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, long)) { return("long"); }
-    else if(type_compare(T, long *)) { return("long *"); }
-    else if(type_compare(T, long **)) { return("long **"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float *"); }
-    else if(type_compare(T, float **)) { return("float **"); }
-    else if(type_compare(T, double)) { return("double"); }
-    else if(type_compare(T, double *)) { return("double *"); }
-    else if(type_compare(T, double **)) { return("double **"); }
-    else if(type_compare(T, bool)) { return("bool"); }
-    else if(type_compare(T, bool *)) { return("bool *"); }
-    else if(type_compare(T, bool **)) { return("bool **"); }
+    if(type_compare(T, char)) {return("char"); }
+    else if(type_compare(T, char *)) {return("char *");}
+    else if(type_compare(T, char **)) {return("char **");}
+    else if(type_compare(T, char &)) {return("char &");}
+    else if(type_compare(T, short)) { return("short");}
+    else if(type_compare(T, short *)) {return("short *");}
+    else if(type_compare(T, short **)) {return("short **");}
+    else if(type_compare(T, short &)) {return("short &");}
+    else if(type_compare(T, int)) { return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, long)) { return("long");}
+    else if(type_compare(T, long *)) {return("long *");}
+    else if(type_compare(T, long **)) {return("long **");}
+    else if(type_compare(T, long &)) {return("long &");}
+    else if(type_compare(T, float)) { return("float");}
+    else if(type_compare(T, float *)) {return("float *");}
+    else if(type_compare(T, float **)) {return("float **");}
+    else if(type_compare(T, float &)) {return("float &");}
+    else if(type_compare(T, double)) { return("double");}
+    else if(type_compare(T, double *)) {return("double *");}
+    else if(type_compare(T, double **)) {return("double **");}
+    else if(type_compare(T, double &)) {return("double &");}
+    else if(type_compare(T, bool)) { return("bool");}
+    else if(type_compare(T, bool *)) {return("bool *");}
+    else if(type_compare(T, bool **)) {return("bool **");}
+    else if(type_compare(T, bool &)) {return("bool &");}
 
     // Struct types.
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2 *"); }
-    else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float *"); }
-    else if(type_compare(T, float **)) { return("float **"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float *"); }
-    else if(type_compare(T, float **)) { return("float **"); }
-    else if(type_compare(T, Transform)) { return("Transform"); }
-    else if(type_compare(T, Transform *)) { return("Transform *"); }
-    else if(type_compare(T, Transform **)) { return("Transform **"); }
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2 *"); }
-    else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2 *"); }
-    else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, Ball)) { return("Ball"); }
-    else if(type_compare(T, Ball *)) { return("Ball *"); }
-    else if(type_compare(T, Ball **)) { return("Ball **"); }
-    else if(type_compare(T, Transform)) { return("Transform"); }
-    else if(type_compare(T, Transform *)) { return("Transform *"); }
-    else if(type_compare(T, Transform **)) { return("Transform **"); }
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2 *"); }
-    else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, Paddle)) { return("Paddle"); }
-    else if(type_compare(T, Paddle *)) { return("Paddle *"); }
-    else if(type_compare(T, Paddle **)) { return("Paddle **"); }
-    else if(type_compare(T, Transform)) { return("Transform"); }
-    else if(type_compare(T, Transform *)) { return("Transform *"); }
-    else if(type_compare(T, Transform **)) { return("Transform **"); }
-    else if(type_compare(T, GameState)) { return("GameState"); }
-    else if(type_compare(T, GameState *)) { return("GameState *"); }
-    else if(type_compare(T, GameState **)) { return("GameState **"); }
-    else if(type_compare(T, Paddle)) { return("Paddle"); }
-    else if(type_compare(T, Paddle *)) { return("Paddle *"); }
-    else if(type_compare(T, Paddle **)) { return("Paddle **"); }
-    else if(type_compare(T, Ball)) { return("Ball"); }
-    else if(type_compare(T, Ball *)) { return("Ball *"); }
-    else if(type_compare(T, Ball **)) { return("Ball **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2 *");}
+    else if(type_compare(T, V2 **)) {return("V2 **");}
+    else if(type_compare(T, V2 &)) {return("V2 &");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float *");}
+    else if(type_compare(T, float **)) {return("float **");}
+    else if(type_compare(T, float &)) {return("float &");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float *");}
+    else if(type_compare(T, float **)) {return("float **");}
+    else if(type_compare(T, float &)) {return("float &");}
+    else if(type_compare(T, Transform)) {return("Transform");}
+    else if(type_compare(T, Transform *)) {return("Transform *");}
+    else if(type_compare(T, Transform **)) {return("Transform **");}
+    else if(type_compare(T, Transform &)) {return("Transform &");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2 *");}
+    else if(type_compare(T, V2 **)) {return("V2 **");}
+    else if(type_compare(T, V2 &)) {return("V2 &");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2 *");}
+    else if(type_compare(T, V2 **)) {return("V2 **");}
+    else if(type_compare(T, V2 &)) {return("V2 &");}
+    else if(type_compare(T, Ball)) {return("Ball");}
+    else if(type_compare(T, Ball *)) {return("Ball *");}
+    else if(type_compare(T, Ball **)) {return("Ball **");}
+    else if(type_compare(T, Ball &)) {return("Ball &");}
+    else if(type_compare(T, Transform)) {return("Transform");}
+    else if(type_compare(T, Transform *)) {return("Transform *");}
+    else if(type_compare(T, Transform **)) {return("Transform **");}
+    else if(type_compare(T, Transform &)) {return("Transform &");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2 *");}
+    else if(type_compare(T, V2 **)) {return("V2 **");}
+    else if(type_compare(T, V2 &)) {return("V2 &");}
+    else if(type_compare(T, Paddle)) {return("Paddle");}
+    else if(type_compare(T, Paddle *)) {return("Paddle *");}
+    else if(type_compare(T, Paddle **)) {return("Paddle **");}
+    else if(type_compare(T, Paddle &)) {return("Paddle &");}
+    else if(type_compare(T, Transform)) {return("Transform");}
+    else if(type_compare(T, Transform *)) {return("Transform *");}
+    else if(type_compare(T, Transform **)) {return("Transform **");}
+    else if(type_compare(T, Transform &)) {return("Transform &");}
+    else if(type_compare(T, GameState)) {return("GameState");}
+    else if(type_compare(T, GameState *)) {return("GameState *");}
+    else if(type_compare(T, GameState **)) {return("GameState **");}
+    else if(type_compare(T, GameState &)) {return("GameState &");}
+    else if(type_compare(T, Paddle)) {return("Paddle");}
+    else if(type_compare(T, Paddle *)) {return("Paddle *");}
+    else if(type_compare(T, Paddle **)) {return("Paddle **");}
+    else if(type_compare(T, Paddle &)) {return("Paddle &");}
+    else if(type_compare(T, Ball)) {return("Ball");}
+    else if(type_compare(T, Ball *)) {return("Ball *");}
+    else if(type_compare(T, Ball **)) {return("Ball **");}
+    else if(type_compare(T, Ball &)) {return("Ball &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
 
     else { return(0); } // Unknown Type.
 }
@@ -402,46 +426,98 @@ template<typename T> static char const *type_to_string_(void) {
 // Convert a type to a string.
 template<typename T> static char const *weak_type_to_string_(void) {
     // Primitives.
-    if(type_compare(T, char)) { return("char"); }
-    else if(type_compare(T, char *)) { return("char"); }
-    else if(type_compare(T, char **)) { return("char"); }
-    else if(type_compare(T, short)) { return("short"); }
-    else if(type_compare(T, short *)) { return("short"); }
-    else if(type_compare(T, short **)) { return("short"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int"); }
-    else if(type_compare(T, int **)) { return("int"); }
-    else if(type_compare(T, long)) { return("long"); }
-    else if(type_compare(T, long *)) { return("long"); }
-    else if(type_compare(T, long **)) { return("long"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float"); }
-    else if(type_compare(T, float **)) { return("float"); }
-    else if(type_compare(T, double)) { return("double"); }
-    else if(type_compare(T, double *)) { return("double"); }
-    else if(type_compare(T, double **)) { return("double"); }
-    else if(type_compare(T, bool)) { return("bool"); }
-    else if(type_compare(T, bool *)) { return("bool"); }
-    else if(type_compare(T, bool **)) { return("bool"); }
+    if(type_compare(T, char)) {return("char");}
+    else if(type_compare(T, char *)) {return("char");}
+    else if(type_compare(T, char **)) {return("char");}
+    else if(type_compare(T, char &)) {return("char");}
+    else if(type_compare(T, short)) {return("short");}
+    else if(type_compare(T, short *)) {return("short");}
+    else if(type_compare(T, short **)) {return("short");}
+    else if(type_compare(T, short &)) {return("short");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, long)) {return("long");}
+    else if(type_compare(T, long *)) {return("long");}
+    else if(type_compare(T, long **)) {return("long");}
+    else if(type_compare(T, long &)) {return("long");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float");}
+    else if(type_compare(T, float **)) {return("float");}
+    else if(type_compare(T, float &)) {return("float");}
+    else if(type_compare(T, double)) {return("double");}
+    else if(type_compare(T, double *)) {return("double");}
+    else if(type_compare(T, double **)) {return("double");}
+    else if(type_compare(T, double &)) {return("double");}
+    else if(type_compare(T, bool)) {return("bool");}
+    else if(type_compare(T, bool *)) {return("bool");}
+    else if(type_compare(T, bool **)) {return("bool");}
+    else if(type_compare(T, bool &)) {return("bool");}
 
     // Struct types.
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2"); }
-    else if(type_compare(T, V2 **)) { return("V2"); }
-    else if(type_compare(T, Transform)) { return("Transform"); }
-    else if(type_compare(T, Transform *)) { return("Transform"); }
-    else if(type_compare(T, Transform **)) { return("Transform"); }
-    else if(type_compare(T, Ball)) { return("Ball"); }
-    else if(type_compare(T, Ball *)) { return("Ball"); }
-    else if(type_compare(T, Ball **)) { return("Ball"); }
-    else if(type_compare(T, Paddle)) { return("Paddle"); }
-    else if(type_compare(T, Paddle *)) { return("Paddle"); }
-    else if(type_compare(T, Paddle **)) { return("Paddle"); }
-    else if(type_compare(T, GameState)) { return("GameState"); }
-    else if(type_compare(T, GameState *)) { return("GameState"); }
-    else if(type_compare(T, GameState **)) { return("GameState"); }
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2");}
+    else if(type_compare(T, V2 **)) {return("V2");}
+    else if(type_compare(T, V2 &)) {return("V2");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float");}
+    else if(type_compare(T, float **)) {return("float");}
+    else if(type_compare(T, float &)) {return("float");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float");}
+    else if(type_compare(T, float **)) {return("float");}
+    else if(type_compare(T, float &)) {return("float");}
+    else if(type_compare(T, Transform)) {return("Transform");}
+    else if(type_compare(T, Transform *)) {return("Transform");}
+    else if(type_compare(T, Transform **)) {return("Transform");}
+    else if(type_compare(T, Transform &)) {return("Transform");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2");}
+    else if(type_compare(T, V2 **)) {return("V2");}
+    else if(type_compare(T, V2 &)) {return("V2");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2");}
+    else if(type_compare(T, V2 **)) {return("V2");}
+    else if(type_compare(T, V2 &)) {return("V2");}
+    else if(type_compare(T, Ball)) {return("Ball");}
+    else if(type_compare(T, Ball *)) {return("Ball");}
+    else if(type_compare(T, Ball **)) {return("Ball");}
+    else if(type_compare(T, Ball &)) {return("Ball");}
+    else if(type_compare(T, Transform)) {return("Transform");}
+    else if(type_compare(T, Transform *)) {return("Transform");}
+    else if(type_compare(T, Transform **)) {return("Transform");}
+    else if(type_compare(T, Transform &)) {return("Transform");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2");}
+    else if(type_compare(T, V2 **)) {return("V2");}
+    else if(type_compare(T, V2 &)) {return("V2");}
+    else if(type_compare(T, Paddle)) {return("Paddle");}
+    else if(type_compare(T, Paddle *)) {return("Paddle");}
+    else if(type_compare(T, Paddle **)) {return("Paddle");}
+    else if(type_compare(T, Paddle &)) {return("Paddle");}
+    else if(type_compare(T, Transform)) {return("Transform");}
+    else if(type_compare(T, Transform *)) {return("Transform");}
+    else if(type_compare(T, Transform **)) {return("Transform");}
+    else if(type_compare(T, Transform &)) {return("Transform");}
+    else if(type_compare(T, GameState)) {return("GameState");}
+    else if(type_compare(T, GameState *)) {return("GameState");}
+    else if(type_compare(T, GameState **)) {return("GameState");}
+    else if(type_compare(T, GameState &)) {return("GameState");}
+    else if(type_compare(T, Paddle)) {return("Paddle");}
+    else if(type_compare(T, Paddle *)) {return("Paddle");}
+    else if(type_compare(T, Paddle **)) {return("Paddle");}
+    else if(type_compare(T, Paddle &)) {return("Paddle");}
+    else if(type_compare(T, Ball)) {return("Ball");}
+    else if(type_compare(T, Ball *)) {return("Ball");}
+    else if(type_compare(T, Ball **)) {return("Ball");}
+    else if(type_compare(T, Ball &)) {return("Ball");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
 
-    else { return(0); } // Unknown Type.
+    else {return(0);} // Unknown Type.
 }
 
 // Get the number of base types.
@@ -456,7 +532,7 @@ template<typename T> static char const *get_base_type_as_string_(int index/*= 0*
     return(0); // Not found.
 }
 
-#undef _std
+#undef _std // :(
 } // namespace pp
 
 #endif // Header guard.

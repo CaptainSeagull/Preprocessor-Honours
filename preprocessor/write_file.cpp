@@ -371,6 +371,7 @@ write_meta_type_to_name(OutputBuffer *ob, StructData *struct_data, Int struct_co
 
     write_to_output_buffer(ob,
                            "\n"
+                           "\n"
                            "    assert(0); \n"
                            "    return(0); // Not found\n"
                            "}\n");
@@ -448,18 +449,17 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                "#include \"static_generated.h\"\n"
                                "\n"
                                "namespace pp { // PreProcessor\n"
-                               "#define _std std // TODO(Jonny): This is really stupid...");
+                               "#define _std std // TODO(Jonny): This is really stupid..."
+                               "\n");
 
         //
         // MetaTypes enum.
         //
+
         // Get the absolute max number of meta types. This will be significantly bigger than the
         // actual number of unique types...
-
         Int max_type_count = get_num_of_primitive_types();
-        for(Int i = 0; (i < struct_count); ++i) {
-            max_type_count += struct_data[i].member_count + 1;
-        }
+        for(Int i = 0; (i < struct_count); ++i) max_type_count += struct_data[i].member_count + 1;
 
         String *types = alloc(String, max_type_count);
         if(types) {
@@ -484,14 +484,26 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
             assert(type_count <= max_type_count);
 
+            //
+            // MetaType enum.
+            //
             write_meta_type_enum(&ob, types, type_count, struct_data, struct_count);
 
             write_to_output_buffer(&ob, "\n");
 
+            //
+            // is_meta_type_container
+            //
             write_is_container(&ob, types, type_count);
 
+            //
+            // meta_type_to_name
+            //
             write_meta_type_to_name(&ob, struct_data, struct_count);
 
+            //
+            //serialize_struct_
+            //
             write_serialize_struct_implementation(&ob, types, type_count);
 
             // Recreated structs.
@@ -704,11 +716,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 if(i == 0) {
                     write_to_output_buffer(&ob,
-                                           "    if(type_compare(T, %.*s)) { return(%d); } // %.*s\n",
+                                           "    if(type_compare(T, %.*s)) {return(%d);} // %.*s\n",
                                            sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
                 } else {
                     write_to_output_buffer(&ob,
-                                           "    else if(type_compare(T, %.*s)) { return(%d); } // %.*s\n",
+                                           "    else if(type_compare(T, %.*s)) {return(%d);} // %.*s\n",
                                            sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
                 }
             }
@@ -935,11 +947,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 if(i == 0) {
                     write_to_output_buffer(&ob,
-                                           "    if(strcmp(str, \"%.*s\") == 0) { return(1); }\n",
+                                           "    if(strcmp(str, \"%.*s\") == 0) {return(1);}\n",
                                            p->len, p->e);
                 } else {
                     write_to_output_buffer(&ob,
-                                           "    else if(strcmp(str, \"%.*s\") == 0) { return(1); }\n",
+                                           "    else if(strcmp(str, \"%.*s\") == 0) {return(1);}\n",
                                            p->len, p->e);
                 }
             }
@@ -953,13 +965,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 for(Int j = 0; (j < sd->inherited_count); ++j) {
                     StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
 
-                    if(base_class) {
-                        member_count += base_class->member_count;
-                    }
+                    if(base_class) member_count += base_class->member_count;
                 }
 
                 write_to_output_buffer(&ob,
-                                       "    else if(strcmp(str, \"%.*s\") == 0) { return(%d); } // %.*s\n",
+                                       "    else if(strcmp(str, \"%.*s\") == 0) {return(%d);} // %.*s\n",
                                        sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
             }
 
@@ -970,6 +980,8 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             //
             // Type to string.
             //
+
+            // TODO(Jonny): How does type_to_string work with arrays? And does the reference part _actually_ work?
             write_to_output_buffer(&ob,
                                    "\n// Convert a type to a string.\n"
                                    "template<typename T> static char const *type_to_string_(void) {\n"
@@ -978,43 +990,48 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 Char *primitive = primitive_types[i];
 
                 if(!i) {
-                    write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
+                    write_to_output_buffer(&ob, "    if(type_compare(T, %s)) {return(\"%s\"); }\n", primitive, primitive);
                 } else {
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s *\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s **\"); }\n", primitive, primitive);
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\");}\n", primitive, primitive);
                 }
+
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) {return(\"%s *\");}\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) {return(\"%s **\");}\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s &)) {return(\"%s &\");}\n", primitive, primitive);
             }
 
             write_to_output_buffer(&ob, "\n    // Struct types.\n");
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(\"%.*s\"); }\n",
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) { return(\"%.*s *\"); }\n",
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) { return(\"%.*s **\"); }\n",
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                 // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
                 for(Int j = 0; (j < sd->member_count); ++j) {
                     Variable *md = sd->members + j;
 
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(\"%.*s\"); }\n",
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
                                            md->type.len, md->type.e, md->type.len, md->type.e);
 
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) { return(\"%.*s *\"); }\n",
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
                                            md->type.len, md->type.e, md->type.len, md->type.e);
 
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) { return(\"%.*s **\"); }\n",
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
                                            md->type.len, md->type.e, md->type.len, md->type.e);
                 }
-
             }
 
             write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
@@ -1024,34 +1041,55 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                    "\n// Convert a type to a string.\n"
                                    "template<typename T> static char const *weak_type_to_string_(void) {\n"
                                    "    // Primitives.\n");
-            for(Int i = 0; (i < get_num_of_primitive_types()); ++i) {
+            for(Int i = 0, cnt = get_num_of_primitive_types(); (i < cnt); ++i) {
                 Char *primitive = primitive_types[i];
 
                 if(!i) {
-                    write_to_output_buffer(&ob, "    if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s\"); }\n", primitive, primitive);
+                    write_to_output_buffer(&ob, "    if(type_compare(T, %s)) {return(\"%s\");}\n", primitive, primitive);
                 } else {
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) { return(\"%s\"); }\n", primitive, primitive);
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) { return(\"%s\"); }\n", primitive, primitive);
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) {return(\"%s\");}\n", primitive, primitive);
                 }
+
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) {return(\"%s\");}\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) {return(\"%s\");}\n", primitive, primitive);
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %s &)) {return(\"%s\");}\n", primitive, primitive);
             }
 
             write_to_output_buffer(&ob, "\n    // Struct types.\n");
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(\"%.*s\"); }\n",
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) { return(\"%.*s\"); }\n",
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s\");}\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) { return(\"%.*s\"); }\n",
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s\");}\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s\");}\n",
+                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+
+                // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s\");}\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s\");}\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s\");}\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                }
             }
-            write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
+            write_to_output_buffer(&ob, "\n    else {return(0);} // Unknown Type.\n}\n");
 
             //
             // Get base type count.
@@ -1066,10 +1104,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 if(sd->inherited_count) {
                     if(written_count == 0) {
-                        write_to_output_buffer(&ob, "    if(type_compare(T, %.*s))    { return(%d); }\n",
+                        write_to_output_buffer(&ob, "    if(type_compare(T, %.*s)) {return(%d);}\n",
                                                sd->name.len, sd->name.e, sd->inherited_count);
                     } else {
-                        write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(%d); }\n",
+                        write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(%d);}\n",
                                                sd->name.len, sd->name.e, sd->inherited_count);
                     }
 
@@ -1108,20 +1146,18 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                    sd->name.len, sd->name.e);
                         }
 
+                        write_to_output_buffer(&ob,
+                                               "        switch(index) {\n");
                         for(Int j = 0; (j < sd->inherited_count); ++j) {
-                            if(!j) {
-                                write_to_output_buffer(&ob,
-                                                       "        if(index == %d)      { return(\"%.*s\"); }\n",
-                                                       j,
-                                                       sd->inherited[j].len, sd->inherited[j].e);
-                            } else {
-                                write_to_output_buffer(&ob,
-                                                       "        else if(index == %d) { return(\"%.*s\"); }\n",
-                                                       j,
-                                                       sd->inherited[j].len, sd->inherited[j].e);
-                            }
-
+                            write_to_output_buffer(&ob,
+                                                   "            case %d: {return(\"%.*s\");} break;\n",
+                                                   j,
+                                                   sd->inherited[j].len, sd->inherited[j].e);
                         }
+                        write_to_output_buffer(&ob,
+                                               "\n"
+                                               "            default: {assert(0);} break;\n"
+                                               "        } // switch(index)\n");
 
                         ++written_count;
                     }
@@ -1167,7 +1203,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                         Char *buf = cast(Char *)push_scratch_memory();
 
                         int bytes_written = stbsp_snprintf(buf, scratch_memory_size,
-                                                           "static %s number_of_elements_in_enum_%.*s = %d;",
+                                                           "static %s const number_of_elements_in_enum_%.*s = %d;",
                                                            type,
                                                            ed->name.len, ed->name.e,
                                                            ed->no_of_values);
@@ -1186,7 +1222,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                         Int index = 0;
                         for(int j = 0; (j < ed->no_of_values); ++j) {
                             index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
-                                                    "        case %d: { return(\"%.*s\"); } break;\n",
+                                                    "        case %d: {return(\"%.*s\");} break;\n",
                                                     ed->values[j].value,
                                                     ed->values[j].name.len, ed->values[j].name.e);
                         }
@@ -1216,24 +1252,26 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                         Int index = 0;
                         index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
-                                                "        if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                                "        if(strcmp(str, \"%.*s\") == 0) {return(%d);}\n",
                                                 ed->values[0].name.len, ed->values[0].name.e,
                                                 ed->values[0].value);
                         for(int j = 1; (j < ed->no_of_values); ++j) {
                             index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
-                                                    "        else if(strcmp(str, \"%.*s\") == 0) { return(%d); }\n",
+                                                    "        else if(strcmp(str, \"%.*s\") == 0) {return(%d);}\n",
                                                     ed->values[j].name.len, ed->values[j].name.e,
                                                     ed->values[j].value);
                         }
                         assert(index < half_scratch_memory_size);
 
+                        // TODO(Jonny): I'd prefer if this returned a struct, with the element and an error code. It can silently
+                        //              fail in it's current state.
                         Int bytes_written = stbsp_snprintf(buf2, half_scratch_memory_size,
                                                            "static %s string_to_enum_%.*s(char const *str) {\n"
                                                            "    if(str) {\n"
                                                            "%s"
                                                            "    }\n"
                                                            "\n"
-                                                           "    return(0);  // str didn't match.\n" // TODO(Jonny): Throw an error here?
+                                                           "    return(0);  // str didn't match.\n"
                                                            "}\n",
                                                            type,
                                                            ed->name.len, ed->name.e, buf1);
@@ -1252,7 +1290,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             //
             write_to_output_buffer(&ob,
                                    "\n"
-                                   "#undef _std\n"
+                                   "#undef _std // :(\n"
                                    "} // namespace pp\n"
                                    "\n"
                                    "#endif // Header guard.\n"

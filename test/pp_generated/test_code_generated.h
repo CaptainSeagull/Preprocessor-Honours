@@ -14,6 +14,7 @@ struct VectorTest;
 
 namespace pp { // PreProcessor
 #define _std std // TODO(Jonny): This is really stupid...
+
 // Enum with field for every type detected.
 enum MetaType {
     MetaType_char,
@@ -87,6 +88,7 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
         if(is_ptr) {return("VectorTest *");}
         else       {return("VectorTest");  }
     }
+
     assert(0); 
     return(0); // Not found
 }
@@ -263,13 +265,13 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 
 // Get the number of members for a type.
 template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, Test)) { return(2); } // Test
-    else if(type_compare(T, V2)) { return(3); } // V2
-    else if(type_compare(T, A)) { return(1); } // A
-    else if(type_compare(T, B)) { return(1); } // B
-    else if(type_compare(T, Foo)) { return(10); } // Foo
-    else if(type_compare(T, V3)) { return(3); } // V3
-    else if(type_compare(T, VectorTest)) { return(6); } // VectorTest
+    if(type_compare(T, Test)) {return(2);} // Test
+    else if(type_compare(T, V2)) {return(3);} // V2
+    else if(type_compare(T, A)) {return(1);} // A
+    else if(type_compare(T, B)) {return(1);} // B
+    else if(type_compare(T, Foo)) {return(10);} // Foo
+    else if(type_compare(T, V3)) {return(3);} // V3
+    else if(type_compare(T, VectorTest)) {return(6);} // VectorTest
 
     return(-1); // Error.
 }
@@ -402,20 +404,20 @@ static MemberDefinition *get_members_of_str(char const *str) {
 
 // Get the number of members for a type.
 static int get_number_of_members_str(char const *str) {
-    if(strcmp(str, "char") == 0) { return(1); }
-    else if(strcmp(str, "short") == 0) { return(1); }
-    else if(strcmp(str, "int") == 0) { return(1); }
-    else if(strcmp(str, "long") == 0) { return(1); }
-    else if(strcmp(str, "float") == 0) { return(1); }
-    else if(strcmp(str, "double") == 0) { return(1); }
-    else if(strcmp(str, "bool") == 0) { return(1); }
-    else if(strcmp(str, "Test") == 0) { return(2); } // Test
-    else if(strcmp(str, "V2") == 0) { return(3); } // V2
-    else if(strcmp(str, "A") == 0) { return(1); } // A
-    else if(strcmp(str, "B") == 0) { return(1); } // B
-    else if(strcmp(str, "Foo") == 0) { return(10); } // Foo
-    else if(strcmp(str, "V3") == 0) { return(3); } // V3
-    else if(strcmp(str, "VectorTest") == 0) { return(6); } // VectorTest
+    if(strcmp(str, "char") == 0) {return(1);}
+    else if(strcmp(str, "short") == 0) {return(1);}
+    else if(strcmp(str, "int") == 0) {return(1);}
+    else if(strcmp(str, "long") == 0) {return(1);}
+    else if(strcmp(str, "float") == 0) {return(1);}
+    else if(strcmp(str, "double") == 0) {return(1);}
+    else if(strcmp(str, "bool") == 0) {return(1);}
+    else if(strcmp(str, "Test") == 0) {return(2);} // Test
+    else if(strcmp(str, "V2") == 0) {return(3);} // V2
+    else if(strcmp(str, "A") == 0) {return(1);} // A
+    else if(strcmp(str, "B") == 0) {return(1);} // B
+    else if(strcmp(str, "Foo") == 0) {return(10);} // Foo
+    else if(strcmp(str, "V3") == 0) {return(3);} // V3
+    else if(strcmp(str, "VectorTest") == 0) {return(6);} // VectorTest
 
     return(-1); // Error.
 }
@@ -423,122 +425,160 @@ static int get_number_of_members_str(char const *str) {
 // Convert a type to a string.
 template<typename T> static char const *type_to_string_(void) {
     // Primitives.
-    if(type_compare(T, char)) { return("char"); }
-    else if(type_compare(T, char *)) { return("char *"); }
-    else if(type_compare(T, char **)) { return("char **"); }
-    else if(type_compare(T, short)) { return("short"); }
-    else if(type_compare(T, short *)) { return("short *"); }
-    else if(type_compare(T, short **)) { return("short **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, long)) { return("long"); }
-    else if(type_compare(T, long *)) { return("long *"); }
-    else if(type_compare(T, long **)) { return("long **"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float *"); }
-    else if(type_compare(T, float **)) { return("float **"); }
-    else if(type_compare(T, double)) { return("double"); }
-    else if(type_compare(T, double *)) { return("double *"); }
-    else if(type_compare(T, double **)) { return("double **"); }
-    else if(type_compare(T, bool)) { return("bool"); }
-    else if(type_compare(T, bool *)) { return("bool *"); }
-    else if(type_compare(T, bool **)) { return("bool **"); }
+    if(type_compare(T, char)) {return("char"); }
+    else if(type_compare(T, char *)) {return("char *");}
+    else if(type_compare(T, char **)) {return("char **");}
+    else if(type_compare(T, char &)) {return("char &");}
+    else if(type_compare(T, short)) { return("short");}
+    else if(type_compare(T, short *)) {return("short *");}
+    else if(type_compare(T, short **)) {return("short **");}
+    else if(type_compare(T, short &)) {return("short &");}
+    else if(type_compare(T, int)) { return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, long)) { return("long");}
+    else if(type_compare(T, long *)) {return("long *");}
+    else if(type_compare(T, long **)) {return("long **");}
+    else if(type_compare(T, long &)) {return("long &");}
+    else if(type_compare(T, float)) { return("float");}
+    else if(type_compare(T, float *)) {return("float *");}
+    else if(type_compare(T, float **)) {return("float **");}
+    else if(type_compare(T, float &)) {return("float &");}
+    else if(type_compare(T, double)) { return("double");}
+    else if(type_compare(T, double *)) {return("double *");}
+    else if(type_compare(T, double **)) {return("double **");}
+    else if(type_compare(T, double &)) {return("double &");}
+    else if(type_compare(T, bool)) { return("bool");}
+    else if(type_compare(T, bool *)) {return("bool *");}
+    else if(type_compare(T, bool **)) {return("bool **");}
+    else if(type_compare(T, bool &)) {return("bool &");}
 
     // Struct types.
-    else if(type_compare(T, Test)) { return("Test"); }
-    else if(type_compare(T, Test *)) { return("Test *"); }
-    else if(type_compare(T, Test **)) { return("Test **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2 *"); }
-    else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, A)) { return("A"); }
-    else if(type_compare(T, A *)) { return("A *"); }
-    else if(type_compare(T, A **)) { return("A **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, B)) { return("B"); }
-    else if(type_compare(T, B *)) { return("B *"); }
-    else if(type_compare(T, B **)) { return("B **"); }
-    else if(type_compare(T, double)) { return("double"); }
-    else if(type_compare(T, double *)) { return("double *"); }
-    else if(type_compare(T, double **)) { return("double **"); }
-    else if(type_compare(T, Foo)) { return("Foo"); }
-    else if(type_compare(T, Foo *)) { return("Foo *"); }
-    else if(type_compare(T, Foo **)) { return("Foo **"); }
-    else if(type_compare(T, char)) { return("char"); }
-    else if(type_compare(T, char *)) { return("char *"); }
-    else if(type_compare(T, char **)) { return("char **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float *"); }
-    else if(type_compare(T, float **)) { return("float **"); }
-    else if(type_compare(T, bool)) { return("bool"); }
-    else if(type_compare(T, bool *)) { return("bool *"); }
-    else if(type_compare(T, bool **)) { return("bool **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, double)) { return("double"); }
-    else if(type_compare(T, double *)) { return("double *"); }
-    else if(type_compare(T, double **)) { return("double **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2 *"); }
-    else if(type_compare(T, V2 **)) { return("V2 **"); }
-    else if(type_compare(T, V3)) { return("V3"); }
-    else if(type_compare(T, V3 *)) { return("V3 *"); }
-    else if(type_compare(T, V3 **)) { return("V3 **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int *"); }
-    else if(type_compare(T, int **)) { return("int **"); }
-    else if(type_compare(T, VectorTest)) { return("VectorTest"); }
-    else if(type_compare(T, VectorTest *)) { return("VectorTest *"); }
-    else if(type_compare(T, VectorTest **)) { return("VectorTest **"); }
-    else if(type_compare(T, std::vector<float>)) { return("std::vector<float>"); }
-    else if(type_compare(T, std::vector<float> *)) { return("std::vector<float> *"); }
-    else if(type_compare(T, std::vector<float> **)) { return("std::vector<float> **"); }
-    else if(type_compare(T, std::vector<int>)) { return("std::vector<int>"); }
-    else if(type_compare(T, std::vector<int> *)) { return("std::vector<int> *"); }
-    else if(type_compare(T, std::vector<int> **)) { return("std::vector<int> **"); }
-    else if(type_compare(T, std::vector<V3>)) { return("std::vector<V3>"); }
-    else if(type_compare(T, std::vector<V3> *)) { return("std::vector<V3> *"); }
-    else if(type_compare(T, std::vector<V3> **)) { return("std::vector<V3> **"); }
-    else if(type_compare(T, std::deque<int>)) { return("std::deque<int>"); }
-    else if(type_compare(T, std::deque<int> *)) { return("std::deque<int> *"); }
-    else if(type_compare(T, std::deque<int> **)) { return("std::deque<int> **"); }
-    else if(type_compare(T, std::forward_list<int>)) { return("std::forward_list<int>"); }
-    else if(type_compare(T, std::forward_list<int> *)) { return("std::forward_list<int> *"); }
-    else if(type_compare(T, std::forward_list<int> **)) { return("std::forward_list<int> **"); }
-    else if(type_compare(T, std::list<int>)) { return("std::list<int>"); }
-    else if(type_compare(T, std::list<int> *)) { return("std::list<int> *"); }
-    else if(type_compare(T, std::list<int> **)) { return("std::list<int> **"); }
+    else if(type_compare(T, Test)) {return("Test");}
+    else if(type_compare(T, Test *)) {return("Test *");}
+    else if(type_compare(T, Test **)) {return("Test **");}
+    else if(type_compare(T, Test &)) {return("Test &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2 *");}
+    else if(type_compare(T, V2 **)) {return("V2 **");}
+    else if(type_compare(T, V2 &)) {return("V2 &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, A)) {return("A");}
+    else if(type_compare(T, A *)) {return("A *");}
+    else if(type_compare(T, A **)) {return("A **");}
+    else if(type_compare(T, A &)) {return("A &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, B)) {return("B");}
+    else if(type_compare(T, B *)) {return("B *");}
+    else if(type_compare(T, B **)) {return("B **");}
+    else if(type_compare(T, B &)) {return("B &");}
+    else if(type_compare(T, double)) {return("double");}
+    else if(type_compare(T, double *)) {return("double *");}
+    else if(type_compare(T, double **)) {return("double **");}
+    else if(type_compare(T, double &)) {return("double &");}
+    else if(type_compare(T, Foo)) {return("Foo");}
+    else if(type_compare(T, Foo *)) {return("Foo *");}
+    else if(type_compare(T, Foo **)) {return("Foo **");}
+    else if(type_compare(T, Foo &)) {return("Foo &");}
+    else if(type_compare(T, char)) {return("char");}
+    else if(type_compare(T, char *)) {return("char *");}
+    else if(type_compare(T, char **)) {return("char **");}
+    else if(type_compare(T, char &)) {return("char &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float *");}
+    else if(type_compare(T, float **)) {return("float **");}
+    else if(type_compare(T, float &)) {return("float &");}
+    else if(type_compare(T, bool)) {return("bool");}
+    else if(type_compare(T, bool *)) {return("bool *");}
+    else if(type_compare(T, bool **)) {return("bool **");}
+    else if(type_compare(T, bool &)) {return("bool &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, double)) {return("double");}
+    else if(type_compare(T, double *)) {return("double *");}
+    else if(type_compare(T, double **)) {return("double **");}
+    else if(type_compare(T, double &)) {return("double &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2 *");}
+    else if(type_compare(T, V2 **)) {return("V2 **");}
+    else if(type_compare(T, V2 &)) {return("V2 &");}
+    else if(type_compare(T, V3)) {return("V3");}
+    else if(type_compare(T, V3 *)) {return("V3 *");}
+    else if(type_compare(T, V3 **)) {return("V3 **");}
+    else if(type_compare(T, V3 &)) {return("V3 &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int *");}
+    else if(type_compare(T, int **)) {return("int **");}
+    else if(type_compare(T, int &)) {return("int &");}
+    else if(type_compare(T, VectorTest)) {return("VectorTest");}
+    else if(type_compare(T, VectorTest *)) {return("VectorTest *");}
+    else if(type_compare(T, VectorTest **)) {return("VectorTest **");}
+    else if(type_compare(T, VectorTest &)) {return("VectorTest &");}
+    else if(type_compare(T, std::vector<float>)) {return("std::vector<float>");}
+    else if(type_compare(T, std::vector<float> *)) {return("std::vector<float> *");}
+    else if(type_compare(T, std::vector<float> **)) {return("std::vector<float> **");}
+    else if(type_compare(T, std::vector<float> &)) {return("std::vector<float> &");}
+    else if(type_compare(T, std::vector<int>)) {return("std::vector<int>");}
+    else if(type_compare(T, std::vector<int> *)) {return("std::vector<int> *");}
+    else if(type_compare(T, std::vector<int> **)) {return("std::vector<int> **");}
+    else if(type_compare(T, std::vector<int> &)) {return("std::vector<int> &");}
+    else if(type_compare(T, std::vector<V3>)) {return("std::vector<V3>");}
+    else if(type_compare(T, std::vector<V3> *)) {return("std::vector<V3> *");}
+    else if(type_compare(T, std::vector<V3> **)) {return("std::vector<V3> **");}
+    else if(type_compare(T, std::vector<V3> &)) {return("std::vector<V3> &");}
+    else if(type_compare(T, std::deque<int>)) {return("std::deque<int>");}
+    else if(type_compare(T, std::deque<int> *)) {return("std::deque<int> *");}
+    else if(type_compare(T, std::deque<int> **)) {return("std::deque<int> **");}
+    else if(type_compare(T, std::deque<int> &)) {return("std::deque<int> &");}
+    else if(type_compare(T, std::forward_list<int>)) {return("std::forward_list<int>");}
+    else if(type_compare(T, std::forward_list<int> *)) {return("std::forward_list<int> *");}
+    else if(type_compare(T, std::forward_list<int> **)) {return("std::forward_list<int> **");}
+    else if(type_compare(T, std::forward_list<int> &)) {return("std::forward_list<int> &");}
+    else if(type_compare(T, std::list<int>)) {return("std::list<int>");}
+    else if(type_compare(T, std::list<int> *)) {return("std::list<int> *");}
+    else if(type_compare(T, std::list<int> **)) {return("std::list<int> **");}
+    else if(type_compare(T, std::list<int> &)) {return("std::list<int> &");}
 
     else { return(0); } // Unknown Type.
 }
@@ -546,57 +586,167 @@ template<typename T> static char const *type_to_string_(void) {
 // Convert a type to a string.
 template<typename T> static char const *weak_type_to_string_(void) {
     // Primitives.
-    if(type_compare(T, char)) { return("char"); }
-    else if(type_compare(T, char *)) { return("char"); }
-    else if(type_compare(T, char **)) { return("char"); }
-    else if(type_compare(T, short)) { return("short"); }
-    else if(type_compare(T, short *)) { return("short"); }
-    else if(type_compare(T, short **)) { return("short"); }
-    else if(type_compare(T, int)) { return("int"); }
-    else if(type_compare(T, int *)) { return("int"); }
-    else if(type_compare(T, int **)) { return("int"); }
-    else if(type_compare(T, long)) { return("long"); }
-    else if(type_compare(T, long *)) { return("long"); }
-    else if(type_compare(T, long **)) { return("long"); }
-    else if(type_compare(T, float)) { return("float"); }
-    else if(type_compare(T, float *)) { return("float"); }
-    else if(type_compare(T, float **)) { return("float"); }
-    else if(type_compare(T, double)) { return("double"); }
-    else if(type_compare(T, double *)) { return("double"); }
-    else if(type_compare(T, double **)) { return("double"); }
-    else if(type_compare(T, bool)) { return("bool"); }
-    else if(type_compare(T, bool *)) { return("bool"); }
-    else if(type_compare(T, bool **)) { return("bool"); }
+    if(type_compare(T, char)) {return("char");}
+    else if(type_compare(T, char *)) {return("char");}
+    else if(type_compare(T, char **)) {return("char");}
+    else if(type_compare(T, char &)) {return("char");}
+    else if(type_compare(T, short)) {return("short");}
+    else if(type_compare(T, short *)) {return("short");}
+    else if(type_compare(T, short **)) {return("short");}
+    else if(type_compare(T, short &)) {return("short");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, long)) {return("long");}
+    else if(type_compare(T, long *)) {return("long");}
+    else if(type_compare(T, long **)) {return("long");}
+    else if(type_compare(T, long &)) {return("long");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float");}
+    else if(type_compare(T, float **)) {return("float");}
+    else if(type_compare(T, float &)) {return("float");}
+    else if(type_compare(T, double)) {return("double");}
+    else if(type_compare(T, double *)) {return("double");}
+    else if(type_compare(T, double **)) {return("double");}
+    else if(type_compare(T, double &)) {return("double");}
+    else if(type_compare(T, bool)) {return("bool");}
+    else if(type_compare(T, bool *)) {return("bool");}
+    else if(type_compare(T, bool **)) {return("bool");}
+    else if(type_compare(T, bool &)) {return("bool");}
 
     // Struct types.
-    else if(type_compare(T, Test)) { return("Test"); }
-    else if(type_compare(T, Test *)) { return("Test"); }
-    else if(type_compare(T, Test **)) { return("Test"); }
-    else if(type_compare(T, V2)) { return("V2"); }
-    else if(type_compare(T, V2 *)) { return("V2"); }
-    else if(type_compare(T, V2 **)) { return("V2"); }
-    else if(type_compare(T, A)) { return("A"); }
-    else if(type_compare(T, A *)) { return("A"); }
-    else if(type_compare(T, A **)) { return("A"); }
-    else if(type_compare(T, B)) { return("B"); }
-    else if(type_compare(T, B *)) { return("B"); }
-    else if(type_compare(T, B **)) { return("B"); }
-    else if(type_compare(T, Foo)) { return("Foo"); }
-    else if(type_compare(T, Foo *)) { return("Foo"); }
-    else if(type_compare(T, Foo **)) { return("Foo"); }
-    else if(type_compare(T, V3)) { return("V3"); }
-    else if(type_compare(T, V3 *)) { return("V3"); }
-    else if(type_compare(T, V3 **)) { return("V3"); }
-    else if(type_compare(T, VectorTest)) { return("VectorTest"); }
-    else if(type_compare(T, VectorTest *)) { return("VectorTest"); }
-    else if(type_compare(T, VectorTest **)) { return("VectorTest"); }
+    else if(type_compare(T, Test)) {return("Test");}
+    else if(type_compare(T, Test *)) {return("Test");}
+    else if(type_compare(T, Test **)) {return("Test");}
+    else if(type_compare(T, Test &)) {return("Test");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2");}
+    else if(type_compare(T, V2 **)) {return("V2");}
+    else if(type_compare(T, V2 &)) {return("V2");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, A)) {return("A");}
+    else if(type_compare(T, A *)) {return("A");}
+    else if(type_compare(T, A **)) {return("A");}
+    else if(type_compare(T, A &)) {return("A");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, B)) {return("B");}
+    else if(type_compare(T, B *)) {return("B");}
+    else if(type_compare(T, B **)) {return("B");}
+    else if(type_compare(T, B &)) {return("B");}
+    else if(type_compare(T, double)) {return("double");}
+    else if(type_compare(T, double *)) {return("double");}
+    else if(type_compare(T, double **)) {return("double");}
+    else if(type_compare(T, double &)) {return("double");}
+    else if(type_compare(T, Foo)) {return("Foo");}
+    else if(type_compare(T, Foo *)) {return("Foo");}
+    else if(type_compare(T, Foo **)) {return("Foo");}
+    else if(type_compare(T, Foo &)) {return("Foo");}
+    else if(type_compare(T, char)) {return("char");}
+    else if(type_compare(T, char *)) {return("char");}
+    else if(type_compare(T, char **)) {return("char");}
+    else if(type_compare(T, char &)) {return("char");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, float)) {return("float");}
+    else if(type_compare(T, float *)) {return("float");}
+    else if(type_compare(T, float **)) {return("float");}
+    else if(type_compare(T, float &)) {return("float");}
+    else if(type_compare(T, bool)) {return("bool");}
+    else if(type_compare(T, bool *)) {return("bool");}
+    else if(type_compare(T, bool **)) {return("bool");}
+    else if(type_compare(T, bool &)) {return("bool");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, double)) {return("double");}
+    else if(type_compare(T, double *)) {return("double");}
+    else if(type_compare(T, double **)) {return("double");}
+    else if(type_compare(T, double &)) {return("double");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, V2)) {return("V2");}
+    else if(type_compare(T, V2 *)) {return("V2");}
+    else if(type_compare(T, V2 **)) {return("V2");}
+    else if(type_compare(T, V2 &)) {return("V2");}
+    else if(type_compare(T, V3)) {return("V3");}
+    else if(type_compare(T, V3 *)) {return("V3");}
+    else if(type_compare(T, V3 **)) {return("V3");}
+    else if(type_compare(T, V3 &)) {return("V3");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, int)) {return("int");}
+    else if(type_compare(T, int *)) {return("int");}
+    else if(type_compare(T, int **)) {return("int");}
+    else if(type_compare(T, int &)) {return("int");}
+    else if(type_compare(T, VectorTest)) {return("VectorTest");}
+    else if(type_compare(T, VectorTest *)) {return("VectorTest");}
+    else if(type_compare(T, VectorTest **)) {return("VectorTest");}
+    else if(type_compare(T, VectorTest &)) {return("VectorTest");}
+    else if(type_compare(T, std::vector<float>)) {return("std::vector<float>");}
+    else if(type_compare(T, std::vector<float> *)) {return("std::vector<float>");}
+    else if(type_compare(T, std::vector<float> **)) {return("std::vector<float>");}
+    else if(type_compare(T, std::vector<float> &)) {return("std::vector<float>");}
+    else if(type_compare(T, std::vector<int>)) {return("std::vector<int>");}
+    else if(type_compare(T, std::vector<int> *)) {return("std::vector<int>");}
+    else if(type_compare(T, std::vector<int> **)) {return("std::vector<int>");}
+    else if(type_compare(T, std::vector<int> &)) {return("std::vector<int>");}
+    else if(type_compare(T, std::vector<V3>)) {return("std::vector<V3>");}
+    else if(type_compare(T, std::vector<V3> *)) {return("std::vector<V3>");}
+    else if(type_compare(T, std::vector<V3> **)) {return("std::vector<V3>");}
+    else if(type_compare(T, std::vector<V3> &)) {return("std::vector<V3>");}
+    else if(type_compare(T, std::deque<int>)) {return("std::deque<int>");}
+    else if(type_compare(T, std::deque<int> *)) {return("std::deque<int>");}
+    else if(type_compare(T, std::deque<int> **)) {return("std::deque<int>");}
+    else if(type_compare(T, std::deque<int> &)) {return("std::deque<int>");}
+    else if(type_compare(T, std::forward_list<int>)) {return("std::forward_list<int>");}
+    else if(type_compare(T, std::forward_list<int> *)) {return("std::forward_list<int>");}
+    else if(type_compare(T, std::forward_list<int> **)) {return("std::forward_list<int>");}
+    else if(type_compare(T, std::forward_list<int> &)) {return("std::forward_list<int>");}
+    else if(type_compare(T, std::list<int>)) {return("std::list<int>");}
+    else if(type_compare(T, std::list<int> *)) {return("std::list<int>");}
+    else if(type_compare(T, std::list<int> **)) {return("std::list<int>");}
+    else if(type_compare(T, std::list<int> &)) {return("std::list<int>");}
 
-    else { return(0); } // Unknown Type.
+    else {return(0);} // Unknown Type.
 }
 
 // Get the number of base types.
 template<typename T> static int get_base_type_count_(void) {
-    if(type_compare(T, Foo))    { return(2); }
+    if(type_compare(T, Foo)) {return(2);}
 
     return(0); // Not found.
 }
@@ -604,8 +754,12 @@ template<typename T> static int get_base_type_count_(void) {
 // Get the base type.
 template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {
     if(type_compare(T, Foo)) {
-        if(index == 0)      { return("A"); }
-        else if(index == 1) { return("B"); }
+        switch(index) {
+            case 0: {return("A");} break;
+            case 1: {return("B");} break;
+
+            default: {assert(0);} break;
+        } // switch(index)
     }
 
     return(0); // Not found.
@@ -616,27 +770,27 @@ template<typename T> static char const *get_base_type_as_string_(int index/*= 0*
 //
 
 // Meta Data for Letters.
-static int number_of_elements_in_enum_Letters = 3;
+static int const number_of_elements_in_enum_Letters = 3;
 static char const *enum_to_string_Letters(int v) {
     switch(v) {
-        case 0: { return("letter_a"); } break;
-        case 1: { return("letter_b"); } break;
-        case 2: { return("letter_c"); } break;
+        case 0: {return("letter_a");} break;
+        case 1: {return("letter_b");} break;
+        case 2: {return("letter_c");} break;
     }
 
     return(0); // v is out of bounds.
 }
 static int string_to_enum_Letters(char const *str) {
     if(str) {
-        if(strcmp(str, "letter_a") == 0) { return(0); }
-        else if(strcmp(str, "letter_b") == 0) { return(1); }
-        else if(strcmp(str, "letter_c") == 0) { return(2); }
+        if(strcmp(str, "letter_a") == 0) {return(0);}
+        else if(strcmp(str, "letter_b") == 0) {return(1);}
+        else if(strcmp(str, "letter_c") == 0) {return(2);}
     }
 
     return(0);  // str didn't match.
 }
 
-#undef _std
+#undef _std // :(
 } // namespace pp
 
 #endif // Header guard.
