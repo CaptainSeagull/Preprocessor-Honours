@@ -224,7 +224,7 @@ static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
 // Scratch memory
 //
 // A quick-to-access temp region of memory. Should be frequently cleared.
-static Int scratch_memory_size = 256 * 256;
+static Int const scratch_memory_size = 256 * 256;
 Void *push_scratch_memory(Int size = scratch_memory_size);
 Void clear_scratch_memory(void);
 Void free_scratch_memory();

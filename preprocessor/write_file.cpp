@@ -19,7 +19,6 @@ struct OutputBuffer {
     Int size;
 };
 
-
 enum StdTypes {
     StdTypes_not,
     StdTypes_vector,
@@ -52,6 +51,7 @@ internal Void write_to_output_buffer(OutputBuffer *ob, Char *format, ...) {
     va_list args;
     va_start(args, format);
     ob->index += stbsp_vsnprintf(ob->buffer + ob->index, ob->size - ob->index, format, args);
+    assert(ob->index < ob->size);
     va_end(args);
 }
 
@@ -75,8 +75,7 @@ internal Int set_primitive_type(String *array) {
 //              with just a utility thing to get the printf modifier (%s for string, %d for ints). And I think most of the code for serializing structs
 //              could be generalized through templates too. Maybe I could even add a third method, serialize container, as well?
 internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *types, Int type_count) {
-    Int temp_max = 255 * 255;
-    char *temp = alloc(Char, temp_max);
+    Char *temp = cast(Char *)push_scratch_memory();
     Int temp_cnt = 0;
 
     Int written_count = 0;
@@ -88,12 +87,12 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
         switch(std_res.type) {
             case StdTypes_vector: {
                 if(written_count) {
-                    temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "                        else ");
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        else ");
                 } else {
-                    temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "                        ");
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
                 }
 
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, temp_max - temp_cnt, "if(member->type == MetaType_std_vector_%.*s) {bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_vector_%.*s) {bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -105,18 +104,6 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
 
     // TODO(Jonny): Allow "name" to be null in serialize_struct.
     write_to_output_buffer(ob,
-                           "static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);"
-                           "template<typename T, typename U> static size_t\n"
-                           "serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
-                           "    T container = *(T *)member_ptr;\n"
-                           "    for(auto &iter : container) {\n"
-                           "        bytes_written = serialize_struct_((void *)&iter, name, type_to_string(U), indent, buffer, buf_size, bytes_written);\n"
-                           "    }\n"
-                           "\n"
-                           "    return(bytes_written);\n"
-                           "}\n"
-                           "\n"
-                           "\n"
                            "// Function to serialize a struct to a char array buffer.\n"
                            "static size_t\nserialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
                            "    assert((buffer) && (buf_size > 0)); // Check params.\n"
@@ -196,7 +183,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "}\n",
                            temp);
 
-    free(temp);
+    clear_scratch_memory();
 }
 
 internal Bool is_meta_type_already_in_array(String *array, Int len, String test) {
@@ -226,7 +213,7 @@ internal StructData *find_struct(String str, StructData *structs, Int struct_cou
         }
     }
 
-    if(!res) assert(0);
+    assert(res);
 
     return(res);
 }
@@ -305,7 +292,7 @@ write_meta_type_to_name(OutputBuffer *ob, StructData *struct_data, Int struct_co
                            "}\n");
 }
 
-static void write_is_container(OutputBuffer *ob, String *types, Int type_count) {
+internal void write_is_container(OutputBuffer *ob, String *types, Int type_count) {
     write_to_output_buffer(ob, "static bool is_meta_type_container(int type) {\n");
 
     for(Int i = 0; (i < type_count); ++i) {
@@ -324,9 +311,7 @@ static void write_is_container(OutputBuffer *ob, String *types, Int type_count) 
                 write_to_output_buffer(ob, "if(type == MetaType_std_vector_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
-            default: {
-                assert(0);
-            } break;
+            default: assert(0); break;
         }
     }
 
@@ -979,14 +964,14 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                     EnumData *ed = enum_data + i;
                     write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
 
-                    Char type[32];
+                    Char type[32] = {};
                     if(ed->type.len) {
                         for(int j = 0; (j < ed->type.len); ++j) {
                             type[j] = ed->type.e[j];
                         }
                         type[ed->type.len] = 0;
                     } else {
-                        type[0] = 'i'; type[1] = 'n'; type[2] = 't'; type[3] = 0;
+                        type[0] = 'i'; type[1] = 'n'; type[2] = 't';
                     }
 
                     // Enum size.

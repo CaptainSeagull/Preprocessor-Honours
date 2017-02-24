@@ -68,7 +68,7 @@ Void *system_realloc(Void *ptr, PtrSize new_size) {
     return(res);
 }
 
-File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
+File system_read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     File res = {};
 
     FILE *file = fopen(fname, "r");
@@ -85,7 +85,7 @@ File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     return(res);
 }
 
-Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
+Bool system_write_to_file(Char *fname, Void *data, PtrSize data_size) {
     assert(data_size > 0);
 
     Bool res = false;
@@ -100,7 +100,7 @@ Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
     return(res);
 }
 
-PtrSize get_file_size(Char *fname) {
+PtrSize system_get_file_size(Char *fname) {
     PtrSize size = 0;
 
     FILE *file = fopen(fname, "r");
@@ -114,7 +114,7 @@ PtrSize get_file_size(Char *fname) {
     return(size);
 }
 
-Bool create_folder(Char *name) {
+Bool system_create_folder(Char *name) {
     Bool res = false;
     struct stat st = {};
 

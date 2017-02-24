@@ -223,6 +223,15 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
     return(bytes_written);
 
 }
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    T &container = *(T *)member_ptr;
+    for(auto &iter : container) {
+        bytes_written = serialize_struct_((void *)&iter, name, type_to_string(U), indent, buffer, buf_size, bytes_written);
+    }
+
+    return(bytes_written);
+}
 
 template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }
 

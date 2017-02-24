@@ -20,11 +20,11 @@ Void *system_realloc(Void *ptr, PtrSize size);
 
 // File IO.
 struct File;
-File read_entire_file_and_null_terminate(Char *fname, Void *memory);
-Bool write_to_file(Char *fname, Void *data, PtrSize data_size);
-PtrSize get_file_size(Char *fname);
+File system_read_entire_file_and_null_terminate(Char *fname, Void *memory);
+Bool system_write_to_file(Char *fname, Void *data, PtrSize data_size);
+PtrSize system_get_file_size(Char *fname);
 
-Bool create_folder(Char *name);
+Bool system_create_folder(Char *name);
 
 // Utility stuff.
 Uint64 system_get_performance_counter(void);

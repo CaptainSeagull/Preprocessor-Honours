@@ -48,7 +48,7 @@ Void *system_realloc(Void *ptr, PtrSize size) {
     return HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ptr, size);
 }
 
-File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
+File system_read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     File res = {};
     HANDLE fhandle;
     LARGE_INTEGER fsize;
@@ -75,7 +75,7 @@ File read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     return(res);
 }
 
-Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
+Bool system_write_to_file(Char *fname, Void *data, PtrSize data_size) {
     Bool res = false;
     HANDLE fhandle;
     DWORD fsize32, bytes_written;
@@ -98,7 +98,7 @@ Bool write_to_file(Char *fname, Void *data, PtrSize data_size) {
     return res;
 }
 
-PtrSize get_file_size(Char *fname) {
+PtrSize system_get_file_size(Char *fname) {
     PtrSize res = 0;
     HANDLE fhandle;
     LARGE_INTEGER large_int;
@@ -119,7 +119,7 @@ PtrSize get_file_size(Char *fname) {
     return(res);
 }
 
-Bool create_folder(Char *name) {
+Bool system_create_folder(Char *name) {
     Int create_dir_res = CreateDirectory(name, 0);
 
     Bool res = (create_dir_res == 0);

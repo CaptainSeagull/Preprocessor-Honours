@@ -66,17 +66,6 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     assert(0); 
     return(0); // Not found
 }
-static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
-serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
-    T container = *(T *)member_ptr;
-    for(auto &iter : container) {
-        bytes_written = serialize_struct_((void *)&iter, name, type_to_string(U), indent, buffer, buf_size, bytes_written);
-    }
-
-    return(bytes_written);
-}
-
-
 // Function to serialize a struct to a char array buffer.
 static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
