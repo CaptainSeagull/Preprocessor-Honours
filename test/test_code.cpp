@@ -173,8 +173,8 @@ void std_test(void) {
     for(int i = 0; (i < 5); ++i) vt.deque_int.push_back(i);
 
     vt.fl_int = { 10, 9, 8, 7 };
-#endif
     vt.list_int = { 10, 9, 8, 7 };
+#endif
 
     pp::print(vt);
 

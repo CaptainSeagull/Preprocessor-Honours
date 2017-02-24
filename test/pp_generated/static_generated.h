@@ -58,6 +58,7 @@
 #include <deque>
 #include <forward_list>
 #include <list>
+#include <stack>
 
 namespace pp { // PreProcessor
 
