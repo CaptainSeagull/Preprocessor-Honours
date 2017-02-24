@@ -22,6 +22,7 @@ struct OutputBuffer {
 enum StdTypes {
     StdTypes_not,
     StdTypes_vector,
+    StdTypes_deque,
 
     StdTypes_cnt,
 };
@@ -35,11 +36,19 @@ internal StdResult get_std_information(String str) {
     StdResult res = {};
 
     Char *std_vector_str = "std::vector";
-    if(string_contains(str, std_vector_str)) {
+    Char *std_deque_str = "std::deque";
+
+    if(string_contains(str, std_vector_str)) { // std::vector
         res.type = StdTypes_vector;
 
         Int len = string_length(std_vector_str);
-        res.stored_type.len=  str.len - len - 2;
+        res.stored_type.len = str.len - len - 2;
+        res.stored_type.e = str.e + len + 1;
+    } else if(string_contains(str, std_deque_str)) { // std::array
+        res.type = StdTypes_deque;
+
+        Int len = string_length(std_deque_str);
+        res.stored_type.len = str.len - len - 2;
         res.stored_type.e = str.e + len + 1;
     }
 
@@ -93,6 +102,21 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                 }
 
                 temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_vector_%.*s) {bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                                           std_res.stored_type.len, std_res.stored_type.e,
+                                           std_res.stored_type.len, std_res.stored_type.e,
+                                           std_res.stored_type.len, std_res.stored_type.e);
+
+                ++written_count;
+            } break;
+
+            case StdTypes_deque: {
+                if(written_count) {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        else ");
+                } else {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
+                }
+
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_deque_%.*s) {bytes_written = serialize_container<std::deque<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -248,6 +272,10 @@ internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
                 write_to_output_buffer(ob, "    MetaType_std_vector_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
+            case StdTypes_deque: {
+                write_to_output_buffer(ob, "    MetaType_std_deque_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
             default: {
                 assert(0);
             } break;
@@ -309,6 +337,10 @@ internal void write_is_container(OutputBuffer *ob, String *types, Int type_count
 
             case StdTypes_vector: {
                 write_to_output_buffer(ob, "if(type == MetaType_std_vector_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
+            case StdTypes_deque: {
+                write_to_output_buffer(ob, "if(type == MetaType_std_deque_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
             default: assert(0); break;
@@ -493,6 +525,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                 write_to_output_buffer(&ob, "            {MetaType_std_vector_%.*s", std_res.stored_type.len, std_res.stored_type.e);
                             } break;
 
+                            case StdTypes_deque: {
+                                write_to_output_buffer(&ob, "            {MetaType_std_deque_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                            } break;
+
                             default: {
                                 assert(0);
                             } break;
@@ -526,6 +562,12 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                     case StdTypes_vector: {
                                         write_to_output_buffer(&ob,
                                                                "            {MetaType_std_vector_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_deque: {
+                                        write_to_output_buffer(&ob,
+                                                               "            {MetaType_std_deque_%.*s",
                                                                std_res.stored_type.len, std_res.stored_type.e);
                                     } break;
 
@@ -636,7 +678,13 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                         len = s->len;
                     } break;
 
+                    // TODO(Jonny): Can I just use default for vector and array??
                     case StdTypes_vector: {
+                        output_string = std_res.stored_type.e;
+                        len = std_res.stored_type.len;
+                    } break;
+
+                    case StdTypes_deque: {
                         output_string = std_res.stored_type.e;
                         len = std_res.stored_type.len;
                     } break;
@@ -690,6 +738,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                        std_res.stored_type.len, std_res.stored_type.e);
                             } break;
 
+                            case StdTypes_deque: {
+                                write_to_output_buffer(&ob, "            {MetaType_std_deque_%.*s",
+                                                       std_res.stored_type.len, std_res.stored_type.e);
+                            } break;
+
                             default: {
                                 assert(0);
                             } break;
@@ -721,6 +774,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                                     case StdTypes_vector: {
                                         write_to_output_buffer(&ob, "            {MetaType_std_vector_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_deque: {
+                                        write_to_output_buffer(&ob, "            {MetaType_std_deque_%.*s",
                                                                std_res.stored_type.len, std_res.stored_type.e);
                                     } break;
                                 }

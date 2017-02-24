@@ -53,7 +53,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stddef.h>
-#include <vector> // TODO(Jonny): Only include this if it's needed.
+// TODO(Jonny): Only include these if their needed?
+#include <vector>
+#include <deque>
 
 namespace pp { // PreProcessor
 

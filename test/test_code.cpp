@@ -142,27 +142,34 @@ struct V3 {
 };
 
 struct VectorTest {
-    std::vector<float> floating;
-    std::vector<int> integer;
-    std::vector<V3> vector3;
+    std::vector<float> vec_floating;
+    std::vector<int> vec_integer;
+    std::vector<V3> vec_vector3;
+
+    std::deque<int> deque_int;
 };
 
-void test_vector(void) {
+void std_test(void) {
     VectorTest vt;
 
     // TODO(Jonny): There's an issue with outputting the name of primitives for vectors. I think it's because
     //              primitives don't have any members, and the preprocessor's getting a little confused.
     for(int i = 0; (i < 5); ++i) {
-        vt.integer.push_back(i);
+        vt.vec_integer.push_back(i);
     }
 
     for(float i = 0; (i < 4.0f); i += 0.5f) {
-        vt.floating.push_back(i);
+        vt.vec_floating.push_back(i);
     }
 
-    vt.vector3.push_back({1, 2, 3});
-    vt.vector3.push_back({3, 2, 1});
-    vt.vector3.push_back({2, 3, 1});
+    vt.vec_vector3.push_back({1, 2, 3});
+    vt.vec_vector3.push_back({3, 2, 1});
+    vt.vec_vector3.push_back({2, 3, 1});
+
+
+    for(int i = 0; (i < 15); ++i) {
+        vt.deque_int.push_back(i);
+    }
 
     pp::print(vt);
 
@@ -171,7 +178,7 @@ void test_vector(void) {
 int main(int /*argc*/, char ** /*argv*/) {
     //test_struct();
     //test_enum();
-    test_vector();
+    std_test();
 
     printf("\n");
     return(0);
