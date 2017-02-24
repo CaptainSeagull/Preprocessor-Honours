@@ -117,7 +117,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                     temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
                 }
 
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_vector_%.*s) {bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_vector_%.*s) {bytes_written = serialize_container<std::vector<%.*s>, %.*s>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -178,7 +178,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "static size_t\nserialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
                            "    assert((buffer) && (buf_size > 0)); // Check params.\n"
                            "\n"
-                           "    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.\n"
+                           "    if(!bytes_written) {memset(buffer, 0, buf_size);} // If this is the first time through, zero the buffer.\n"
                            "\n"
                            "    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. \n"
                            "    if(members_of_Something) {\n"
@@ -187,7 +187,9 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "        for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
                            "\n"
                            "        // Write the name and the type.\n"
-                           "        if(name) {bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_as_str, name);}\n"
+                           "        if((name) && (strlen(name) > 0)) {\n"
+                           "            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, \"\\n%%s%%s %%s\", indent_buf, type_as_str, name);\n"
+                           "        }\n"
                            "        indent += 4;\n"
                            "\n"
                            "        // Add 4 to the indent.\n"
@@ -998,7 +1000,23 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) { return(\"%.*s **\"); }\n",
                                        sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+                // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) { return(\"%.*s\"); }\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) { return(\"%.*s *\"); }\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+
+                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) { return(\"%.*s **\"); }\n",
+                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                }
+
             }
+
             write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
 
             // type_to_string ignore.

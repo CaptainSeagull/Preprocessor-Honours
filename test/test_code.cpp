@@ -154,9 +154,7 @@ struct VectorTest {
 
 void std_test(void) {
     VectorTest vt;
-#if 0
-    // TODO(Jonny): There's an issue with outputting the name of primitives for vectors. I think it's because
-    //              primitives don't have any members, and the preprocessor's getting a little confused.
+
     for(int i = 0; (i < 5); ++i) {
         vt.vec_integer.push_back(i);
     }
@@ -174,7 +172,6 @@ void std_test(void) {
 
     vt.fl_int = { 10, 9, 8, 7 };
     vt.list_int = { 10, 9, 8, 7 };
-#endif
 
     pp::print(vt);
 

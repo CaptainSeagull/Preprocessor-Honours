@@ -71,7 +71,7 @@ static size_t
 serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     assert((buffer) && (buf_size > 0)); // Check params.
 
-    if(!indent) {memset(buffer + bytes_written, 0, buf_size - bytes_written);} // If this is the first time through, zero the buffer.
+    if(!bytes_written) {memset(buffer, 0, buf_size);} // If this is the first time through, zero the buffer.
 
     MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. 
     if(members_of_Something) {
@@ -80,7 +80,9 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
         for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
         // Write the name and the type.
-        if(name) {bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_as_str, name);}
+        if((name) && (strlen(name) > 0)) {
+            bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_as_str, name);
+        }
         indent += 4;
 
         // Add 4 to the indent.
@@ -351,18 +353,48 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, V2)) { return("V2"); }
     else if(type_compare(T, V2 *)) { return("V2 *"); }
     else if(type_compare(T, V2 **)) { return("V2 **"); }
+    else if(type_compare(T, float)) { return("float"); }
+    else if(type_compare(T, float *)) { return("float *"); }
+    else if(type_compare(T, float **)) { return("float **"); }
+    else if(type_compare(T, float)) { return("float"); }
+    else if(type_compare(T, float *)) { return("float *"); }
+    else if(type_compare(T, float **)) { return("float **"); }
     else if(type_compare(T, Transform)) { return("Transform"); }
     else if(type_compare(T, Transform *)) { return("Transform *"); }
     else if(type_compare(T, Transform **)) { return("Transform **"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2 *"); }
+    else if(type_compare(T, V2 **)) { return("V2 **"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2 *"); }
+    else if(type_compare(T, V2 **)) { return("V2 **"); }
     else if(type_compare(T, Ball)) { return("Ball"); }
     else if(type_compare(T, Ball *)) { return("Ball *"); }
     else if(type_compare(T, Ball **)) { return("Ball **"); }
+    else if(type_compare(T, Transform)) { return("Transform"); }
+    else if(type_compare(T, Transform *)) { return("Transform *"); }
+    else if(type_compare(T, Transform **)) { return("Transform **"); }
+    else if(type_compare(T, V2)) { return("V2"); }
+    else if(type_compare(T, V2 *)) { return("V2 *"); }
+    else if(type_compare(T, V2 **)) { return("V2 **"); }
     else if(type_compare(T, Paddle)) { return("Paddle"); }
     else if(type_compare(T, Paddle *)) { return("Paddle *"); }
     else if(type_compare(T, Paddle **)) { return("Paddle **"); }
+    else if(type_compare(T, Transform)) { return("Transform"); }
+    else if(type_compare(T, Transform *)) { return("Transform *"); }
+    else if(type_compare(T, Transform **)) { return("Transform **"); }
     else if(type_compare(T, GameState)) { return("GameState"); }
     else if(type_compare(T, GameState *)) { return("GameState *"); }
     else if(type_compare(T, GameState **)) { return("GameState **"); }
+    else if(type_compare(T, Paddle)) { return("Paddle"); }
+    else if(type_compare(T, Paddle *)) { return("Paddle *"); }
+    else if(type_compare(T, Paddle **)) { return("Paddle **"); }
+    else if(type_compare(T, Ball)) { return("Ball"); }
+    else if(type_compare(T, Ball *)) { return("Ball *"); }
+    else if(type_compare(T, Ball **)) { return("Ball **"); }
+    else if(type_compare(T, int)) { return("int"); }
+    else if(type_compare(T, int *)) { return("int *"); }
+    else if(type_compare(T, int **)) { return("int **"); }
 
     else { return(0); } // Unknown Type.
 }
