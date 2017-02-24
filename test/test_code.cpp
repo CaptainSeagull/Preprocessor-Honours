@@ -147,6 +147,8 @@ struct VectorTest {
     std::vector<V3> vec_vector3;
 
     std::deque<int> deque_int;
+
+    std::forward_list<int> fl_int;
 };
 
 void std_test(void) {
@@ -167,9 +169,9 @@ void std_test(void) {
     vt.vec_vector3.push_back({2, 3, 1});
 
 
-    for(int i = 0; (i < 15); ++i) {
-        vt.deque_int.push_back(i);
-    }
+    for(int i = 0; (i < 5); ++i) vt.deque_int.push_back(i);
+
+    vt.fl_int = { 34, 77, 16, 2 };
 
     pp::print(vt);
 

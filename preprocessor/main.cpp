@@ -150,6 +150,7 @@ internal Bool write_static_file() {
                  "// TODO(Jonny): Only include these if their needed?\n"
                  "#include <vector>\n"
                  "#include <deque>\n"
+                 "#include <forward_list>\n"
                  "\n"
                  "namespace pp { // PreProcessor\n"
                  "\n"

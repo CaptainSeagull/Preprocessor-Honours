@@ -56,6 +56,7 @@
 // TODO(Jonny): Only include these if their needed?
 #include <vector>
 #include <deque>
+#include <forward_list>
 
 namespace pp { // PreProcessor
 

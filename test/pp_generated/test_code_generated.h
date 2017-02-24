@@ -34,6 +34,7 @@ enum MetaType {
     MetaType_std_vector_int,
     MetaType_std_vector_V3,
     MetaType_std_deque_int,
+    MetaType_std_forward_list_int,
 };
 
 static bool is_meta_type_container(int type) {
@@ -55,6 +56,7 @@ static bool is_meta_type_container(int type) {
     else if(type == MetaType_std_vector_int) {return(true);} // true
     else if(type == MetaType_std_vector_V3) {return(true);} // true
     else if(type == MetaType_std_deque_int) {return(true);} // true
+    else if(type == MetaType_std_forward_list_int) {return(true);} // true
 
     // Should not be reached.
     assert(0);
@@ -156,6 +158,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                         else if(member->type == MetaType_std_vector_int) {bytes_written = serialize_container<std::vector<int>, int>(member_ptr, name, indent, buffer, buf_size, bytes_written);}
                         else if(member->type == MetaType_std_vector_V3) {bytes_written = serialize_container<std::vector<V3>, V3>(member_ptr, name, indent, buffer, buf_size, bytes_written);}
                         else if(member->type == MetaType_std_deque_int) {bytes_written = serialize_container<std::deque<int>, int>(member_ptr, name, indent, buffer, buf_size, bytes_written);}
+                        else if(member->type == MetaType_std_forward_list_int) {bytes_written = serialize_container<std::forward_list<int>, int>(member_ptr, name, indent, buffer, buf_size, bytes_written);}
 
                     } else {
                         char const *name = meta_type_to_name(member->type, member->is_ptr != 0);
@@ -175,7 +178,7 @@ struct _A {  _int a;  };
 struct _B {  _double b;  };
 struct _Foo : public _A, public _B {  _char *str;  _int *int_ptr;  _float *float_ptr;  _bool *bool_ptr;  _int int_array[4];  _double *double_ptr_array[5];  _int *int_ptr_array[6];  _V2 v2;  };
 struct _V3 {  _int x;  _int y;  _int z;  };
-struct _VectorTest {  _std::vector<float> vec_floating;  _std::vector<int> vec_integer;  _std::vector<V3> vec_vector3;  _std::deque<int> deque_int;  };
+struct _VectorTest {  _std::vector<float> vec_floating;  _std::vector<int> vec_integer;  _std::vector<V3> vec_vector3;  _std::deque<int> deque_int;  _std::forward_list<int> fl_int;  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
@@ -244,6 +247,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_std_vector_int, "vec_integer", offset_of(&_VectorTest::vec_integer), false, 1},
             {MetaType_std_vector_V3, "vec_vector3", offset_of(&_VectorTest::vec_vector3), false, 1},
             {MetaType_std_deque_int, "deque_int", offset_of(&_VectorTest::deque_int), false, 1},
+            {MetaType_std_forward_list_int, "fl_int", offset_of(&_VectorTest::fl_int), false, 1},
         };
         return(members_of_VectorTest);
     }
@@ -259,7 +263,7 @@ template<typename T> static int get_number_of_members_(void) {
     else if(type_compare(T, B)) { return(1); } // B
     else if(type_compare(T, Foo)) { return(10); } // Foo
     else if(type_compare(T, V3)) { return(3); } // V3
-    else if(type_compare(T, VectorTest)) { return(4); } // VectorTest
+    else if(type_compare(T, VectorTest)) { return(5); } // VectorTest
 
     return(-1); // Error.
 }
@@ -381,6 +385,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_std_vector_int, "vec_integer", offset_of(&_VectorTest::vec_integer), false, 1},
             {MetaType_std_vector_V3, "vec_vector3", offset_of(&_VectorTest::vec_vector3), false, 1},
             {MetaType_std_deque_int, "deque_int", offset_of(&_VectorTest::deque_int), false, 1},
+            {MetaType_std_forward_list_int, "fl_int", offset_of(&_VectorTest::fl_int), false, 1},
         };
         return(members_of_VectorTest);
     }
@@ -403,7 +408,7 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "B") == 0) { return(1); } // B
     else if(strcmp(str, "Foo") == 0) { return(10); } // Foo
     else if(strcmp(str, "V3") == 0) { return(3); } // V3
-    else if(strcmp(str, "VectorTest") == 0) { return(4); } // VectorTest
+    else if(strcmp(str, "VectorTest") == 0) { return(5); } // VectorTest
 
     return(-1); // Error.
 }
