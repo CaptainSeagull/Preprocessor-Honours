@@ -151,6 +151,7 @@ internal Bool write_static_file() {
                  "#include <vector>\n"
                  "#include <deque>\n"
                  "#include <forward_list>\n"
+                 "#include <list>\n"
                  "\n"
                  "namespace pp { // PreProcessor\n"
                  "\n"

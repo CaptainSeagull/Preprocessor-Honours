@@ -57,6 +57,7 @@
 #include <vector>
 #include <deque>
 #include <forward_list>
+#include <list>
 
 namespace pp { // PreProcessor
 

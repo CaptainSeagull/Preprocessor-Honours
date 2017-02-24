@@ -149,11 +149,12 @@ struct VectorTest {
     std::deque<int> deque_int;
 
     std::forward_list<int> fl_int;
+    std::list<int> list_int;
 };
 
 void std_test(void) {
     VectorTest vt;
-
+#if 0
     // TODO(Jonny): There's an issue with outputting the name of primitives for vectors. I think it's because
     //              primitives don't have any members, and the preprocessor's getting a little confused.
     for(int i = 0; (i < 5); ++i) {
@@ -171,7 +172,9 @@ void std_test(void) {
 
     for(int i = 0; (i < 5); ++i) vt.deque_int.push_back(i);
 
-    vt.fl_int = { 34, 77, 16, 2 };
+    vt.fl_int = { 10, 9, 8, 7 };
+#endif
+    vt.list_int = { 10, 9, 8, 7 };
 
     pp::print(vt);
 

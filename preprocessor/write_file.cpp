@@ -24,6 +24,7 @@ enum StdTypes {
     StdTypes_vector,
     StdTypes_deque,
     StdTypes_forward_list,
+    StdTypes_list,
 
     StdTypes_cnt,
 };
@@ -39,6 +40,7 @@ internal StdResult get_std_information(String str) {
     Char *std_vector_str = "std::vector";
     Char *std_deque_str = "std::deque";
     Char *std_forward_list_str = "std::forward_list";
+    Char *std_list_str = "std::list";
 
     if(string_contains(str, std_vector_str)) { // std::vector
         res.type = StdTypes_vector;
@@ -56,6 +58,12 @@ internal StdResult get_std_information(String str) {
         res.type = StdTypes_forward_list;
 
         Int len = string_length(std_forward_list_str);
+        res.stored_type.len = str.len - len - 2;
+        res.stored_type.e = str.e + len + 1;
+    } else if(string_contains(str, std_list_str)) { // std::list
+        res.type = StdTypes_list;
+
+        Int len = string_length(std_list_str);
         res.stored_type.len = str.len - len - 2;
         res.stored_type.e = str.e + len + 1;
     }
@@ -140,6 +148,21 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                 }
 
                 temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_forward_list_%.*s) {bytes_written = serialize_container<std::forward_list<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                                           std_res.stored_type.len, std_res.stored_type.e,
+                                           std_res.stored_type.len, std_res.stored_type.e,
+                                           std_res.stored_type.len, std_res.stored_type.e);
+
+                ++written_count;
+            } break;
+
+            case StdTypes_list: {
+                if(written_count) {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        else ");
+                } else {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
+                }
+
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == MetaType_std_list_%.*s) {bytes_written = serialize_container<std::list<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -303,6 +326,10 @@ internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
                 write_to_output_buffer(ob, "    MetaType_std_forward_list_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
+            case StdTypes_list: {
+                write_to_output_buffer(ob, "    MetaType_std_list_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
             default: {
                 assert(0);
             } break;
@@ -372,6 +399,10 @@ internal void write_is_container(OutputBuffer *ob, String *types, Int type_count
 
             case StdTypes_forward_list: {
                 write_to_output_buffer(ob, "if(type == MetaType_std_forward_list_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
+            case StdTypes_list: {
+                write_to_output_buffer(ob, "if(type == MetaType_std_list_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
             default: assert(0); break;
@@ -564,6 +595,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                 write_to_output_buffer(&ob, "            {MetaType_std_forward_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
                             } break;
 
+                            case StdTypes_list: {
+                                write_to_output_buffer(&ob, "            {MetaType_std_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                            } break;
+
                             default: {
                                 assert(0);
                             } break;
@@ -609,6 +644,12 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                     case StdTypes_forward_list: {
                                         write_to_output_buffer(&ob,
                                                                "            {MetaType_std_forward_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_list: {
+                                        write_to_output_buffer(&ob,
+                                                               "            {MetaType_std_list_%.*s",
                                                                std_res.stored_type.len, std_res.stored_type.e);
                                     } break;
 
@@ -735,6 +776,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                         len = std_res.stored_type.len;
                     } break;
 
+                    case StdTypes_list: {
+                        output_string = std_res.stored_type.e;
+                        len = std_res.stored_type.len;
+                    } break;
+
                     default: {
                         assert(0);
                     } break;
@@ -794,6 +840,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                                        std_res.stored_type.len, std_res.stored_type.e);
                             } break;
 
+                            case StdTypes_list: {
+                                write_to_output_buffer(&ob, "            {MetaType_std_list_%.*s",
+                                                       std_res.stored_type.len, std_res.stored_type.e);
+                            } break;
+
                             default: {
                                 assert(0);
                             } break;
@@ -835,6 +886,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
                                     case StdTypes_forward_list: {
                                         write_to_output_buffer(&ob, "            {MetaType_std_forward_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_list: {
+                                        write_to_output_buffer(&ob, "            {MetaType_std_list_%.*s",
                                                                std_res.stored_type.len, std_res.stored_type.e);
                                     } break;
                                 }
