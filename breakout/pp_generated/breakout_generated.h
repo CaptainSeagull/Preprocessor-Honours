@@ -363,14 +363,6 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, V2 *)) {return("V2 *");}
     else if(type_compare(T, V2 **)) {return("V2 **");}
     else if(type_compare(T, V2 &)) {return("V2 &");}
-    else if(type_compare(T, float)) {return("float");}
-    else if(type_compare(T, float *)) {return("float *");}
-    else if(type_compare(T, float **)) {return("float **");}
-    else if(type_compare(T, float &)) {return("float &");}
-    else if(type_compare(T, float)) {return("float");}
-    else if(type_compare(T, float *)) {return("float *");}
-    else if(type_compare(T, float **)) {return("float **");}
-    else if(type_compare(T, float &)) {return("float &");}
     else if(type_compare(T, Transform)) {return("Transform");}
     else if(type_compare(T, Transform *)) {return("Transform *");}
     else if(type_compare(T, Transform **)) {return("Transform **");}
@@ -387,10 +379,6 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, Ball *)) {return("Ball *");}
     else if(type_compare(T, Ball **)) {return("Ball **");}
     else if(type_compare(T, Ball &)) {return("Ball &");}
-    else if(type_compare(T, Transform)) {return("Transform");}
-    else if(type_compare(T, Transform *)) {return("Transform *");}
-    else if(type_compare(T, Transform **)) {return("Transform **");}
-    else if(type_compare(T, Transform &)) {return("Transform &");}
     else if(type_compare(T, V2)) {return("V2");}
     else if(type_compare(T, V2 *)) {return("V2 *");}
     else if(type_compare(T, V2 **)) {return("V2 **");}
@@ -399,10 +387,6 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, Paddle *)) {return("Paddle *");}
     else if(type_compare(T, Paddle **)) {return("Paddle **");}
     else if(type_compare(T, Paddle &)) {return("Paddle &");}
-    else if(type_compare(T, Transform)) {return("Transform");}
-    else if(type_compare(T, Transform *)) {return("Transform *");}
-    else if(type_compare(T, Transform **)) {return("Transform **");}
-    else if(type_compare(T, Transform &)) {return("Transform &");}
     else if(type_compare(T, GameState)) {return("GameState");}
     else if(type_compare(T, GameState *)) {return("GameState *");}
     else if(type_compare(T, GameState **)) {return("GameState **");}
@@ -415,10 +399,6 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, Ball *)) {return("Ball *");}
     else if(type_compare(T, Ball **)) {return("Ball **");}
     else if(type_compare(T, Ball &)) {return("Ball &");}
-    else if(type_compare(T, int)) {return("int");}
-    else if(type_compare(T, int *)) {return("int *");}
-    else if(type_compare(T, int **)) {return("int **");}
-    else if(type_compare(T, int &)) {return("int &");}
 
     else { return(0); } // Unknown Type.
 }
@@ -460,26 +440,6 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, V2 *)) {return("V2");}
     else if(type_compare(T, V2 **)) {return("V2");}
     else if(type_compare(T, V2 &)) {return("V2");}
-    else if(type_compare(T, float)) {return("float");}
-    else if(type_compare(T, float *)) {return("float");}
-    else if(type_compare(T, float **)) {return("float");}
-    else if(type_compare(T, float &)) {return("float");}
-    else if(type_compare(T, float)) {return("float");}
-    else if(type_compare(T, float *)) {return("float");}
-    else if(type_compare(T, float **)) {return("float");}
-    else if(type_compare(T, float &)) {return("float");}
-    else if(type_compare(T, Transform)) {return("Transform");}
-    else if(type_compare(T, Transform *)) {return("Transform");}
-    else if(type_compare(T, Transform **)) {return("Transform");}
-    else if(type_compare(T, Transform &)) {return("Transform");}
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2");}
-    else if(type_compare(T, V2 **)) {return("V2");}
-    else if(type_compare(T, V2 &)) {return("V2");}
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2");}
-    else if(type_compare(T, V2 **)) {return("V2");}
-    else if(type_compare(T, V2 &)) {return("V2");}
     else if(type_compare(T, Ball)) {return("Ball");}
     else if(type_compare(T, Ball *)) {return("Ball");}
     else if(type_compare(T, Ball **)) {return("Ball");}
@@ -512,10 +472,6 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, Ball *)) {return("Ball");}
     else if(type_compare(T, Ball **)) {return("Ball");}
     else if(type_compare(T, Ball &)) {return("Ball");}
-    else if(type_compare(T, int)) {return("int");}
-    else if(type_compare(T, int *)) {return("int");}
-    else if(type_compare(T, int **)) {return("int");}
-    else if(type_compare(T, int &)) {return("int");}
 
     else {return(0);} // Unknown Type.
 }

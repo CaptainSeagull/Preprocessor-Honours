@@ -339,6 +339,18 @@ clean_up:;
     return(res);
 }
 
+Bool is_in_string_array(String target, String *arr, Int arr_cnt) {
+    Bool res = false;
+    for(int i = 0; (i < target.len); ++i) {
+        if(string_compare(target, arr[i])) {
+            res = true;
+            break;
+        }
+    }
+
+    return(res);
+}
+
 Uint32 safe_truncate_size_64(Uint64 v) {
     assert(v <= 0xFFFFFFFF);
     Uint32 res = cast(Uint32)v;

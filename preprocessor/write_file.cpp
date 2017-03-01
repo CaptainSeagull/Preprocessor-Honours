@@ -981,7 +981,10 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             // Type to string.
             //
 
-            // TODO(Jonny): How does type_to_string work with arrays? And does the reference part _actually_ work?
+            // TODO(Jonny): _Really_ stupid way of doing this...
+            String *written_members = alloc(String, 1024);
+            Int member_cnt = 0;
+
             write_to_output_buffer(&ob,
                                    "\n// Convert a type to a string.\n"
                                    "template<typename T> static char const *type_to_string_(void) {\n"
@@ -998,43 +1001,59 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) {return(\"%s *\");}\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) {return(\"%s **\");}\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s &)) {return(\"%s &\");}\n", primitive, primitive);
+
+                String cpy = create_string(primitive);
+                written_members[member_cnt++] = cpy;
             }
 
             write_to_output_buffer(&ob, "\n    // Struct types.\n");
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
-                for(Int j = 0; (j < sd->member_count); ++j) {
-                    Variable *md = sd->members + j;
+                if(!is_in_string_array(sd->name, written_members, member_cnt)) {
+                    written_members[member_cnt++] = sd->name;
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+
+
+                    // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
+                    for(Int j = 0; (j < sd->member_count); ++j) {
+                        Variable *md = sd->members + j;
+
+                        if(!is_in_string_array(md->type, written_members, member_cnt)) {
+                            written_members[member_cnt++] = md->type;
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+                        }
+                    }
                 }
             }
 
             write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
+
+            zero(written_members, member_cnt);
+            member_cnt = 0;
 
             // type_to_string ignore.
             write_to_output_buffer(&ob,
@@ -1053,43 +1072,54 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) {return(\"%s\");}\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) {return(\"%s\");}\n", primitive, primitive);
                 write_to_output_buffer(&ob, "    else if(type_compare(T, %s &)) {return(\"%s\");}\n", primitive, primitive);
+
+                String cpy = create_string(primitive);
+                written_members[member_cnt++] = cpy;
             }
 
             write_to_output_buffer(&ob, "\n    // Struct types.\n");
             for(Int i = 0; (i < struct_count); ++i) {
                 StructData *sd = struct_data + i;
 
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s\");}\n",
-                                       sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-
-                // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
-                for(Int j = 0; (j < sd->member_count); ++j) {
-                    Variable *md = sd->members + j;
+                if(!is_in_string_array(sd->name, written_members, member_cnt)) {
+                    written_members[member_cnt++] = sd->name;
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
 
                     write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s\");}\n",
-                                           md->type.len, md->type.e, md->type.len, md->type.e);
+                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
+
+                    for(Int j = 0; (j < sd->member_count); ++j) {
+                        Variable *md = sd->members + j;
+
+                        if(!is_in_string_array(md->type, written_members, member_cnt)) {
+                            written_members[member_cnt++] = md->type;
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+
+                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s\");}\n",
+                                                   md->type.len, md->type.e, md->type.len, md->type.e);
+                        }
+                    }
                 }
             }
             write_to_output_buffer(&ob, "\n    else {return(0);} // Unknown Type.\n}\n");
+
+            free(written_members);
 
             //
             // Get base type count.

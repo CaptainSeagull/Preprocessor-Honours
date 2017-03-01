@@ -249,6 +249,8 @@ Bool string_compare_array(String *a, String *b, Int cnt);
 Bool string_contains(String str, Char *target);
 Bool string_contains(Char *str, Char *target);
 
+Bool is_in_string_array(String target, String *arr, Int arr_cnt);
+
 //
 // Maths.
 //
