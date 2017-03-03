@@ -96,6 +96,67 @@ internal Int set_primitive_type(String *array) {
     return(res);
 }
 
+internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count) {
+    write_to_output_buffer(ob, "\n// %.*s\n", name.len, name.e);
+
+    write_to_output_buffer(ob,
+                           "template<> struct TypeStruct<%.*s> {\n"
+                           "    using type = %.*s;\n"
+                           "    using weak_type = %.*s;\n"
+                           "\n"
+                           "    static constexpr char const * name = \"%.*s\";\n"
+                           "    static constexpr char const * weak_name = \"%.*s\";\n"
+                           "\n"
+                           "    static size_t const member_count = %d;\n"
+                           "\n"
+                           "    static bool const is_ptr = false;\n"
+                           "};\n",
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           member_count);
+
+    write_to_output_buffer(ob,
+                           "template<> struct TypeStruct<%.*s *> {\n"
+                           "    using type = %.*s *;\n"
+                           "    using weak_type = %.*s;\n"
+                           "\n"
+                           "    static constexpr char const * name = \"%.*s *\";\n"
+                           "    static constexpr char const * weak_name = \"%.*s\";\n"
+                           "\n"
+                           "    static size_t const member_count = %d;\n"
+                           "\n"
+                           "    static bool const is_ptr = true;\n"
+                           "};\n",
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           member_count);
+
+    write_to_output_buffer(ob,
+                           "template<> struct TypeStruct<%.*s **> {\n"
+                           "    using type = %.*s **;\n"
+                           "    using weak_type = %.*s;\n"
+                           "\n"
+                           "    static constexpr char const * name = \"%.*s **\";\n"
+                           "    static constexpr char const * weak_name = \"%.*s\";\n"
+                           "\n"
+                           "    static size_t const member_count = %d;\n"
+                           "\n"
+                           "    static bool const is_ptr = true;\n"
+                           "};\n",
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           name.len, name.e,
+                           member_count);
+}
+
 // TODO(Jonny): Maybe I could split this out into a serialize primitve and serialize struct code. For serialize primitive, it could be mostly templated,
 //              with just a utility thing to get the printf modifier (%s for string, %d for ints). And I think most of the code for serializing structs
 //              could be generalized through templates too. Maybe I could even add a third method, serialize container, as well?
@@ -285,8 +346,6 @@ internal StructData *find_struct(String str, StructData *structs, Int struct_cou
         }
     }
 
-    assert(res);
-
     return(res);
 }
 
@@ -306,7 +365,7 @@ internal void forward_declare_structs(OutputBuffer *ob, StructData *struct_data,
 
 internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_count, StructData *struct_data, Int struct_count) {
     write_to_output_buffer(ob, "\n// Enum with field for every type detected.\n");
-    write_to_output_buffer(ob, "enum MetaType {\n");
+    write_to_output_buffer(ob, "namespace pp { enum MetaType {\n");
     for(Int i = 0; (i < type_count); ++i) {
         String *type = types + i;
 
@@ -338,7 +397,7 @@ internal void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
         }
     }
 
-    write_to_output_buffer(ob, "};\n");
+    write_to_output_buffer(ob, "}; }\n");
 }
 
 internal Void
@@ -446,9 +505,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
 
         write_to_output_buffer(&ob,
                                "\n"
-                               "#include \"static_generated.h\"\n"
-                               "\n"
-                               "namespace pp { // PreProcessor\n"
                                "#define _std std // TODO(Jonny): This is really stupid..."
                                "\n");
 
@@ -489,7 +545,62 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             //
             write_meta_type_enum(&ob, types, type_count, struct_data, struct_count);
 
+
             write_to_output_buffer(&ob, "\n");
+            write_to_output_buffer(&ob,
+                                   "#include \"static_generated.h\"\n"
+                                   "namespace pp { // PreProcessor\n");
+            write_to_output_buffer(&ob, "\n");
+
+            {
+                String *written_members = cast(String *)push_scratch_memory();
+                Int member_cnt = 0;
+
+                write_to_output_buffer(&ob,
+                                       "//\n"
+                                       "// Meta type specialization\n"
+                                       "//\n");
+
+                String primatives[array_count(primitive_types)] = {};
+                set_primitive_type(primatives);
+
+                for(Int i = 0; (i < array_count(primatives)); ++i) {
+                    if(!is_in_string_array(primatives[i], written_members, member_cnt)) {
+                        written_members[member_cnt++] = primatives[i];
+
+                        write_type_struct(&ob, primatives[i], 0);
+                    }
+                }
+
+                for(Int i = 0; (i < struct_count); ++i) {
+                    StructData *sd = struct_data + i;
+
+                    if(!is_in_string_array(sd->name, written_members, member_cnt)) {
+                        written_members[member_cnt++] = sd->name;
+
+                        write_type_struct(&ob, sd->name, sd->member_count);
+
+                        for(Int j = 0; (j < sd->member_count); ++j) {
+                            Variable *md = sd->members + j;
+
+                            if(!is_in_string_array(md->type, written_members, member_cnt)) {
+                                written_members[member_cnt++] = md->type;
+
+                                Int number_of_members = 0;
+                                StructData *members_struct_data = find_struct(md->type, struct_data, struct_count);
+                                if(members_struct_data) {
+                                    number_of_members = members_struct_data->member_count;
+                                }
+
+                                write_type_struct(&ob, md->type, number_of_members);
+                            }
+                        }
+                    }
+                }
+
+                clear_scratch_memory();
+            }
+
 
             //
             // is_meta_type_container
@@ -695,143 +806,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                                    "\n"
                                    "    return(0); // Error.\n"
                                    "}\n");
-
-            //
-            // Create specialized struct
-            //
-            {
-                write_to_output_buffer(&ob,
-                                       "//\n"
-                                       "//\n"
-                                       "// Meta type specialization\n"
-                                       "//\n");
-
-                String primatives[array_count(primitive_types)] = {};
-                set_primitive_type(primatives);
-
-                for(Int i = 0; (i < array_count(primatives)); ++i) {
-                    String *p = primatives + i;
-
-                    write_to_output_buffer(&ob, "\n// %.*s\n", p->len, p->e);
-
-                    write_to_output_buffer(&ob,
-                                           "template<> struct TypeStruct<%.*s> {\n"
-                                           "    using type = %.*s;\n"
-                                           "    using weak_type = %.*s;\n"
-                                           "\n"
-                                           "    char const *name = \"%.*s\";\n"
-                                           "    char const *weak_name = \"%.*s\";\n"
-                                           "\n"
-                                           "    size_t const member_count = 0;\n"
-                                           "\n"
-                                           "    bool const is_ptr = false;\n"
-                                           "};\n",
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e);
-
-                    write_to_output_buffer(&ob,
-                                           "template<> struct TypeStruct<%.*s *> {\n"
-                                           "    using type = %.*s *;\n"
-                                           "    using weak_type = %.*s;\n"
-                                           "\n"
-                                           "    char const *name = \"%.*s *\";\n"
-                                           "    char const *weak_name = \"%.*s\";\n"
-                                           "\n"
-                                           "    size_t const member_count = 0;\n"
-                                           "\n"
-                                           "    bool const is_ptr = true;\n"
-                                           "};\n",
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e);
-
-                    write_to_output_buffer(&ob,
-                                           "template<> struct TypeStruct<%.*s **> {\n"
-                                           "    using type = %.*s **;\n"
-                                           "    using weak_type = %.*s;\n"
-                                           "\n"
-                                           "    char const *name = \"%.*s **\";\n"
-                                           "    char const *weak_name = \"%.*s\";\n"
-                                           "\n"
-                                           "    size_t const member_count = 0;\n"
-                                           "\n"
-                                           "    bool const is_ptr = true;\n"
-                                           "};\n",
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e,
-                                           p->len, p->e);
-                }
-
-                for(Int i = 0; (i < struct_count); ++i) {
-                    StructData *sd = struct_data + i;
-
-                    write_to_output_buffer(&ob, "\n// %.*s\n", sd->name.len, sd->name.e);
-
-                    write_to_output_buffer(&ob,
-                                           "template<> struct TypeStruct<%.*s> {\n"
-                                           "    using type = %.*s;\n"
-                                           "    using weak_type = %.*s;\n"
-                                           "\n"
-                                           "    char const *name = \"%.*s\";\n"
-                                           "    char const *weak_name = \"%.*s\";\n"
-                                           "\n"
-                                           "    size_t const member_count = %d;\n"
-                                           "\n"
-                                           "    bool const is_ptr = false;\n"
-                                           "};\n",
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->member_count);
-
-                    write_to_output_buffer(&ob,
-                                           "template<> struct TypeStruct<%.*s *> {\n"
-                                           "    using type = %.*s *;\n"
-                                           "    using weak_type = %.*s;\n"
-                                           "\n"
-                                           "    char const *name = \"%.*s *\";\n"
-                                           "    char const *weak_name = \"%.*s\";\n"
-                                           "\n"
-                                           "    size_t const member_count = %d;\n"
-                                           "\n"
-                                           "    bool const is_ptr = true;\n"
-                                           "};\n",
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->member_count);
-
-                    write_to_output_buffer(&ob,
-                                           "template<> struct TypeStruct<%.*s **> {\n"
-                                           "    using type = %.*s **;\n"
-                                           "    using weak_type = %.*s;\n"
-                                           "\n"
-                                           "    char const *name = \"%.*s **\";\n"
-                                           "    char const *weak_name = \"%.*s\";\n"
-                                           "\n"
-                                           "    size_t const member_count = %d;\n"
-                                           "\n"
-                                           "    bool const is_ptr = true;\n"
-                                           "};\n",
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->name.len, sd->name.e,
-                                           sd->member_count);
-                }
-            }
 
             // Get number of members.
 #if 0
@@ -1120,76 +1094,6 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             String *written_members = alloc(String, 1024);
             Int member_cnt = 0;
 
-            write_to_output_buffer(&ob,
-                                   "\n// Convert a type to a string.\n"
-                                   "template<typename T> static char const *type_to_string_(void) {\n"
-                                   "    // Primitives.\n");
-            for(Int i = 0; (i < get_num_of_primitive_types()); ++i) {
-                Char *primitive = primitive_types[i];
-
-                if(!i) {
-                    write_to_output_buffer(&ob, "    if(type_compare(T, %s)) {return(\"%s\"); }\n", primitive, primitive);
-                } else {
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %s)) { return(\"%s\");}\n", primitive, primitive);
-                }
-
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %s *)) {return(\"%s *\");}\n", primitive, primitive);
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %s **)) {return(\"%s **\");}\n", primitive, primitive);
-                write_to_output_buffer(&ob, "    else if(type_compare(T, %s &)) {return(\"%s &\");}\n", primitive, primitive);
-
-                String cpy = create_string(primitive);
-                written_members[member_cnt++] = cpy;
-            }
-
-            write_to_output_buffer(&ob, "\n    // Struct types.\n");
-            for(Int i = 0; (i < struct_count); ++i) {
-                StructData *sd = struct_data + i;
-
-                if(!is_in_string_array(sd->name, written_members, member_cnt)) {
-                    written_members[member_cnt++] = sd->name;
-
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
-                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
-                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
-                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-                    write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
-                                           sd->name.len, sd->name.e, sd->name.len, sd->name.e);
-
-
-
-                    // TODO(Jonny): This part will generate _a lot_ of duplicates... need to elimited them somehow.
-                    for(Int j = 0; (j < sd->member_count); ++j) {
-                        Variable *md = sd->members + j;
-
-                        if(!is_in_string_array(md->type, written_members, member_cnt)) {
-                            written_members[member_cnt++] = md->type;
-
-                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s)) {return(\"%.*s\");}\n",
-                                                   md->type.len, md->type.e, md->type.len, md->type.e);
-
-                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s *)) {return(\"%.*s *\");}\n",
-                                                   md->type.len, md->type.e, md->type.len, md->type.e);
-
-                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s **)) {return(\"%.*s **\");}\n",
-                                                   md->type.len, md->type.e, md->type.len, md->type.e);
-
-                            write_to_output_buffer(&ob, "    else if(type_compare(T, %.*s &)) {return(\"%.*s &\");}\n",
-                                                   md->type.len, md->type.e, md->type.len, md->type.e);
-                        }
-                    }
-                }
-            }
-
-            write_to_output_buffer(&ob, "\n    else { return(0); } // Unknown Type.\n}\n");
-
-            zero(written_members, member_cnt);
-            member_cnt = 0;
-
             // type_to_string ignore.
             write_to_output_buffer(&ob,
                                    "\n// Convert a type to a string.\n"
@@ -1449,6 +1353,11 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
                     }
                 }
             }
+
+            write_to_output_buffer(&ob, "\n");
+
+            write_to_output_buffer(&ob,
+                                   "#define weak_type_compare(A, B) TypeCompare_<pp::TypeStruct<A>::weak_type, pp::TypeStruct<B>::weak_type>::e;");
 
             //
             // # Guard macro.

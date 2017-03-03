@@ -212,7 +212,6 @@ main(int argc, char **argv) {
                             }
                         }
 
-
                         //
                         // Serialize part.
                         //

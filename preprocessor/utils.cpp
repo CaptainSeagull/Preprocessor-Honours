@@ -341,7 +341,7 @@ clean_up:;
 
 Bool is_in_string_array(String target, String *arr, Int arr_cnt) {
     Bool res = false;
-    for(int i = 0; (i < target.len); ++i) {
+    for(int i = 0; (i < arr_cnt); ++i) {
         if(string_compare(target, arr[i])) {
             res = true;
             break;

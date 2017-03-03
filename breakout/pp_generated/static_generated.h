@@ -69,20 +69,21 @@ typedef float _float;
 typedef double _double;
 typedef bool _bool;
 
+// TODO(Jonny): Add MetaType in here
 template<typename T> struct TypeStruct {
-    char const *name;
     using Type = T;
-
-    char const *weak_name;
     using weak_type = T;
 
-    size_t const member_count;
+    static char const *name;
+    static char const *weak_name;
 
-    bool const is_ptr;
+    static size_t const member_count;
+
+    static bool const is_ptr;
 };
 
 struct MemberDefinition {
-    int/*MetaType*/ type;
+    MetaType type;
     char const *name;
     size_t offset;
     int is_ptr;
@@ -95,11 +96,7 @@ struct Variable {
 };
 
 
-template<typename T> static char const *type_to_string_(void);
-#define type_to_string(Type) type_to_string_<Type>()
-#define weak_type_to_string(Type) weak_type_to_string_<Type>()
-
-#define serialize_type(var, Type, buf, size) serialize_struct_(&var, #var, pp::type_to_string(Type), 0, buf, size, 0)
+#define serialize_type(var, Type, buf, size) serialize_struct_(&var, #var, pp::TypeStruct<Type>::name, 0, buf, size, 0)
 #define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)
 
 static MemberDefinition *get_members_of_str(char const *str);
@@ -119,7 +116,7 @@ template<typename T>static bool print_(T *var, char const *name, char *buf = 0, 
 
     if(buf) {
         memset(buf, 0, size);
-        size_t bytes_written = serialize_struct_(var, name, type_to_string(T), 0, buf, size, 0);
+        size_t bytes_written = serialize_struct_(var, name, TypeStruct<T>::name, 0, buf, size, 0);
         if(bytes_written < size) {
             printf("%s", buf);
             res = true;
@@ -137,8 +134,8 @@ template<typename T>static bool print_(T *var, char const *name, char *buf = 0, 
 
 #define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
 
-template<class T, class U>struct TypeCompare_{ enum {e = 0}; };
-template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };
+template<class T, class U>struct TypeCompare_{ static constexpr bool e = false; };
+template<class T>struct TypeCompare_<T, T>{ static constexpr bool e = true; };
 #define type_compare(a, b) TypeCompare_<a, b>::e
 
 template<typename T> static int get_base_type_count_(void);
@@ -150,8 +147,8 @@ template<typename T> static char const *get_base_type_as_string_(int index = 0);
 
 #define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()
 template<typename T, typename U> bool fuzzy_type_compare_(void) {
-    char const *a_str = type_to_string(T);
-    char const *b_str = type_to_string(U);
+    char const *a_str = TypeStruct<T>::name;
+    char const *b_str = TypeStruct<U>::name;
     if((a_str) && (b_str)) {
         if(strcmp(a_str, b_str) == 0) {
             return(true);
@@ -172,17 +169,6 @@ template<typename T, typename U> bool fuzzy_type_compare_(void) {
     return(false);
 }
 
-template<typename T> static char const *weak_type_to_string_(void);
-#define weak_type_compare(A, B) weak_type_compare_<A, B>()
-template<typename T, typename U> bool weak_type_compare_(void) {
-    char const *a_str = weak_type_to_string(T);
-    char const *b_str = weak_type_to_string(U);
-    if((a_str) && (b_str)) {
-        if(strcmp(a_str, b_str) == 0) { return(true); }
-    }
-
-    return(false);
-}
 #if defined(_MSC_VER)
     #define pp_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)
 #else
@@ -191,7 +177,7 @@ template<typename T, typename U> bool weak_type_compare_(void) {
 
 template<typename T>static size_t
 serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
-    char const *type_as_string = type_to_string(T);
+    char const *type_as_string = TypeStruct<T>::name;
     char indent_buf[256] = {};
     for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
@@ -243,10 +229,10 @@ serialize_container(void *member_ptr, char const *name, int indent, char *buffer
     char indent_buf[256] = {};
     for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
-    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_to_string(T), name);
+    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, TypeStruct<T>::name, name);
     T &container = *(T *)member_ptr;
     for(auto &iter : container) {
-        bytes_written = serialize_struct_((void *)&iter, "", type_to_string(U), indent, buffer, buf_size, bytes_written);
+        bytes_written = serialize_struct_((void *)&iter, "", TypeStruct<U>::name, indent, buffer, buf_size, bytes_written);
     }
 
     return(bytes_written);

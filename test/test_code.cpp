@@ -196,6 +196,11 @@ int main(int /*argc*/, char ** /*argv*/) {
 
     pp::TypeStruct<StringTest **> type = {};
 
+    pp::TypeStruct<StringTest **>::type i = 0;
+
+    bool res = pp::weak_type_compare(int, int *);
+
+
     printf("\n");
     return(0);
 }
