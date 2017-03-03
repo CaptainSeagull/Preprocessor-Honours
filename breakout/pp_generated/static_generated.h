@@ -247,3 +247,4 @@ template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*mem
 
 #define STATIC_GENERATED
 #endif // !defined(STATIC_GENERATED_H)
+

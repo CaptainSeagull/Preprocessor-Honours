@@ -10,7 +10,11 @@
   ===================================================================================================*/
 
 /* TODO(Jonny):
+    - struct to tuple.
+    - std::map, std::unordered_map, std::set, std::array.
     - Struct meta data.
+        - Have a way to test if a member is private or not.
+        - An alternative to pp::print and pp::serialize that hide private members.
         - It breaks if you use a comma to declare members of the same type.
         - Have a way to get the type of different elements (as strings or types).
         - Get a get_member(v, i) function, which simple returns the member at index i.
@@ -42,12 +46,14 @@
     - I don't think #if 1 #else blocks work correctly...
 */
 
+#include <tuple>
+
 #include "utils.h"
 #include "lexer.h"
 #include "platform.h"
 #include "write_file.h"
 #if RUN_TESTS
-    #include "test.h"
+    //    #include "test.h"
 #endif
 
 enum SwitchType {
@@ -410,8 +416,47 @@ internal Void print_help(void) {
     system_write_to_console(help);
 }
 
-// TODO(Jonny): Support wildcards.
-Int main(Int argc, Char **argv) {
+
+//
+struct TestString {
+    char *e;
+    int len;
+};
+
+#if 0
+template <typename F>
+void doOperation(F f) {
+    int temp=0;
+    f(temp);
+    std::cout << "Result is " << temp << std::endl;
+}
+#endif
+
+template<typename T> void FunctionShit(T t) {
+    int i = 0;
+}
+
+template<typename T> void tuple_shit(T t) {
+    FunctionShit(t);
+}
+
+template<typename Tuple, Int const param_cnt, typename... Args> void tuple_shit(Tuple tuple, Args... args) {
+    const unsigned numargs = sizeof...(args);
+
+    tuple_shit(args...);
+}
+
+internal Void hacky_test() {
+    TestString s = {"Hello", 5};
+
+    std::tuple<char *, int> t = std::make_tuple(s.e, s.len);
+
+    tuple_shit<std::tuple<char *, int>, 1, char *, int>(t);
+}
+
+Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
+    hacky_test();
+
     Int res = 0;
 
     Bool display_time_taken = false;
