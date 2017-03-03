@@ -17,6 +17,7 @@ namespace pp { enum MetaType {
     MetaType_double,
     MetaType_bool,
     MetaType_IntTest,
+    MetaType_std_vector_int,
     MetaType_StringTest,
 }; }
 
@@ -39,8 +40,7 @@ template<> struct Type<char> {
 
     bool const is_ptr = false;
 
-private:
-    Type<char> operator=(Type<char> a) {}
+    Type<char> operator=(Type<char> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<char *> {
     using type = char *;
@@ -53,8 +53,7 @@ template<> struct Type<char *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<char *> operator=(Type<char *> a) {}
+    Type<char *> operator=(Type<char *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<char **> {
     using type = char **;
@@ -67,8 +66,7 @@ template<> struct Type<char **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<char **> operator=(Type<char **> a) {}
+    Type<char **> operator=(Type<char **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // short
@@ -83,8 +81,7 @@ template<> struct Type<short> {
 
     bool const is_ptr = false;
 
-private:
-    Type<short> operator=(Type<short> a) {}
+    Type<short> operator=(Type<short> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<short *> {
     using type = short *;
@@ -97,8 +94,7 @@ template<> struct Type<short *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<short *> operator=(Type<short *> a) {}
+    Type<short *> operator=(Type<short *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<short **> {
     using type = short **;
@@ -111,8 +107,7 @@ template<> struct Type<short **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<short **> operator=(Type<short **> a) {}
+    Type<short **> operator=(Type<short **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // int
@@ -127,8 +122,7 @@ template<> struct Type<int> {
 
     bool const is_ptr = false;
 
-private:
-    Type<int> operator=(Type<int> a) {}
+    Type<int> operator=(Type<int> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<int *> {
     using type = int *;
@@ -141,8 +135,7 @@ template<> struct Type<int *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<int *> operator=(Type<int *> a) {}
+    Type<int *> operator=(Type<int *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<int **> {
     using type = int **;
@@ -155,8 +148,7 @@ template<> struct Type<int **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<int **> operator=(Type<int **> a) {}
+    Type<int **> operator=(Type<int **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // long
@@ -171,8 +163,7 @@ template<> struct Type<long> {
 
     bool const is_ptr = false;
 
-private:
-    Type<long> operator=(Type<long> a) {}
+    Type<long> operator=(Type<long> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<long *> {
     using type = long *;
@@ -185,8 +176,7 @@ template<> struct Type<long *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<long *> operator=(Type<long *> a) {}
+    Type<long *> operator=(Type<long *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<long **> {
     using type = long **;
@@ -199,8 +189,7 @@ template<> struct Type<long **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<long **> operator=(Type<long **> a) {}
+    Type<long **> operator=(Type<long **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // float
@@ -215,8 +204,7 @@ template<> struct Type<float> {
 
     bool const is_ptr = false;
 
-private:
-    Type<float> operator=(Type<float> a) {}
+    Type<float> operator=(Type<float> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<float *> {
     using type = float *;
@@ -229,8 +217,7 @@ template<> struct Type<float *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<float *> operator=(Type<float *> a) {}
+    Type<float *> operator=(Type<float *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<float **> {
     using type = float **;
@@ -243,8 +230,7 @@ template<> struct Type<float **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<float **> operator=(Type<float **> a) {}
+    Type<float **> operator=(Type<float **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // double
@@ -259,8 +245,7 @@ template<> struct Type<double> {
 
     bool const is_ptr = false;
 
-private:
-    Type<double> operator=(Type<double> a) {}
+    Type<double> operator=(Type<double> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<double *> {
     using type = double *;
@@ -273,8 +258,7 @@ template<> struct Type<double *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<double *> operator=(Type<double *> a) {}
+    Type<double *> operator=(Type<double *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<double **> {
     using type = double **;
@@ -287,8 +271,7 @@ template<> struct Type<double **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<double **> operator=(Type<double **> a) {}
+    Type<double **> operator=(Type<double **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // bool
@@ -303,8 +286,7 @@ template<> struct Type<bool> {
 
     bool const is_ptr = false;
 
-private:
-    Type<bool> operator=(Type<bool> a) {}
+    Type<bool> operator=(Type<bool> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<bool *> {
     using type = bool *;
@@ -317,8 +299,7 @@ template<> struct Type<bool *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<bool *> operator=(Type<bool *> a) {}
+    Type<bool *> operator=(Type<bool *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<bool **> {
     using type = bool **;
@@ -331,8 +312,7 @@ template<> struct Type<bool **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<bool **> operator=(Type<bool **> a) {}
+    Type<bool **> operator=(Type<bool **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // IntTest
@@ -343,12 +323,11 @@ template<> struct Type<IntTest> {
     char const * name = "IntTest";
     char const * weak_name = "IntTest";
 
-    size_t const member_count = 1;
+    size_t const member_count = 2;
 
     bool const is_ptr = false;
 
-private:
-    Type<IntTest> operator=(Type<IntTest> a) {}
+    Type<IntTest> operator=(Type<IntTest> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<IntTest *> {
     using type = IntTest *;
@@ -357,12 +336,11 @@ template<> struct Type<IntTest *> {
     char const * name = "IntTest *";
     char const * weak_name = "IntTest";
 
-    size_t const member_count = 1;
+    size_t const member_count = 2;
 
     bool const is_ptr = true;
 
-private:
-    Type<IntTest *> operator=(Type<IntTest *> a) {}
+    Type<IntTest *> operator=(Type<IntTest *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<IntTest **> {
     using type = IntTest **;
@@ -371,12 +349,52 @@ template<> struct Type<IntTest **> {
     char const * name = "IntTest **";
     char const * weak_name = "IntTest";
 
-    size_t const member_count = 1;
+    size_t const member_count = 2;
 
     bool const is_ptr = true;
 
-private:
-    Type<IntTest **> operator=(Type<IntTest **> a) {}
+    Type<IntTest **> operator=(Type<IntTest **> a) = delete; // To avoid warning 4512 in MSVC.
+};
+
+// std::vector<int>
+template<> struct Type<std::vector<int>> {
+    using type = std::vector<int>;
+    using weak_type = std::vector<int>;
+
+    char const * name = "std::vector<int>";
+    char const * weak_name = "std::vector<int>";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+
+    Type<std::vector<int>> operator=(Type<std::vector<int>> a) = delete; // To avoid warning 4512 in MSVC.
+};
+template<> struct Type<std::vector<int> *> {
+    using type = std::vector<int> *;
+    using weak_type = std::vector<int>;
+
+    char const * name = "std::vector<int> *";
+    char const * weak_name = "std::vector<int>";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+
+    Type<std::vector<int> *> operator=(Type<std::vector<int> *> a) = delete; // To avoid warning 4512 in MSVC.
+};
+template<> struct Type<std::vector<int> **> {
+    using type = std::vector<int> **;
+    using weak_type = std::vector<int>;
+
+    char const * name = "std::vector<int> **";
+    char const * weak_name = "std::vector<int>";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+
+    Type<std::vector<int> **> operator=(Type<std::vector<int> **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // StringTest
@@ -391,8 +409,7 @@ template<> struct Type<StringTest> {
 
     bool const is_ptr = false;
 
-private:
-    Type<StringTest> operator=(Type<StringTest> a) {}
+    Type<StringTest> operator=(Type<StringTest> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<StringTest *> {
     using type = StringTest *;
@@ -405,8 +422,7 @@ template<> struct Type<StringTest *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<StringTest *> operator=(Type<StringTest *> a) {}
+    Type<StringTest *> operator=(Type<StringTest *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<StringTest **> {
     using type = StringTest **;
@@ -419,8 +435,7 @@ template<> struct Type<StringTest **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<StringTest **> operator=(Type<StringTest **> a) {}
+    Type<StringTest **> operator=(Type<StringTest **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 static bool is_meta_type_container(int type) {
     if(type == MetaType_char) {return(false);} // false
@@ -431,6 +446,7 @@ static bool is_meta_type_container(int type) {
     else if(type == MetaType_double) {return(false);} // false
     else if(type == MetaType_bool) {return(false);} // false
     else if(type == MetaType_IntTest) {return(false);} // false
+    else if(type == MetaType_std_vector_int) {return(true);} // true
     else if(type == MetaType_StringTest) {return(false);} // false
 
     // Should not be reached.
@@ -517,10 +533,11 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
                 default: {
                     if(is_meta_type_container(member->type)) {
+                        if(member->type == MetaType_std_vector_int) {bytes_written = serialize_container<std::vector<int>, int>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}
 
                     } else {
-                        char const *name = meta_type_to_name(member->type, member->is_ptr != 0);
-                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);
+                        bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
                     }
                 } break; // default 
             }
@@ -533,12 +550,13 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
     // Recreated structs.
-    struct _IntTest {  _int i;  };
+    struct _IntTest {  _int i;  _std::vector<int> j;  };
     struct _StringTest {  _char *text;  _int len;  };
     // IntTest
     if(type_compare(T, IntTest)) {
         static MemberDefinition members_of_IntTest[] = {
             {MetaType_int, "i", offset_of(&_IntTest::i), false, 1},
+            {MetaType_std_vector_int, "j", offset_of(&_IntTest::j), false, 1},
         };
         return(members_of_IntTest);
 
@@ -557,7 +575,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
     // Recreated structs.
-    struct _IntTest {  _int i;  };
+    struct _IntTest {  _int i;  _std::vector<int> j;  };
     struct _StringTest {  _char *text;  _int len;  };
     // char
     if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
@@ -613,6 +631,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
     } else if((strcmp(str, "IntTest") == 0) || (strcmp(str, "IntTest *") == 0) || (strcmp(str, "IntTest **") == 0)) {
         static MemberDefinition members_of_IntTest[] = {
             {MetaType_int, "i", offset_of(&_IntTest::i), false, 1},
+            {MetaType_std_vector_int, "j", offset_of(&_IntTest::j), false, 1},
         };
         return(members_of_IntTest);
 
@@ -637,7 +656,7 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "float") == 0) {return(1);}
     else if(strcmp(str, "double") == 0) {return(1);}
     else if(strcmp(str, "bool") == 0) {return(1);}
-    else if(strcmp(str, "IntTest") == 0) {return(1);} // IntTest
+    else if(strcmp(str, "IntTest") == 0) {return(2);} // IntTest
     else if(strcmp(str, "StringTest") == 0) {return(2);} // StringTest
 
     return(-1); // Error.

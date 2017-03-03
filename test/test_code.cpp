@@ -180,6 +180,7 @@ void std_test(void) {
 #endif
 struct IntTest {
     int i;
+    std::vector<int> j;
 };
 
 struct StringTest {
@@ -191,8 +192,8 @@ int main(int /*argc*/, char ** /*argv*/) {
     //test_enum();
     //std_test();
 
-
     pp::Type<float> vec = {};
+    pp::Type<float> cpy = vec;
     char const *name = vec.name;
 
     printf("\n");

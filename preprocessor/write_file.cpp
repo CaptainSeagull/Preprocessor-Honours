@@ -109,8 +109,7 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "\n"
                            "    bool const is_ptr = %s;\n"
                            "\n"
-                           "private:\n"
-                           "    Type<%.*s%s> operator=(Type<%.*s%s> a) {}\n"
+                           "    Type<%.*s%s> operator=(Type<%.*s%s> a) = delete; // To avoid warning 4512 in MSVC.\n"
                            "};\n",
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,
@@ -278,8 +277,8 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "                    if(is_meta_type_container(member->type)) {\n"
                            "%s\n" // serialize container stuff.
                            "                    } else {\n"
-                           "                        char const *name = meta_type_to_name(member->type, member->is_ptr != 0);\n"
-                           "                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                           "                        char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);\n"
+                           "                        bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
                            "                    }\n"
                            "                } break; // default \n"
                            "            }\n"

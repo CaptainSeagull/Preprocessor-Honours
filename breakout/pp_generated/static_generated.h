@@ -69,6 +69,61 @@ typedef float _float;
 typedef double _double;
 typedef bool _bool;
 
+#define PP_COMPILER_MSVC 0
+#define PP_COMPILER_CLANG 0
+#define PP_COMPILER_GCC 0
+
+#define PP_ENVIRONMENT64 0
+#define PP_ENVIRONMENT32 0
+
+#define PP_OS_WIN32 0
+#define PP_OS_LINUX 0
+
+#if defined(__clang__)
+    #undef PP_COMPILER_CLANG
+    #define PP_COMPILER_CLANG 1
+#elif defined(_MSC_VER)
+    #undef PP_COMPILER_MSVC
+    #define PP_COMPILER_MSVC 1
+#elif (defined(__GNUC__) || defined(__GNUG__)) // This has to be after __clang__, because Clang also defines this.
+    #undef PP_COMPILER_GCC
+    #define PP_COMPILER_GCC 1
+#endif
+
+#if defined(__linux__)
+    #undef PP_OS_LINUX
+    #define PP_OS_LINUX 1
+#elif defined(_WIN32)
+    #undef PP_OS_WIN32
+    #define PP_OS_WIN32 1
+#endif
+
+#if PP_OS_LINUX
+    #if (__x86_64__ || __ppc64__)
+        #undef PP_ENVIRONMENT64
+        #define PP_ENVIRONMENT64 1
+    #else
+        #undef PP_ENVIRONMENT32
+        #define PP_ENVIRONMENT32 1
+    #endif
+#elif OS_WIN32
+    #if defined(_WIN64)
+        #undef PP_ENVIRONMENT64
+        #define PP_ENVIRONMENT64 1
+    #else
+        #undef PP_ENVIRONMENT32
+        #define PP_ENVIRONMENT32 1
+    #endif
+#endif
+
+#define PP_CONSTEXPR
+#if PP_COMPILER_MSVC
+    #if _MSC_VER >= 1900 // Visual Studio 2015
+        #undef PP_CONSTEXPR
+        #define PP_CONSTEXPR constexpr
+    #endif // #if _MSC_VER >= 1900
+#endif // PP_COMPILER_MSVC
+
 // TODO(Jonny): Add MetaType in here?
 template<typename T> struct Type {
     using type = T;
@@ -97,15 +152,15 @@ struct Variable {
 };
 
 
-template<typename T> static char const *struct_to_string() {
+template<typename T> static char const *type_to_string() {
     Type<T> t = {};
     return(t.name);
 }
-template<typename T> static char const *weak_struct_to_string() {
+template<typename T> static char const *weak_type_to_string() {
     Type<T> t = {};
     return(t.weak_name);
 }
-#define serialize_type(var, T, buf, size) serialize_struct_(&var, #var, pp::struct_to_string<T>(), 0, buf, size, 0)
+#define serialize_type(var, T, buf, size) serialize_struct_(&var, #var, pp::type_to_string<T>(), 0, buf, size, 0)
 #define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)
 
 static MemberDefinition *get_members_of_str(char const *str);
@@ -125,7 +180,7 @@ template<typename T>static void print_(T *var, char const *name, char *buf = 0, 
 
     if(buf) {
         memset(buf, 0, size);
-        size_t bytes_written = serialize_struct_(var, name, Type<T>::name, 0, buf, size, 0);
+        size_t bytes_written = serialize_struct_(var, name, type_to_string<T>(), 0, buf, size, 0);
         if(bytes_written < size) {
             printf("%s", buf);
         }
@@ -155,8 +210,8 @@ template<typename T> static char const *get_base_type_as_string_(int index = 0);
 
 #define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()
 template<typename T, typename U> bool fuzzy_type_compare_(void) {
-    char const *a_str = struct_to_string<T>();
-    char const *b_str = struct_to_string<U>();
+    char const *a_str = type_to_string<T>();
+    char const *b_str = type_to_string<U>();
     if((a_str) && (b_str)) {
         if(strcmp(a_str, b_str) == 0) {
             return(true);
@@ -185,7 +240,7 @@ template<typename T, typename U> bool fuzzy_type_compare_(void) {
 
 template<typename T>static size_t
 serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
-    char const *type_as_string = struct_to_string<T>();
+    char const *type_as_string = type_to_string<T>();
     char indent_buf[256] = {};
     for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
@@ -237,16 +292,18 @@ serialize_container(void *member_ptr, char const *name, int indent, char *buffer
     char indent_buf[256] = {};
     for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
 
-    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, Type<T>::name, name);
+    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%s%s %s", indent_buf, type_to_string<T>(), name);
     T &container = *(T *)member_ptr;
     for(auto &iter : container) {
-        bytes_written = serialize_struct_((void *)&iter, "", Type<U>::name, indent, buffer, buf_size, bytes_written);
+        bytes_written = serialize_struct_((void *)&iter, "", type_to_string<U>(), indent, buffer, buf_size, bytes_written);
     }
 
     return(bytes_written);
 }
 
-template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*member) { return (char *)&((T *)0->*member) - (char *)0; }
+template<typename T, typename U> PP_CONSTEXPR static size_t offset_of(U T::*member) {
+    return((char *)&((T *)0->*member) - (char *)0);
+}
 
 } // namespace pp
 

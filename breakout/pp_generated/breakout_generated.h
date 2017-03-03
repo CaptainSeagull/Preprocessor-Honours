@@ -45,8 +45,7 @@ template<> struct Type<char> {
 
     bool const is_ptr = false;
 
-private:
-    Type<char> operator=(Type<char> a) {}
+    Type<char> operator=(Type<char> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<char *> {
     using type = char *;
@@ -59,8 +58,7 @@ template<> struct Type<char *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<char *> operator=(Type<char *> a) {}
+    Type<char *> operator=(Type<char *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<char **> {
     using type = char **;
@@ -73,8 +71,7 @@ template<> struct Type<char **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<char **> operator=(Type<char **> a) {}
+    Type<char **> operator=(Type<char **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // short
@@ -89,8 +86,7 @@ template<> struct Type<short> {
 
     bool const is_ptr = false;
 
-private:
-    Type<short> operator=(Type<short> a) {}
+    Type<short> operator=(Type<short> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<short *> {
     using type = short *;
@@ -103,8 +99,7 @@ template<> struct Type<short *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<short *> operator=(Type<short *> a) {}
+    Type<short *> operator=(Type<short *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<short **> {
     using type = short **;
@@ -117,8 +112,7 @@ template<> struct Type<short **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<short **> operator=(Type<short **> a) {}
+    Type<short **> operator=(Type<short **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // int
@@ -133,8 +127,7 @@ template<> struct Type<int> {
 
     bool const is_ptr = false;
 
-private:
-    Type<int> operator=(Type<int> a) {}
+    Type<int> operator=(Type<int> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<int *> {
     using type = int *;
@@ -147,8 +140,7 @@ template<> struct Type<int *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<int *> operator=(Type<int *> a) {}
+    Type<int *> operator=(Type<int *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<int **> {
     using type = int **;
@@ -161,8 +153,7 @@ template<> struct Type<int **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<int **> operator=(Type<int **> a) {}
+    Type<int **> operator=(Type<int **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // long
@@ -177,8 +168,7 @@ template<> struct Type<long> {
 
     bool const is_ptr = false;
 
-private:
-    Type<long> operator=(Type<long> a) {}
+    Type<long> operator=(Type<long> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<long *> {
     using type = long *;
@@ -191,8 +181,7 @@ template<> struct Type<long *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<long *> operator=(Type<long *> a) {}
+    Type<long *> operator=(Type<long *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<long **> {
     using type = long **;
@@ -205,8 +194,7 @@ template<> struct Type<long **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<long **> operator=(Type<long **> a) {}
+    Type<long **> operator=(Type<long **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // float
@@ -221,8 +209,7 @@ template<> struct Type<float> {
 
     bool const is_ptr = false;
 
-private:
-    Type<float> operator=(Type<float> a) {}
+    Type<float> operator=(Type<float> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<float *> {
     using type = float *;
@@ -235,8 +222,7 @@ template<> struct Type<float *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<float *> operator=(Type<float *> a) {}
+    Type<float *> operator=(Type<float *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<float **> {
     using type = float **;
@@ -249,8 +235,7 @@ template<> struct Type<float **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<float **> operator=(Type<float **> a) {}
+    Type<float **> operator=(Type<float **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // double
@@ -265,8 +250,7 @@ template<> struct Type<double> {
 
     bool const is_ptr = false;
 
-private:
-    Type<double> operator=(Type<double> a) {}
+    Type<double> operator=(Type<double> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<double *> {
     using type = double *;
@@ -279,8 +263,7 @@ template<> struct Type<double *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<double *> operator=(Type<double *> a) {}
+    Type<double *> operator=(Type<double *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<double **> {
     using type = double **;
@@ -293,8 +276,7 @@ template<> struct Type<double **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<double **> operator=(Type<double **> a) {}
+    Type<double **> operator=(Type<double **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // bool
@@ -309,8 +291,7 @@ template<> struct Type<bool> {
 
     bool const is_ptr = false;
 
-private:
-    Type<bool> operator=(Type<bool> a) {}
+    Type<bool> operator=(Type<bool> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<bool *> {
     using type = bool *;
@@ -323,8 +304,7 @@ template<> struct Type<bool *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<bool *> operator=(Type<bool *> a) {}
+    Type<bool *> operator=(Type<bool *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<bool **> {
     using type = bool **;
@@ -337,8 +317,7 @@ template<> struct Type<bool **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<bool **> operator=(Type<bool **> a) {}
+    Type<bool **> operator=(Type<bool **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // V2
@@ -353,8 +332,7 @@ template<> struct Type<V2> {
 
     bool const is_ptr = false;
 
-private:
-    Type<V2> operator=(Type<V2> a) {}
+    Type<V2> operator=(Type<V2> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<V2 *> {
     using type = V2 *;
@@ -367,8 +345,7 @@ template<> struct Type<V2 *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<V2 *> operator=(Type<V2 *> a) {}
+    Type<V2 *> operator=(Type<V2 *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<V2 **> {
     using type = V2 **;
@@ -381,8 +358,7 @@ template<> struct Type<V2 **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<V2 **> operator=(Type<V2 **> a) {}
+    Type<V2 **> operator=(Type<V2 **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // Transform
@@ -397,8 +373,7 @@ template<> struct Type<Transform> {
 
     bool const is_ptr = false;
 
-private:
-    Type<Transform> operator=(Type<Transform> a) {}
+    Type<Transform> operator=(Type<Transform> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<Transform *> {
     using type = Transform *;
@@ -411,8 +386,7 @@ template<> struct Type<Transform *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<Transform *> operator=(Type<Transform *> a) {}
+    Type<Transform *> operator=(Type<Transform *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<Transform **> {
     using type = Transform **;
@@ -425,8 +399,7 @@ template<> struct Type<Transform **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<Transform **> operator=(Type<Transform **> a) {}
+    Type<Transform **> operator=(Type<Transform **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // Ball
@@ -441,8 +414,7 @@ template<> struct Type<Ball> {
 
     bool const is_ptr = false;
 
-private:
-    Type<Ball> operator=(Type<Ball> a) {}
+    Type<Ball> operator=(Type<Ball> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<Ball *> {
     using type = Ball *;
@@ -455,8 +427,7 @@ template<> struct Type<Ball *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<Ball *> operator=(Type<Ball *> a) {}
+    Type<Ball *> operator=(Type<Ball *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<Ball **> {
     using type = Ball **;
@@ -469,8 +440,7 @@ template<> struct Type<Ball **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<Ball **> operator=(Type<Ball **> a) {}
+    Type<Ball **> operator=(Type<Ball **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // Paddle
@@ -485,8 +455,7 @@ template<> struct Type<Paddle> {
 
     bool const is_ptr = false;
 
-private:
-    Type<Paddle> operator=(Type<Paddle> a) {}
+    Type<Paddle> operator=(Type<Paddle> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<Paddle *> {
     using type = Paddle *;
@@ -499,8 +468,7 @@ template<> struct Type<Paddle *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<Paddle *> operator=(Type<Paddle *> a) {}
+    Type<Paddle *> operator=(Type<Paddle *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<Paddle **> {
     using type = Paddle **;
@@ -513,8 +481,7 @@ template<> struct Type<Paddle **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<Paddle **> operator=(Type<Paddle **> a) {}
+    Type<Paddle **> operator=(Type<Paddle **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
 // GameState
@@ -529,8 +496,7 @@ template<> struct Type<GameState> {
 
     bool const is_ptr = false;
 
-private:
-    Type<GameState> operator=(Type<GameState> a) {}
+    Type<GameState> operator=(Type<GameState> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<GameState *> {
     using type = GameState *;
@@ -543,8 +509,7 @@ template<> struct Type<GameState *> {
 
     bool const is_ptr = true;
 
-private:
-    Type<GameState *> operator=(Type<GameState *> a) {}
+    Type<GameState *> operator=(Type<GameState *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 template<> struct Type<GameState **> {
     using type = GameState **;
@@ -557,8 +522,7 @@ template<> struct Type<GameState **> {
 
     bool const is_ptr = true;
 
-private:
-    Type<GameState **> operator=(Type<GameState **> a) {}
+    Type<GameState **> operator=(Type<GameState **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 static bool is_meta_type_container(int type) {
     if(type == MetaType_char) {return(false);} // false
@@ -669,8 +633,8 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                     if(is_meta_type_container(member->type)) {
 
                     } else {
-                        char const *name = meta_type_to_name(member->type, member->is_ptr != 0);
-                        bytes_written = serialize_struct_(member_ptr, member->name, name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);
+                        bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
                     }
                 } break; // default 
             }
