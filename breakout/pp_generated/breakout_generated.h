@@ -44,6 +44,9 @@ template<> struct Type<char> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<char> operator=(Type<char> a) {}
 };
 template<> struct Type<char *> {
     using type = char *;
@@ -55,6 +58,9 @@ template<> struct Type<char *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<char *> operator=(Type<char *> a) {}
 };
 template<> struct Type<char **> {
     using type = char **;
@@ -66,6 +72,9 @@ template<> struct Type<char **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<char **> operator=(Type<char **> a) {}
 };
 
 // short
@@ -79,6 +88,9 @@ template<> struct Type<short> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<short> operator=(Type<short> a) {}
 };
 template<> struct Type<short *> {
     using type = short *;
@@ -90,6 +102,9 @@ template<> struct Type<short *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<short *> operator=(Type<short *> a) {}
 };
 template<> struct Type<short **> {
     using type = short **;
@@ -101,6 +116,9 @@ template<> struct Type<short **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<short **> operator=(Type<short **> a) {}
 };
 
 // int
@@ -114,6 +132,9 @@ template<> struct Type<int> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<int> operator=(Type<int> a) {}
 };
 template<> struct Type<int *> {
     using type = int *;
@@ -125,6 +146,9 @@ template<> struct Type<int *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<int *> operator=(Type<int *> a) {}
 };
 template<> struct Type<int **> {
     using type = int **;
@@ -136,6 +160,9 @@ template<> struct Type<int **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<int **> operator=(Type<int **> a) {}
 };
 
 // long
@@ -149,6 +176,9 @@ template<> struct Type<long> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<long> operator=(Type<long> a) {}
 };
 template<> struct Type<long *> {
     using type = long *;
@@ -160,6 +190,9 @@ template<> struct Type<long *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<long *> operator=(Type<long *> a) {}
 };
 template<> struct Type<long **> {
     using type = long **;
@@ -171,6 +204,9 @@ template<> struct Type<long **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<long **> operator=(Type<long **> a) {}
 };
 
 // float
@@ -184,6 +220,9 @@ template<> struct Type<float> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<float> operator=(Type<float> a) {}
 };
 template<> struct Type<float *> {
     using type = float *;
@@ -195,6 +234,9 @@ template<> struct Type<float *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<float *> operator=(Type<float *> a) {}
 };
 template<> struct Type<float **> {
     using type = float **;
@@ -206,6 +248,9 @@ template<> struct Type<float **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<float **> operator=(Type<float **> a) {}
 };
 
 // double
@@ -219,6 +264,9 @@ template<> struct Type<double> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<double> operator=(Type<double> a) {}
 };
 template<> struct Type<double *> {
     using type = double *;
@@ -230,6 +278,9 @@ template<> struct Type<double *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<double *> operator=(Type<double *> a) {}
 };
 template<> struct Type<double **> {
     using type = double **;
@@ -241,6 +292,9 @@ template<> struct Type<double **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<double **> operator=(Type<double **> a) {}
 };
 
 // bool
@@ -254,6 +308,9 @@ template<> struct Type<bool> {
     size_t const member_count = 0;
 
     bool const is_ptr = false;
+
+private:
+    Type<bool> operator=(Type<bool> a) {}
 };
 template<> struct Type<bool *> {
     using type = bool *;
@@ -265,6 +322,9 @@ template<> struct Type<bool *> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<bool *> operator=(Type<bool *> a) {}
 };
 template<> struct Type<bool **> {
     using type = bool **;
@@ -276,6 +336,9 @@ template<> struct Type<bool **> {
     size_t const member_count = 0;
 
     bool const is_ptr = true;
+
+private:
+    Type<bool **> operator=(Type<bool **> a) {}
 };
 
 // V2
@@ -289,6 +352,9 @@ template<> struct Type<V2> {
     size_t const member_count = 2;
 
     bool const is_ptr = false;
+
+private:
+    Type<V2> operator=(Type<V2> a) {}
 };
 template<> struct Type<V2 *> {
     using type = V2 *;
@@ -300,6 +366,9 @@ template<> struct Type<V2 *> {
     size_t const member_count = 2;
 
     bool const is_ptr = true;
+
+private:
+    Type<V2 *> operator=(Type<V2 *> a) {}
 };
 template<> struct Type<V2 **> {
     using type = V2 **;
@@ -311,6 +380,9 @@ template<> struct Type<V2 **> {
     size_t const member_count = 2;
 
     bool const is_ptr = true;
+
+private:
+    Type<V2 **> operator=(Type<V2 **> a) {}
 };
 
 // Transform
@@ -324,6 +396,9 @@ template<> struct Type<Transform> {
     size_t const member_count = 2;
 
     bool const is_ptr = false;
+
+private:
+    Type<Transform> operator=(Type<Transform> a) {}
 };
 template<> struct Type<Transform *> {
     using type = Transform *;
@@ -335,6 +410,9 @@ template<> struct Type<Transform *> {
     size_t const member_count = 2;
 
     bool const is_ptr = true;
+
+private:
+    Type<Transform *> operator=(Type<Transform *> a) {}
 };
 template<> struct Type<Transform **> {
     using type = Transform **;
@@ -346,6 +424,9 @@ template<> struct Type<Transform **> {
     size_t const member_count = 2;
 
     bool const is_ptr = true;
+
+private:
+    Type<Transform **> operator=(Type<Transform **> a) {}
 };
 
 // Ball
@@ -359,6 +440,9 @@ template<> struct Type<Ball> {
     size_t const member_count = 2;
 
     bool const is_ptr = false;
+
+private:
+    Type<Ball> operator=(Type<Ball> a) {}
 };
 template<> struct Type<Ball *> {
     using type = Ball *;
@@ -370,6 +454,9 @@ template<> struct Type<Ball *> {
     size_t const member_count = 2;
 
     bool const is_ptr = true;
+
+private:
+    Type<Ball *> operator=(Type<Ball *> a) {}
 };
 template<> struct Type<Ball **> {
     using type = Ball **;
@@ -381,6 +468,9 @@ template<> struct Type<Ball **> {
     size_t const member_count = 2;
 
     bool const is_ptr = true;
+
+private:
+    Type<Ball **> operator=(Type<Ball **> a) {}
 };
 
 // Paddle
@@ -394,6 +484,9 @@ template<> struct Type<Paddle> {
     size_t const member_count = 1;
 
     bool const is_ptr = false;
+
+private:
+    Type<Paddle> operator=(Type<Paddle> a) {}
 };
 template<> struct Type<Paddle *> {
     using type = Paddle *;
@@ -405,6 +498,9 @@ template<> struct Type<Paddle *> {
     size_t const member_count = 1;
 
     bool const is_ptr = true;
+
+private:
+    Type<Paddle *> operator=(Type<Paddle *> a) {}
 };
 template<> struct Type<Paddle **> {
     using type = Paddle **;
@@ -416,6 +512,9 @@ template<> struct Type<Paddle **> {
     size_t const member_count = 1;
 
     bool const is_ptr = true;
+
+private:
+    Type<Paddle **> operator=(Type<Paddle **> a) {}
 };
 
 // GameState
@@ -429,6 +528,9 @@ template<> struct Type<GameState> {
     size_t const member_count = 3;
 
     bool const is_ptr = false;
+
+private:
+    Type<GameState> operator=(Type<GameState> a) {}
 };
 template<> struct Type<GameState *> {
     using type = GameState *;
@@ -440,6 +542,9 @@ template<> struct Type<GameState *> {
     size_t const member_count = 3;
 
     bool const is_ptr = true;
+
+private:
+    Type<GameState *> operator=(Type<GameState *> a) {}
 };
 template<> struct Type<GameState **> {
     using type = GameState **;
@@ -451,6 +556,9 @@ template<> struct Type<GameState **> {
     size_t const member_count = 3;
 
     bool const is_ptr = true;
+
+private:
+    Type<GameState **> operator=(Type<GameState **> a) {}
 };
 static bool is_meta_type_container(int type) {
     if(type == MetaType_char) {return(false);} // false

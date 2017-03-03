@@ -108,6 +108,9 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    size_t const member_count = %d;\n"
                            "\n"
                            "    bool const is_ptr = %s;\n"
+                           "\n"
+                           "private:\n"
+                           "    Type<%.*s%s> operator=(Type<%.*s%s> a) {}\n"
                            "};\n",
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,
@@ -115,7 +118,9 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            name.len, name.e, pointer_stuff,
                            name.len, name.e,
                            member_count,
-                           string_length(pointer_stuff) ? "true" : "false");
+                           string_length(pointer_stuff) ? "true" : "false",
+                           name.len, name.e, pointer_stuff,
+                           name.len, name.e, pointer_stuff);
 }
 
 internal Void write_type_struct_all(OutputBuffer *ob, String name, Int member_count) {

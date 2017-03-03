@@ -242,8 +242,8 @@ internal Bool write_static_file() {
                  "\n"
                  "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
                  "\n"
-                 "template<class T, class U>struct TypeCompare_{ static constexpr bool e = false; };\n"
-                 "template<class T>struct TypeCompare_<T, T>{ static constexpr bool e = true; };\n"
+                 "template<class T, class U>struct TypeCompare_{ static const bool e = false; };\n"
+                 "template<class T>struct TypeCompare_<T, T>{ static const bool e = true; };\n"
                  "#define type_compare(a, b) TypeCompare_<a, b>::e\n"
                  "\n"
                  "template<typename T> static int get_base_type_count_(void);\n"
@@ -424,7 +424,7 @@ internal Void print_help(void) {
     system_write_to_console(help);
 }
 
-
+#if 0
 //
 struct TestString {
     char *e;
@@ -461,9 +461,9 @@ internal Void hacky_test() {
 
     tuple_shit<std::tuple<char *, int>, 1, char *, int>(t);
 }
-
+#endif
 Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
-    hacky_test();
+//    hacky_test();
 
     Int res = 0;
 

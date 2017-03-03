@@ -142,8 +142,8 @@ template<typename T>static void print_(T *var, char const *name, char *buf = 0, 
 
 #define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
 
-template<class T, class U>struct TypeCompare_{ static constexpr bool e = false; };
-template<class T>struct TypeCompare_<T, T>{ static constexpr bool e = true; };
+template<class T, class U>struct TypeCompare_{ static const bool e = false; };
+template<class T>struct TypeCompare_<T, T>{ static const bool e = true; };
 #define type_compare(a, b) TypeCompare_<a, b>::e
 
 template<typename T> static int get_base_type_count_(void);
