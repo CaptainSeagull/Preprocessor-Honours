@@ -69,6 +69,18 @@ typedef float _float;
 typedef double _double;
 typedef bool _bool;
 
+template<typename T> struct TypeStruct {
+    char const *name;
+    using Type = T;
+
+    char const *weak_name;
+    using weak_type = T;
+
+    size_t const member_count;
+
+    bool const is_ptr;
+};
+
 struct MemberDefinition {
     int/*MetaType*/ type;
     char const *name;
@@ -82,7 +94,6 @@ struct Variable {
     char const *name;
 };
 
-#define get_num_of_members(type) get_number_of_members_<type>()
 
 template<typename T> static char const *type_to_string_(void);
 #define type_to_string(Type) type_to_string_<Type>()
@@ -247,3 +258,4 @@ template<typename T, typename U> static /*constexpr*/ size_t offset_of(U T::*mem
 
 #define STATIC_GENERATED
 #endif // !defined(STATIC_GENERATED_H)
+

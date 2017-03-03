@@ -177,10 +177,24 @@ void std_test(void) {
 
 }
 
+struct IntTest {
+    int i;
+};
+
+struct StringTest {
+    char *text;
+    int len;
+};
+
 int main(int /*argc*/, char ** /*argv*/) {
     //test_struct();
     //test_enum();
     std_test();
+
+    //pp::TypeStruct<IntTest> i = {};
+    //pp::TypeStruct<StringTest> j = {};
+
+    pp::TypeStruct<StringTest **> type = {};
 
     printf("\n");
     return(0);

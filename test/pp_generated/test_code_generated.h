@@ -9,6 +9,8 @@ struct B;
 struct Foo;
 struct V3;
 struct VectorTest;
+struct IntTest;
+struct StringTest;
 
 #include "static_generated.h"
 
@@ -37,6 +39,8 @@ enum MetaType {
     MetaType_std_deque_int,
     MetaType_std_forward_list_int,
     MetaType_std_list_int,
+    MetaType_IntTest,
+    MetaType_StringTest,
 };
 
 static bool is_meta_type_container(int type) {
@@ -60,6 +64,8 @@ static bool is_meta_type_container(int type) {
     else if(type == MetaType_std_deque_int) {return(true);} // true
     else if(type == MetaType_std_forward_list_int) {return(true);} // true
     else if(type == MetaType_std_list_int) {return(true);} // true
+    else if(type == MetaType_IntTest) {return(false);} // false
+    else if(type == MetaType_StringTest) {return(false);} // false
 
     // Should not be reached.
     assert(0);
@@ -87,6 +93,12 @@ static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
     } else if(mt == MetaType_VectorTest) {
         if(is_ptr) {return("VectorTest *");}
         else       {return("VectorTest");  }
+    } else if(mt == MetaType_IntTest) {
+        if(is_ptr) {return("IntTest *");}
+        else       {return("IntTest");  }
+    } else if(mt == MetaType_StringTest) {
+        if(is_ptr) {return("StringTest *");}
+        else       {return("StringTest");  }
     }
 
     assert(0); 
@@ -186,6 +198,8 @@ struct _B {  _double b;  };
 struct _Foo : public _A, public _B {  _char *str;  _int *int_ptr;  _float *float_ptr;  _bool *bool_ptr;  _int int_array[4];  _double *double_ptr_array[5];  _int *int_ptr_array[6];  _V2 v2;  };
 struct _V3 {  _int x;  _int y;  _int z;  };
 struct _VectorTest {  _std::vector<float> vec_floating;  _std::vector<int> vec_integer;  _std::vector<V3> vec_vector3;  _std::deque<int> deque_int;  _std::forward_list<int> fl_int;  _std::list<int> list_int;  };
+struct _IntTest {  _int i;  };
+struct _StringTest {  _char *text;  _int len;  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
@@ -258,23 +272,589 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
             {MetaType_std_list_int, "list_int", offset_of(&_VectorTest::list_int), false, 1},
         };
         return(members_of_VectorTest);
+
+    // IntTest
+    } else if(type_compare(T, IntTest)) {
+        static MemberDefinition members_of_IntTest[] = {
+            {MetaType_int, "i", offset_of(&_IntTest::i), false, 1},
+        };
+        return(members_of_IntTest);
+
+    // StringTest
+    } else if(type_compare(T, StringTest)) {
+        static MemberDefinition members_of_StringTest[] = {
+            {MetaType_char, "text", offset_of(&_StringTest::text), true, 1},
+            {MetaType_int, "len", offset_of(&_StringTest::len), false, 1},
+        };
+        return(members_of_StringTest);
     }
 
     return(0); // Error.
 }
+//
+//
+// Meta type specialization
+//
 
-// Get the number of members for a type.
-template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, Test)) {return(2);} // Test
-    else if(type_compare(T, V2)) {return(3);} // V2
-    else if(type_compare(T, A)) {return(1);} // A
-    else if(type_compare(T, B)) {return(1);} // B
-    else if(type_compare(T, Foo)) {return(10);} // Foo
-    else if(type_compare(T, V3)) {return(3);} // V3
-    else if(type_compare(T, VectorTest)) {return(6);} // VectorTest
+// char
+template<> struct TypeStruct<char> {
+    using type = char;
+    using weak_type = char;
 
-    return(-1); // Error.
-}
+    char const *name = "char";
+    char const *weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<char *> {
+    using type = char *;
+    using weak_type = char;
+
+    char const *name = "char *";
+    char const *weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<char **> {
+    using type = char **;
+    using weak_type = char;
+
+    char const *name = "char **";
+    char const *weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// short
+template<> struct TypeStruct<short> {
+    using type = short;
+    using weak_type = short;
+
+    char const *name = "short";
+    char const *weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<short *> {
+    using type = short *;
+    using weak_type = short;
+
+    char const *name = "short *";
+    char const *weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<short **> {
+    using type = short **;
+    using weak_type = short;
+
+    char const *name = "short **";
+    char const *weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// int
+template<> struct TypeStruct<int> {
+    using type = int;
+    using weak_type = int;
+
+    char const *name = "int";
+    char const *weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<int *> {
+    using type = int *;
+    using weak_type = int;
+
+    char const *name = "int *";
+    char const *weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<int **> {
+    using type = int **;
+    using weak_type = int;
+
+    char const *name = "int **";
+    char const *weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// long
+template<> struct TypeStruct<long> {
+    using type = long;
+    using weak_type = long;
+
+    char const *name = "long";
+    char const *weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<long *> {
+    using type = long *;
+    using weak_type = long;
+
+    char const *name = "long *";
+    char const *weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<long **> {
+    using type = long **;
+    using weak_type = long;
+
+    char const *name = "long **";
+    char const *weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// float
+template<> struct TypeStruct<float> {
+    using type = float;
+    using weak_type = float;
+
+    char const *name = "float";
+    char const *weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<float *> {
+    using type = float *;
+    using weak_type = float;
+
+    char const *name = "float *";
+    char const *weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<float **> {
+    using type = float **;
+    using weak_type = float;
+
+    char const *name = "float **";
+    char const *weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// double
+template<> struct TypeStruct<double> {
+    using type = double;
+    using weak_type = double;
+
+    char const *name = "double";
+    char const *weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<double *> {
+    using type = double *;
+    using weak_type = double;
+
+    char const *name = "double *";
+    char const *weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<double **> {
+    using type = double **;
+    using weak_type = double;
+
+    char const *name = "double **";
+    char const *weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// bool
+template<> struct TypeStruct<bool> {
+    using type = bool;
+    using weak_type = bool;
+
+    char const *name = "bool";
+    char const *weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<bool *> {
+    using type = bool *;
+    using weak_type = bool;
+
+    char const *name = "bool *";
+    char const *weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<bool **> {
+    using type = bool **;
+    using weak_type = bool;
+
+    char const *name = "bool **";
+    char const *weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// Test
+template<> struct TypeStruct<Test> {
+    using type = Test;
+    using weak_type = Test;
+
+    char const *name = "Test";
+    char const *weak_name = "Test";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<Test *> {
+    using type = Test *;
+    using weak_type = Test;
+
+    char const *name = "Test *";
+    char const *weak_name = "Test";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<Test **> {
+    using type = Test **;
+    using weak_type = Test;
+
+    char const *name = "Test **";
+    char const *weak_name = "Test";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// V2
+template<> struct TypeStruct<V2> {
+    using type = V2;
+    using weak_type = V2;
+
+    char const *name = "V2";
+    char const *weak_name = "V2";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<V2 *> {
+    using type = V2 *;
+    using weak_type = V2;
+
+    char const *name = "V2 *";
+    char const *weak_name = "V2";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<V2 **> {
+    using type = V2 **;
+    using weak_type = V2;
+
+    char const *name = "V2 **";
+    char const *weak_name = "V2";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
+
+// A
+template<> struct TypeStruct<A> {
+    using type = A;
+    using weak_type = A;
+
+    char const *name = "A";
+    char const *weak_name = "A";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<A *> {
+    using type = A *;
+    using weak_type = A;
+
+    char const *name = "A *";
+    char const *weak_name = "A";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<A **> {
+    using type = A **;
+    using weak_type = A;
+
+    char const *name = "A **";
+    char const *weak_name = "A";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+
+// B
+template<> struct TypeStruct<B> {
+    using type = B;
+    using weak_type = B;
+
+    char const *name = "B";
+    char const *weak_name = "B";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<B *> {
+    using type = B *;
+    using weak_type = B;
+
+    char const *name = "B *";
+    char const *weak_name = "B";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<B **> {
+    using type = B **;
+    using weak_type = B;
+
+    char const *name = "B **";
+    char const *weak_name = "B";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+
+// Foo
+template<> struct TypeStruct<Foo> {
+    using type = Foo;
+    using weak_type = Foo;
+
+    char const *name = "Foo";
+    char const *weak_name = "Foo";
+
+    size_t const member_count = 8;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<Foo *> {
+    using type = Foo *;
+    using weak_type = Foo;
+
+    char const *name = "Foo *";
+    char const *weak_name = "Foo";
+
+    size_t const member_count = 8;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<Foo **> {
+    using type = Foo **;
+    using weak_type = Foo;
+
+    char const *name = "Foo **";
+    char const *weak_name = "Foo";
+
+    size_t const member_count = 8;
+
+    bool const is_ptr = true;
+};
+
+// V3
+template<> struct TypeStruct<V3> {
+    using type = V3;
+    using weak_type = V3;
+
+    char const *name = "V3";
+    char const *weak_name = "V3";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<V3 *> {
+    using type = V3 *;
+    using weak_type = V3;
+
+    char const *name = "V3 *";
+    char const *weak_name = "V3";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<V3 **> {
+    using type = V3 **;
+    using weak_type = V3;
+
+    char const *name = "V3 **";
+    char const *weak_name = "V3";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
+
+// VectorTest
+template<> struct TypeStruct<VectorTest> {
+    using type = VectorTest;
+    using weak_type = VectorTest;
+
+    char const *name = "VectorTest";
+    char const *weak_name = "VectorTest";
+
+    size_t const member_count = 6;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<VectorTest *> {
+    using type = VectorTest *;
+    using weak_type = VectorTest;
+
+    char const *name = "VectorTest *";
+    char const *weak_name = "VectorTest";
+
+    size_t const member_count = 6;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<VectorTest **> {
+    using type = VectorTest **;
+    using weak_type = VectorTest;
+
+    char const *name = "VectorTest **";
+    char const *weak_name = "VectorTest";
+
+    size_t const member_count = 6;
+
+    bool const is_ptr = true;
+};
+
+// IntTest
+template<> struct TypeStruct<IntTest> {
+    using type = IntTest;
+    using weak_type = IntTest;
+
+    char const *name = "IntTest";
+    char const *weak_name = "IntTest";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<IntTest *> {
+    using type = IntTest *;
+    using weak_type = IntTest;
+
+    char const *name = "IntTest *";
+    char const *weak_name = "IntTest";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<IntTest **> {
+    using type = IntTest **;
+    using weak_type = IntTest;
+
+    char const *name = "IntTest **";
+    char const *weak_name = "IntTest";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+
+// StringTest
+template<> struct TypeStruct<StringTest> {
+    using type = StringTest;
+    using weak_type = StringTest;
+
+    char const *name = "StringTest";
+    char const *weak_name = "StringTest";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<StringTest *> {
+    using type = StringTest *;
+    using weak_type = StringTest;
+
+    char const *name = "StringTest *";
+    char const *weak_name = "StringTest";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<StringTest **> {
+    using type = StringTest **;
+    using weak_type = StringTest;
+
+    char const *name = "StringTest **";
+    char const *weak_name = "StringTest";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
 
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
@@ -397,6 +977,21 @@ static MemberDefinition *get_members_of_str(char const *str) {
             {MetaType_std_list_int, "list_int", offset_of(&_VectorTest::list_int), false, 1},
         };
         return(members_of_VectorTest);
+
+    // IntTest
+    } else if((strcmp(str, "IntTest") == 0) || (strcmp(str, "IntTest *") == 0) || (strcmp(str, "IntTest **") == 0)) {
+        static MemberDefinition members_of_IntTest[] = {
+            {MetaType_int, "i", offset_of(&_IntTest::i), false, 1},
+        };
+        return(members_of_IntTest);
+
+    // StringTest
+    } else if((strcmp(str, "StringTest") == 0) || (strcmp(str, "StringTest *") == 0) || (strcmp(str, "StringTest **") == 0)) {
+        static MemberDefinition members_of_StringTest[] = {
+            {MetaType_char, "text", offset_of(&_StringTest::text), true, 1},
+            {MetaType_int, "len", offset_of(&_StringTest::len), false, 1},
+        };
+        return(members_of_StringTest);
     }
 
     return(0); // Error.
@@ -418,6 +1013,8 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "Foo") == 0) {return(10);} // Foo
     else if(strcmp(str, "V3") == 0) {return(3);} // V3
     else if(strcmp(str, "VectorTest") == 0) {return(6);} // VectorTest
+    else if(strcmp(str, "IntTest") == 0) {return(1);} // IntTest
+    else if(strcmp(str, "StringTest") == 0) {return(2);} // StringTest
 
     return(-1); // Error.
 }
@@ -515,6 +1112,14 @@ template<typename T> static char const *type_to_string_(void) {
     else if(type_compare(T, std::list<int> *)) {return("std::list<int> *");}
     else if(type_compare(T, std::list<int> **)) {return("std::list<int> **");}
     else if(type_compare(T, std::list<int> &)) {return("std::list<int> &");}
+    else if(type_compare(T, IntTest)) {return("IntTest");}
+    else if(type_compare(T, IntTest *)) {return("IntTest *");}
+    else if(type_compare(T, IntTest **)) {return("IntTest **");}
+    else if(type_compare(T, IntTest &)) {return("IntTest &");}
+    else if(type_compare(T, StringTest)) {return("StringTest");}
+    else if(type_compare(T, StringTest *)) {return("StringTest *");}
+    else if(type_compare(T, StringTest **)) {return("StringTest **");}
+    else if(type_compare(T, StringTest &)) {return("StringTest &");}
 
     else { return(0); } // Unknown Type.
 }
@@ -604,6 +1209,14 @@ template<typename T> static char const *weak_type_to_string_(void) {
     else if(type_compare(T, std::list<int> *)) {return("std::list<int>");}
     else if(type_compare(T, std::list<int> **)) {return("std::list<int>");}
     else if(type_compare(T, std::list<int> &)) {return("std::list<int>");}
+    else if(type_compare(T, IntTest)) {return("IntTest");}
+    else if(type_compare(T, IntTest *)) {return("IntTest");}
+    else if(type_compare(T, IntTest **)) {return("IntTest");}
+    else if(type_compare(T, IntTest &)) {return("IntTest");}
+    else if(type_compare(T, StringTest)) {return("StringTest");}
+    else if(type_compare(T, StringTest *)) {return("StringTest");}
+    else if(type_compare(T, StringTest **)) {return("StringTest");}
+    else if(type_compare(T, StringTest &)) {return("StringTest");}
 
     else {return(0);} // Unknown Type.
 }

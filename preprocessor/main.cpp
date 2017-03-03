@@ -91,7 +91,6 @@ internal SwitchType get_switch_type(Char *str) {
     return(res);
 }
 
-
 internal Bool write_static_file() {
     Char *file = "// Preprocessor API.\n"
                  "//\n"
@@ -164,6 +163,18 @@ internal Bool write_static_file() {
                  "typedef double _double;\n"
                  "typedef bool _bool;\n"
                  "\n"
+                 "template<typename T> struct TypeStruct {\n"
+                 "    char const *name;\n"
+                 "    using Type = T;\n"
+                 "\n"
+                 "    char const *weak_name;\n"
+                 "    using weak_type = T;\n"
+                 "\n"
+                 "    size_t const member_count;\n"
+                 "\n"
+                 "    bool const is_ptr;\n"
+                 "};\n"
+                 "\n"
                  "struct MemberDefinition {\n"
                  "    int/*MetaType*/ type;\n"
                  "    char const *name;\n"
@@ -177,7 +188,6 @@ internal Bool write_static_file() {
                  "    char const *name;\n"
                  "};\n"
                  "\n"
-                 "#define get_num_of_members(type) get_number_of_members_<type>()\n"
                  "\n"
                  "template<typename T> static char const *type_to_string_(void);\n"
                  "#define type_to_string(Type) type_to_string_<Type>()\n"
@@ -349,7 +359,9 @@ internal Bool write_static_file() {
     Int static_file_len = string_length(file);
     Bool res = system_write_to_file(dir_name "/static_generated.h", file, static_file_len);
 
-    if(!res) {push_error(ErrorType_could_not_write_to_disk);}
+    if(!res) {
+        push_error(ErrorType_could_not_write_to_disk);
+    }
 
     return(res);
 }
@@ -380,7 +392,9 @@ internal Void start_parsing(Char *fname, Char *file) {
                          fname, string_length(fname) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                          generated_extension, string_length(generated_extension))) {
             Bool header_write_success = system_write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
-            if(!header_write_success) push_error(ErrorType_could_not_write_to_disk);
+            if(!header_write_success) {
+                push_error(ErrorType_could_not_write_to_disk);
+            }
 
             free(file_to_write.data);
         }

@@ -200,17 +200,430 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 
     return(0); // Error.
 }
+//
+//
+// Meta type specialization
+//
 
-// Get the number of members for a type.
-template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, V2)) {return(2);} // V2
-    else if(type_compare(T, Transform)) {return(2);} // Transform
-    else if(type_compare(T, Ball)) {return(2);} // Ball
-    else if(type_compare(T, Paddle)) {return(1);} // Paddle
-    else if(type_compare(T, GameState)) {return(3);} // GameState
+// char
+template<> struct TypeStruct<char> {
+    using type = char;
+    using weak_type = char;
 
-    return(-1); // Error.
-}
+    char const *name = "char";
+    char const *weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<char *> {
+    using type = char *;
+    using weak_type = char;
+
+    char const *name = "char *";
+    char const *weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<char **> {
+    using type = char **;
+    using weak_type = char;
+
+    char const *name = "char **";
+    char const *weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// short
+template<> struct TypeStruct<short> {
+    using type = short;
+    using weak_type = short;
+
+    char const *name = "short";
+    char const *weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<short *> {
+    using type = short *;
+    using weak_type = short;
+
+    char const *name = "short *";
+    char const *weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<short **> {
+    using type = short **;
+    using weak_type = short;
+
+    char const *name = "short **";
+    char const *weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// int
+template<> struct TypeStruct<int> {
+    using type = int;
+    using weak_type = int;
+
+    char const *name = "int";
+    char const *weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<int *> {
+    using type = int *;
+    using weak_type = int;
+
+    char const *name = "int *";
+    char const *weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<int **> {
+    using type = int **;
+    using weak_type = int;
+
+    char const *name = "int **";
+    char const *weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// long
+template<> struct TypeStruct<long> {
+    using type = long;
+    using weak_type = long;
+
+    char const *name = "long";
+    char const *weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<long *> {
+    using type = long *;
+    using weak_type = long;
+
+    char const *name = "long *";
+    char const *weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<long **> {
+    using type = long **;
+    using weak_type = long;
+
+    char const *name = "long **";
+    char const *weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// float
+template<> struct TypeStruct<float> {
+    using type = float;
+    using weak_type = float;
+
+    char const *name = "float";
+    char const *weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<float *> {
+    using type = float *;
+    using weak_type = float;
+
+    char const *name = "float *";
+    char const *weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<float **> {
+    using type = float **;
+    using weak_type = float;
+
+    char const *name = "float **";
+    char const *weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// double
+template<> struct TypeStruct<double> {
+    using type = double;
+    using weak_type = double;
+
+    char const *name = "double";
+    char const *weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<double *> {
+    using type = double *;
+    using weak_type = double;
+
+    char const *name = "double *";
+    char const *weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<double **> {
+    using type = double **;
+    using weak_type = double;
+
+    char const *name = "double **";
+    char const *weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// bool
+template<> struct TypeStruct<bool> {
+    using type = bool;
+    using weak_type = bool;
+
+    char const *name = "bool";
+    char const *weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<bool *> {
+    using type = bool *;
+    using weak_type = bool;
+
+    char const *name = "bool *";
+    char const *weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<bool **> {
+    using type = bool **;
+    using weak_type = bool;
+
+    char const *name = "bool **";
+    char const *weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// V2
+template<> struct TypeStruct<V2> {
+    using type = V2;
+    using weak_type = V2;
+
+    char const *name = "V2";
+    char const *weak_name = "V2";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<V2 *> {
+    using type = V2 *;
+    using weak_type = V2;
+
+    char const *name = "V2 *";
+    char const *weak_name = "V2";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<V2 **> {
+    using type = V2 **;
+    using weak_type = V2;
+
+    char const *name = "V2 **";
+    char const *weak_name = "V2";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// Transform
+template<> struct TypeStruct<Transform> {
+    using type = Transform;
+    using weak_type = Transform;
+
+    char const *name = "Transform";
+    char const *weak_name = "Transform";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<Transform *> {
+    using type = Transform *;
+    using weak_type = Transform;
+
+    char const *name = "Transform *";
+    char const *weak_name = "Transform";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<Transform **> {
+    using type = Transform **;
+    using weak_type = Transform;
+
+    char const *name = "Transform **";
+    char const *weak_name = "Transform";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// Ball
+template<> struct TypeStruct<Ball> {
+    using type = Ball;
+    using weak_type = Ball;
+
+    char const *name = "Ball";
+    char const *weak_name = "Ball";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<Ball *> {
+    using type = Ball *;
+    using weak_type = Ball;
+
+    char const *name = "Ball *";
+    char const *weak_name = "Ball";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<Ball **> {
+    using type = Ball **;
+    using weak_type = Ball;
+
+    char const *name = "Ball **";
+    char const *weak_name = "Ball";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// Paddle
+template<> struct TypeStruct<Paddle> {
+    using type = Paddle;
+    using weak_type = Paddle;
+
+    char const *name = "Paddle";
+    char const *weak_name = "Paddle";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<Paddle *> {
+    using type = Paddle *;
+    using weak_type = Paddle;
+
+    char const *name = "Paddle *";
+    char const *weak_name = "Paddle";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<Paddle **> {
+    using type = Paddle **;
+    using weak_type = Paddle;
+
+    char const *name = "Paddle **";
+    char const *weak_name = "Paddle";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+
+// GameState
+template<> struct TypeStruct<GameState> {
+    using type = GameState;
+    using weak_type = GameState;
+
+    char const *name = "GameState";
+    char const *weak_name = "GameState";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = false;
+};
+template<> struct TypeStruct<GameState *> {
+    using type = GameState *;
+    using weak_type = GameState;
+
+    char const *name = "GameState *";
+    char const *weak_name = "GameState";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
+template<> struct TypeStruct<GameState **> {
+    using type = GameState **;
+    using weak_type = GameState;
+
+    char const *name = "GameState **";
+    char const *weak_name = "GameState";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
 
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
