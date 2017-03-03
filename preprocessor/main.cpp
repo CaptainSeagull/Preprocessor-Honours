@@ -91,6 +91,7 @@ internal SwitchType get_switch_type(Char *str) {
     return(res);
 }
 
+
 internal Bool write_static_file() {
     Char *file = "// Preprocessor API.\n"
                  "//\n"
@@ -342,7 +343,7 @@ internal Bool write_static_file() {
                  "} // namespace pp\n"
                  "\n"
                  "#define STATIC_GENERATED\n"
-                 "#endif // !defined(STATIC_GENERATED_H)"
+                 "#endif // !defined(STATIC_GENERATED_H)\n"
                  "\n";
 
     Int static_file_len = string_length(file);
@@ -385,8 +386,10 @@ internal Void start_parsing(Char *fname, Char *file) {
         }
     }
 
-    for(Int i = 0; (i < parse_res.struct_cnt); ++i) free(parse_res.struct_data[i].members);
-    for(Int i = 0; (i < parse_res.struct_cnt); ++i) free(parse_res.struct_data[i].inherited);
+    for(Int i = 0; (i < parse_res.struct_cnt); ++i) {
+        free(parse_res.struct_data[i].members);
+        free(parse_res.struct_data[i].inherited);
+    }
     free(parse_res.struct_data);
 
     for(Int i = 0; (i < parse_res.enum_cnt); ++i) free(parse_res.enum_data[i].values);
@@ -443,7 +446,9 @@ Int main(Int argc, Char **argv) {
                         } else {
                             ++number_of_files;
 
-                            if(file_size > largest_source_file_size) largest_source_file_size = file_size;
+                            if(file_size > largest_source_file_size) {
+                                largest_source_file_size = file_size;
+                            }
                         }
                     }
                 } break;
@@ -492,7 +497,9 @@ Int main(Int argc, Char **argv) {
             // Check memory leaks.
             MemList *next = mem_list_root;
             while(next) {
-                if(!next->freed) push_error_(ErrorType_memory_not_freed, next->guid);
+                if(!next->freed) {
+                    push_error_(ErrorType_memory_not_freed, next->guid);
+                }
 
                 next = next->next;
             }
@@ -501,12 +508,16 @@ Int main(Int argc, Char **argv) {
         }
 
         if(should_log_errors) {
-            if(print_errors()) res = 255;
+            if(print_errors()) {
+                res = 255;
+            }
         }
     }
 
     Uint64 end_time = system_get_performance_counter();
-    if(display_time_taken) system_print_timer(end_time - start_time);
+    if(display_time_taken) {
+        system_print_timer(end_time - start_time);
+    }
 
     return(res);
 }
