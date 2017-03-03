@@ -8,13 +8,10 @@ struct Ball;
 struct Paddle;
 struct GameState;
 
-#include "static_generated.h"
-
-namespace pp { // PreProcessor
 #define _std std // TODO(Jonny): This is really stupid...
 
 // Enum with field for every type detected.
-enum MetaType {
+namespace pp { enum MetaType {
     MetaType_char,
     MetaType_short,
     MetaType_int,
@@ -27,8 +24,434 @@ enum MetaType {
     MetaType_Ball,
     MetaType_Paddle,
     MetaType_GameState,
+}; }
+
+#include "static_generated.h"
+namespace pp { // PreProcessor
+
+//
+// Meta type specialization
+//
+
+// char
+template<> struct Type<char> {
+    using type = char;
+    using weak_type = char;
+
+    char const * name = "char";
+    char const * weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<char *> {
+    using type = char *;
+    using weak_type = char;
+
+    char const * name = "char *";
+    char const * weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<char **> {
+    using type = char **;
+    using weak_type = char;
+
+    char const * name = "char **";
+    char const * weak_name = "char";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
 };
 
+// short
+template<> struct Type<short> {
+    using type = short;
+    using weak_type = short;
+
+    char const * name = "short";
+    char const * weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<short *> {
+    using type = short *;
+    using weak_type = short;
+
+    char const * name = "short *";
+    char const * weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<short **> {
+    using type = short **;
+    using weak_type = short;
+
+    char const * name = "short **";
+    char const * weak_name = "short";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// int
+template<> struct Type<int> {
+    using type = int;
+    using weak_type = int;
+
+    char const * name = "int";
+    char const * weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<int *> {
+    using type = int *;
+    using weak_type = int;
+
+    char const * name = "int *";
+    char const * weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<int **> {
+    using type = int **;
+    using weak_type = int;
+
+    char const * name = "int **";
+    char const * weak_name = "int";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// long
+template<> struct Type<long> {
+    using type = long;
+    using weak_type = long;
+
+    char const * name = "long";
+    char const * weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<long *> {
+    using type = long *;
+    using weak_type = long;
+
+    char const * name = "long *";
+    char const * weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<long **> {
+    using type = long **;
+    using weak_type = long;
+
+    char const * name = "long **";
+    char const * weak_name = "long";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// float
+template<> struct Type<float> {
+    using type = float;
+    using weak_type = float;
+
+    char const * name = "float";
+    char const * weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<float *> {
+    using type = float *;
+    using weak_type = float;
+
+    char const * name = "float *";
+    char const * weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<float **> {
+    using type = float **;
+    using weak_type = float;
+
+    char const * name = "float **";
+    char const * weak_name = "float";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// double
+template<> struct Type<double> {
+    using type = double;
+    using weak_type = double;
+
+    char const * name = "double";
+    char const * weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<double *> {
+    using type = double *;
+    using weak_type = double;
+
+    char const * name = "double *";
+    char const * weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<double **> {
+    using type = double **;
+    using weak_type = double;
+
+    char const * name = "double **";
+    char const * weak_name = "double";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// bool
+template<> struct Type<bool> {
+    using type = bool;
+    using weak_type = bool;
+
+    char const * name = "bool";
+    char const * weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<bool *> {
+    using type = bool *;
+    using weak_type = bool;
+
+    char const * name = "bool *";
+    char const * weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<bool **> {
+    using type = bool **;
+    using weak_type = bool;
+
+    char const * name = "bool **";
+    char const * weak_name = "bool";
+
+    size_t const member_count = 0;
+
+    bool const is_ptr = true;
+};
+
+// V2
+template<> struct Type<V2> {
+    using type = V2;
+    using weak_type = V2;
+
+    char const * name = "V2";
+    char const * weak_name = "V2";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<V2 *> {
+    using type = V2 *;
+    using weak_type = V2;
+
+    char const * name = "V2 *";
+    char const * weak_name = "V2";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<V2 **> {
+    using type = V2 **;
+    using weak_type = V2;
+
+    char const * name = "V2 **";
+    char const * weak_name = "V2";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// Transform
+template<> struct Type<Transform> {
+    using type = Transform;
+    using weak_type = Transform;
+
+    char const * name = "Transform";
+    char const * weak_name = "Transform";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<Transform *> {
+    using type = Transform *;
+    using weak_type = Transform;
+
+    char const * name = "Transform *";
+    char const * weak_name = "Transform";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<Transform **> {
+    using type = Transform **;
+    using weak_type = Transform;
+
+    char const * name = "Transform **";
+    char const * weak_name = "Transform";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// Ball
+template<> struct Type<Ball> {
+    using type = Ball;
+    using weak_type = Ball;
+
+    char const * name = "Ball";
+    char const * weak_name = "Ball";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<Ball *> {
+    using type = Ball *;
+    using weak_type = Ball;
+
+    char const * name = "Ball *";
+    char const * weak_name = "Ball";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<Ball **> {
+    using type = Ball **;
+    using weak_type = Ball;
+
+    char const * name = "Ball **";
+    char const * weak_name = "Ball";
+
+    size_t const member_count = 2;
+
+    bool const is_ptr = true;
+};
+
+// Paddle
+template<> struct Type<Paddle> {
+    using type = Paddle;
+    using weak_type = Paddle;
+
+    char const * name = "Paddle";
+    char const * weak_name = "Paddle";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<Paddle *> {
+    using type = Paddle *;
+    using weak_type = Paddle;
+
+    char const * name = "Paddle *";
+    char const * weak_name = "Paddle";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<Paddle **> {
+    using type = Paddle **;
+    using weak_type = Paddle;
+
+    char const * name = "Paddle **";
+    char const * weak_name = "Paddle";
+
+    size_t const member_count = 1;
+
+    bool const is_ptr = true;
+};
+
+// GameState
+template<> struct Type<GameState> {
+    using type = GameState;
+    using weak_type = GameState;
+
+    char const * name = "GameState";
+    char const * weak_name = "GameState";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = false;
+};
+template<> struct Type<GameState *> {
+    using type = GameState *;
+    using weak_type = GameState;
+
+    char const * name = "GameState *";
+    char const * weak_name = "GameState";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
+template<> struct Type<GameState **> {
+    using type = GameState **;
+    using weak_type = GameState;
+
+    char const * name = "GameState **";
+    char const * weak_name = "GameState";
+
+    size_t const member_count = 3;
+
+    bool const is_ptr = true;
+};
 static bool is_meta_type_container(int type) {
     if(type == MetaType_char) {return(false);} // false
     else if(type == MetaType_short) {return(false);} // false
@@ -47,7 +470,7 @@ static bool is_meta_type_container(int type) {
     assert(0);
     return(0);
 }
-static char const * meta_type_to_name(/*MetaType*/int mt, bool is_ptr) {
+static char const * meta_type_to_name(MetaType mt, bool is_ptr) {
     if(mt == MetaType_V2) {
         if(is_ptr) {return("V2 *");}
         else       {return("V2");  }
@@ -148,15 +571,15 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
     return(bytes_written);
 }
-// Recreated structs (Clang in std=C++98 complains if these are local).
-struct _V2 {  _float x;  _float y;  };
-struct _Transform {  _V2 pos;  _V2 size;  };
-struct _Ball {  _Transform trans;  _V2 speed;  };
-struct _Paddle {  _Transform trans;  };
-struct _GameState {  _Paddle paddle;  _Ball ball;  _int score;  };
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
+    // Recreated structs.
+    struct _V2 {  _float x;  _float y;  };
+    struct _Transform {  _V2 pos;  _V2 size;  };
+    struct _Ball {  _Transform trans;  _V2 speed;  };
+    struct _Paddle {  _Transform trans;  };
+    struct _GameState {  _Paddle paddle;  _Ball ball;  _int score;  };
     // V2
     if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
@@ -201,19 +624,14 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     return(0); // Error.
 }
 
-// Get the number of members for a type.
-template<typename T> static int get_number_of_members_(void) {
-    if(type_compare(T, V2)) {return(2);} // V2
-    else if(type_compare(T, Transform)) {return(2);} // Transform
-    else if(type_compare(T, Ball)) {return(2);} // Ball
-    else if(type_compare(T, Paddle)) {return(1);} // Paddle
-    else if(type_compare(T, GameState)) {return(3);} // GameState
-
-    return(-1); // Error.
-}
-
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
+    // Recreated structs.
+    struct _V2 {  _float x;  _float y;  };
+    struct _Transform {  _V2 pos;  _V2 size;  };
+    struct _Ball {  _Transform trans;  _V2 speed;  };
+    struct _Paddle {  _Transform trans;  };
+    struct _GameState {  _Paddle paddle;  _Ball ball;  _int score;  };
     // char
     if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
         static MemberDefinition members_of_char[] = {
@@ -326,156 +744,6 @@ static int get_number_of_members_str(char const *str) {
     return(-1); // Error.
 }
 
-// Convert a type to a string.
-template<typename T> static char const *type_to_string_(void) {
-    // Primitives.
-    if(type_compare(T, char)) {return("char"); }
-    else if(type_compare(T, char *)) {return("char *");}
-    else if(type_compare(T, char **)) {return("char **");}
-    else if(type_compare(T, char &)) {return("char &");}
-    else if(type_compare(T, short)) { return("short");}
-    else if(type_compare(T, short *)) {return("short *");}
-    else if(type_compare(T, short **)) {return("short **");}
-    else if(type_compare(T, short &)) {return("short &");}
-    else if(type_compare(T, int)) { return("int");}
-    else if(type_compare(T, int *)) {return("int *");}
-    else if(type_compare(T, int **)) {return("int **");}
-    else if(type_compare(T, int &)) {return("int &");}
-    else if(type_compare(T, long)) { return("long");}
-    else if(type_compare(T, long *)) {return("long *");}
-    else if(type_compare(T, long **)) {return("long **");}
-    else if(type_compare(T, long &)) {return("long &");}
-    else if(type_compare(T, float)) { return("float");}
-    else if(type_compare(T, float *)) {return("float *");}
-    else if(type_compare(T, float **)) {return("float **");}
-    else if(type_compare(T, float &)) {return("float &");}
-    else if(type_compare(T, double)) { return("double");}
-    else if(type_compare(T, double *)) {return("double *");}
-    else if(type_compare(T, double **)) {return("double **");}
-    else if(type_compare(T, double &)) {return("double &");}
-    else if(type_compare(T, bool)) { return("bool");}
-    else if(type_compare(T, bool *)) {return("bool *");}
-    else if(type_compare(T, bool **)) {return("bool **");}
-    else if(type_compare(T, bool &)) {return("bool &");}
-
-    // Struct types.
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2 *");}
-    else if(type_compare(T, V2 **)) {return("V2 **");}
-    else if(type_compare(T, V2 &)) {return("V2 &");}
-    else if(type_compare(T, Transform)) {return("Transform");}
-    else if(type_compare(T, Transform *)) {return("Transform *");}
-    else if(type_compare(T, Transform **)) {return("Transform **");}
-    else if(type_compare(T, Transform &)) {return("Transform &");}
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2 *");}
-    else if(type_compare(T, V2 **)) {return("V2 **");}
-    else if(type_compare(T, V2 &)) {return("V2 &");}
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2 *");}
-    else if(type_compare(T, V2 **)) {return("V2 **");}
-    else if(type_compare(T, V2 &)) {return("V2 &");}
-    else if(type_compare(T, Ball)) {return("Ball");}
-    else if(type_compare(T, Ball *)) {return("Ball *");}
-    else if(type_compare(T, Ball **)) {return("Ball **");}
-    else if(type_compare(T, Ball &)) {return("Ball &");}
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2 *");}
-    else if(type_compare(T, V2 **)) {return("V2 **");}
-    else if(type_compare(T, V2 &)) {return("V2 &");}
-    else if(type_compare(T, Paddle)) {return("Paddle");}
-    else if(type_compare(T, Paddle *)) {return("Paddle *");}
-    else if(type_compare(T, Paddle **)) {return("Paddle **");}
-    else if(type_compare(T, Paddle &)) {return("Paddle &");}
-    else if(type_compare(T, GameState)) {return("GameState");}
-    else if(type_compare(T, GameState *)) {return("GameState *");}
-    else if(type_compare(T, GameState **)) {return("GameState **");}
-    else if(type_compare(T, GameState &)) {return("GameState &");}
-    else if(type_compare(T, Paddle)) {return("Paddle");}
-    else if(type_compare(T, Paddle *)) {return("Paddle *");}
-    else if(type_compare(T, Paddle **)) {return("Paddle **");}
-    else if(type_compare(T, Paddle &)) {return("Paddle &");}
-    else if(type_compare(T, Ball)) {return("Ball");}
-    else if(type_compare(T, Ball *)) {return("Ball *");}
-    else if(type_compare(T, Ball **)) {return("Ball **");}
-    else if(type_compare(T, Ball &)) {return("Ball &");}
-
-    else { return(0); } // Unknown Type.
-}
-
-// Convert a type to a string.
-template<typename T> static char const *weak_type_to_string_(void) {
-    // Primitives.
-    if(type_compare(T, char)) {return("char");}
-    else if(type_compare(T, char *)) {return("char");}
-    else if(type_compare(T, char **)) {return("char");}
-    else if(type_compare(T, char &)) {return("char");}
-    else if(type_compare(T, short)) {return("short");}
-    else if(type_compare(T, short *)) {return("short");}
-    else if(type_compare(T, short **)) {return("short");}
-    else if(type_compare(T, short &)) {return("short");}
-    else if(type_compare(T, int)) {return("int");}
-    else if(type_compare(T, int *)) {return("int");}
-    else if(type_compare(T, int **)) {return("int");}
-    else if(type_compare(T, int &)) {return("int");}
-    else if(type_compare(T, long)) {return("long");}
-    else if(type_compare(T, long *)) {return("long");}
-    else if(type_compare(T, long **)) {return("long");}
-    else if(type_compare(T, long &)) {return("long");}
-    else if(type_compare(T, float)) {return("float");}
-    else if(type_compare(T, float *)) {return("float");}
-    else if(type_compare(T, float **)) {return("float");}
-    else if(type_compare(T, float &)) {return("float");}
-    else if(type_compare(T, double)) {return("double");}
-    else if(type_compare(T, double *)) {return("double");}
-    else if(type_compare(T, double **)) {return("double");}
-    else if(type_compare(T, double &)) {return("double");}
-    else if(type_compare(T, bool)) {return("bool");}
-    else if(type_compare(T, bool *)) {return("bool");}
-    else if(type_compare(T, bool **)) {return("bool");}
-    else if(type_compare(T, bool &)) {return("bool");}
-
-    // Struct types.
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2");}
-    else if(type_compare(T, V2 **)) {return("V2");}
-    else if(type_compare(T, V2 &)) {return("V2");}
-    else if(type_compare(T, Ball)) {return("Ball");}
-    else if(type_compare(T, Ball *)) {return("Ball");}
-    else if(type_compare(T, Ball **)) {return("Ball");}
-    else if(type_compare(T, Ball &)) {return("Ball");}
-    else if(type_compare(T, Transform)) {return("Transform");}
-    else if(type_compare(T, Transform *)) {return("Transform");}
-    else if(type_compare(T, Transform **)) {return("Transform");}
-    else if(type_compare(T, Transform &)) {return("Transform");}
-    else if(type_compare(T, V2)) {return("V2");}
-    else if(type_compare(T, V2 *)) {return("V2");}
-    else if(type_compare(T, V2 **)) {return("V2");}
-    else if(type_compare(T, V2 &)) {return("V2");}
-    else if(type_compare(T, Paddle)) {return("Paddle");}
-    else if(type_compare(T, Paddle *)) {return("Paddle");}
-    else if(type_compare(T, Paddle **)) {return("Paddle");}
-    else if(type_compare(T, Paddle &)) {return("Paddle");}
-    else if(type_compare(T, Transform)) {return("Transform");}
-    else if(type_compare(T, Transform *)) {return("Transform");}
-    else if(type_compare(T, Transform **)) {return("Transform");}
-    else if(type_compare(T, Transform &)) {return("Transform");}
-    else if(type_compare(T, GameState)) {return("GameState");}
-    else if(type_compare(T, GameState *)) {return("GameState");}
-    else if(type_compare(T, GameState **)) {return("GameState");}
-    else if(type_compare(T, GameState &)) {return("GameState");}
-    else if(type_compare(T, Paddle)) {return("Paddle");}
-    else if(type_compare(T, Paddle *)) {return("Paddle");}
-    else if(type_compare(T, Paddle **)) {return("Paddle");}
-    else if(type_compare(T, Paddle &)) {return("Paddle");}
-    else if(type_compare(T, Ball)) {return("Ball");}
-    else if(type_compare(T, Ball *)) {return("Ball");}
-    else if(type_compare(T, Ball **)) {return("Ball");}
-    else if(type_compare(T, Ball &)) {return("Ball");}
-
-    else {return(0);} // Unknown Type.
-}
-
 // Get the number of base types.
 template<typename T> static int get_base_type_count_(void) {
 
@@ -488,6 +756,7 @@ template<typename T> static char const *get_base_type_as_string_(int index/*= 0*
     return(0); // Not found.
 }
 
+#define weak_type_compare(A, B) TypeCompare_<pp::Type<A>::weak_type, pp::Type<B>::weak_type>::e;
 #undef _std // :(
 } // namespace pp
 

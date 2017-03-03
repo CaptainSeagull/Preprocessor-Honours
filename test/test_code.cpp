@@ -15,7 +15,7 @@
 //
 // struct test.
 //
-
+#if 0
 struct Test {
     int i, *j; // TODO(Jonny): Three things doesn't work... for some reason.
 };
@@ -177,10 +177,23 @@ void std_test(void) {
 
 }
 
+#endif
+struct IntTest {
+    int i;
+};
+
+struct StringTest {
+    char *text;
+    int len;
+};
 int main(int /*argc*/, char ** /*argv*/) {
     //test_struct();
     //test_enum();
-    std_test();
+    //std_test();
+
+
+    pp::Type<float> vec = {};
+    char const *name = vec.name;
 
     printf("\n");
     return(0);

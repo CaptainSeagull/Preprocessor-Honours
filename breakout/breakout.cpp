@@ -106,8 +106,7 @@ bool ball_paddle_collision(Ball b, Paddle p) {
     return(res);
 }
 
-int
-main(int argc, char **argv) {
+int main(int argc, char **argv) {
     if(SDL_Init(SDL_INIT_VIDEO) >= 0) {
         SDL_Window *win = SDL_CreateWindow("Breakout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                            global_window_width, global_window_height, SDL_WINDOW_SHOWN);
@@ -211,7 +210,6 @@ main(int argc, char **argv) {
                                 ball->trans.pos = fake_ball_pos;
                             }
                         }
-
 
                         //
                         // Serialize part.

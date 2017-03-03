@@ -97,7 +97,6 @@ internal SwitchType get_switch_type(Char *str) {
     return(res);
 }
 
-
 internal Bool write_static_file() {
     Char *file = "// Preprocessor API.\n"
                  "//\n"
@@ -170,8 +169,22 @@ internal Bool write_static_file() {
                  "typedef double _double;\n"
                  "typedef bool _bool;\n"
                  "\n"
+                 "// TODO(Jonny): Add MetaType in here?\n"
+                 "template<typename T> struct Type {\n"
+                 "    using type = T;\n"
+                 "    using weak_type = T;\n"
+                 "\n"
+                 "    char const *name;\n"
+                 "    char const *weak_name;\n"
+                 "\n"
+                 "    size_t const member_count;\n"
+                 "    MetaType const meta_type;\n"
+                 "\n"
+                 "    bool const is_ptr;\n"
+                 "};\n"
+                 "\n"
                  "struct MemberDefinition {\n"
-                 "    int/*MetaType*/ type;\n"
+                 "    MetaType type;\n"
                  "    char const *name;\n"
                  "    size_t offset;\n"
                  "    int is_ptr;\n"
@@ -183,13 +196,16 @@ internal Bool write_static_file() {
                  "    char const *name;\n"
                  "};\n"
                  "\n"
-                 "#define get_num_of_members(type) get_number_of_members_<type>()\n"
                  "\n"
-                 "template<typename T> static char const *type_to_string_(void);\n"
-                 "#define type_to_string(Type) type_to_string_<Type>()\n"
-                 "#define weak_type_to_string(Type) weak_type_to_string_<Type>()\n"
-                 "\n"
-                 "#define serialize_type(var, Type, buf, size) serialize_struct_(&var, #var, pp::type_to_string(Type), 0, buf, size, 0)\n"
+                 "template<typename T> static char const *struct_to_string() {\n"
+                 "    Type<T> t = {};\n"
+                 "    return(t.name);\n"
+                 "}\n"
+                 "template<typename T> static char const *weak_struct_to_string() {\n"
+                 "    Type<T> t = {};\n"
+                 "    return(t.weak_name);\n"
+                 "}\n"
+                 "#define serialize_type(var, T, buf, size) serialize_struct_(&var, #var, pp::struct_to_string<T>(), 0, buf, size, 0)\n"
                  "#define serialize(var, buf, size) serialize_type(var, decltype(var), buf, size)\n"
                  "\n"
                  "static MemberDefinition *get_members_of_str(char const *str);\n"
@@ -198,8 +214,8 @@ internal Bool write_static_file() {
                  "static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);\n"
                  "#define print_type(var, Type, ...) print_<Type>(&var, #var, ##__VA_ARGS__)\n"
                  "#define print(var, ...) print_type(var, decltype(var), ##__VA_ARGS__)\n"
-                 "template<typename T>static bool print_(T *var, char const *name, char *buf = 0, size_t size = 0) {\n"
-                 "    bool res = false, custom_buf = false;\n"
+                 "template<typename T>static void print_(T *var, char const *name, char *buf = 0, size_t size = 0) {\n"
+                 "    bool custom_buf = false;\n"
                  "\n"
                  "    if(!buf) {\n"
                  "        size = 256 * 256;\n"
@@ -209,16 +225,15 @@ internal Bool write_static_file() {
                  "\n"
                  "    if(buf) {\n"
                  "        memset(buf, 0, size);\n"
-                 "        size_t bytes_written = serialize_struct_(var, name, type_to_string(T), 0, buf, size, 0);\n"
+                 "        size_t bytes_written = serialize_struct_(var, name, Type<T>::name, 0, buf, size, 0);\n"
                  "        if(bytes_written < size) {\n"
                  "            printf(\"%s\", buf);\n"
-                 "            res = true;\n"
                  "        }\n"
                  "\n"
-                 "        if(custom_buf) { free(buf); }\n"
+                 "        if(custom_buf) {\n"
+                 "            free(buf);\n"
+                 "        }\n"
                  "    }\n"
-                 "\n"
-                 "    return(res);\n"
                  "}\n"
                  "\n"
                  "#define enum_to_string(Type, v) enum_to_string_##Type((int)v)\n"
@@ -227,8 +242,8 @@ internal Bool write_static_file() {
                  "\n"
                  "#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type\n"
                  "\n"
-                 "template<class T, class U>struct TypeCompare_{ enum {e = 0}; };\n"
-                 "template<class T>struct TypeCompare_<T, T>{ enum {e = 1}; };\n"
+                 "template<class T, class U>struct TypeCompare_{ static constexpr bool e = false; };\n"
+                 "template<class T>struct TypeCompare_<T, T>{ static constexpr bool e = true; };\n"
                  "#define type_compare(a, b) TypeCompare_<a, b>::e\n"
                  "\n"
                  "template<typename T> static int get_base_type_count_(void);\n"
@@ -240,8 +255,8 @@ internal Bool write_static_file() {
                  "\n"
                  "#define fuzzy_type_compare(A, B) fuzzy_type_compare_<A, B>()\n"
                  "template<typename T, typename U> bool fuzzy_type_compare_(void) {\n"
-                 "    char const *a_str = type_to_string(T);\n"
-                 "    char const *b_str = type_to_string(U);\n"
+                 "    char const *a_str = struct_to_string<T>();\n"
+                 "    char const *b_str = struct_to_string<U>();\n"
                  "    if((a_str) && (b_str)) {\n"
                  "        if(strcmp(a_str, b_str) == 0) {\n"
                  "            return(true);\n"
@@ -262,17 +277,6 @@ internal Bool write_static_file() {
                  "    return(false);\n"
                  "}\n"
                  "\n"
-                 "template<typename T> static char const *weak_type_to_string_(void);\n"
-                 "#define weak_type_compare(A, B) weak_type_compare_<A, B>()\n"
-                 "template<typename T, typename U> bool weak_type_compare_(void) {\n"
-                 "    char const *a_str = weak_type_to_string(T);\n"
-                 "    char const *b_str = weak_type_to_string(U);\n"
-                 "    if((a_str) && (b_str)) {\n"
-                 "        if(strcmp(a_str, b_str) == 0) { return(true); }\n"
-                 "    }\n"
-                 "\n"
-                 "    return(false);\n"
-                 "}\n"
                  "#if defined(_MSC_VER)\n"
                  "    #define pp_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)\n"
                  "#else\n"
@@ -281,7 +285,7 @@ internal Bool write_static_file() {
                  "\n"
                  "template<typename T>static size_t\n"
                  "serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {\n"
-                 "    char const *type_as_string = type_to_string(T);\n"
+                 "    char const *type_as_string = struct_to_string<T>();\n"
                  "    char indent_buf[256] = {};\n"
                  "    for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
                  "\n"
@@ -335,10 +339,10 @@ internal Bool write_static_file() {
                  "    char indent_buf[256] = {};\n"
                  "    for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}\n"
                  "\n"
-                 "    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s\", indent_buf, type_to_string(T), name);\n"
+                 "    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, \"\\n%s%s %s\", indent_buf, Type<T>::name, name);\n"
                  "    T &container = *(T *)member_ptr;\n"
                  "    for(auto &iter : container) {\n"
-                 "        bytes_written = serialize_struct_((void *)&iter, \"\", type_to_string(U), indent, buffer, buf_size, bytes_written);\n"
+                 "        bytes_written = serialize_struct_((void *)&iter, \"\", Type<U>::name, indent, buffer, buf_size, bytes_written);\n"
                  "    }\n"
                  "\n"
                  "    return(bytes_written);\n"
@@ -355,7 +359,9 @@ internal Bool write_static_file() {
     Int static_file_len = string_length(file);
     Bool res = system_write_to_file(dir_name "/static_generated.h", file, static_file_len);
 
-    if(!res) {push_error(ErrorType_could_not_write_to_disk);}
+    if(!res) {
+        push_error(ErrorType_could_not_write_to_disk);
+    }
 
     return(res);
 }
@@ -386,7 +392,9 @@ internal Void start_parsing(Char *fname, Char *file) {
                          fname, string_length(fname) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                          generated_extension, string_length(generated_extension))) {
             Bool header_write_success = system_write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
-            if(!header_write_success) push_error(ErrorType_could_not_write_to_disk);
+            if(!header_write_success) {
+                push_error(ErrorType_could_not_write_to_disk);
+            }
 
             free(file_to_write.data);
         }
