@@ -69,6 +69,11 @@ Void push_error_(ErrorType type, Char *guid);
 Char *ErrorTypeToString(ErrorType e);
 Bool print_errors(void);
 
+// Google Test compains...
+#if defined(assert)
+    #undef assert
+#endif
+
 #if INTERNAL
     #define assert(Expression) do { static Bool Ignore = false; if(!Ignore) { if(!(Expression)) { push_error(ErrorType_assert_failed); *cast(int volatile *)0 = 0; } } } while(0)
 #else
