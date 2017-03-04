@@ -220,7 +220,9 @@ internal Variable parse_member(Tokenizer *tokenizer, Int var_to_parse) {
 
 internal Void eat_whitespace(Tokenizer *tokenizer) {
     for(;;) {
-        if(is_whitespace(tokenizer->at[0])) { // Whitespace
+        if(!tokenizer->at[0]) { // Nul terminator.
+            break;
+        } else if(is_whitespace(tokenizer->at[0])) { // Whitespace
             ++tokenizer->at;
         } else if((tokenizer->at[0] == '/') && (tokenizer->at[1] == '/')) { // C++ comments.
             tokenizer->at += 2;

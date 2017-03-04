@@ -15,7 +15,6 @@
 //
 // struct test.
 //
-#if 0
 struct Test {
     int i, *j; // TODO(Jonny): Three things doesn't work... for some reason.
 };
@@ -103,7 +102,7 @@ enum Letters {
 
 void test_enum(void) {
     size_t num_members = pp::get_number_of_enum_elements(Letters);
-    printf("\nNumber of members: %lu", num_members);
+    //printf("\nNumber of members: %llu", num_members);
 
     {
         char const *a = pp::enum_to_string(Letters, letter_a);
@@ -177,25 +176,125 @@ void std_test(void) {
 
 }
 
-#endif
-struct IntTest {
-    int i;
-    std::vector<int> j;
-};
-
 struct StringTest {
+    float *ptr;
     char *text;
     int len;
+    int some_array[5];
 };
+
+
 int main(int /*argc*/, char ** /*argv*/) {
     //test_struct();
     //test_enum();
     //std_test();
 
-    pp::Type<float> vec = {};
-    pp::Type<float> cpy = vec;
-    char const *name = vec.name;
 
+    //
+    //
+    //
+
+    StringTest test;// = {"Hello", 5};
+    test.text = "Hello";
+    test.len = 5;
+    for(int i = 0; (i < 5); ++i) test.some_array[i] = 5 - i;
+    test.ptr = new float; *test.ptr = 3.14f;
+
+    pp::print(test);
+
+
+    pp::TypeInfo<Foo>::base temp = {};
+
+    pp::TypeInfo<StringTest *> info = {};
+
+    for(int i = 0; (i < pp::TypeInfo<StringTest>::member_count); ++i) {
+        auto mi = pp::get_member_information(&test, i);
+
+        switch(mi.type) {
+            case pp::Type_int: {
+                if(mi.arr) {
+                    for(int j = 0; (j < mi.arr); ++j) {
+                        int *integer = (int *)mi.ptr;
+
+                        printf("%d\n", integer[j]);
+                    }
+                } else {
+                    int integer = *(int *)mi.ptr;
+
+                    printf("%d\n", integer);
+                }
+            } break;
+
+            case pp::Type_float: {
+                if(mi.is_ptr) {
+                    float *real = *(float **)mi.ptr;
+
+                    printf("%f\n", *real);
+                }
+            } break;
+
+            case pp::Type_char: {
+                char *str = *(char **)mi.ptr;
+
+                printf("%s\n", str);
+            } break;
+        }
+    }
+
+    int i = 0;
+
+    //
+    //
+    //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+    {
+        pp::MemberDefinition *mems = pp::get_members_of_<StringTest>();
+        for(int i = 0; (i < pp::get_member_count<StringTest>()); ++i) {
+            pp::MemberDefinition cur = mems[i];
+
+            void *member_ptr = (size_t *)((char unsigned *)&test + cur.offset);
+            switch(cur.type) {
+                case pp::Type_int: {
+                    int integer = *(int *)member_ptr;
+
+                    int j = 0;
+                } break;
+
+                case pp::Type_char: {
+                    char *txt = *(char **)member_ptr;
+
+                    int j = 0;
+                } break;
+            }
+        }
+    }
+#endif
     printf("\n");
     return(0);
 }
+
+
+
+
+
+
