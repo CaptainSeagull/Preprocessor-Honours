@@ -490,47 +490,7 @@ internal Void print_help(void) {
     system_write_to_console(help);
 }
 
-#if 0
-//
-struct TestString {
-    char *e;
-    int len;
-};
-
-#if 0
-template <typename F>
-void doOperation(F f) {
-    int temp=0;
-    f(temp);
-    std::cout << "Result is " << temp << std::endl;
-}
-#endif
-
-template<typename T> void FunctionShit(T t) {
-    int i = 0;
-}
-
-template<typename T> void tuple_shit(T t) {
-    FunctionShit(t);
-}
-
-template<typename Tuple, Int const param_cnt, typename... Args> void tuple_shit(Tuple tuple, Args... args) {
-    const unsigned numargs = sizeof...(args);
-
-    tuple_shit(args...);
-}
-
-internal Void hacky_test() {
-    TestString s = {"Hello", 5};
-
-    std::tuple<char *, int> t = std::make_tuple(s.e, s.len);
-
-    tuple_shit<std::tuple<char *, int>, 1, char *, int>(t);
-}
-#endif
 Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
-//    hacky_test();
-
     Int res = 0;
 
     Bool display_time_taken = false;
@@ -566,7 +526,7 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
                             ++number_of_files;
 
                             if(file_size > largest_source_file_size) {
-                                largest_source_file_size = file_size;
+                                largest_source_file_size = file_size + 1; // We read the nul-terminator, so this has to be one greater.
                             }
                         }
                     }
