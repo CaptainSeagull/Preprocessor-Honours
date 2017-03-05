@@ -614,120 +614,123 @@ internal Void write_get_members_of(OutputBuffer *ob, StructData *struct_data, In
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            if(!i) {
-                write_to_output_buffer(ob,
-                                       "    // %.*s\n"
-                                       "    if(type_compare(T, %.*s)) {\n",
-                                       sd->name.len, sd->name.e,
-                                       sd->name.len, sd->name.e);
-            } else {
-                write_to_output_buffer(ob,
-                                       "\n"
-                                       "    // %.*s\n"
-                                       "    } else if(type_compare(T, %.*s)) {\n",
-                                       sd->name.len, sd->name.e,
-                                       sd->name.len, sd->name.e);
-            }
-
-            write_to_output_buffer(ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
-            for(Int j = 0; (j < sd->member_count); ++j) {
-                Variable *md = sd->members + j;
-
-                StdResult std_res = get_std_information(md->type);
-                switch(std_res.type) {
-                    case StdTypes_not: {
-                        write_to_output_buffer(ob, "            {Type_%.*s", md->type.len, md->type.e);
-                    } break;
-
-                    case StdTypes_vector: {
-                        write_to_output_buffer(ob, "            {Type_std_vector_%.*s", std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
-
-                    case StdTypes_deque: {
-                        write_to_output_buffer(ob, "            {Type_std_deque_%.*s", std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
-
-                    case StdTypes_forward_list: {
-                        write_to_output_buffer(ob, "            {Type_std_forward_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
-
-                    case StdTypes_list: {
-                        write_to_output_buffer(ob, "            {Type_std_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
-
-                    default: {
-                        assert(0);
-                    } break;
+            if(sd->member_count) {
+                if(!i) {
+                    write_to_output_buffer(ob,
+                                           "    // %.*s\n"
+                                           "    if(type_compare(T, %.*s)) {\n",
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e);
+                } else {
+                    write_to_output_buffer(ob,
+                                           "\n"
+                                           "    // %.*s\n"
+                                           "    } else if(type_compare(T, %.*s)) {\n",
+                                           sd->name.len, sd->name.e,
+                                           sd->name.len, sd->name.e);
                 }
 
-                write_to_output_buffer(ob, ", \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
-                                       md->name.len, md->name.e,
-                                       sd->name.len, sd->name.e,
-                                       md->name.len, md->name.e,
-                                       (md->is_ptr) ? "true" : "false",
-                                       md->array_count);
-            }
+                write_to_output_buffer(ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
 
-            if(sd->inherited) {
-                for(Int j = 0; (j < sd->inherited_count); ++j) {
-                    StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+                    StdResult std_res = get_std_information(md->type);
+                    switch(std_res.type) {
+                        case StdTypes_not: {
+                            write_to_output_buffer(ob, "            {Type_%.*s", md->type.len, md->type.e);
+                        } break;
 
-                    write_to_output_buffer(ob, "            // Members inherited from %.*s.\n",
-                                           base_class->name.len, base_class->name.e);
-                    for(Int k = 0; (k < base_class->member_count); ++k) {
-                        Variable *base_class_var = base_class->members + k;
+                        case StdTypes_vector: {
+                            write_to_output_buffer(ob, "            {Type_std_vector_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                        StdResult std_res = get_std_information(base_class_var->type);
-                        switch(std_res.type) {
-                            case StdTypes_not: {
-                                write_to_output_buffer(ob,
-                                                       "            {Type_%.*s",
-                                                       base_class_var->type.len, base_class_var->type.e);
-                            } break;
+                        case StdTypes_deque: {
+                            write_to_output_buffer(ob, "            {Type_std_deque_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                            case StdTypes_vector: {
-                                write_to_output_buffer(ob,
-                                                       "            {Type_std_vector_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                        case StdTypes_forward_list: {
+                            write_to_output_buffer(ob, "            {Type_std_forward_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                            case StdTypes_deque: {
-                                write_to_output_buffer(ob,
-                                                       "            {Type_std_deque_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                        case StdTypes_list: {
+                            write_to_output_buffer(ob, "            {Type_std_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                            case StdTypes_forward_list: {
-                                write_to_output_buffer(ob,
-                                                       "            {Type_std_forward_list_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                        default: {
+                            assert(0);
+                        } break;
+                    }
 
-                            case StdTypes_list: {
-                                write_to_output_buffer(ob,
-                                                       "            {Type_std_list_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                    write_to_output_buffer(ob, ", \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
+                                           md->name.len, md->name.e,
+                                           sd->name.len, sd->name.e,
+                                           md->name.len, md->name.e,
+                                           (md->is_ptr) ? "true" : "false",
+                                           md->array_count);
+                }
 
-                            default: {
-                                assert(0);
-                            } break;
+                if(sd->inherited) {
+                    for(Int j = 0; (j < sd->inherited_count); ++j) {
+                        StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+                        if(base_class) {
+                            write_to_output_buffer(ob, "            // Members inherited from %.*s.\n",
+                                                   base_class->name.len, base_class->name.e);
+                            for(Int k = 0; (k < base_class->member_count); ++k) {
+                                Variable *base_class_var = base_class->members + k;
+
+                                StdResult std_res = get_std_information(base_class_var->type);
+                                switch(std_res.type) {
+                                    case StdTypes_not: {
+                                        write_to_output_buffer(ob,
+                                                               "            {Type_%.*s",
+                                                               base_class_var->type.len, base_class_var->type.e);
+                                    } break;
+
+                                    case StdTypes_vector: {
+                                        write_to_output_buffer(ob,
+                                                               "            {Type_std_vector_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_deque: {
+                                        write_to_output_buffer(ob,
+                                                               "            {Type_std_deque_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_forward_list: {
+                                        write_to_output_buffer(ob,
+                                                               "            {Type_std_forward_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_list: {
+                                        write_to_output_buffer(ob,
+                                                               "            {Type_std_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    default: {
+                                        assert(0);
+                                    } break;
+                                }
+
+                                write_to_output_buffer(ob, ", \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
+                                                       base_class_var->name.len, base_class_var->name.e,
+                                                       sd->name.len, sd->name.e,
+                                                       base_class_var->name.len, base_class_var->name.e,
+                                                       (base_class_var->is_ptr) ? "true" : "false",
+                                                       base_class_var->array_count);
+                            }
                         }
-
-                        write_to_output_buffer(ob, ", \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
-                                               base_class_var->name.len, base_class_var->name.e,
-                                               sd->name.len, sd->name.e,
-                                               base_class_var->name.len, base_class_var->name.e,
-                                               (base_class_var->is_ptr) ? "true" : "false",
-                                               base_class_var->array_count);
                     }
                 }
-            }
 
-            write_to_output_buffer(ob,
-                                   "        };\n"
-                                   "        return(members_of_%.*s);\n",
-                                   sd->name.len, sd->name.e);
+                write_to_output_buffer(ob,
+                                       "        };\n"
+                                       "        return(members_of_%.*s);\n",
+                                       sd->name.len, sd->name.e);
+            }
         }
 
         write_to_output_buffer(ob, "    }\n");
@@ -824,111 +827,114 @@ internal Void write_get_members_of_str(OutputBuffer *ob, StructData *struct_data
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            write_to_output_buffer(ob,
-                                   "\n"
-                                   "    // %.*s\n"
-                                   "    } else if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s\ *\") == 0) || (strcmp(str, \"%.*s\ **\") == 0)) {\n",
-                                   sd->name.len, sd->name.e,
-                                   sd->name.len, sd->name.e,
-                                   sd->name.len, sd->name.e,
-                                   sd->name.len, sd->name.e);
+            if(sd->member_count > 0) {
+                write_to_output_buffer(ob,
+                                       "\n"
+                                       "    // %.*s\n"
+                                       "    } else if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s\ *\") == 0) || (strcmp(str, \"%.*s\ **\") == 0)) {\n",
+                                       sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e,
+                                       sd->name.len, sd->name.e);
 
-            write_to_output_buffer(ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
-            for(Int j = 0; (j < sd->member_count); ++j) {
-                Variable *md = sd->members + j;
+                write_to_output_buffer(ob, "        static MemberDefinition members_of_%.*s[] = {\n", sd->name.len, sd->name.e);
+                for(Int j = 0; (j < sd->member_count); ++j) {
+                    Variable *md = sd->members + j;
 
-                StdResult std_res = get_std_information(md->type);
-                switch(std_res.type) {
-                    case StdTypes_not: {
-                        write_to_output_buffer(ob, "            {Type_%.*s",
-                                               md->type.len, md->type.e);
-                    } break;
+                    StdResult std_res = get_std_information(md->type);
+                    switch(std_res.type) {
+                        case StdTypes_not: {
+                            write_to_output_buffer(ob, "            {Type_%.*s",
+                                                   md->type.len, md->type.e);
+                        } break;
 
-                    case StdTypes_vector: {
-                        write_to_output_buffer(ob, "            {Type_std_vector_%.*s",
-                                               std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
+                        case StdTypes_vector: {
+                            write_to_output_buffer(ob, "            {Type_std_vector_%.*s",
+                                                   std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                    case StdTypes_deque: {
-                        write_to_output_buffer(ob, "            {Type_std_deque_%.*s",
-                                               std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
+                        case StdTypes_deque: {
+                            write_to_output_buffer(ob, "            {Type_std_deque_%.*s",
+                                                   std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                    case StdTypes_forward_list: {
-                        write_to_output_buffer(ob, "            {Type_std_forward_list_%.*s",
-                                               std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
+                        case StdTypes_forward_list: {
+                            write_to_output_buffer(ob, "            {Type_std_forward_list_%.*s",
+                                                   std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                    case StdTypes_list: {
-                        write_to_output_buffer(ob, "            {Type_std_list_%.*s",
-                                               std_res.stored_type.len, std_res.stored_type.e);
-                    } break;
+                        case StdTypes_list: {
+                            write_to_output_buffer(ob, "            {Type_std_list_%.*s",
+                                                   std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
 
-                    default: {
-                        assert(0);
-                    } break;
+                        default: {
+                            assert(0);
+                        } break;
+                    }
+
+                    write_to_output_buffer(ob, ", \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
+                                           md->name.len, md->name.e,
+                                           sd->name.len, sd->name.e,
+                                           md->name.len, md->name.e,
+                                           (md->is_ptr) ? "true" : "false",
+                                           md->array_count);
                 }
 
-                write_to_output_buffer(ob, ", \"%.*s\", offset_of(&_%.*s::%.*s), %s, %d},\n",
-                                       md->name.len, md->name.e,
-                                       sd->name.len, sd->name.e,
-                                       md->name.len, md->name.e,
-                                       (md->is_ptr) ? "true" : "false",
-                                       md->array_count);
-            }
+                if(sd->inherited) {
+                    for(Int j = 0; (j < sd->inherited_count); ++j) {
+                        StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+                        if(base_class) {
+                            write_to_output_buffer(ob, "            // Members inherited from %.*s.\n",
+                                                   base_class->name.len, base_class->name.e);
+                            for(Int k = 0; (k < base_class->member_count); ++k) {
+                                Variable *base_class_var = base_class->members + k;
 
-            if(sd->inherited) {
-                for(Int j = 0; (j < sd->inherited_count); ++j) {
-                    StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+                                StdResult std_res = get_std_information(base_class_var->type);
+                                switch(std_res.type) {
+                                    case StdTypes_not: {
+                                        write_to_output_buffer(ob, "            {Type_%.*s",
+                                                               base_class_var->type.len, base_class_var->type.e);
+                                    } break;
 
-                    write_to_output_buffer(ob, "            // Members inherited from %.*s.\n",
-                                           base_class->name.len, base_class->name.e);
-                    for(Int k = 0; (k < base_class->member_count); ++k) {
-                        Variable *base_class_var = base_class->members + k;
+                                    case StdTypes_vector: {
+                                        write_to_output_buffer(ob, "            {Type_std_vector_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
 
-                        StdResult std_res = get_std_information(base_class_var->type);
-                        switch(std_res.type) {
-                            case StdTypes_not: {
-                                write_to_output_buffer(ob, "            {Type_%.*s",
-                                                       base_class_var->type.len, base_class_var->type.e);
-                            } break;
+                                    case StdTypes_deque: {
+                                        write_to_output_buffer(ob, "            {Type_std_deque_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
 
-                            case StdTypes_vector: {
-                                write_to_output_buffer(ob, "            {Type_std_vector_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                                    case StdTypes_forward_list: {
+                                        write_to_output_buffer(ob, "            {Type_std_forward_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
 
-                            case StdTypes_deque: {
-                                write_to_output_buffer(ob, "            {Type_std_deque_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                                    case StdTypes_list: {
+                                        write_to_output_buffer(ob, "            {Type_std_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+                                }
 
-                            case StdTypes_forward_list: {
-                                write_to_output_buffer(ob, "            {Type_std_forward_list_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
 
-                            case StdTypes_list: {
-                                write_to_output_buffer(ob, "            {Type_std_list_%.*s",
-                                                       std_res.stored_type.len, std_res.stored_type.e);
-                            } break;
+                                write_to_output_buffer(ob, ", \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
+                                                       base_class_var->name.len, base_class_var->name.e,
+                                                       sd->name.len, sd->name.e,
+                                                       base_class_var->name.len, base_class_var->name.e,
+                                                       (base_class_var->is_ptr) ? "true" : "false",
+                                                       base_class_var->array_count);
+                            }
                         }
-
-
-                        write_to_output_buffer(ob, ", \"%.*s\", (size_t)&((_%.*s *)0)->%.*s, %s, %d},\n",
-                                               base_class_var->name.len, base_class_var->name.e,
-                                               sd->name.len, sd->name.e,
-                                               base_class_var->name.len, base_class_var->name.e,
-                                               (base_class_var->is_ptr) ? "true" : "false",
-                                               base_class_var->array_count);
                     }
                 }
-            }
 
-            write_to_output_buffer(ob,
-                                   "        };\n"
-                                   "        return(members_of_%.*s);\n",
-                                   sd->name.len, sd->name.e);
+                write_to_output_buffer(ob,
+                                       "        };\n"
+                                       "        return(members_of_%.*s);\n",
+                                       sd->name.len, sd->name.e);
+            }
         }
 
     }
