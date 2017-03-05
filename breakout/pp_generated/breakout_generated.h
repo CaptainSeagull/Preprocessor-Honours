@@ -11,19 +11,19 @@ struct GameState;
 #define _std std // TODO(Jonny): This is really stupid...
 
 // Enum with field for every type detected.
-namespace pp { enum MetaType {
-    MetaType_char,
-    MetaType_short,
-    MetaType_int,
-    MetaType_long,
-    MetaType_float,
-    MetaType_double,
-    MetaType_bool,
-    MetaType_V2,
-    MetaType_Transform,
-    MetaType_Ball,
-    MetaType_Paddle,
-    MetaType_GameState,
+namespace pp { enum Type {
+    Type_char,
+    Type_short,
+    Type_int,
+    Type_long,
+    Type_float,
+    Type_double,
+    Type_bool,
+    Type_V2,
+    Type_Transform,
+    Type_Ball,
+    Type_Paddle,
+    Type_GameState,
 }; }
 
 #include "static_generated.h"
@@ -34,528 +34,744 @@ namespace pp { // PreProcessor
 //
 
 // char
-template<> struct Type<char> {
+template<> struct TypeInfo<char> {
     using type = char;
     using weak_type = char;
+    using base = void;
 
-    char const * name = "char";
-    char const * weak_name = "char";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<char> operator=(Type<char> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<char> operator=(TypeInfo<char> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<char *> {
+
+char * const TypeInfo<char>::name = "char";
+char * const TypeInfo<char>::weak_name = "char";
+
+template<> struct TypeInfo<char *> {
     using type = char *;
     using weak_type = char;
+    using base = void;
 
-    char const * name = "char *";
-    char const * weak_name = "char";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<char *> operator=(Type<char *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<char *> operator=(TypeInfo<char *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<char **> {
+
+char * const TypeInfo<char *>::name = "char *";
+char * const TypeInfo<char *>::weak_name = "char";
+
+template<> struct TypeInfo<char **> {
     using type = char **;
     using weak_type = char;
+    using base = void;
 
-    char const * name = "char **";
-    char const * weak_name = "char";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<char **> operator=(Type<char **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<char **> operator=(TypeInfo<char **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<char **>::name = "char **";
+char * const TypeInfo<char **>::weak_name = "char";
+
 
 // short
-template<> struct Type<short> {
+template<> struct TypeInfo<short> {
     using type = short;
     using weak_type = short;
+    using base = void;
 
-    char const * name = "short";
-    char const * weak_name = "short";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<short> operator=(Type<short> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<short> operator=(TypeInfo<short> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<short *> {
+
+char * const TypeInfo<short>::name = "short";
+char * const TypeInfo<short>::weak_name = "short";
+
+template<> struct TypeInfo<short *> {
     using type = short *;
     using weak_type = short;
+    using base = void;
 
-    char const * name = "short *";
-    char const * weak_name = "short";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<short *> operator=(Type<short *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<short *> operator=(TypeInfo<short *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<short **> {
+
+char * const TypeInfo<short *>::name = "short *";
+char * const TypeInfo<short *>::weak_name = "short";
+
+template<> struct TypeInfo<short **> {
     using type = short **;
     using weak_type = short;
+    using base = void;
 
-    char const * name = "short **";
-    char const * weak_name = "short";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<short **> operator=(Type<short **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<short **> operator=(TypeInfo<short **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<short **>::name = "short **";
+char * const TypeInfo<short **>::weak_name = "short";
+
 
 // int
-template<> struct Type<int> {
+template<> struct TypeInfo<int> {
     using type = int;
     using weak_type = int;
+    using base = void;
 
-    char const * name = "int";
-    char const * weak_name = "int";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<int> operator=(Type<int> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<int> operator=(TypeInfo<int> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<int *> {
+
+char * const TypeInfo<int>::name = "int";
+char * const TypeInfo<int>::weak_name = "int";
+
+template<> struct TypeInfo<int *> {
     using type = int *;
     using weak_type = int;
+    using base = void;
 
-    char const * name = "int *";
-    char const * weak_name = "int";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<int *> operator=(Type<int *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<int *> operator=(TypeInfo<int *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<int **> {
+
+char * const TypeInfo<int *>::name = "int *";
+char * const TypeInfo<int *>::weak_name = "int";
+
+template<> struct TypeInfo<int **> {
     using type = int **;
     using weak_type = int;
+    using base = void;
 
-    char const * name = "int **";
-    char const * weak_name = "int";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<int **> operator=(Type<int **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<int **> operator=(TypeInfo<int **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<int **>::name = "int **";
+char * const TypeInfo<int **>::weak_name = "int";
+
 
 // long
-template<> struct Type<long> {
+template<> struct TypeInfo<long> {
     using type = long;
     using weak_type = long;
+    using base = void;
 
-    char const * name = "long";
-    char const * weak_name = "long";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<long> operator=(Type<long> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<long> operator=(TypeInfo<long> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<long *> {
+
+char * const TypeInfo<long>::name = "long";
+char * const TypeInfo<long>::weak_name = "long";
+
+template<> struct TypeInfo<long *> {
     using type = long *;
     using weak_type = long;
+    using base = void;
 
-    char const * name = "long *";
-    char const * weak_name = "long";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<long *> operator=(Type<long *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<long *> operator=(TypeInfo<long *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<long **> {
+
+char * const TypeInfo<long *>::name = "long *";
+char * const TypeInfo<long *>::weak_name = "long";
+
+template<> struct TypeInfo<long **> {
     using type = long **;
     using weak_type = long;
+    using base = void;
 
-    char const * name = "long **";
-    char const * weak_name = "long";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<long **> operator=(Type<long **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<long **> operator=(TypeInfo<long **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<long **>::name = "long **";
+char * const TypeInfo<long **>::weak_name = "long";
+
 
 // float
-template<> struct Type<float> {
+template<> struct TypeInfo<float> {
     using type = float;
     using weak_type = float;
+    using base = void;
 
-    char const * name = "float";
-    char const * weak_name = "float";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<float> operator=(Type<float> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<float> operator=(TypeInfo<float> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<float *> {
+
+char * const TypeInfo<float>::name = "float";
+char * const TypeInfo<float>::weak_name = "float";
+
+template<> struct TypeInfo<float *> {
     using type = float *;
     using weak_type = float;
+    using base = void;
 
-    char const * name = "float *";
-    char const * weak_name = "float";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<float *> operator=(Type<float *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<float *> operator=(TypeInfo<float *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<float **> {
+
+char * const TypeInfo<float *>::name = "float *";
+char * const TypeInfo<float *>::weak_name = "float";
+
+template<> struct TypeInfo<float **> {
     using type = float **;
     using weak_type = float;
+    using base = void;
 
-    char const * name = "float **";
-    char const * weak_name = "float";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<float **> operator=(Type<float **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<float **> operator=(TypeInfo<float **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<float **>::name = "float **";
+char * const TypeInfo<float **>::weak_name = "float";
+
 
 // double
-template<> struct Type<double> {
+template<> struct TypeInfo<double> {
     using type = double;
     using weak_type = double;
+    using base = void;
 
-    char const * name = "double";
-    char const * weak_name = "double";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<double> operator=(Type<double> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<double> operator=(TypeInfo<double> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<double *> {
+
+char * const TypeInfo<double>::name = "double";
+char * const TypeInfo<double>::weak_name = "double";
+
+template<> struct TypeInfo<double *> {
     using type = double *;
     using weak_type = double;
+    using base = void;
 
-    char const * name = "double *";
-    char const * weak_name = "double";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<double *> operator=(Type<double *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<double *> operator=(TypeInfo<double *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<double **> {
+
+char * const TypeInfo<double *>::name = "double *";
+char * const TypeInfo<double *>::weak_name = "double";
+
+template<> struct TypeInfo<double **> {
     using type = double **;
     using weak_type = double;
+    using base = void;
 
-    char const * name = "double **";
-    char const * weak_name = "double";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<double **> operator=(Type<double **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<double **> operator=(TypeInfo<double **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<double **>::name = "double **";
+char * const TypeInfo<double **>::weak_name = "double";
+
 
 // bool
-template<> struct Type<bool> {
+template<> struct TypeInfo<bool> {
     using type = bool;
     using weak_type = bool;
+    using base = void;
 
-    char const * name = "bool";
-    char const * weak_name = "bool";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<bool> operator=(Type<bool> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<bool> operator=(TypeInfo<bool> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<bool *> {
+
+char * const TypeInfo<bool>::name = "bool";
+char * const TypeInfo<bool>::weak_name = "bool";
+
+template<> struct TypeInfo<bool *> {
     using type = bool *;
     using weak_type = bool;
+    using base = void;
 
-    char const * name = "bool *";
-    char const * weak_name = "bool";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<bool *> operator=(Type<bool *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<bool *> operator=(TypeInfo<bool *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<bool **> {
+
+char * const TypeInfo<bool *>::name = "bool *";
+char * const TypeInfo<bool *>::weak_name = "bool";
+
+template<> struct TypeInfo<bool **> {
     using type = bool **;
     using weak_type = bool;
+    using base = void;
 
-    char const * name = "bool **";
-    char const * weak_name = "bool";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 0;
+    static size_t const member_count = 0;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<bool **> operator=(Type<bool **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<bool **> operator=(TypeInfo<bool **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<bool **>::name = "bool **";
+char * const TypeInfo<bool **>::weak_name = "bool";
+
 
 // V2
-template<> struct Type<V2> {
+template<> struct TypeInfo<V2> {
     using type = V2;
     using weak_type = V2;
+    using base = void;
 
-    char const * name = "V2";
-    char const * weak_name = "V2";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<V2> operator=(Type<V2> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<V2> operator=(TypeInfo<V2> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<V2 *> {
+
+char * const TypeInfo<V2>::name = "V2";
+char * const TypeInfo<V2>::weak_name = "V2";
+
+template<> struct TypeInfo<V2 *> {
     using type = V2 *;
     using weak_type = V2;
+    using base = void;
 
-    char const * name = "V2 *";
-    char const * weak_name = "V2";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<V2 *> operator=(Type<V2 *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<V2 *> operator=(TypeInfo<V2 *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<V2 **> {
+
+char * const TypeInfo<V2 *>::name = "V2 *";
+char * const TypeInfo<V2 *>::weak_name = "V2";
+
+template<> struct TypeInfo<V2 **> {
     using type = V2 **;
     using weak_type = V2;
+    using base = void;
 
-    char const * name = "V2 **";
-    char const * weak_name = "V2";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<V2 **> operator=(Type<V2 **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<V2 **> operator=(TypeInfo<V2 **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<V2 **>::name = "V2 **";
+char * const TypeInfo<V2 **>::weak_name = "V2";
+
 
 // Transform
-template<> struct Type<Transform> {
+template<> struct TypeInfo<Transform> {
     using type = Transform;
     using weak_type = Transform;
+    using base = void;
 
-    char const * name = "Transform";
-    char const * weak_name = "Transform";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<Transform> operator=(Type<Transform> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Transform> operator=(TypeInfo<Transform> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<Transform *> {
+
+char * const TypeInfo<Transform>::name = "Transform";
+char * const TypeInfo<Transform>::weak_name = "Transform";
+
+template<> struct TypeInfo<Transform *> {
     using type = Transform *;
     using weak_type = Transform;
+    using base = void;
 
-    char const * name = "Transform *";
-    char const * weak_name = "Transform";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<Transform *> operator=(Type<Transform *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Transform *> operator=(TypeInfo<Transform *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<Transform **> {
+
+char * const TypeInfo<Transform *>::name = "Transform *";
+char * const TypeInfo<Transform *>::weak_name = "Transform";
+
+template<> struct TypeInfo<Transform **> {
     using type = Transform **;
     using weak_type = Transform;
+    using base = void;
 
-    char const * name = "Transform **";
-    char const * weak_name = "Transform";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<Transform **> operator=(Type<Transform **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Transform **> operator=(TypeInfo<Transform **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<Transform **>::name = "Transform **";
+char * const TypeInfo<Transform **>::weak_name = "Transform";
+
 
 // Ball
-template<> struct Type<Ball> {
+template<> struct TypeInfo<Ball> {
     using type = Ball;
     using weak_type = Ball;
+    using base = void;
 
-    char const * name = "Ball";
-    char const * weak_name = "Ball";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<Ball> operator=(Type<Ball> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Ball> operator=(TypeInfo<Ball> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<Ball *> {
+
+char * const TypeInfo<Ball>::name = "Ball";
+char * const TypeInfo<Ball>::weak_name = "Ball";
+
+template<> struct TypeInfo<Ball *> {
     using type = Ball *;
     using weak_type = Ball;
+    using base = void;
 
-    char const * name = "Ball *";
-    char const * weak_name = "Ball";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<Ball *> operator=(Type<Ball *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Ball *> operator=(TypeInfo<Ball *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<Ball **> {
+
+char * const TypeInfo<Ball *>::name = "Ball *";
+char * const TypeInfo<Ball *>::weak_name = "Ball";
+
+template<> struct TypeInfo<Ball **> {
     using type = Ball **;
     using weak_type = Ball;
+    using base = void;
 
-    char const * name = "Ball **";
-    char const * weak_name = "Ball";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 2;
+    static size_t const member_count = 2;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<Ball **> operator=(Type<Ball **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Ball **> operator=(TypeInfo<Ball **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<Ball **>::name = "Ball **";
+char * const TypeInfo<Ball **>::weak_name = "Ball";
+
 
 // Paddle
-template<> struct Type<Paddle> {
+template<> struct TypeInfo<Paddle> {
     using type = Paddle;
     using weak_type = Paddle;
+    using base = void;
 
-    char const * name = "Paddle";
-    char const * weak_name = "Paddle";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 1;
+    static size_t const member_count = 1;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<Paddle> operator=(Type<Paddle> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Paddle> operator=(TypeInfo<Paddle> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<Paddle *> {
+
+char * const TypeInfo<Paddle>::name = "Paddle";
+char * const TypeInfo<Paddle>::weak_name = "Paddle";
+
+template<> struct TypeInfo<Paddle *> {
     using type = Paddle *;
     using weak_type = Paddle;
+    using base = void;
 
-    char const * name = "Paddle *";
-    char const * weak_name = "Paddle";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 1;
+    static size_t const member_count = 1;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<Paddle *> operator=(Type<Paddle *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Paddle *> operator=(TypeInfo<Paddle *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<Paddle **> {
+
+char * const TypeInfo<Paddle *>::name = "Paddle *";
+char * const TypeInfo<Paddle *>::weak_name = "Paddle";
+
+template<> struct TypeInfo<Paddle **> {
     using type = Paddle **;
     using weak_type = Paddle;
+    using base = void;
 
-    char const * name = "Paddle **";
-    char const * weak_name = "Paddle";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 1;
+    static size_t const member_count = 1;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<Paddle **> operator=(Type<Paddle **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<Paddle **> operator=(TypeInfo<Paddle **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<Paddle **>::name = "Paddle **";
+char * const TypeInfo<Paddle **>::weak_name = "Paddle";
+
 
 // GameState
-template<> struct Type<GameState> {
+template<> struct TypeInfo<GameState> {
     using type = GameState;
     using weak_type = GameState;
+    using base = void;
 
-    char const * name = "GameState";
-    char const * weak_name = "GameState";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 3;
+    static size_t const member_count = 3;
 
-    bool const is_ptr = false;
+    static bool const is_ptr = false;
+    static size_t const base_count = 0;
 
-    Type<GameState> operator=(Type<GameState> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<GameState> operator=(TypeInfo<GameState> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<GameState *> {
+
+char * const TypeInfo<GameState>::name = "GameState";
+char * const TypeInfo<GameState>::weak_name = "GameState";
+
+template<> struct TypeInfo<GameState *> {
     using type = GameState *;
     using weak_type = GameState;
+    using base = void;
 
-    char const * name = "GameState *";
-    char const * weak_name = "GameState";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 3;
+    static size_t const member_count = 3;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<GameState *> operator=(Type<GameState *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<GameState *> operator=(TypeInfo<GameState *> a) = delete; // To avoid warning 4512 in MSVC.
 };
-template<> struct Type<GameState **> {
+
+char * const TypeInfo<GameState *>::name = "GameState *";
+char * const TypeInfo<GameState *>::weak_name = "GameState";
+
+template<> struct TypeInfo<GameState **> {
     using type = GameState **;
     using weak_type = GameState;
+    using base = void;
 
-    char const * name = "GameState **";
-    char const * weak_name = "GameState";
+    static char * const name;
+    static char * const weak_name;
 
-    size_t const member_count = 3;
+    static size_t const member_count = 3;
 
-    bool const is_ptr = true;
+    static bool const is_ptr = true;
+    static size_t const base_count = 0;
 
-    Type<GameState **> operator=(Type<GameState **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<GameState **> operator=(TypeInfo<GameState **> a) = delete; // To avoid warning 4512 in MSVC.
 };
+
+char * const TypeInfo<GameState **>::name = "GameState **";
+char * const TypeInfo<GameState **>::weak_name = "GameState";
+
 static bool is_meta_type_container(int type) {
-    if(type == MetaType_char) {return(false);} // false
-    else if(type == MetaType_short) {return(false);} // false
-    else if(type == MetaType_int) {return(false);} // false
-    else if(type == MetaType_long) {return(false);} // false
-    else if(type == MetaType_float) {return(false);} // false
-    else if(type == MetaType_double) {return(false);} // false
-    else if(type == MetaType_bool) {return(false);} // false
-    else if(type == MetaType_V2) {return(false);} // false
-    else if(type == MetaType_Transform) {return(false);} // false
-    else if(type == MetaType_Ball) {return(false);} // false
-    else if(type == MetaType_Paddle) {return(false);} // false
-    else if(type == MetaType_GameState) {return(false);} // false
+    if(type == Type_char) {return(false);} // false
+    else if(type == Type_short) {return(false);} // false
+    else if(type == Type_int) {return(false);} // false
+    else if(type == Type_long) {return(false);} // false
+    else if(type == Type_float) {return(false);} // false
+    else if(type == Type_double) {return(false);} // false
+    else if(type == Type_bool) {return(false);} // false
+    else if(type == Type_V2) {return(false);} // false
+    else if(type == Type_Transform) {return(false);} // false
+    else if(type == Type_Ball) {return(false);} // false
+    else if(type == Type_Paddle) {return(false);} // false
+    else if(type == Type_GameState) {return(false);} // false
 
     // Should not be reached.
     assert(0);
     return(0);
 }
-static char const * meta_type_to_name(MetaType mt, bool is_ptr) {
-    if(mt == MetaType_V2) {
+static char const * meta_type_to_name(Type mt, bool is_ptr) {
+    if(mt == Type_V2) {
         if(is_ptr) {return("V2 *");}
         else       {return("V2");  }
-    } else if(mt == MetaType_Transform) {
+    } else if(mt == Type_Transform) {
         if(is_ptr) {return("Transform *");}
         else       {return("Transform");  }
-    } else if(mt == MetaType_Ball) {
+    } else if(mt == Type_Ball) {
         if(is_ptr) {return("Ball *");}
         else       {return("Ball");  }
-    } else if(mt == MetaType_Paddle) {
+    } else if(mt == Type_Paddle) {
         if(is_ptr) {return("Paddle *");}
         else       {return("Paddle");  }
-    } else if(mt == MetaType_GameState) {
+    } else if(mt == Type_GameState) {
         if(is_ptr) {return("GameState *");}
         else       {return("GameState");  }
     }
@@ -592,32 +808,32 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
             switch(member->type) {
                 // This is a little verbose so I can get the right template overload for serialize_primitive. I should just
                 // make it a macro though.
-                case MetaType_double: { // double.
+                case Type_double: { // double.
                     bytes_written = serialize_primitive_((double *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
 
-                case MetaType_float: { // float.
+                case Type_float: { // float.
                     bytes_written = serialize_primitive_((float *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
 
-                case MetaType_int: { // int.
+                case Type_int: { // int.
                     bytes_written = serialize_primitive_((int *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
 
-                case MetaType_long: { // long.
+                case Type_long: { // long.
                     bytes_written = serialize_primitive_((long *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
 
-                case MetaType_short: { // short.
+                case Type_short: { // short.
                     bytes_written = serialize_primitive_((short *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
 
-                case MetaType_bool: { // bool.
+                case Type_bool: { // bool.
                     bytes_written = serialize_primitive_((bool *)member_ptr, (member->is_ptr != 0), member->arr_size, member->name, indent, buffer, buf_size, bytes_written);
                 } break;
 
                 // char (special case).
-                case MetaType_char: {
+                case Type_char: {
                     if(member_ptr) {
                         if(member->is_ptr) {
                             bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, "\n%schar *%s = \"%s\"", indent_buf, member->name, (char *)(*(size_t *)member_ptr));
@@ -627,7 +843,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
                     } else {
                         bytes_written += pp_sprintf((char *)buffer + bytes_written, buf_size - bytes_written, "\n%schar *%s = (null)", indent_buf, member->name);
                     }
-                } break; // case MetaType_char
+                } break; // case Type_char
 
                 default: {
                     if(is_meta_type_container(member->type)) {
@@ -655,40 +871,40 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // V2
     if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
-            {MetaType_float, "x", offset_of(&_V2::x), false, 1},
-            {MetaType_float, "y", offset_of(&_V2::y), false, 1},
+            {Type_float, "x", offset_of(&_V2::x), false, 1},
+            {Type_float, "y", offset_of(&_V2::y), false, 1},
         };
         return(members_of_V2);
 
     // Transform
     } else if(type_compare(T, Transform)) {
         static MemberDefinition members_of_Transform[] = {
-            {MetaType_V2, "pos", offset_of(&_Transform::pos), false, 1},
-            {MetaType_V2, "size", offset_of(&_Transform::size), false, 1},
+            {Type_V2, "pos", offset_of(&_Transform::pos), false, 1},
+            {Type_V2, "size", offset_of(&_Transform::size), false, 1},
         };
         return(members_of_Transform);
 
     // Ball
     } else if(type_compare(T, Ball)) {
         static MemberDefinition members_of_Ball[] = {
-            {MetaType_Transform, "trans", offset_of(&_Ball::trans), false, 1},
-            {MetaType_V2, "speed", offset_of(&_Ball::speed), false, 1},
+            {Type_Transform, "trans", offset_of(&_Ball::trans), false, 1},
+            {Type_V2, "speed", offset_of(&_Ball::speed), false, 1},
         };
         return(members_of_Ball);
 
     // Paddle
     } else if(type_compare(T, Paddle)) {
         static MemberDefinition members_of_Paddle[] = {
-            {MetaType_Transform, "trans", offset_of(&_Paddle::trans), false, 1},
+            {Type_Transform, "trans", offset_of(&_Paddle::trans), false, 1},
         };
         return(members_of_Paddle);
 
     // GameState
     } else if(type_compare(T, GameState)) {
         static MemberDefinition members_of_GameState[] = {
-            {MetaType_Paddle, "paddle", offset_of(&_GameState::paddle), false, 1},
-            {MetaType_Ball, "ball", offset_of(&_GameState::ball), false, 1},
-            {MetaType_int, "score", offset_of(&_GameState::score), false, 1},
+            {Type_Paddle, "paddle", offset_of(&_GameState::paddle), false, 1},
+            {Type_Ball, "ball", offset_of(&_GameState::ball), false, 1},
+            {Type_int, "score", offset_of(&_GameState::score), false, 1},
         };
         return(members_of_GameState);
     }
@@ -707,49 +923,49 @@ static MemberDefinition *get_members_of_str(char const *str) {
     // char
     if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
         static MemberDefinition members_of_char[] = {
-            {MetaType_char, "", 0, false, 1}
+            {Type_char, "", 0, false, 1}
         };
         return(members_of_char);
 
     // short
     } else if((strcmp(str, "short") == 0) || (strcmp(str, "short *") == 0) || (strcmp(str, "short **") == 0)) {
         static MemberDefinition members_of_short[] = {
-            {MetaType_short, "", 0, false, 1}
+            {Type_short, "", 0, false, 1}
         };
         return(members_of_short);
 
     // int
     } else if((strcmp(str, "int") == 0) || (strcmp(str, "int *") == 0) || (strcmp(str, "int **") == 0)) {
         static MemberDefinition members_of_int[] = {
-            {MetaType_int, "", 0, false, 1}
+            {Type_int, "", 0, false, 1}
         };
         return(members_of_int);
 
     // long
     } else if((strcmp(str, "long") == 0) || (strcmp(str, "long *") == 0) || (strcmp(str, "long **") == 0)) {
         static MemberDefinition members_of_long[] = {
-            {MetaType_long, "", 0, false, 1}
+            {Type_long, "", 0, false, 1}
         };
         return(members_of_long);
 
     // float
     } else if((strcmp(str, "float") == 0) || (strcmp(str, "float *") == 0) || (strcmp(str, "float **") == 0)) {
         static MemberDefinition members_of_float[] = {
-            {MetaType_float, "", 0, false, 1}
+            {Type_float, "", 0, false, 1}
         };
         return(members_of_float);
 
     // double
     } else if((strcmp(str, "double") == 0) || (strcmp(str, "double *") == 0) || (strcmp(str, "double **") == 0)) {
         static MemberDefinition members_of_double[] = {
-            {MetaType_double, "", 0, false, 1}
+            {Type_double, "", 0, false, 1}
         };
         return(members_of_double);
 
     // bool
     } else if((strcmp(str, "bool") == 0) || (strcmp(str, "bool *") == 0) || (strcmp(str, "bool **") == 0)) {
         static MemberDefinition members_of_bool[] = {
-            {MetaType_bool, "", 0, false, 1}
+            {Type_bool, "", 0, false, 1}
         };
         return(members_of_bool);
 
@@ -757,40 +973,40 @@ static MemberDefinition *get_members_of_str(char const *str) {
     // V2
     } else if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
         static MemberDefinition members_of_V2[] = {
-            {MetaType_float, "x", offset_of(&_V2::x), false, 1},
-            {MetaType_float, "y", offset_of(&_V2::y), false, 1},
+            {Type_float, "x", offset_of(&_V2::x), false, 1},
+            {Type_float, "y", offset_of(&_V2::y), false, 1},
         };
         return(members_of_V2);
 
     // Transform
     } else if((strcmp(str, "Transform") == 0) || (strcmp(str, "Transform *") == 0) || (strcmp(str, "Transform **") == 0)) {
         static MemberDefinition members_of_Transform[] = {
-            {MetaType_V2, "pos", offset_of(&_Transform::pos), false, 1},
-            {MetaType_V2, "size", offset_of(&_Transform::size), false, 1},
+            {Type_V2, "pos", offset_of(&_Transform::pos), false, 1},
+            {Type_V2, "size", offset_of(&_Transform::size), false, 1},
         };
         return(members_of_Transform);
 
     // Ball
     } else if((strcmp(str, "Ball") == 0) || (strcmp(str, "Ball *") == 0) || (strcmp(str, "Ball **") == 0)) {
         static MemberDefinition members_of_Ball[] = {
-            {MetaType_Transform, "trans", offset_of(&_Ball::trans), false, 1},
-            {MetaType_V2, "speed", offset_of(&_Ball::speed), false, 1},
+            {Type_Transform, "trans", offset_of(&_Ball::trans), false, 1},
+            {Type_V2, "speed", offset_of(&_Ball::speed), false, 1},
         };
         return(members_of_Ball);
 
     // Paddle
     } else if((strcmp(str, "Paddle") == 0) || (strcmp(str, "Paddle *") == 0) || (strcmp(str, "Paddle **") == 0)) {
         static MemberDefinition members_of_Paddle[] = {
-            {MetaType_Transform, "trans", offset_of(&_Paddle::trans), false, 1},
+            {Type_Transform, "trans", offset_of(&_Paddle::trans), false, 1},
         };
         return(members_of_Paddle);
 
     // GameState
     } else if((strcmp(str, "GameState") == 0) || (strcmp(str, "GameState *") == 0) || (strcmp(str, "GameState **") == 0)) {
         static MemberDefinition members_of_GameState[] = {
-            {MetaType_Paddle, "paddle", offset_of(&_GameState::paddle), false, 1},
-            {MetaType_Ball, "ball", offset_of(&_GameState::ball), false, 1},
-            {MetaType_int, "score", offset_of(&_GameState::score), false, 1},
+            {Type_Paddle, "paddle", offset_of(&_GameState::paddle), false, 1},
+            {Type_Ball, "ball", offset_of(&_GameState::ball), false, 1},
+            {Type_int, "score", offset_of(&_GameState::score), false, 1},
         };
         return(members_of_GameState);
     }
@@ -814,18 +1030,6 @@ static int get_number_of_members_str(char const *str) {
     else if(strcmp(str, "GameState") == 0) {return(3);} // GameState
 
     return(-1); // Error.
-}
-
-// Get the number of base types.
-template<typename T> static int get_base_type_count_(void) {
-
-    return(0); // Not found.
-}
-
-// Get the base type.
-template<typename T> static char const *get_base_type_as_string_(int index/*= 0*/) {
-
-    return(0); // Not found.
 }
 
 #define weak_type_compare(A, B) TypeCompare_<pp::Type<A>::weak_type, pp::Type<B>::weak_type>::e;
