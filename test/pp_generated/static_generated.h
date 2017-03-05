@@ -77,8 +77,8 @@ template<typename T> struct TypeInfo {
     using weak_type = T;
     using base = void;
 
-    char const *name;
-    char const *weak_name;
+    char const * const name;
+    char const * const weak_name;
 
     size_t const member_count;
 
@@ -106,6 +106,8 @@ struct MemberIter {
     bool is_ptr;
     int arr;
 };
+
+template<typename T> static MemberDefinition *get_members_of_();
 
 template<typename T>MemberIter get_member_information(T *var, size_t i) {
     pp::MemberDefinition *mems = pp::get_members_of_<T>();
