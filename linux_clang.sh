@@ -13,12 +13,12 @@ FILES=""preprocessor/main.cpp" "preprocessor/utils.cpp" "preprocessor/lexer.cpp"
 
 echo "Building preprocessor"
 if [ "$RELEASE" = "true" ]; then
-    clang++-"$CLANG_VERSION" -Wall -Wextra $FILES -std=c++1y -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl
+    clang++-"$CLANG_VERSION" -Wall -Wextra $FILES -std=c++98 -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=0 -DRUN_TESTS=0 -DINTERNAL=0 -DMEM_CHECK=0 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl
 else
     if [ "$GTEST" = "false" ]; then
-        clang++-"$CLANG_VERSION" -Wall -Wextra $FILES -std=c++1y -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl
+        clang++-"$CLANG_VERSION" -Wall -Wextra $FILES -std=c++98 -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=0 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl
     else
-        clang++-"$CLANG_VERSION" -Wall -Wextra $FILES "preprocessor/test.cpp" "preprocessor/google_test/gtest-all.cc" -std=c++1y -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl -pthread
+        clang++-"$CLANG_VERSION" -Wall -Wextra $FILES "preprocessor/test.cpp" "preprocessor/google_test/gtest-all.cc" -std=c++98 -fno-exceptions -fno-rtti -o preprocessor_exe -DERROR_LOGGING=1 -DRUN_TESTS=1 -DINTERNAL=1 -DMEM_CHECK=1 -DWIN32=0 -DLINUX=1 $WARNINGS -g -ldl -pthread
     fi
 fi
 mv "./preprocessor_exe" "build/preprocessor"
@@ -38,7 +38,8 @@ if [ "$BUILD_TEST_CODE" = "true" ]; then
     "../build/preprocessor" test_code.cpp
     popd
 
-    clang++-"$CLANG_VERSION" -Wall -Wextra "test/test_code.cpp" -std=c++11 -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-private-field -g -ldl
+    clang++-"$CLANG_VERSION" -Wall -Wextra "test/test_code.cpp" -std=c++17
+     -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-private-field -g -ldl
     mv "./test_exe" "build/test"
 fi
 
