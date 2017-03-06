@@ -165,9 +165,18 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
             written_tuple = true;
             PtrSize bytes_written = 0;
             for(Int i = 0; (i < struct_data->member_count); ++i) {
+                Variable *m = struct_data->members + i;
+                char arr_buf[16] = {};
+
+                if(m->array_count > 1) {
+                    stbsp_snprintf(arr_buf, array_count(arr_buf), "[%d]", m->array_count);
+                }
+
                 bytes_written += stbsp_snprintf(tuple_types_buffer + bytes_written, size - bytes_written,
-                                                "%.*s",
-                                                struct_data->members[i].type.len, struct_data->members[i].type.e);
+                                                "%.*s%s%s",
+                                                m->type.len, m->type.e,
+                                                (m->is_ptr) ? " *" : "",
+                                                arr_buf);
 
                 if(i < struct_data->member_count - 1) {
                     bytes_written += stbsp_snprintf(tuple_types_buffer + bytes_written, size - bytes_written, ", ");

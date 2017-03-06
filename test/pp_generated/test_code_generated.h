@@ -530,7 +530,7 @@ template<> struct TypeInfo<Test> {
     using type = Test;
     using weak_type = Test;
     using base = void;
-    using members = std::tuple<V2>;
+    using members = std::tuple<V2[5]>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -550,7 +550,7 @@ template<> struct TypeInfo<Test *> {
     using type = Test *;
     using weak_type = Test;
     using base = void;
-    using members = std::tuple<V2>;
+    using members = std::tuple<V2[5]>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -570,7 +570,7 @@ template<> struct TypeInfo<Test **> {
     using type = Test **;
     using weak_type = Test;
     using base = void;
-    using members = std::tuple<V2>;
+    using members = std::tuple<V2[5]>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -592,7 +592,7 @@ template<> struct TypeInfo<Foo> {
     using type = Foo;
     using weak_type = Foo;
     using base = void;
-    using members = std::tuple<int, float, double, Test>;
+    using members = std::tuple<int *, float[4], double *[4], Test>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -612,7 +612,7 @@ template<> struct TypeInfo<Foo *> {
     using type = Foo *;
     using weak_type = Foo;
     using base = void;
-    using members = std::tuple<int, float, double, Test>;
+    using members = std::tuple<int *, float[4], double *[4], Test>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -632,7 +632,7 @@ template<> struct TypeInfo<Foo **> {
     using type = Foo **;
     using weak_type = Foo;
     using base = void;
-    using members = std::tuple<int, float, double, Test>;
+    using members = std::tuple<int *, float[4], double *[4], Test>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -683,7 +683,7 @@ static size_t get_size_from_str(char const *str) {
     // Recreated structs.
     struct _V2 {  _int x;  _int y;  };
     struct _Test {  _V2 a[5];  };
-    struct _Foo {  _int i;  _float f;  _double d;  _Test t;  };
+    struct _Foo {  _int *i;  _float f[4];  _double *d[4];  _Test t;  };
 
     if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {return(sizeof(_V2));}
     else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {return(sizeof(_Test));}
@@ -785,7 +785,7 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // Recreated structs.
     struct _V2 {  _int x;  _int y;  };
     struct _Test {  _V2 a[5];  };
-    struct _Foo {  _int i;  _float f;  _double d;  _Test t;  };
+    struct _Foo {  _int *i;  _float f[4];  _double *d[4];  _Test t;  };
     // V2
     if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
@@ -804,9 +804,9 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
     // Foo
     } else if(type_compare(T, Foo)) {
         static MemberDefinition members_of_Foo[] = {
-            {Type_int, "i", offset_of(&_Foo::i), false, 1},
-            {Type_float, "f", offset_of(&_Foo::f), false, 1},
-            {Type_double, "d", offset_of(&_Foo::d), false, 1},
+            {Type_int, "i", offset_of(&_Foo::i), true, 1},
+            {Type_float, "f", offset_of(&_Foo::f), false, 4},
+            {Type_double, "d", offset_of(&_Foo::d), true, 4},
             {Type_Test, "t", offset_of(&_Foo::t), false, 1},
         };
         return(members_of_Foo);
@@ -820,7 +820,7 @@ static MemberDefinition *get_members_of_str(char const *str) {
     // Recreated structs.
     struct _V2 {  _int x;  _int y;  };
     struct _Test {  _V2 a[5];  };
-    struct _Foo {  _int i;  _float f;  _double d;  _Test t;  };
+    struct _Foo {  _int *i;  _float f[4];  _double *d[4];  _Test t;  };
     // char
     if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
         static MemberDefinition members_of_char[] = {
@@ -889,9 +889,9 @@ static MemberDefinition *get_members_of_str(char const *str) {
     // Foo
     } else if((strcmp(str, "Foo") == 0) || (strcmp(str, "Foo *") == 0) || (strcmp(str, "Foo **") == 0)) {
         static MemberDefinition members_of_Foo[] = {
-            {Type_int, "i", offset_of(&_Foo::i), false, 1},
-            {Type_float, "f", offset_of(&_Foo::f), false, 1},
-            {Type_double, "d", offset_of(&_Foo::d), false, 1},
+            {Type_int, "i", offset_of(&_Foo::i), true, 1},
+            {Type_float, "f", offset_of(&_Foo::f), false, 4},
+            {Type_double, "d", offset_of(&_Foo::d), true, 4},
             {Type_Test, "t", offset_of(&_Foo::t), false, 1},
         };
         return(members_of_Foo);

@@ -217,7 +217,7 @@ struct Test {
     V2 a[5];
 };
 
-struct Foo { int i; float f; double d; Test t;};
+struct Foo { int *i; float f[4]; double *d[4]; Test t;};
 
 int main(int argc, char **argv) {
 #if 0
@@ -226,7 +226,7 @@ int main(int argc, char **argv) {
     pp::print(test);
 #endif
 
-    static_assert(std::is_same<pp::TypeInfo<Foo>::members,std::tuple<int, float, double, Test>>::value,"");
+    static_assert(std::is_same<pp::TypeInfo<Foo>::members, std::tuple<int *, float[4], double *[4], Test>>::value,"");
 
 
     return(0);
