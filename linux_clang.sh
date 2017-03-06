@@ -38,7 +38,8 @@ if [ "$BUILD_TEST_CODE" = "true" ]; then
     "../build/preprocessor" test_code.cpp
     popd
 
-    clang++-"$CLANG_VERSION" -Wall -Wextra "test/test_code.cpp" -std=c++11 -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl
+    clang++-"$CLANG_VERSION" -Wall -Wextra "test/test_code.cpp" -std=c++17
+     -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-private-field -g -ldl
     mv "./test_exe" "build/test"
 fi
 

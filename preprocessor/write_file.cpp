@@ -168,8 +168,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    using weak_type = %.*s;\n"
                            "    using base = %.*s;\n"
                            "\n"
-                           "    static char * const name;\n"
-                           "    static char * const weak_name;\n"
+                           "    static char const * const name;\n"
+                           "    static char const * const weak_name;\n"
                            "\n"
                            "    static size_t const member_count = %d;\n"
                            "\n"
@@ -179,8 +179,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    TypeInfo<%.*s%s> operator=(TypeInfo<%.*s%s> a) = delete; // To avoid warning 4512 in MSVC.\n"
                            "};\n"
                            "\n"
-                           "char * const TypeInfo<%.*s%s>::name = \"%.*s%s\";\n"
-                           "char * const TypeInfo<%.*s%s>::weak_name = \"%.*s\";\n"
+                           "char const * const TypeInfo<%.*s%s>::name = \"%.*s%s\";\n"
+                           "char const * const TypeInfo<%.*s%s>::weak_name = \"%.*s\";\n"
                            "\n",
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,

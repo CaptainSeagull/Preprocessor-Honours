@@ -37,8 +37,8 @@ template<> struct TypeInfo<char> {
     using weak_type = char;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -48,16 +48,16 @@ template<> struct TypeInfo<char> {
     TypeInfo<char> operator=(TypeInfo<char> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<char>::name = "char";
-char * const TypeInfo<char>::weak_name = "char";
+char const * const TypeInfo<char>::name = "char";
+char const * const TypeInfo<char>::weak_name = "char";
 
 template<> struct TypeInfo<char *> {
     using type = char *;
     using weak_type = char;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -67,16 +67,16 @@ template<> struct TypeInfo<char *> {
     TypeInfo<char *> operator=(TypeInfo<char *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<char *>::name = "char *";
-char * const TypeInfo<char *>::weak_name = "char";
+char const * const TypeInfo<char *>::name = "char *";
+char const * const TypeInfo<char *>::weak_name = "char";
 
 template<> struct TypeInfo<char **> {
     using type = char **;
     using weak_type = char;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -86,8 +86,8 @@ template<> struct TypeInfo<char **> {
     TypeInfo<char **> operator=(TypeInfo<char **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<char **>::name = "char **";
-char * const TypeInfo<char **>::weak_name = "char";
+char const * const TypeInfo<char **>::name = "char **";
+char const * const TypeInfo<char **>::weak_name = "char";
 
 
 // short
@@ -96,8 +96,8 @@ template<> struct TypeInfo<short> {
     using weak_type = short;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -107,16 +107,16 @@ template<> struct TypeInfo<short> {
     TypeInfo<short> operator=(TypeInfo<short> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<short>::name = "short";
-char * const TypeInfo<short>::weak_name = "short";
+char const * const TypeInfo<short>::name = "short";
+char const * const TypeInfo<short>::weak_name = "short";
 
 template<> struct TypeInfo<short *> {
     using type = short *;
     using weak_type = short;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -126,16 +126,16 @@ template<> struct TypeInfo<short *> {
     TypeInfo<short *> operator=(TypeInfo<short *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<short *>::name = "short *";
-char * const TypeInfo<short *>::weak_name = "short";
+char const * const TypeInfo<short *>::name = "short *";
+char const * const TypeInfo<short *>::weak_name = "short";
 
 template<> struct TypeInfo<short **> {
     using type = short **;
     using weak_type = short;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -145,8 +145,8 @@ template<> struct TypeInfo<short **> {
     TypeInfo<short **> operator=(TypeInfo<short **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<short **>::name = "short **";
-char * const TypeInfo<short **>::weak_name = "short";
+char const * const TypeInfo<short **>::name = "short **";
+char const * const TypeInfo<short **>::weak_name = "short";
 
 
 // int
@@ -155,8 +155,8 @@ template<> struct TypeInfo<int> {
     using weak_type = int;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -166,16 +166,16 @@ template<> struct TypeInfo<int> {
     TypeInfo<int> operator=(TypeInfo<int> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<int>::name = "int";
-char * const TypeInfo<int>::weak_name = "int";
+char const * const TypeInfo<int>::name = "int";
+char const * const TypeInfo<int>::weak_name = "int";
 
 template<> struct TypeInfo<int *> {
     using type = int *;
     using weak_type = int;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -185,16 +185,16 @@ template<> struct TypeInfo<int *> {
     TypeInfo<int *> operator=(TypeInfo<int *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<int *>::name = "int *";
-char * const TypeInfo<int *>::weak_name = "int";
+char const * const TypeInfo<int *>::name = "int *";
+char const * const TypeInfo<int *>::weak_name = "int";
 
 template<> struct TypeInfo<int **> {
     using type = int **;
     using weak_type = int;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -204,8 +204,8 @@ template<> struct TypeInfo<int **> {
     TypeInfo<int **> operator=(TypeInfo<int **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<int **>::name = "int **";
-char * const TypeInfo<int **>::weak_name = "int";
+char const * const TypeInfo<int **>::name = "int **";
+char const * const TypeInfo<int **>::weak_name = "int";
 
 
 // long
@@ -214,8 +214,8 @@ template<> struct TypeInfo<long> {
     using weak_type = long;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -225,16 +225,16 @@ template<> struct TypeInfo<long> {
     TypeInfo<long> operator=(TypeInfo<long> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<long>::name = "long";
-char * const TypeInfo<long>::weak_name = "long";
+char const * const TypeInfo<long>::name = "long";
+char const * const TypeInfo<long>::weak_name = "long";
 
 template<> struct TypeInfo<long *> {
     using type = long *;
     using weak_type = long;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -244,16 +244,16 @@ template<> struct TypeInfo<long *> {
     TypeInfo<long *> operator=(TypeInfo<long *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<long *>::name = "long *";
-char * const TypeInfo<long *>::weak_name = "long";
+char const * const TypeInfo<long *>::name = "long *";
+char const * const TypeInfo<long *>::weak_name = "long";
 
 template<> struct TypeInfo<long **> {
     using type = long **;
     using weak_type = long;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -263,8 +263,8 @@ template<> struct TypeInfo<long **> {
     TypeInfo<long **> operator=(TypeInfo<long **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<long **>::name = "long **";
-char * const TypeInfo<long **>::weak_name = "long";
+char const * const TypeInfo<long **>::name = "long **";
+char const * const TypeInfo<long **>::weak_name = "long";
 
 
 // float
@@ -273,8 +273,8 @@ template<> struct TypeInfo<float> {
     using weak_type = float;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -284,16 +284,16 @@ template<> struct TypeInfo<float> {
     TypeInfo<float> operator=(TypeInfo<float> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<float>::name = "float";
-char * const TypeInfo<float>::weak_name = "float";
+char const * const TypeInfo<float>::name = "float";
+char const * const TypeInfo<float>::weak_name = "float";
 
 template<> struct TypeInfo<float *> {
     using type = float *;
     using weak_type = float;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -303,16 +303,16 @@ template<> struct TypeInfo<float *> {
     TypeInfo<float *> operator=(TypeInfo<float *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<float *>::name = "float *";
-char * const TypeInfo<float *>::weak_name = "float";
+char const * const TypeInfo<float *>::name = "float *";
+char const * const TypeInfo<float *>::weak_name = "float";
 
 template<> struct TypeInfo<float **> {
     using type = float **;
     using weak_type = float;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -322,8 +322,8 @@ template<> struct TypeInfo<float **> {
     TypeInfo<float **> operator=(TypeInfo<float **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<float **>::name = "float **";
-char * const TypeInfo<float **>::weak_name = "float";
+char const * const TypeInfo<float **>::name = "float **";
+char const * const TypeInfo<float **>::weak_name = "float";
 
 
 // double
@@ -332,8 +332,8 @@ template<> struct TypeInfo<double> {
     using weak_type = double;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -343,16 +343,16 @@ template<> struct TypeInfo<double> {
     TypeInfo<double> operator=(TypeInfo<double> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<double>::name = "double";
-char * const TypeInfo<double>::weak_name = "double";
+char const * const TypeInfo<double>::name = "double";
+char const * const TypeInfo<double>::weak_name = "double";
 
 template<> struct TypeInfo<double *> {
     using type = double *;
     using weak_type = double;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -362,16 +362,16 @@ template<> struct TypeInfo<double *> {
     TypeInfo<double *> operator=(TypeInfo<double *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<double *>::name = "double *";
-char * const TypeInfo<double *>::weak_name = "double";
+char const * const TypeInfo<double *>::name = "double *";
+char const * const TypeInfo<double *>::weak_name = "double";
 
 template<> struct TypeInfo<double **> {
     using type = double **;
     using weak_type = double;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -381,8 +381,8 @@ template<> struct TypeInfo<double **> {
     TypeInfo<double **> operator=(TypeInfo<double **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<double **>::name = "double **";
-char * const TypeInfo<double **>::weak_name = "double";
+char const * const TypeInfo<double **>::name = "double **";
+char const * const TypeInfo<double **>::weak_name = "double";
 
 
 // bool
@@ -391,8 +391,8 @@ template<> struct TypeInfo<bool> {
     using weak_type = bool;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -402,16 +402,16 @@ template<> struct TypeInfo<bool> {
     TypeInfo<bool> operator=(TypeInfo<bool> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<bool>::name = "bool";
-char * const TypeInfo<bool>::weak_name = "bool";
+char const * const TypeInfo<bool>::name = "bool";
+char const * const TypeInfo<bool>::weak_name = "bool";
 
 template<> struct TypeInfo<bool *> {
     using type = bool *;
     using weak_type = bool;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -421,16 +421,16 @@ template<> struct TypeInfo<bool *> {
     TypeInfo<bool *> operator=(TypeInfo<bool *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<bool *>::name = "bool *";
-char * const TypeInfo<bool *>::weak_name = "bool";
+char const * const TypeInfo<bool *>::name = "bool *";
+char const * const TypeInfo<bool *>::weak_name = "bool";
 
 template<> struct TypeInfo<bool **> {
     using type = bool **;
     using weak_type = bool;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -440,8 +440,8 @@ template<> struct TypeInfo<bool **> {
     TypeInfo<bool **> operator=(TypeInfo<bool **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<bool **>::name = "bool **";
-char * const TypeInfo<bool **>::weak_name = "bool";
+char const * const TypeInfo<bool **>::name = "bool **";
+char const * const TypeInfo<bool **>::weak_name = "bool";
 
 
 // Struct
@@ -450,8 +450,8 @@ template<> struct TypeInfo<Struct> {
     using weak_type = Struct;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 2;
 
@@ -461,16 +461,16 @@ template<> struct TypeInfo<Struct> {
     TypeInfo<Struct> operator=(TypeInfo<Struct> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Struct>::name = "Struct";
-char * const TypeInfo<Struct>::weak_name = "Struct";
+char const * const TypeInfo<Struct>::name = "Struct";
+char const * const TypeInfo<Struct>::weak_name = "Struct";
 
 template<> struct TypeInfo<Struct *> {
     using type = Struct *;
     using weak_type = Struct;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 2;
 
@@ -480,16 +480,16 @@ template<> struct TypeInfo<Struct *> {
     TypeInfo<Struct *> operator=(TypeInfo<Struct *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Struct *>::name = "Struct *";
-char * const TypeInfo<Struct *>::weak_name = "Struct";
+char const * const TypeInfo<Struct *>::name = "Struct *";
+char const * const TypeInfo<Struct *>::weak_name = "Struct";
 
 template<> struct TypeInfo<Struct **> {
     using type = Struct **;
     using weak_type = Struct;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 2;
 
@@ -499,8 +499,8 @@ template<> struct TypeInfo<Struct **> {
     TypeInfo<Struct **> operator=(TypeInfo<Struct **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Struct **>::name = "Struct **";
-char * const TypeInfo<Struct **>::weak_name = "Struct";
+char const * const TypeInfo<Struct **>::name = "Struct **";
+char const * const TypeInfo<Struct **>::weak_name = "Struct";
 
 
 // Vector2d
@@ -509,8 +509,8 @@ template<> struct TypeInfo<Vector2d> {
     using weak_type = Vector2d;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 2;
 
@@ -520,16 +520,16 @@ template<> struct TypeInfo<Vector2d> {
     TypeInfo<Vector2d> operator=(TypeInfo<Vector2d> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Vector2d>::name = "Vector2d";
-char * const TypeInfo<Vector2d>::weak_name = "Vector2d";
+char const * const TypeInfo<Vector2d>::name = "Vector2d";
+char const * const TypeInfo<Vector2d>::weak_name = "Vector2d";
 
 template<> struct TypeInfo<Vector2d *> {
     using type = Vector2d *;
     using weak_type = Vector2d;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 2;
 
@@ -539,16 +539,16 @@ template<> struct TypeInfo<Vector2d *> {
     TypeInfo<Vector2d *> operator=(TypeInfo<Vector2d *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Vector2d *>::name = "Vector2d *";
-char * const TypeInfo<Vector2d *>::weak_name = "Vector2d";
+char const * const TypeInfo<Vector2d *>::name = "Vector2d *";
+char const * const TypeInfo<Vector2d *>::weak_name = "Vector2d";
 
 template<> struct TypeInfo<Vector2d **> {
     using type = Vector2d **;
     using weak_type = Vector2d;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 2;
 
@@ -558,8 +558,8 @@ template<> struct TypeInfo<Vector2d **> {
     TypeInfo<Vector2d **> operator=(TypeInfo<Vector2d **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Vector2d **>::name = "Vector2d **";
-char * const TypeInfo<Vector2d **>::weak_name = "Vector2d";
+char const * const TypeInfo<Vector2d **>::name = "Vector2d **";
+char const * const TypeInfo<Vector2d **>::weak_name = "Vector2d";
 
 
 // Test
@@ -568,8 +568,8 @@ template<> struct TypeInfo<Test> {
     using weak_type = Test;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 4;
 
@@ -579,16 +579,16 @@ template<> struct TypeInfo<Test> {
     TypeInfo<Test> operator=(TypeInfo<Test> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Test>::name = "Test";
-char * const TypeInfo<Test>::weak_name = "Test";
+char const * const TypeInfo<Test>::name = "Test";
+char const * const TypeInfo<Test>::weak_name = "Test";
 
 template<> struct TypeInfo<Test *> {
     using type = Test *;
     using weak_type = Test;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 4;
 
@@ -598,16 +598,16 @@ template<> struct TypeInfo<Test *> {
     TypeInfo<Test *> operator=(TypeInfo<Test *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Test *>::name = "Test *";
-char * const TypeInfo<Test *>::weak_name = "Test";
+char const * const TypeInfo<Test *>::name = "Test *";
+char const * const TypeInfo<Test *>::weak_name = "Test";
 
 template<> struct TypeInfo<Test **> {
     using type = Test **;
     using weak_type = Test;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 4;
 
@@ -617,8 +617,8 @@ template<> struct TypeInfo<Test **> {
     TypeInfo<Test **> operator=(TypeInfo<Test **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Test **>::name = "Test **";
-char * const TypeInfo<Test **>::weak_name = "Test";
+char const * const TypeInfo<Test **>::name = "Test **";
+char const * const TypeInfo<Test **>::weak_name = "Test";
 
 
 // Foo
@@ -627,8 +627,8 @@ template<> struct TypeInfo<Foo> {
     using weak_type = Foo;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -638,16 +638,16 @@ template<> struct TypeInfo<Foo> {
     TypeInfo<Foo> operator=(TypeInfo<Foo> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Foo>::name = "Foo";
-char * const TypeInfo<Foo>::weak_name = "Foo";
+char const * const TypeInfo<Foo>::name = "Foo";
+char const * const TypeInfo<Foo>::weak_name = "Foo";
 
 template<> struct TypeInfo<Foo *> {
     using type = Foo *;
     using weak_type = Foo;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -657,16 +657,16 @@ template<> struct TypeInfo<Foo *> {
     TypeInfo<Foo *> operator=(TypeInfo<Foo *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Foo *>::name = "Foo *";
-char * const TypeInfo<Foo *>::weak_name = "Foo";
+char const * const TypeInfo<Foo *>::name = "Foo *";
+char const * const TypeInfo<Foo *>::weak_name = "Foo";
 
 template<> struct TypeInfo<Foo **> {
     using type = Foo **;
     using weak_type = Foo;
     using base = void;
 
-    static char * const name;
-    static char * const weak_name;
+    static char const * const name;
+    static char const * const weak_name;
 
     static size_t const member_count = 0;
 
@@ -676,8 +676,8 @@ template<> struct TypeInfo<Foo **> {
     TypeInfo<Foo **> operator=(TypeInfo<Foo **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char * const TypeInfo<Foo **>::name = "Foo **";
-char * const TypeInfo<Foo **>::weak_name = "Foo";
+char const * const TypeInfo<Foo **>::name = "Foo **";
+char const * const TypeInfo<Foo **>::weak_name = "Foo";
 
 static bool is_meta_type_container(int type) {
     if(type == Type_char) {return(false);} // false
