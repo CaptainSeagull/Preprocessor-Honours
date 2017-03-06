@@ -206,89 +206,103 @@ public:
 
 #endif
 
-class Struct {
-    char const *text;
-    int length;
-};
-
 #include "pp_generated/test_code_generated.h"
-#include <iostream>
-
-class Vector2d {
-public:
-    int x, y;
-
-    void operator++() {
-        ++x; ++y;
-    }
-};
+#include <windows.h>
 
 class Test {
 public:
-    int a;
-    int b;
-    float c;
-    Vector2d d;
+    int *integer[32];
 };
 
-struct Foo {};
-
-
 int main(int argc, char **argv) {
-    Test test;
-    test.a = 1;
-    test.b = 2;
-    test.c = 3.5f;
-    test.d = {4, 5};
+    Test test = {};
 
-    std::cout << "Before";
-    pp::print(test);
+    __try {
 
-    for(int i = 0; (i < pp::TypeInfo<decltype(test)>::member_count); ++i) {
-        pp::MemberIter member_iter = pp::get_member_information(&test, i);
+        for(int i = 0; (i < 32); ++i) {
+            if(i == 15) continue; // Skip 15 for this example, so it should be NULL.
 
-        switch(member_iter.type) {
-            case pp::Type_int: {
-                int &member = *(int *)member_iter.ptr;
-                ++member;
-            } break;
-
-            case pp::Type_Vector2d: {
-                Vector2d &member = *(Vector2d *)member_iter.ptr;
-                ++member;
-            } break;
-
-            case pp::Type_float: {
-                float &member = *(float *)member_iter.ptr;
-                ++member;
-            } break;
+            test.integer[i] = new int;
+            *test.integer[i] = i;
         }
+
+        for(int i = 0; (i < 32); ++i) {
+            ++(*test.integer[i]);
+        }
+
+    } __except(1) {
+        size_t const buffer_size = 1024;
+        char *buffer = new char[buffer_size];
+
+        pp::serialize(test, buffer, buffer_size);
+
+        FILE *file = fopen("test_output.txt", "wb");
+        if(file) {
+            fwrite(buffer, 1, buffer_size, file);
+            fclose(file);
+        }
+
+        delete buffer;
     }
 
-    std::cout << std::endl << "After";
-    pp::print(test);
-
-    /* The code will print the following:
-        "Before
-         Test test
-             int a = 1
-             int b = 2
-             float c = 3.500000
-             Vector2d d
-                 int x = 4
-                 int y = 5
-
-        After
-        Test test
-            int a = 2
-            int b = 3
-            float c = 4.500000
-            Vector2d d
-                int x = 5
-                int y = 6"*/
 
     return(0);
 }
+
+
+#if 0
+Test test;
+test.a = 1;
+test.b = 2;
+test.c = 3.5f;
+test.d = {4, 5};
+
+std::cout << "Before";
+pp::print(test);
+
+for(int i = 0; (i < pp::TypeInfo<decltype(test)>::member_count); ++i) {
+    pp::MemberIter member_iter = pp::get_member_information(&test, i);
+
+    switch(member_iter.type) {
+        case pp::Type_int: {
+            int &member = *(int *)member_iter.ptr;
+            ++member;
+        } break;
+
+        case pp::Type_Vector2d: {
+            Vector2d &member = *(Vector2d *)member_iter.ptr;
+            ++member;
+        } break;
+
+        case pp::Type_float: {
+            float &member = *(float *)member_iter.ptr;
+            ++member;
+        } break;
+    }
+}
+
+std::cout << std::endl << "After";
+pp::print(test);
+
+/* The code will print the following:
+    "Before
+     Test test
+         int a = 1
+         int b = 2
+         float c = 3.500000
+         Vector2d d
+             int x = 4
+             int y = 5
+
+    After
+    Test test
+        int a = 2
+        int b = 3
+        float c = 4.500000
+        Vector2d d
+            int x = 5
+            int y = 6"*/
+#endif
 
 
 
