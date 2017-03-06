@@ -958,15 +958,17 @@ internal Void write_get_number_of_members_str(OutputBuffer *ob, StructData *stru
     for(Int i = 0, cnt = array_count(prim); (i < cnt); ++i) {
         String *p = prim + i;
 
-        if(i == 0) {
-            write_to_output_buffer(ob,
-                                   "    if(strcmp(str, \"%.*s\") == 0) {return(1);}\n",
-                                   p->len, p->e);
+        if(!i) {
+            write_to_output_buffer(ob, "    ");
         } else {
-            write_to_output_buffer(ob,
-                                   "    else if(strcmp(str, \"%.*s\") == 0) {return(1);}\n",
-                                   p->len, p->e);
+            write_to_output_buffer(ob, "    else ");
         }
+
+        write_to_output_buffer(ob,
+                               "if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s *\") == 0) || (strcmp(str, \"%.*s **\") == 0)) {return(1);}\n",
+                               p->len, p->e,
+                               p->len, p->e,
+                               p->len, p->e);
     }
 
     for(Int i = 0; (i < struct_count); ++i) {
@@ -982,8 +984,11 @@ internal Void write_get_number_of_members_str(OutputBuffer *ob, StructData *stru
         }
 
         write_to_output_buffer(ob,
-                               "    else if(strcmp(str, \"%.*s\") == 0) {return(%d);} // %.*s\n",
-                               sd->name.len, sd->name.e, member_count, sd->name.len, sd->name.e);
+                               "    else if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s *\") == 0) || (strcmp(str, \"%.*s **\") == 0)) {return(%d);}\n",
+                               sd->name.len, sd->name.e,
+                               sd->name.len, sd->name.e,
+                               sd->name.len, sd->name.e,
+                               member_count);
     }
 
     write_to_output_buffer(ob,
