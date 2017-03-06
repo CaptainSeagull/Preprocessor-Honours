@@ -76,6 +76,7 @@ template<typename T> struct TypeInfo {
     using type = T;
     using weak_type = T;
     using base = void;
+    using members = std::tuple<void>;
 
     char const * const name;
     char const * const weak_name;

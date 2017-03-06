@@ -207,43 +207,26 @@ public:
 #endif
 
 #include "pp_generated/test_code_generated.h"
-#include <windows.h>
+#include <tuple>
 
-class Test {
-public:
-    int *integer[32];
+struct V2 {
+    int x, y;
 };
 
+struct Test {
+    V2 a[5];
+};
+
+struct Foo { int i; float f; double d; Test t;};
+
 int main(int argc, char **argv) {
+#if 0
     Test test = {};
+    for(int i = 0; (i < 5); ++i) test.a[i] = {i, i * 2};
+    pp::print(test);
+#endif
 
-    __try {
-
-        for(int i = 0; (i < 32); ++i) {
-            if(i == 15) continue; // Skip 15 for this example, so it should be NULL.
-
-            test.integer[i] = new int;
-            *test.integer[i] = i;
-        }
-
-        for(int i = 0; (i < 32); ++i) {
-            ++(*test.integer[i]);
-        }
-
-    } __except(1) {
-        size_t const buffer_size = 1024;
-        char *buffer = new char[buffer_size];
-
-        pp::serialize(test, buffer, buffer_size);
-
-        FILE *file = fopen("test_output.txt", "wb");
-        if(file) {
-            fwrite(buffer, 1, buffer_size, file);
-            fclose(file);
-        }
-
-        delete buffer;
-    }
+    static_assert(std::is_same<pp::TypeInfo<Foo>::members,std::tuple<int, float, double, Test>>::value,"");
 
 
     return(0);

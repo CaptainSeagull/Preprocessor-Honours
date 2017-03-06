@@ -2,9 +2,8 @@
 #define TEST_CODE_GENERATED_H
 
 // Forward declared structs (these must be declared outside the namespace...)
-class Struct;
-class Vector2d;
-class Test;
+struct V2;
+struct Test;
 struct Foo;
 
 #define _std std // TODO(Jonny): This is really stupid...
@@ -18,8 +17,7 @@ namespace pp { enum Type {
     Type_float,
     Type_double,
     Type_bool,
-    Type_Struct,
-    Type_Vector2d,
+    Type_V2,
     Type_Test,
     Type_Foo,
 }; }
@@ -36,6 +34,7 @@ template<> struct TypeInfo<char> {
     using type = char;
     using weak_type = char;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -55,6 +54,7 @@ template<> struct TypeInfo<char *> {
     using type = char *;
     using weak_type = char;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -74,6 +74,7 @@ template<> struct TypeInfo<char **> {
     using type = char **;
     using weak_type = char;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -95,6 +96,7 @@ template<> struct TypeInfo<short> {
     using type = short;
     using weak_type = short;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -114,6 +116,7 @@ template<> struct TypeInfo<short *> {
     using type = short *;
     using weak_type = short;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -133,6 +136,7 @@ template<> struct TypeInfo<short **> {
     using type = short **;
     using weak_type = short;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -154,6 +158,7 @@ template<> struct TypeInfo<int> {
     using type = int;
     using weak_type = int;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -173,6 +178,7 @@ template<> struct TypeInfo<int *> {
     using type = int *;
     using weak_type = int;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -192,6 +198,7 @@ template<> struct TypeInfo<int **> {
     using type = int **;
     using weak_type = int;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -213,6 +220,7 @@ template<> struct TypeInfo<long> {
     using type = long;
     using weak_type = long;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -232,6 +240,7 @@ template<> struct TypeInfo<long *> {
     using type = long *;
     using weak_type = long;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -251,6 +260,7 @@ template<> struct TypeInfo<long **> {
     using type = long **;
     using weak_type = long;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -272,6 +282,7 @@ template<> struct TypeInfo<float> {
     using type = float;
     using weak_type = float;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -291,6 +302,7 @@ template<> struct TypeInfo<float *> {
     using type = float *;
     using weak_type = float;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -310,6 +322,7 @@ template<> struct TypeInfo<float **> {
     using type = float **;
     using weak_type = float;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -331,6 +344,7 @@ template<> struct TypeInfo<double> {
     using type = double;
     using weak_type = double;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -350,6 +364,7 @@ template<> struct TypeInfo<double *> {
     using type = double *;
     using weak_type = double;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -369,6 +384,7 @@ template<> struct TypeInfo<double **> {
     using type = double **;
     using weak_type = double;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -390,6 +406,7 @@ template<> struct TypeInfo<bool> {
     using type = bool;
     using weak_type = bool;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -409,6 +426,7 @@ template<> struct TypeInfo<bool *> {
     using type = bool *;
     using weak_type = bool;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -428,6 +446,7 @@ template<> struct TypeInfo<bool **> {
     using type = bool **;
     using weak_type = bool;
     using base = void;
+    using members = std::tuple<void>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -444,11 +463,12 @@ char const * const TypeInfo<bool **>::name = "bool **";
 char const * const TypeInfo<bool **>::weak_name = "bool";
 
 
-// Struct
-template<> struct TypeInfo<Struct> {
-    using type = Struct;
-    using weak_type = Struct;
+// V2
+template<> struct TypeInfo<V2> {
+    using type = V2;
+    using weak_type = V2;
     using base = void;
+    using members = std::tuple<int, int>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -458,16 +478,17 @@ template<> struct TypeInfo<Struct> {
     static bool const is_ptr = false;
     static size_t const base_count = 0;
 
-    TypeInfo<Struct> operator=(TypeInfo<Struct> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<V2> operator=(TypeInfo<V2> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char const * const TypeInfo<Struct>::name = "Struct";
-char const * const TypeInfo<Struct>::weak_name = "Struct";
+char const * const TypeInfo<V2>::name = "V2";
+char const * const TypeInfo<V2>::weak_name = "V2";
 
-template<> struct TypeInfo<Struct *> {
-    using type = Struct *;
-    using weak_type = Struct;
+template<> struct TypeInfo<V2 *> {
+    using type = V2 *;
+    using weak_type = V2;
     using base = void;
+    using members = std::tuple<int, int>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -477,16 +498,17 @@ template<> struct TypeInfo<Struct *> {
     static bool const is_ptr = true;
     static size_t const base_count = 0;
 
-    TypeInfo<Struct *> operator=(TypeInfo<Struct *> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<V2 *> operator=(TypeInfo<V2 *> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char const * const TypeInfo<Struct *>::name = "Struct *";
-char const * const TypeInfo<Struct *>::weak_name = "Struct";
+char const * const TypeInfo<V2 *>::name = "V2 *";
+char const * const TypeInfo<V2 *>::weak_name = "V2";
 
-template<> struct TypeInfo<Struct **> {
-    using type = Struct **;
-    using weak_type = Struct;
+template<> struct TypeInfo<V2 **> {
+    using type = V2 **;
+    using weak_type = V2;
     using base = void;
+    using members = std::tuple<int, int>;
 
     static char const * const name;
     static char const * const weak_name;
@@ -496,70 +518,11 @@ template<> struct TypeInfo<Struct **> {
     static bool const is_ptr = true;
     static size_t const base_count = 0;
 
-    TypeInfo<Struct **> operator=(TypeInfo<Struct **> a) = delete; // To avoid warning 4512 in MSVC.
+    TypeInfo<V2 **> operator=(TypeInfo<V2 **> a) = delete; // To avoid warning 4512 in MSVC.
 };
 
-char const * const TypeInfo<Struct **>::name = "Struct **";
-char const * const TypeInfo<Struct **>::weak_name = "Struct";
-
-
-// Vector2d
-template<> struct TypeInfo<Vector2d> {
-    using type = Vector2d;
-    using weak_type = Vector2d;
-    using base = void;
-
-    static char const * const name;
-    static char const * const weak_name;
-
-    static size_t const member_count = 2;
-
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<Vector2d> operator=(TypeInfo<Vector2d> a) = delete; // To avoid warning 4512 in MSVC.
-};
-
-char const * const TypeInfo<Vector2d>::name = "Vector2d";
-char const * const TypeInfo<Vector2d>::weak_name = "Vector2d";
-
-template<> struct TypeInfo<Vector2d *> {
-    using type = Vector2d *;
-    using weak_type = Vector2d;
-    using base = void;
-
-    static char const * const name;
-    static char const * const weak_name;
-
-    static size_t const member_count = 2;
-
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Vector2d *> operator=(TypeInfo<Vector2d *> a) = delete; // To avoid warning 4512 in MSVC.
-};
-
-char const * const TypeInfo<Vector2d *>::name = "Vector2d *";
-char const * const TypeInfo<Vector2d *>::weak_name = "Vector2d";
-
-template<> struct TypeInfo<Vector2d **> {
-    using type = Vector2d **;
-    using weak_type = Vector2d;
-    using base = void;
-
-    static char const * const name;
-    static char const * const weak_name;
-
-    static size_t const member_count = 2;
-
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Vector2d **> operator=(TypeInfo<Vector2d **> a) = delete; // To avoid warning 4512 in MSVC.
-};
-
-char const * const TypeInfo<Vector2d **>::name = "Vector2d **";
-char const * const TypeInfo<Vector2d **>::weak_name = "Vector2d";
+char const * const TypeInfo<V2 **>::name = "V2 **";
+char const * const TypeInfo<V2 **>::weak_name = "V2";
 
 
 // Test
@@ -567,11 +530,12 @@ template<> struct TypeInfo<Test> {
     using type = Test;
     using weak_type = Test;
     using base = void;
+    using members = std::tuple<V2>;
 
     static char const * const name;
     static char const * const weak_name;
 
-    static size_t const member_count = 4;
+    static size_t const member_count = 1;
 
     static bool const is_ptr = false;
     static size_t const base_count = 0;
@@ -586,11 +550,12 @@ template<> struct TypeInfo<Test *> {
     using type = Test *;
     using weak_type = Test;
     using base = void;
+    using members = std::tuple<V2>;
 
     static char const * const name;
     static char const * const weak_name;
 
-    static size_t const member_count = 4;
+    static size_t const member_count = 1;
 
     static bool const is_ptr = true;
     static size_t const base_count = 0;
@@ -605,11 +570,12 @@ template<> struct TypeInfo<Test **> {
     using type = Test **;
     using weak_type = Test;
     using base = void;
+    using members = std::tuple<V2>;
 
     static char const * const name;
     static char const * const weak_name;
 
-    static size_t const member_count = 4;
+    static size_t const member_count = 1;
 
     static bool const is_ptr = true;
     static size_t const base_count = 0;
@@ -626,11 +592,12 @@ template<> struct TypeInfo<Foo> {
     using type = Foo;
     using weak_type = Foo;
     using base = void;
+    using members = std::tuple<int, float, double, Test>;
 
     static char const * const name;
     static char const * const weak_name;
 
-    static size_t const member_count = 0;
+    static size_t const member_count = 4;
 
     static bool const is_ptr = false;
     static size_t const base_count = 0;
@@ -645,11 +612,12 @@ template<> struct TypeInfo<Foo *> {
     using type = Foo *;
     using weak_type = Foo;
     using base = void;
+    using members = std::tuple<int, float, double, Test>;
 
     static char const * const name;
     static char const * const weak_name;
 
-    static size_t const member_count = 0;
+    static size_t const member_count = 4;
 
     static bool const is_ptr = true;
     static size_t const base_count = 0;
@@ -664,11 +632,12 @@ template<> struct TypeInfo<Foo **> {
     using type = Foo **;
     using weak_type = Foo;
     using base = void;
+    using members = std::tuple<int, float, double, Test>;
 
     static char const * const name;
     static char const * const weak_name;
 
-    static size_t const member_count = 0;
+    static size_t const member_count = 4;
 
     static bool const is_ptr = true;
     static size_t const base_count = 0;
@@ -687,8 +656,7 @@ static bool is_meta_type_container(int type) {
     else if(type == Type_float) {return(false);} // false
     else if(type == Type_double) {return(false);} // false
     else if(type == Type_bool) {return(false);} // false
-    else if(type == Type_Struct) {return(false);} // false
-    else if(type == Type_Vector2d) {return(false);} // false
+    else if(type == Type_V2) {return(false);} // false
     else if(type == Type_Test) {return(false);} // false
     else if(type == Type_Foo) {return(false);} // false
 
@@ -697,12 +665,9 @@ static bool is_meta_type_container(int type) {
     return(0);
 }
 static char const * meta_type_to_name(Type mt, bool is_ptr) {
-    if(mt == Type_Struct) {
-        if(is_ptr) {return("Struct *");}
-        else       {return("Struct");  }
-    } else if(mt == Type_Vector2d) {
-        if(is_ptr) {return("Vector2d *");}
-        else       {return("Vector2d");  }
+    if(mt == Type_V2) {
+        if(is_ptr) {return("V2 *");}
+        else       {return("V2");  }
     } else if(mt == Type_Test) {
         if(is_ptr) {return("Test *");}
         else       {return("Test");  }
@@ -713,6 +678,18 @@ static char const * meta_type_to_name(Type mt, bool is_ptr) {
 
     assert(0); 
     return(0); // Not found
+}
+static size_t get_size_from_str(char const *str) {
+    // Recreated structs.
+    struct _V2 {  _int x;  _int y;  };
+    struct _Test {  _V2 a[5];  };
+    struct _Foo {  _int i;  _float f;  _double d;  _Test t;  };
+
+    if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {return(sizeof(_V2));}
+    else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {return(sizeof(_Test));}
+    else if((strcmp(str, "Foo") == 0) || (strcmp(str, "Foo *") == 0) || (strcmp(str, "Foo **") == 0)) {return(sizeof(_Foo));}
+
+    return(0); // Not found.
 }
 // Function to serialize a struct to a char array buffer.
 static size_t
@@ -785,7 +762,15 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
                     } else {
                         char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);
-                        bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        if(!member->arr_size) {
+                            bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            for(int j = 0; (j < member->arr_size); ++j) {
+                                size_t size_of_struct = get_size_from_str(struct_name);
+                                char unsigned *ptr = ((char unsigned *)member_ptr + (j * size_of_struct));
+                                bytes_written = serialize_struct_(ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        }
                     }
                 } break; // default 
             }
@@ -798,35 +783,33 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
     // Recreated structs.
-    struct _Struct {  _char *text;  _int length;  };
-    struct _Vector2d {  _int x;  _int y;  };
-    struct _Test {  _int a;  _int b;  _float c;  _Vector2d d;  };
-    struct _Foo {  };
-    // Struct
-    if(type_compare(T, Struct)) {
-        static MemberDefinition members_of_Struct[] = {
-            {Type_char, "text", offset_of(&_Struct::text), true, 1},
-            {Type_int, "length", offset_of(&_Struct::length), false, 1},
+    struct _V2 {  _int x;  _int y;  };
+    struct _Test {  _V2 a[5];  };
+    struct _Foo {  _int i;  _float f;  _double d;  _Test t;  };
+    // V2
+    if(type_compare(T, V2)) {
+        static MemberDefinition members_of_V2[] = {
+            {Type_int, "x", offset_of(&_V2::x), false, 1},
+            {Type_int, "y", offset_of(&_V2::y), false, 1},
         };
-        return(members_of_Struct);
-
-    // Vector2d
-    } else if(type_compare(T, Vector2d)) {
-        static MemberDefinition members_of_Vector2d[] = {
-            {Type_int, "x", offset_of(&_Vector2d::x), false, 1},
-            {Type_int, "y", offset_of(&_Vector2d::y), false, 1},
-        };
-        return(members_of_Vector2d);
+        return(members_of_V2);
 
     // Test
     } else if(type_compare(T, Test)) {
         static MemberDefinition members_of_Test[] = {
-            {Type_int, "a", offset_of(&_Test::a), false, 1},
-            {Type_int, "b", offset_of(&_Test::b), false, 1},
-            {Type_float, "c", offset_of(&_Test::c), false, 1},
-            {Type_Vector2d, "d", offset_of(&_Test::d), false, 1},
+            {Type_V2, "a", offset_of(&_Test::a), false, 5},
         };
         return(members_of_Test);
+
+    // Foo
+    } else if(type_compare(T, Foo)) {
+        static MemberDefinition members_of_Foo[] = {
+            {Type_int, "i", offset_of(&_Foo::i), false, 1},
+            {Type_float, "f", offset_of(&_Foo::f), false, 1},
+            {Type_double, "d", offset_of(&_Foo::d), false, 1},
+            {Type_Test, "t", offset_of(&_Foo::t), false, 1},
+        };
+        return(members_of_Foo);
     }
 
     return(0); // Error.
@@ -835,10 +818,9 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
     // Recreated structs.
-    struct _Struct {  _char *text;  _int length;  };
-    struct _Vector2d {  _int x;  _int y;  };
-    struct _Test {  _int a;  _int b;  _float c;  _Vector2d d;  };
-    struct _Foo {  };
+    struct _V2 {  _int x;  _int y;  };
+    struct _Test {  _V2 a[5];  };
+    struct _Foo {  _int i;  _float f;  _double d;  _Test t;  };
     // char
     if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
         static MemberDefinition members_of_char[] = {
@@ -889,31 +871,30 @@ static MemberDefinition *get_members_of_str(char const *str) {
         return(members_of_bool);
 
 
-    // Struct
-    } else if((strcmp(str, "Struct") == 0) || (strcmp(str, "Struct *") == 0) || (strcmp(str, "Struct **") == 0)) {
-        static MemberDefinition members_of_Struct[] = {
-            {Type_char, "text", offset_of(&_Struct::text), true, 1},
-            {Type_int, "length", offset_of(&_Struct::length), false, 1},
+    // V2
+    } else if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {
+        static MemberDefinition members_of_V2[] = {
+            {Type_int, "x", offset_of(&_V2::x), false, 1},
+            {Type_int, "y", offset_of(&_V2::y), false, 1},
         };
-        return(members_of_Struct);
-
-    // Vector2d
-    } else if((strcmp(str, "Vector2d") == 0) || (strcmp(str, "Vector2d *") == 0) || (strcmp(str, "Vector2d **") == 0)) {
-        static MemberDefinition members_of_Vector2d[] = {
-            {Type_int, "x", offset_of(&_Vector2d::x), false, 1},
-            {Type_int, "y", offset_of(&_Vector2d::y), false, 1},
-        };
-        return(members_of_Vector2d);
+        return(members_of_V2);
 
     // Test
     } else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {
         static MemberDefinition members_of_Test[] = {
-            {Type_int, "a", offset_of(&_Test::a), false, 1},
-            {Type_int, "b", offset_of(&_Test::b), false, 1},
-            {Type_float, "c", offset_of(&_Test::c), false, 1},
-            {Type_Vector2d, "d", offset_of(&_Test::d), false, 1},
+            {Type_V2, "a", offset_of(&_Test::a), false, 5},
         };
         return(members_of_Test);
+
+    // Foo
+    } else if((strcmp(str, "Foo") == 0) || (strcmp(str, "Foo *") == 0) || (strcmp(str, "Foo **") == 0)) {
+        static MemberDefinition members_of_Foo[] = {
+            {Type_int, "i", offset_of(&_Foo::i), false, 1},
+            {Type_float, "f", offset_of(&_Foo::f), false, 1},
+            {Type_double, "d", offset_of(&_Foo::d), false, 1},
+            {Type_Test, "t", offset_of(&_Foo::t), false, 1},
+        };
+        return(members_of_Foo);
     }
 
     return(0); // Error.
@@ -921,17 +902,16 @@ static MemberDefinition *get_members_of_str(char const *str) {
 
 // Get the number of members for a type.
 static int get_number_of_members_str(char const *str) {
-    if(strcmp(str, "char") == 0) {return(1);}
-    else if(strcmp(str, "short") == 0) {return(1);}
-    else if(strcmp(str, "int") == 0) {return(1);}
-    else if(strcmp(str, "long") == 0) {return(1);}
-    else if(strcmp(str, "float") == 0) {return(1);}
-    else if(strcmp(str, "double") == 0) {return(1);}
-    else if(strcmp(str, "bool") == 0) {return(1);}
-    else if(strcmp(str, "Struct") == 0) {return(2);} // Struct
-    else if(strcmp(str, "Vector2d") == 0) {return(2);} // Vector2d
-    else if(strcmp(str, "Test") == 0) {return(4);} // Test
-    else if(strcmp(str, "Foo") == 0) {return(0);} // Foo
+    if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {return(1);}
+    else if((strcmp(str, "short") == 0) || (strcmp(str, "short *") == 0) || (strcmp(str, "short **") == 0)) {return(1);}
+    else if((strcmp(str, "int") == 0) || (strcmp(str, "int *") == 0) || (strcmp(str, "int **") == 0)) {return(1);}
+    else if((strcmp(str, "long") == 0) || (strcmp(str, "long *") == 0) || (strcmp(str, "long **") == 0)) {return(1);}
+    else if((strcmp(str, "float") == 0) || (strcmp(str, "float *") == 0) || (strcmp(str, "float **") == 0)) {return(1);}
+    else if((strcmp(str, "double") == 0) || (strcmp(str, "double *") == 0) || (strcmp(str, "double **") == 0)) {return(1);}
+    else if((strcmp(str, "bool") == 0) || (strcmp(str, "bool *") == 0) || (strcmp(str, "bool **") == 0)) {return(1);}
+    else if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {return(2);}
+    else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {return(1);}
+    else if((strcmp(str, "Foo") == 0) || (strcmp(str, "Foo *") == 0) || (strcmp(str, "Foo **") == 0)) {return(4);}
 
     return(-1); // Error.
 }
