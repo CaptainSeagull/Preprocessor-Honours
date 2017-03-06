@@ -150,11 +150,29 @@ internal Int get_actual_type_count(String *types, StructData *struct_data, Int s
 }
 
 internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count, Char *pointer_stuff, StructData *structs, Int struct_count) {
+    PtrSize size = scratch_memory_size / 2;
+    Char *tuple_types_buffer = cast(Char *)push_scratch_memory(size);
+    bool written_tuple = false;
+
     String base = {};
     StructData *struct_data = find_struct(name, structs, struct_count);
     if(struct_data) {
         if(struct_data->inherited_count) {
             base = struct_data->inherited[0];
+        }
+
+        if(struct_data->member_count) {
+            written_tuple = true;
+            PtrSize bytes_written = 0;
+            for(Int i = 0; (i < struct_data->member_count); ++i) {
+                bytes_written += stbsp_snprintf(tuple_types_buffer + bytes_written, size - bytes_written,
+                                                "%.*s",
+                                                struct_data->members[i].type.len, struct_data->members[i].type.e);
+
+                if(i < struct_data->member_count - 1) {
+                    bytes_written += stbsp_snprintf(tuple_types_buffer + bytes_written, size - bytes_written, ", ");
+                }
+            }
         }
     }
 
@@ -162,11 +180,17 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
         base = create_string("void");
     }
 
+    if(!written_tuple) {
+        stbsp_snprintf(tuple_types_buffer, size, "void");
+    }
+
+
     write_to_output_buffer(ob,
                            "template<> struct TypeInfo<%.*s%s> {\n"
                            "    using type = %.*s%s;\n"
                            "    using weak_type = %.*s;\n"
                            "    using base = %.*s;\n"
+                           "    using members = std::tuple<%s>;\n"
                            "\n"
                            "    static char const * const name;\n"
                            "    static char const * const weak_name;\n"
@@ -186,6 +210,7 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            name.len, name.e, pointer_stuff,
                            name.len, name.e,
                            base.len, base.e,
+                           tuple_types_buffer,
                            member_count,
                            (string_length(pointer_stuff)) ? "true" : "false",
                            (struct_data) ? struct_data->inherited_count : 0,
@@ -195,6 +220,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,
                            name.len, name.e);
+
+    clear_scratch_memory();
 }
 
 internal Void write_type_struct_all(OutputBuffer *ob, String name, Int member_count, StructData *structs, Int struct_count) {
@@ -353,7 +380,15 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "%s\n" // serialize container stuff.
                            "                    } else {\n"
                            "                        char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);\n"
-                           "                        bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                           "                        if(!member->arr_size) {\n"
+                           "                            bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                           "                        } else {\n"
+                           "                            for(int j = 0; (j < member->arr_size); ++j) {\n"
+                           "                                size_t size_of_struct = get_size_from_str(struct_name);\n"
+                           "                                char unsigned *ptr = ((char unsigned *)member_ptr + (j * size_of_struct));\n"
+                           "                                bytes_written = serialize_struct_(ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);\n"
+                           "                            }\n"
+                           "                        }\n"
                            "                    }\n"
                            "                } break; // default \n"
                            "            }\n"
@@ -549,11 +584,37 @@ internal Void write_out_recreated_structs(OutputBuffer *ob, StructData *struct_d
 
         write_to_output_buffer(ob, " };\n");
     }
+}
 
+internal Void write_sizeof_from_str(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
+    write_to_output_buffer(ob,
+                           "static size_t get_size_from_str(char const *str) {\n");
+    write_out_recreated_structs(ob, struct_data, struct_count);
+    write_to_output_buffer(ob, "\n");
+
+    for(Int i = 0; (i < struct_count); ++i) {
+        StructData *sd = struct_data + i;
+
+        if(!i) write_to_output_buffer(ob, "    ");
+        else   write_to_output_buffer(ob, "    else ");
+
+        write_to_output_buffer(ob,
+                               "if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s\ *\") == 0) || (strcmp(str, \"%.*s\ **\") == 0)) {return(sizeof(_%.*s));}\n",
+                               sd->name.len, sd->name.e,
+                               sd->name.len, sd->name.e,
+                               sd->name.len, sd->name.e,
+                               sd->name.len, sd->name.e);
+    }
+
+    write_to_output_buffer(ob,
+                           "\n"
+                           "    return(0); // Not found.\n"
+                           "}\n");
 }
 
 internal Void write_out_type_specification(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
-    String *written_members = cast(String *)push_scratch_memory();
+    PtrSize size = 128;
+    String *written_members = alloc(String, size);
     Int member_cnt = 0;
 
     write_to_output_buffer(ob,
@@ -566,6 +627,14 @@ internal Void write_out_type_specification(OutputBuffer *ob, StructData *struct_
 
     for(Int i = 0; (i < array_count(primatives)); ++i) {
         if(!is_in_string_array(primatives[i], written_members, member_cnt)) {
+            if(member_cnt >= size) {
+                size *= 2;
+                void *ptr = realloc(written_members, sizeof(String) * size);
+                if(ptr) {
+                    written_members = cast(String *)ptr;
+                }
+            }
+
             written_members[member_cnt++] = primatives[i];
 
             write_type_struct_all(ob, primatives[i], 0, struct_data, struct_count);
@@ -576,6 +645,14 @@ internal Void write_out_type_specification(OutputBuffer *ob, StructData *struct_
         StructData *sd = struct_data + i;
 
         if(!is_in_string_array(sd->name, written_members, member_cnt)) {
+            if(member_cnt >= size) {
+                size *= 2;
+                void *ptr = realloc(written_members, sizeof(String) * size);
+                if(ptr) {
+                    written_members = cast(String *)ptr;
+                }
+            }
+
             written_members[member_cnt++] = sd->name;
 
             write_type_struct_all(ob, sd->name, sd->member_count, struct_data, struct_count);
@@ -584,6 +661,14 @@ internal Void write_out_type_specification(OutputBuffer *ob, StructData *struct_
                 Variable *md = sd->members + j;
 
                 if(!is_in_string_array(md->type, written_members, member_cnt)) {
+                    if(member_cnt >= size) {
+                        size *= 2;
+                        void *ptr = realloc(written_members, sizeof(String) * size);
+                        if(ptr) {
+                            written_members = cast(String *)ptr;
+                        }
+                    }
+
                     written_members[member_cnt++] = md->type;
 
                     Int number_of_members = 0;
@@ -598,7 +683,7 @@ internal Void write_out_type_specification(OutputBuffer *ob, StructData *struct_
         }
     }
 
-    clear_scratch_memory();
+    free(written_members);
 }
 
 internal Void write_get_members_of(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
@@ -1051,6 +1136,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             write_out_type_specification(&ob, struct_data, struct_count);
             write_is_container(&ob, types, type_count);
             write_meta_type_to_name(&ob, struct_data, struct_count);
+            write_sizeof_from_str(&ob, struct_data, struct_count);
             write_serialize_struct_implementation(&ob, types, type_count);
 
             free(types);

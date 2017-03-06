@@ -177,6 +177,7 @@ internal Bool write_static_file() {
         "    using type = T;\n"
         "    using weak_type = T;\n"
         "    using base = void;\n"
+        "    using members = std::tuple<void>;\n"
         "\n"
         "    char const * const name;\n"
         "    char const * const weak_name;\n"
