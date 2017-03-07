@@ -29,6 +29,40 @@ namespace pp { // PreProcessor
 // Meta type specialization
 //
 
+// void
+template<> struct TypeInfo<void *> {
+    using type = void *;
+    using weak_type = void;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "void *";
+    static constexpr char * const weak_name = "void";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+};
+
+template<> struct TypeInfo<void **> {
+    using type = void **;
+    using weak_type = void;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "void **";
+    static constexpr char * const weak_name = "void";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+};
+
+
 // char
 template<> struct TypeInfo<char> {
     using type = char;
@@ -36,19 +70,15 @@ template<> struct TypeInfo<char> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "char";
+    static constexpr char * const weak_name = "char";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<char> operator=(TypeInfo<char> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<char>::name = "char";
-char const * const TypeInfo<char>::weak_name = "char";
 
 template<> struct TypeInfo<char *> {
     using type = char *;
@@ -56,19 +86,15 @@ template<> struct TypeInfo<char *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "char *";
+    static constexpr char * const weak_name = "char";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<char *> operator=(TypeInfo<char *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<char *>::name = "char *";
-char const * const TypeInfo<char *>::weak_name = "char";
 
 template<> struct TypeInfo<char **> {
     using type = char **;
@@ -76,19 +102,15 @@ template<> struct TypeInfo<char **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "char **";
+    static constexpr char * const weak_name = "char";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<char **> operator=(TypeInfo<char **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<char **>::name = "char **";
-char const * const TypeInfo<char **>::weak_name = "char";
 
 
 // short
@@ -98,19 +120,15 @@ template<> struct TypeInfo<short> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "short";
+    static constexpr char * const weak_name = "short";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<short> operator=(TypeInfo<short> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<short>::name = "short";
-char const * const TypeInfo<short>::weak_name = "short";
 
 template<> struct TypeInfo<short *> {
     using type = short *;
@@ -118,19 +136,15 @@ template<> struct TypeInfo<short *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "short *";
+    static constexpr char * const weak_name = "short";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<short *> operator=(TypeInfo<short *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<short *>::name = "short *";
-char const * const TypeInfo<short *>::weak_name = "short";
 
 template<> struct TypeInfo<short **> {
     using type = short **;
@@ -138,19 +152,15 @@ template<> struct TypeInfo<short **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "short **";
+    static constexpr char * const weak_name = "short";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<short **> operator=(TypeInfo<short **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<short **>::name = "short **";
-char const * const TypeInfo<short **>::weak_name = "short";
 
 
 // int
@@ -160,19 +170,15 @@ template<> struct TypeInfo<int> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "int";
+    static constexpr char * const weak_name = "int";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<int> operator=(TypeInfo<int> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<int>::name = "int";
-char const * const TypeInfo<int>::weak_name = "int";
 
 template<> struct TypeInfo<int *> {
     using type = int *;
@@ -180,19 +186,15 @@ template<> struct TypeInfo<int *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "int *";
+    static constexpr char * const weak_name = "int";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<int *> operator=(TypeInfo<int *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<int *>::name = "int *";
-char const * const TypeInfo<int *>::weak_name = "int";
 
 template<> struct TypeInfo<int **> {
     using type = int **;
@@ -200,19 +202,15 @@ template<> struct TypeInfo<int **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "int **";
+    static constexpr char * const weak_name = "int";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<int **> operator=(TypeInfo<int **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<int **>::name = "int **";
-char const * const TypeInfo<int **>::weak_name = "int";
 
 
 // long
@@ -222,19 +220,15 @@ template<> struct TypeInfo<long> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "long";
+    static constexpr char * const weak_name = "long";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<long> operator=(TypeInfo<long> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<long>::name = "long";
-char const * const TypeInfo<long>::weak_name = "long";
 
 template<> struct TypeInfo<long *> {
     using type = long *;
@@ -242,19 +236,15 @@ template<> struct TypeInfo<long *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "long *";
+    static constexpr char * const weak_name = "long";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<long *> operator=(TypeInfo<long *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<long *>::name = "long *";
-char const * const TypeInfo<long *>::weak_name = "long";
 
 template<> struct TypeInfo<long **> {
     using type = long **;
@@ -262,19 +252,15 @@ template<> struct TypeInfo<long **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "long **";
+    static constexpr char * const weak_name = "long";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<long **> operator=(TypeInfo<long **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<long **>::name = "long **";
-char const * const TypeInfo<long **>::weak_name = "long";
 
 
 // float
@@ -284,19 +270,15 @@ template<> struct TypeInfo<float> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "float";
+    static constexpr char * const weak_name = "float";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<float> operator=(TypeInfo<float> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<float>::name = "float";
-char const * const TypeInfo<float>::weak_name = "float";
 
 template<> struct TypeInfo<float *> {
     using type = float *;
@@ -304,19 +286,15 @@ template<> struct TypeInfo<float *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "float *";
+    static constexpr char * const weak_name = "float";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<float *> operator=(TypeInfo<float *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<float *>::name = "float *";
-char const * const TypeInfo<float *>::weak_name = "float";
 
 template<> struct TypeInfo<float **> {
     using type = float **;
@@ -324,19 +302,15 @@ template<> struct TypeInfo<float **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "float **";
+    static constexpr char * const weak_name = "float";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<float **> operator=(TypeInfo<float **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<float **>::name = "float **";
-char const * const TypeInfo<float **>::weak_name = "float";
 
 
 // double
@@ -346,19 +320,15 @@ template<> struct TypeInfo<double> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "double";
+    static constexpr char * const weak_name = "double";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<double> operator=(TypeInfo<double> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<double>::name = "double";
-char const * const TypeInfo<double>::weak_name = "double";
 
 template<> struct TypeInfo<double *> {
     using type = double *;
@@ -366,19 +336,15 @@ template<> struct TypeInfo<double *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "double *";
+    static constexpr char * const weak_name = "double";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<double *> operator=(TypeInfo<double *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<double *>::name = "double *";
-char const * const TypeInfo<double *>::weak_name = "double";
 
 template<> struct TypeInfo<double **> {
     using type = double **;
@@ -386,19 +352,15 @@ template<> struct TypeInfo<double **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "double **";
+    static constexpr char * const weak_name = "double";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<double **> operator=(TypeInfo<double **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<double **>::name = "double **";
-char const * const TypeInfo<double **>::weak_name = "double";
 
 
 // bool
@@ -408,19 +370,15 @@ template<> struct TypeInfo<bool> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "bool";
+    static constexpr char * const weak_name = "bool";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<bool> operator=(TypeInfo<bool> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<bool>::name = "bool";
-char const * const TypeInfo<bool>::weak_name = "bool";
 
 template<> struct TypeInfo<bool *> {
     using type = bool *;
@@ -428,19 +386,15 @@ template<> struct TypeInfo<bool *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "bool *";
+    static constexpr char * const weak_name = "bool";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<bool *> operator=(TypeInfo<bool *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<bool *>::name = "bool *";
-char const * const TypeInfo<bool *>::weak_name = "bool";
 
 template<> struct TypeInfo<bool **> {
     using type = bool **;
@@ -448,19 +402,15 @@ template<> struct TypeInfo<bool **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "bool **";
+    static constexpr char * const weak_name = "bool";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<bool **> operator=(TypeInfo<bool **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
 };
-
-char const * const TypeInfo<bool **>::name = "bool **";
-char const * const TypeInfo<bool **>::weak_name = "bool";
 
 
 // V2
@@ -470,19 +420,15 @@ template<> struct TypeInfo<V2> {
     using base = void;
     using members = std::tuple<int, int>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "V2";
+    static constexpr char * const weak_name = "V2";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<V2> operator=(TypeInfo<V2> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<V2>::name = "V2";
-char const * const TypeInfo<V2>::weak_name = "V2";
 
 template<> struct TypeInfo<V2 *> {
     using type = V2 *;
@@ -490,19 +436,15 @@ template<> struct TypeInfo<V2 *> {
     using base = void;
     using members = std::tuple<int, int>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "V2 *";
+    static constexpr char * const weak_name = "V2";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<V2 *> operator=(TypeInfo<V2 *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<V2 *>::name = "V2 *";
-char const * const TypeInfo<V2 *>::weak_name = "V2";
 
 template<> struct TypeInfo<V2 **> {
     using type = V2 **;
@@ -510,19 +452,15 @@ template<> struct TypeInfo<V2 **> {
     using base = void;
     using members = std::tuple<int, int>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "V2 **";
+    static constexpr char * const weak_name = "V2";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<V2 **> operator=(TypeInfo<V2 **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<V2 **>::name = "V2 **";
-char const * const TypeInfo<V2 **>::weak_name = "V2";
 
 
 // Test
@@ -532,19 +470,15 @@ template<> struct TypeInfo<Test> {
     using base = void;
     using members = std::tuple<V2[5]>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Test";
+    static constexpr char * const weak_name = "Test";
 
-    static size_t const member_count = 1;
+    static constexpr size_t member_count = 1;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<Test> operator=(TypeInfo<Test> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<Test>::name = "Test";
-char const * const TypeInfo<Test>::weak_name = "Test";
 
 template<> struct TypeInfo<Test *> {
     using type = Test *;
@@ -552,19 +486,15 @@ template<> struct TypeInfo<Test *> {
     using base = void;
     using members = std::tuple<V2[5]>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Test *";
+    static constexpr char * const weak_name = "Test";
 
-    static size_t const member_count = 1;
+    static constexpr size_t member_count = 1;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Test *> operator=(TypeInfo<Test *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<Test *>::name = "Test *";
-char const * const TypeInfo<Test *>::weak_name = "Test";
 
 template<> struct TypeInfo<Test **> {
     using type = Test **;
@@ -572,19 +502,15 @@ template<> struct TypeInfo<Test **> {
     using base = void;
     using members = std::tuple<V2[5]>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Test **";
+    static constexpr char * const weak_name = "Test";
 
-    static size_t const member_count = 1;
+    static constexpr size_t member_count = 1;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Test **> operator=(TypeInfo<Test **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<Test **>::name = "Test **";
-char const * const TypeInfo<Test **>::weak_name = "Test";
 
 
 // Foo
@@ -594,19 +520,15 @@ template<> struct TypeInfo<Foo> {
     using base = void;
     using members = std::tuple<int *, float[4], double *[4], Test>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Foo";
+    static constexpr char * const weak_name = "Foo";
 
-    static size_t const member_count = 4;
+    static constexpr size_t member_count = 4;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<Foo> operator=(TypeInfo<Foo> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<Foo>::name = "Foo";
-char const * const TypeInfo<Foo>::weak_name = "Foo";
 
 template<> struct TypeInfo<Foo *> {
     using type = Foo *;
@@ -614,19 +536,15 @@ template<> struct TypeInfo<Foo *> {
     using base = void;
     using members = std::tuple<int *, float[4], double *[4], Test>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Foo *";
+    static constexpr char * const weak_name = "Foo";
 
-    static size_t const member_count = 4;
+    static constexpr size_t member_count = 4;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Foo *> operator=(TypeInfo<Foo *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<Foo *>::name = "Foo *";
-char const * const TypeInfo<Foo *>::weak_name = "Foo";
 
 template<> struct TypeInfo<Foo **> {
     using type = Foo **;
@@ -634,19 +552,15 @@ template<> struct TypeInfo<Foo **> {
     using base = void;
     using members = std::tuple<int *, float[4], double *[4], Test>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Foo **";
+    static constexpr char * const weak_name = "Foo";
 
-    static size_t const member_count = 4;
+    static constexpr size_t member_count = 4;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Foo **> operator=(TypeInfo<Foo **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
 };
-
-char const * const TypeInfo<Foo **>::name = "Foo **";
-char const * const TypeInfo<Foo **>::weak_name = "Foo";
 
 static bool is_meta_type_container(int type) {
     if(type == Type_char) {return(false);} // false

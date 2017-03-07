@@ -73,17 +73,19 @@ typedef bool _bool;
 
 // TODO(Jonny): Add Type in here?
 template<typename T> struct TypeInfo {
-    using type = T;
-    using weak_type = T;
+    using type = void;
+    using weak_type = void;
     using base = void;
     using members = std::tuple<void>;
 
-    char const * const name;
-    char const * const weak_name;
+    static constexpr char * name = 0;
+    static constexpr char * weak_name = 0;
 
-    size_t const member_count;
+    static constexpr size_t member_count = 0;
 
-    bool const is_ptr;
+    static constexpr bool is_ptr = 0;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = 0;
 };
 
 struct MemberDefinition {

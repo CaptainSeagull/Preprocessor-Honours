@@ -228,7 +228,6 @@ int main(int argc, char **argv) {
 
     static_assert(std::is_same<pp::TypeInfo<Foo>::members, std::tuple<int *, float[4], double *[4], Test>>::value,"");
 
-
     return(0);
 }
 
