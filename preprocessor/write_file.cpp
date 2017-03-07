@@ -149,6 +149,21 @@ internal Int get_actual_type_count(String *types, StructData *struct_data, Int s
     return(res);
 }
 
+internal Bool is_primitive(String str) {
+    Bool res = false;
+
+    String prim_arr[get_num_of_primitive_types()];
+    set_primitive_type(prim_arr);
+
+    if(string_compare(str, create_string("void"))) {
+        res = true;
+    } else {
+        res = is_in_string_array(str, prim_arr, get_num_of_primitive_types());
+    }
+
+    return(res);
+}
+
 internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count, Char *pointer_stuff, StructData *structs, Int struct_count) {
     PtrSize size = scratch_memory_size / 2;
     Char *tuple_types_buffer = cast(Char *)push_scratch_memory(size);
@@ -193,6 +208,7 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
         stbsp_snprintf(tuple_types_buffer, size, "void");
     }
 
+    Bool prim = is_primitive(name);
 
     write_to_output_buffer(ob,
                            "template<> struct TypeInfo<%.*s%s> {\n"
@@ -201,34 +217,31 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    using base = %.*s;\n"
                            "    using members = std::tuple<%s>;\n"
                            "\n"
-                           "    static char const * const name;\n"
-                           "    static char const * const weak_name;\n"
+                           "    static constexpr char * const name = \"%.*s%s\";\n"
+                           "    static constexpr char * const weak_name = \"%.*s\";\n"
                            "\n"
-                           "    static size_t const member_count = %d;\n"
+                           "    static constexpr size_t member_count = %d;\n"
                            "\n"
-                           "    static bool const is_ptr = %s;\n"
-                           "    static size_t const base_count = %d;\n"
-                           "\n"
-                           "    TypeInfo<%.*s%s> operator=(TypeInfo<%.*s%s> a) = delete; // To avoid warning 4512 in MSVC.\n"
+                           "    static constexpr bool is_ptr = %s;\n"
+                           "    static constexpr size_t base_count = %d;\n"
+                           "    static constexpr bool is_primitive = %s;\n"
                            "};\n"
-                           "\n"
-                           "char const * const TypeInfo<%.*s%s>::name = \"%.*s%s\";\n"
-                           "char const * const TypeInfo<%.*s%s>::weak_name = \"%.*s\";\n"
                            "\n",
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,
                            name.len, name.e,
                            base.len, base.e,
                            tuple_types_buffer,
+                           name.len, name.e, pointer_stuff,
+                           name.len, name.e,
                            member_count,
                            (string_length(pointer_stuff)) ? "true" : "false",
                            (struct_data) ? struct_data->inherited_count : 0,
+                           (prim) ? "true" : "false",
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,
                            name.len, name.e, pointer_stuff,
-                           name.len, name.e, pointer_stuff,
-                           name.len, name.e, pointer_stuff,
-                           name.len, name.e);
+                           name.len, name.e, pointer_stuff);
 
     clear_scratch_memory();
 }
@@ -236,7 +249,10 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
 internal Void write_type_struct_all(OutputBuffer *ob, String name, Int member_count, StructData *structs, Int struct_count) {
     write_to_output_buffer(ob, "\n// %.*s\n", name.len, name.e);
 
-    write_type_struct(ob, name, member_count, "",    structs, struct_count);
+    if(!string_compare(name, create_string("void"))) {
+        write_type_struct(ob, name, member_count, "",    structs, struct_count);
+    }
+
     write_type_struct(ob, name, member_count, " *",  structs, struct_count);
     write_type_struct(ob, name, member_count, " **", structs, struct_count);
 }
@@ -630,6 +646,8 @@ internal Void write_out_type_specification(OutputBuffer *ob, StructData *struct_
                            "//\n"
                            "// Meta type specialization\n"
                            "//\n");
+
+    write_type_struct_all(ob, create_string("void"), 0, struct_data, struct_count);
 
     String primatives[array_count(primitive_types)] = {};
     set_primitive_type(primatives);
