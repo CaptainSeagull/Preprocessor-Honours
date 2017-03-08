@@ -2,7 +2,6 @@
 #define TEST_CODE_GENERATED_H
 
 // Forward declared structs and enums (these must be declared outside the namespace...)
-enum Letters : short;
 
 #define _std std // TODO(Jonny): This is really stupid...
 
@@ -453,61 +452,6 @@ template<> struct TypeInfo<bool **> {
     static constexpr bool is_enum = false;
 };
 
-// enum Letters
-template<> struct TypeInfo<Letters> {
-    using type = Letters;
-    using weak_type = Letters;
-    using base = short;
-    using members = std::tuple<void>;
-
-    static constexpr char * const name = "Letters";
-    static constexpr char * const weak_name = "Letters";
-
-    static constexpr size_t member_count = 3;
-
-    static constexpr bool is_ptr = false;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = true;
-};
-
-template<> struct TypeInfo<Letters *> {
-    using type = Letters *;
-    using weak_type = Letters;
-    using base = short;
-    using members = std::tuple<void>;
-
-    static constexpr char * const name = "Letters *";
-    static constexpr char * const weak_name = "Letters";
-
-    static constexpr size_t member_count = 3;
-
-    static constexpr bool is_ptr = true;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = true;
-};
-
-template<> struct TypeInfo<Letters **> {
-    using type = Letters **;
-    using weak_type = Letters;
-    using base = short;
-    using members = std::tuple<void>;
-
-    static constexpr char * const name = "Letters **";
-    static constexpr char * const weak_name = "Letters";
-
-    static constexpr size_t member_count = 3;
-
-    static constexpr bool is_ptr = true;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = true;
-};
-
 static bool is_meta_type_container(int type) {
     if(type == Type_char) {return(false);} // false
     else if(type == Type_short) {return(false);} // false
@@ -708,27 +652,11 @@ static int get_number_of_members_str(char const *str) {
 //
 // Enum Introspection data.
 //
+
+// Stub functions.
 template<typename T>static char const *enum_to_string(T element) { return(0); }
 template<typename T>static T string_to_enum(char const *str) { return(0); }
 
-template<>char const *enum_to_string<Letters>(Letters element) {
-    short index = (short)element;
-    switch(index) {
-        case 0:  { return("a"); } break;
-        case 1:  { return("b"); } break;
-        case 2:  { return("c"); } break;
-
-        default: { return(0); } break;
-    }
-}
-template<>Letters string_to_enum<Letters>(char const *str) {
-    short res = {};
-    if(strcmp(str, "a") == 0) { res = 0; }
-    if(strcmp(str, "b") == 0) { res = 1; }
-    if(strcmp(str, "c") == 0) { res = 2; }
-
-    return (Letters)res;
-}
 
 #define weak_type_compare(A, B) TypeCompare_<pp::Type<A>::weak_type, pp::Type<B>::weak_type>::e;
 #undef _std // :(
