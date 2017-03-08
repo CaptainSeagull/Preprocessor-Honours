@@ -160,12 +160,6 @@ template<typename T>static void print_(T *var, char const *name, char *buf = 0, 
     }
 }
 
-#define enum_to_string(Type, v) enum_to_string_##Type((int)v)
-
-#define string_to_enum(Type, str) string_to_enum_##Type(str)
-
-#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
-
 template<class T, class U>struct TypeCompare_{ static const bool e = false; };
 template<class T>struct TypeCompare_<T, T>{ static const bool e = true; };
 #define type_compare(a, b) TypeCompare_<a, b>::e

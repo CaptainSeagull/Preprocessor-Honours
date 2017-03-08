@@ -205,31 +205,45 @@ public:
 };
 
 #endif
-
-#include "pp_generated/test_code_generated.h"
-#include <tuple>
-
-struct V2 {
-    int x, y;
-};
-
-struct Test {
-    V2 a[5];
-};
-
-struct Foo { int *i; float f[4]; double *d[4]; Test t;};
-
-int main(int argc, char **argv) {
 #if 0
-    Test test = {};
-    for(int i = 0; (i < 5); ++i) test.a[i] = {i, i * 2};
-    pp::print(test);
+static constexpr int number_of_elements_in_enum_Letters = 4;
+static char const *enum_to_string_Letters(int v) {
+    switch(v) {
+        case 0: {return("a");} break;
+        case 1: {return("b");} break;
+        case 2: {return("c");} break;
+        case 3: {return("COUNT");} break;
+    }
+
+    return(0); // v is out of bounds.
+}
+static int string_to_enum_Letters(char const *str) {
+    if(str) {
+        if(strcmp(str, "a") == 0) {return(0);}
+        else if(strcmp(str, "b") == 0) {return(1);}
+        else if(strcmp(str, "c") == 0) {return(2);}
+        else if(strcmp(str, "COUNT") == 0) {return(3);}
+    }
+
+    return(0);  // str didn't match.
+}
 #endif
 
-    static_assert(std::is_same<pp::TypeInfo<Foo>::members, std::tuple<int *, float[4], double *[4], Test>>::value,"");
+//static char const *enum_to_string(EnumType type, int v);
+//static int string_to_enum(EnumType type, char const *str);
+
+#include "pp_generated/test_code_generated.h"
+
+enum Letters : short {
+    a, b, c
+};
+
+int main(int argc, char **argv) {
+    int n = pp::TypeInfo<Letters>::member_count;
 
     return(0);
 }
+
 
 
 #if 0
