@@ -1152,6 +1152,54 @@ internal Void write_get_number_of_members_str(OutputBuffer *ob, StructData *stru
                            "}\n");
 }
 
+internal Void write_enum_to_string(OutputBuffer *ob, EnumData enum_data) {
+    write_to_output_buffer(ob,
+                           "template<>char const *enum_to_string<%.*s>(%.*s element) {\n"
+                           "    %.*s index = (%.*s)element;\n"
+                           "    switch(index) {\n",
+                           enum_data.name.len, enum_data.name.e,
+                           enum_data.name.len, enum_data.name.e,
+                           enum_data.type.len, enum_data.type.e,
+                           enum_data.type.len, enum_data.type.e);
+    for(Int j = 0; (j < enum_data.no_of_values); ++j) {
+        EnumValue *v = enum_data.values + j;
+
+        write_to_output_buffer(ob,
+                               "        case %d:  { return(\"%.*s\"); } break;\n",
+                               v->value,
+                               v->name.len, v->name.e);
+    }
+
+    write_to_output_buffer(ob,
+                           "\n"
+                           "        default: { return(0); } break;\n"
+                           "    }\n"
+                           "}\n");
+}
+
+internal void write_string_to_enum(OutputBuffer *ob, EnumData enum_data) {
+    write_to_output_buffer(ob,
+                           "template<>%.*s string_to_enum<%.*s>(char const *str) {\n"
+                           "    %.*s res = {};\n",
+                           enum_data.name.len, enum_data.name.e,
+                           enum_data.name.len, enum_data.name.e,
+                           enum_data.type.len, enum_data.type.e);
+    for(Int j = 0; (j < enum_data.no_of_values); ++j) {
+        EnumValue *v = enum_data.values + j;
+
+        write_to_output_buffer(ob,
+                               "    if(strcmp(str, \"%.*s\") == 0) { res = %d; }\n",
+                               v->name.len, v->name.e,
+                               v->value);
+    }
+
+    write_to_output_buffer(ob,
+                           "\n"
+                           "    return (%.*s)res;\n"
+                           "}\n",
+                           enum_data.name.len, enum_data.name.e);
+}
+
 File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count) {
     File res = {};
 
@@ -1222,185 +1270,23 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
         write_get_members_of_str(&ob, struct_data, struct_count);
         write_get_number_of_members_str(&ob, struct_data, struct_count);
 
-        //
-        // Enum Meta data.
-        //
-#if 0
-        if(enum_count) {
-            for(Int i = 0; (i < enum_count); ++i) {
-                EnumData *ed = enum_data + i;
-
-                if(ed->type.len) {
-                    write_to_output_buffer(&ob,
-                                           "// enum %.*s\n",
-                                           ed->name.len, ed->name.e);
-
-                    write_type_struct(&ob, ed->name, ed->no_of_values, "", an_enum, ed->type);
-                    write_type_struct(&ob, ed->name, ed->no_of_values, " *", an_enum, ed->type);
-                    write_type_struct(&ob, ed->name, ed->no_of_values, " **", an_enum, ed->type);
-                } else {
-                    write_to_output_buffer(&ob, "\n// Meta Data for %.*s.\n", ed->name.len, ed->name.e);
-
-                    Char type[32] = {};
-                    if(ed->type.len) {
-                        for(int j = 0; (j < ed->type.len); ++j) {
-                            type[j] = ed->type.e[j];
-                        }
-                        type[ed->type.len] = 0;
-                    } else {
-                        type[0] = 'i'; type[1] = 'n'; type[2] = 't';
-                    }
-
-                    // Enum size.
-                    {
-                        Char *buf = cast(Char *)push_scratch_memory();
-
-                        int bytes_written = stbsp_snprintf(buf, scratch_memory_size,
-                                                           "static constexpr %s number_of_elements_in_enum_%.*s = %d;",
-                                                           type,
-                                                           ed->name.len, ed->name.e,
-                                                           ed->no_of_values);
-                        assert(bytes_written < scratch_memory_size);
-
-                        write_to_output_buffer(&ob, buf);
-
-                        clear_scratch_memory();
-                    }
-
-                    // enum_to_string.
-                    {
-                        Char *buf1 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
-                        Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
-
-                        Int index = 0;
-                        for(int j = 0; (j < ed->no_of_values); ++j) {
-                            index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
-                                                    "        case %d: {return(\"%.*s\");} break;\n",
-                                                    ed->values[j].value,
-                                                    ed->values[j].name.len, ed->values[j].name.e);
-                        }
-
-                        Int bytes_written = stbsp_snprintf(buf2, half_scratch_memory_size,
-                                                           "\nstatic char const *enum_to_string_%.*s(%s v) {\n"
-                                                           "    switch(v) {\n"
-                                                           "%s"
-                                                           "    }\n"
-                                                           "\n"
-                                                           "    return(0); // v is out of bounds.\n"
-                                                           "}\n",
-                                                           ed->name.len, ed->name.e,
-                                                           type,
-                                                           buf1);
-                        assert(bytes_written < half_scratch_memory_size);
-
-                        write_to_output_buffer(&ob, buf2);
-
-                        clear_scratch_memory();
-                    }
-
-                    // string_to_enum.
-                    {
-                        Char *buf1 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
-                        Char *buf2 = cast(Char *)push_scratch_memory(half_scratch_memory_size);
-
-                        Int index = 0;
-                        index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
-                                                "        if(strcmp(str, \"%.*s\") == 0) {return(%d);}\n",
-                                                ed->values[0].name.len, ed->values[0].name.e,
-                                                ed->values[0].value);
-                        for(int j = 1; (j < ed->no_of_values); ++j) {
-                            index += stbsp_snprintf(buf1 + index, half_scratch_memory_size - index,
-                                                    "        else if(strcmp(str, \"%.*s\") == 0) {return(%d);}\n",
-                                                    ed->values[j].name.len, ed->values[j].name.e,
-                                                    ed->values[j].value);
-                        }
-                        assert(index < half_scratch_memory_size);
-
-                        // TODO(Jonny): I'd prefer if this returned a struct, with the element and an error code. It can silently
-                        //              fail in it's current state.
-                        Int bytes_written = stbsp_snprintf(buf2, half_scratch_memory_size,
-                                                           "static %s string_to_enum_%.*s(char const *str) {\n"
-                                                           "    if(str) {\n"
-                                                           "%s"
-                                                           "    }\n"
-                                                           "\n"
-                                                           "    return(0);  // str didn't match.\n"
-                                                           "}\n",
-                                                           type,
-                                                           ed->name.len, ed->name.e, buf1);
-                        assert(bytes_written < half_scratch_memory_size);
-
-
-                        write_to_output_buffer(&ob, buf2);
-
-                        clear_scratch_memory();
-                    }
-                }
-            }
-        }
-#endif
-
         write_to_output_buffer(&ob,
                                "\n"
                                "//\n"
                                "// Enum Introspection data.\n"
                                "//\n"
+                               "\n"
+                               "// Stub functions.\n"
                                "template<typename T>static char const *enum_to_string(T element) { return(0); }\n"
                                "template<typename T>static T string_to_enum(char const *str) { return(0); }\n"
                                "\n");
         for(Int i = 0; (i < enum_count); ++i) {
-            EnumData *ed = enum_data + i;
-
-            if(ed->type.len) {
-                // enum to string
-                {
-                    write_to_output_buffer(&ob,
-                                           "template<>char const *enum_to_string<%.*s>(%.*s element) {\n"
-                                           "    %.*s index = (%.*s)element;\n"
-                                           "    switch(index) {\n",
-                                           ed->name.len, ed->name.e,
-                                           ed->name.len, ed->name.e,
-                                           ed->type.len, ed->type.e,
-                                           ed->type.len, ed->type.e);
-                    for(Int j = 0; (j < ed->no_of_values); ++j) {
-                        EnumValue *v = ed->values + j;
-
-                        write_to_output_buffer(&ob,
-                                               "        case %d:  { return(\"%.*s\"); } break;\n",
-                                               v->value,
-                                               v->name.len, v->name.e);
-                    }
-
-                    write_to_output_buffer(&ob,
-                                           "\n"
-                                           "        default: { return(0); } break;\n"
-                                           "    }\n"
-                                           "}\n");
-                }
-
-                // string to enum
-                {
-                    write_to_output_buffer(&ob,
-                                           "template<>%.*s string_to_enum<%.*s>(char const *str) {\n"
-                                           "    %.*s res = {};\n",
-                                           ed->name.len, ed->name.e,
-                                           ed->name.len, ed->name.e,
-                                           ed->type.len, ed->type.e);
-                    for(Int j = 0; (j < ed->no_of_values); ++j) {
-                        EnumValue *v = ed->values + j;
-
-                        write_to_output_buffer(&ob,
-                                               "    if(strcmp(str, \"%.*s\") == 0) { res = %d; }\n",
-                                               v->name.len, v->name.e,
-                                               v->value);
-                    }
-
-                    write_to_output_buffer(&ob,
-                                           "\n"
-                                           "    return (%.*s)res;\n"
-                                           "}\n",
-                                           ed->name.len, ed->name.e);
-                }
+            if(enum_data[i].type.len) {
+                write_to_output_buffer(&ob,
+                                       "// %.*s.\n",
+                                       enum_data[i].name.len, enum_data[i].name.e);
+                write_enum_to_string(&ob, enum_data[i]);
+                write_string_to_enum(&ob, enum_data[i]);
             }
         }
 
