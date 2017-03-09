@@ -73,16 +73,22 @@ typedef bool _bool;
 
 // TODO(Jonny): Add Type in here?
 template<typename T> struct TypeInfo {
-    using type = T;
-    using weak_type = T;
+    using type = void;
+    using weak_type = void;
     using base = void;
+    using members = std::tuple<void>;
 
-    char const * const name;
-    char const * const weak_name;
+    static constexpr char * name = 0;
+    static constexpr char * weak_name = 0;
 
-    size_t const member_count;
+    static constexpr size_t member_count = 0;
 
-    bool const is_ptr;
+    static constexpr bool is_ptr = 0;
+    static constexpr bool is_ref = 0;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = 0;
+    static constexpr bool is_class = 0;
+    static constexpr bool is_enum = 0;
 };
 
 struct MemberDefinition {
@@ -156,12 +162,6 @@ template<typename T>static void print_(T *var, char const *name, char *buf = 0, 
         }
     }
 }
-
-#define enum_to_string(Type, v) enum_to_string_##Type((int)v)
-
-#define string_to_enum(Type, str) string_to_enum_##Type(str)
-
-#define get_number_of_enum_elements(Type) number_of_elements_in_enum_##Type
 
 template<class T, class U>struct TypeCompare_{ static const bool e = false; };
 template<class T>struct TypeCompare_<T, T>{ static const bool e = true; };

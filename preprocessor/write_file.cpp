@@ -171,7 +171,7 @@ enum TypeStructType {
 internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count, Char *pointer_stuff,
                                 TypeStructType type, Bool is_ref, String base = create_string(""), Int inherited_count = 0,
                                 Char *tuple_types_buffer = 0) {
-    Char *ref = (is_ref) ? "&" : "";
+    Char const *ref = (is_ref) ? "&" : "";
 
     write_to_output_buffer(ob,
                            "template<> struct TypeInfo<%.*s%s%s> {\n"
@@ -180,8 +180,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    using base = %.*s;\n"
                            "    using members = std::tuple<%s>;\n"
                            "\n"
-                           "    static constexpr char * const name = \"%.*s%s%s\";\n"
-                           "    static constexpr char * const weak_name = \"%.*s\";\n"
+                           "    static constexpr char const * const name = \"%.*s%s%s\";\n"
+                           "    static constexpr char const * const weak_name = \"%.*s\";\n"
                            "\n"
                            "    static constexpr size_t member_count = %d;\n"
                            "\n"
@@ -653,7 +653,7 @@ internal Void write_out_recreated_structs(OutputBuffer *ob, StructData *struct_d
 // TODO(Jonny): This won't handle pointers or arrays.
 internal Void write_out_get_at_index(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
     auto write_get_member = [](OutputBuffer *ob, StructData *sd, Variable *md, Int j, Char *ref_info) {
-        Char *pointer_info = (md->is_ptr) ? " *" : "";
+        Char const *pointer_info = (md->is_ptr) ? " *" : "";
 
         write_to_output_buffer(ob,
                                "template<> struct GetMember<%.*s%s, %d> {\n"

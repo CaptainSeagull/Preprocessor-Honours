@@ -1,7 +1,7 @@
 #if !defined(BREAKOUT_GENERATED_H)
 #define BREAKOUT_GENERATED_H
 
-// Forward declared structs (these must be declared outside the namespace...)
+// Forward declared structs and enums (these must be declared outside the namespace...)
 struct V2;
 struct Transform;
 struct Ball;
@@ -29,717 +29,1633 @@ namespace pp { enum Type {
 #include "static_generated.h"
 namespace pp { // PreProcessor
 
+    // Recreated structs.
+    struct _V2 {  _float x;  _float y;  };
+    struct _Transform {  _V2 pos;  _V2 size;  };
+    struct _Ball {  _Transform trans;  _V2 speed;  };
+    struct _Paddle {  _Transform trans;  };
+    struct _GameState {  _Paddle paddle;  _Ball ball;  _int score;  };
 //
 // Meta type specialization
 //
 
-// char
+// struct void
+template<> struct TypeInfo<void *> {
+    using type = void *;
+    using weak_type = void;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "void *";
+    static constexpr char * const weak_name = "void";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<void **> {
+    using type = void **;
+    using weak_type = void;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "void **";
+    static constexpr char * const weak_name = "void";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<void *&> {
+    using type = void *&;
+    using weak_type = void;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "void *&";
+    static constexpr char * const weak_name = "void";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<void **&> {
+    using type = void **&;
+    using weak_type = void;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "void **&";
+    static constexpr char * const weak_name = "void";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+
+// struct char
 template<> struct TypeInfo<char> {
     using type = char;
     using weak_type = char;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "char";
+    static constexpr char * const weak_name = "char";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<char> operator=(TypeInfo<char> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<char>::name = "char";
-char const * const TypeInfo<char>::weak_name = "char";
 
 template<> struct TypeInfo<char *> {
     using type = char *;
     using weak_type = char;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "char *";
+    static constexpr char * const weak_name = "char";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<char *> operator=(TypeInfo<char *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<char *>::name = "char *";
-char const * const TypeInfo<char *>::weak_name = "char";
 
 template<> struct TypeInfo<char **> {
     using type = char **;
     using weak_type = char;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "char **";
+    static constexpr char * const weak_name = "char";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<char **> operator=(TypeInfo<char **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<char **>::name = "char **";
-char const * const TypeInfo<char **>::weak_name = "char";
+template<> struct TypeInfo<char&> {
+    using type = char&;
+    using weak_type = char;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "char&";
+    static constexpr char * const weak_name = "char";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<char *&> {
+    using type = char *&;
+    using weak_type = char;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "char *&";
+    static constexpr char * const weak_name = "char";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<char **&> {
+    using type = char **&;
+    using weak_type = char;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "char **&";
+    static constexpr char * const weak_name = "char";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// short
+// struct short
 template<> struct TypeInfo<short> {
     using type = short;
     using weak_type = short;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "short";
+    static constexpr char * const weak_name = "short";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<short> operator=(TypeInfo<short> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<short>::name = "short";
-char const * const TypeInfo<short>::weak_name = "short";
 
 template<> struct TypeInfo<short *> {
     using type = short *;
     using weak_type = short;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "short *";
+    static constexpr char * const weak_name = "short";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<short *> operator=(TypeInfo<short *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<short *>::name = "short *";
-char const * const TypeInfo<short *>::weak_name = "short";
 
 template<> struct TypeInfo<short **> {
     using type = short **;
     using weak_type = short;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "short **";
+    static constexpr char * const weak_name = "short";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<short **> operator=(TypeInfo<short **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<short **>::name = "short **";
-char const * const TypeInfo<short **>::weak_name = "short";
+template<> struct TypeInfo<short&> {
+    using type = short&;
+    using weak_type = short;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "short&";
+    static constexpr char * const weak_name = "short";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<short *&> {
+    using type = short *&;
+    using weak_type = short;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "short *&";
+    static constexpr char * const weak_name = "short";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<short **&> {
+    using type = short **&;
+    using weak_type = short;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "short **&";
+    static constexpr char * const weak_name = "short";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// int
+// struct int
 template<> struct TypeInfo<int> {
     using type = int;
     using weak_type = int;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "int";
+    static constexpr char * const weak_name = "int";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<int> operator=(TypeInfo<int> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<int>::name = "int";
-char const * const TypeInfo<int>::weak_name = "int";
 
 template<> struct TypeInfo<int *> {
     using type = int *;
     using weak_type = int;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "int *";
+    static constexpr char * const weak_name = "int";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<int *> operator=(TypeInfo<int *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<int *>::name = "int *";
-char const * const TypeInfo<int *>::weak_name = "int";
 
 template<> struct TypeInfo<int **> {
     using type = int **;
     using weak_type = int;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "int **";
+    static constexpr char * const weak_name = "int";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<int **> operator=(TypeInfo<int **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<int **>::name = "int **";
-char const * const TypeInfo<int **>::weak_name = "int";
+template<> struct TypeInfo<int&> {
+    using type = int&;
+    using weak_type = int;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "int&";
+    static constexpr char * const weak_name = "int";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<int *&> {
+    using type = int *&;
+    using weak_type = int;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "int *&";
+    static constexpr char * const weak_name = "int";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<int **&> {
+    using type = int **&;
+    using weak_type = int;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "int **&";
+    static constexpr char * const weak_name = "int";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// long
+// struct long
 template<> struct TypeInfo<long> {
     using type = long;
     using weak_type = long;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "long";
+    static constexpr char * const weak_name = "long";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<long> operator=(TypeInfo<long> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<long>::name = "long";
-char const * const TypeInfo<long>::weak_name = "long";
 
 template<> struct TypeInfo<long *> {
     using type = long *;
     using weak_type = long;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "long *";
+    static constexpr char * const weak_name = "long";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<long *> operator=(TypeInfo<long *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<long *>::name = "long *";
-char const * const TypeInfo<long *>::weak_name = "long";
 
 template<> struct TypeInfo<long **> {
     using type = long **;
     using weak_type = long;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "long **";
+    static constexpr char * const weak_name = "long";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<long **> operator=(TypeInfo<long **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<long **>::name = "long **";
-char const * const TypeInfo<long **>::weak_name = "long";
+template<> struct TypeInfo<long&> {
+    using type = long&;
+    using weak_type = long;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "long&";
+    static constexpr char * const weak_name = "long";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<long *&> {
+    using type = long *&;
+    using weak_type = long;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "long *&";
+    static constexpr char * const weak_name = "long";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<long **&> {
+    using type = long **&;
+    using weak_type = long;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "long **&";
+    static constexpr char * const weak_name = "long";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// float
+// struct float
 template<> struct TypeInfo<float> {
     using type = float;
     using weak_type = float;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "float";
+    static constexpr char * const weak_name = "float";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<float> operator=(TypeInfo<float> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<float>::name = "float";
-char const * const TypeInfo<float>::weak_name = "float";
 
 template<> struct TypeInfo<float *> {
     using type = float *;
     using weak_type = float;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "float *";
+    static constexpr char * const weak_name = "float";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<float *> operator=(TypeInfo<float *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<float *>::name = "float *";
-char const * const TypeInfo<float *>::weak_name = "float";
 
 template<> struct TypeInfo<float **> {
     using type = float **;
     using weak_type = float;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "float **";
+    static constexpr char * const weak_name = "float";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<float **> operator=(TypeInfo<float **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<float **>::name = "float **";
-char const * const TypeInfo<float **>::weak_name = "float";
+template<> struct TypeInfo<float&> {
+    using type = float&;
+    using weak_type = float;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "float&";
+    static constexpr char * const weak_name = "float";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<float *&> {
+    using type = float *&;
+    using weak_type = float;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "float *&";
+    static constexpr char * const weak_name = "float";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<float **&> {
+    using type = float **&;
+    using weak_type = float;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "float **&";
+    static constexpr char * const weak_name = "float";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// double
+// struct double
 template<> struct TypeInfo<double> {
     using type = double;
     using weak_type = double;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "double";
+    static constexpr char * const weak_name = "double";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<double> operator=(TypeInfo<double> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<double>::name = "double";
-char const * const TypeInfo<double>::weak_name = "double";
 
 template<> struct TypeInfo<double *> {
     using type = double *;
     using weak_type = double;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "double *";
+    static constexpr char * const weak_name = "double";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<double *> operator=(TypeInfo<double *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<double *>::name = "double *";
-char const * const TypeInfo<double *>::weak_name = "double";
 
 template<> struct TypeInfo<double **> {
     using type = double **;
     using weak_type = double;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "double **";
+    static constexpr char * const weak_name = "double";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<double **> operator=(TypeInfo<double **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<double **>::name = "double **";
-char const * const TypeInfo<double **>::weak_name = "double";
+template<> struct TypeInfo<double&> {
+    using type = double&;
+    using weak_type = double;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "double&";
+    static constexpr char * const weak_name = "double";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<double *&> {
+    using type = double *&;
+    using weak_type = double;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "double *&";
+    static constexpr char * const weak_name = "double";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<double **&> {
+    using type = double **&;
+    using weak_type = double;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "double **&";
+    static constexpr char * const weak_name = "double";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// bool
+// struct bool
 template<> struct TypeInfo<bool> {
     using type = bool;
     using weak_type = bool;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "bool";
+    static constexpr char * const weak_name = "bool";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<bool> operator=(TypeInfo<bool> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<bool>::name = "bool";
-char const * const TypeInfo<bool>::weak_name = "bool";
 
 template<> struct TypeInfo<bool *> {
     using type = bool *;
     using weak_type = bool;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "bool *";
+    static constexpr char * const weak_name = "bool";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<bool *> operator=(TypeInfo<bool *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<bool *>::name = "bool *";
-char const * const TypeInfo<bool *>::weak_name = "bool";
 
 template<> struct TypeInfo<bool **> {
     using type = bool **;
     using weak_type = bool;
     using base = void;
+    using members = std::tuple<void>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "bool **";
+    static constexpr char * const weak_name = "bool";
 
-    static size_t const member_count = 0;
+    static constexpr size_t member_count = 0;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<bool **> operator=(TypeInfo<bool **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<bool **>::name = "bool **";
-char const * const TypeInfo<bool **>::weak_name = "bool";
+template<> struct TypeInfo<bool&> {
+    using type = bool&;
+    using weak_type = bool;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "bool&";
+    static constexpr char * const weak_name = "bool";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<bool *&> {
+    using type = bool *&;
+    using weak_type = bool;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "bool *&";
+    static constexpr char * const weak_name = "bool";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<bool **&> {
+    using type = bool **&;
+    using weak_type = bool;
+    using base = void;
+    using members = std::tuple<void>;
+
+    static constexpr char * const name = "bool **&";
+    static constexpr char * const weak_name = "bool";
+
+    static constexpr size_t member_count = 0;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = true;
+    static constexpr bool is_class = false;
+    static constexpr bool is_enum = false;
+};
 
 
-// V2
+// struct V2
 template<> struct TypeInfo<V2> {
     using type = V2;
     using weak_type = V2;
     using base = void;
+    using members = std::tuple<float, float>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "V2";
+    static constexpr char * const weak_name = "V2";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<V2> operator=(TypeInfo<V2> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<V2>::name = "V2";
-char const * const TypeInfo<V2>::weak_name = "V2";
 
 template<> struct TypeInfo<V2 *> {
     using type = V2 *;
     using weak_type = V2;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "V2 *";
+    static constexpr char * const weak_name = "V2";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<V2 *> operator=(TypeInfo<V2 *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<V2 *>::name = "V2 *";
-char const * const TypeInfo<V2 *>::weak_name = "V2";
 
 template<> struct TypeInfo<V2 **> {
     using type = V2 **;
     using weak_type = V2;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "V2 **";
+    static constexpr char * const weak_name = "V2";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<V2 **> operator=(TypeInfo<V2 **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<V2 **>::name = "V2 **";
-char const * const TypeInfo<V2 **>::weak_name = "V2";
+template<> struct TypeInfo<V2&> {
+    using type = V2&;
+    using weak_type = V2;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "V2&";
+    static constexpr char * const weak_name = "V2";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<V2 *&> {
+    using type = V2 *&;
+    using weak_type = V2;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "V2 *&";
+    static constexpr char * const weak_name = "V2";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<V2 **&> {
+    using type = V2 **&;
+    using weak_type = V2;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "V2 **&";
+    static constexpr char * const weak_name = "V2";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
 
 
-// Transform
+// struct Transform
 template<> struct TypeInfo<Transform> {
     using type = Transform;
     using weak_type = Transform;
     using base = void;
+    using members = std::tuple<V2, V2>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Transform";
+    static constexpr char * const weak_name = "Transform";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<Transform> operator=(TypeInfo<Transform> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<Transform>::name = "Transform";
-char const * const TypeInfo<Transform>::weak_name = "Transform";
 
 template<> struct TypeInfo<Transform *> {
     using type = Transform *;
     using weak_type = Transform;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Transform *";
+    static constexpr char * const weak_name = "Transform";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Transform *> operator=(TypeInfo<Transform *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<Transform *>::name = "Transform *";
-char const * const TypeInfo<Transform *>::weak_name = "Transform";
 
 template<> struct TypeInfo<Transform **> {
     using type = Transform **;
     using weak_type = Transform;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Transform **";
+    static constexpr char * const weak_name = "Transform";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Transform **> operator=(TypeInfo<Transform **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<Transform **>::name = "Transform **";
-char const * const TypeInfo<Transform **>::weak_name = "Transform";
+template<> struct TypeInfo<Transform&> {
+    using type = Transform&;
+    using weak_type = Transform;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Transform&";
+    static constexpr char * const weak_name = "Transform";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<Transform *&> {
+    using type = Transform *&;
+    using weak_type = Transform;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Transform *&";
+    static constexpr char * const weak_name = "Transform";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<Transform **&> {
+    using type = Transform **&;
+    using weak_type = Transform;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Transform **&";
+    static constexpr char * const weak_name = "Transform";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
 
 
-// Ball
+// struct Ball
 template<> struct TypeInfo<Ball> {
     using type = Ball;
     using weak_type = Ball;
     using base = void;
+    using members = std::tuple<Transform, V2>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Ball";
+    static constexpr char * const weak_name = "Ball";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<Ball> operator=(TypeInfo<Ball> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<Ball>::name = "Ball";
-char const * const TypeInfo<Ball>::weak_name = "Ball";
 
 template<> struct TypeInfo<Ball *> {
     using type = Ball *;
     using weak_type = Ball;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Ball *";
+    static constexpr char * const weak_name = "Ball";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Ball *> operator=(TypeInfo<Ball *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<Ball *>::name = "Ball *";
-char const * const TypeInfo<Ball *>::weak_name = "Ball";
 
 template<> struct TypeInfo<Ball **> {
     using type = Ball **;
     using weak_type = Ball;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Ball **";
+    static constexpr char * const weak_name = "Ball";
 
-    static size_t const member_count = 2;
+    static constexpr size_t member_count = 2;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Ball **> operator=(TypeInfo<Ball **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<Ball **>::name = "Ball **";
-char const * const TypeInfo<Ball **>::weak_name = "Ball";
+template<> struct TypeInfo<Ball&> {
+    using type = Ball&;
+    using weak_type = Ball;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Ball&";
+    static constexpr char * const weak_name = "Ball";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<Ball *&> {
+    using type = Ball *&;
+    using weak_type = Ball;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Ball *&";
+    static constexpr char * const weak_name = "Ball";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<Ball **&> {
+    using type = Ball **&;
+    using weak_type = Ball;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Ball **&";
+    static constexpr char * const weak_name = "Ball";
+
+    static constexpr size_t member_count = 2;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
 
 
-// Paddle
+// struct Paddle
 template<> struct TypeInfo<Paddle> {
     using type = Paddle;
     using weak_type = Paddle;
     using base = void;
+    using members = std::tuple<Transform>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Paddle";
+    static constexpr char * const weak_name = "Paddle";
 
-    static size_t const member_count = 1;
+    static constexpr size_t member_count = 1;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<Paddle> operator=(TypeInfo<Paddle> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<Paddle>::name = "Paddle";
-char const * const TypeInfo<Paddle>::weak_name = "Paddle";
 
 template<> struct TypeInfo<Paddle *> {
     using type = Paddle *;
     using weak_type = Paddle;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Paddle *";
+    static constexpr char * const weak_name = "Paddle";
 
-    static size_t const member_count = 1;
+    static constexpr size_t member_count = 1;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Paddle *> operator=(TypeInfo<Paddle *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<Paddle *>::name = "Paddle *";
-char const * const TypeInfo<Paddle *>::weak_name = "Paddle";
 
 template<> struct TypeInfo<Paddle **> {
     using type = Paddle **;
     using weak_type = Paddle;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "Paddle **";
+    static constexpr char * const weak_name = "Paddle";
 
-    static size_t const member_count = 1;
+    static constexpr size_t member_count = 1;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<Paddle **> operator=(TypeInfo<Paddle **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<Paddle **>::name = "Paddle **";
-char const * const TypeInfo<Paddle **>::weak_name = "Paddle";
+template<> struct TypeInfo<Paddle&> {
+    using type = Paddle&;
+    using weak_type = Paddle;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Paddle&";
+    static constexpr char * const weak_name = "Paddle";
+
+    static constexpr size_t member_count = 1;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<Paddle *&> {
+    using type = Paddle *&;
+    using weak_type = Paddle;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Paddle *&";
+    static constexpr char * const weak_name = "Paddle";
+
+    static constexpr size_t member_count = 1;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<Paddle **&> {
+    using type = Paddle **&;
+    using weak_type = Paddle;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "Paddle **&";
+    static constexpr char * const weak_name = "Paddle";
+
+    static constexpr size_t member_count = 1;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
 
 
-// GameState
+// struct GameState
 template<> struct TypeInfo<GameState> {
     using type = GameState;
     using weak_type = GameState;
     using base = void;
+    using members = std::tuple<Paddle, Ball, int>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "GameState";
+    static constexpr char * const weak_name = "GameState";
 
-    static size_t const member_count = 3;
+    static constexpr size_t member_count = 3;
 
-    static bool const is_ptr = false;
-    static size_t const base_count = 0;
-
-    TypeInfo<GameState> operator=(TypeInfo<GameState> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<GameState>::name = "GameState";
-char const * const TypeInfo<GameState>::weak_name = "GameState";
 
 template<> struct TypeInfo<GameState *> {
     using type = GameState *;
     using weak_type = GameState;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "GameState *";
+    static constexpr char * const weak_name = "GameState";
 
-    static size_t const member_count = 3;
+    static constexpr size_t member_count = 3;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<GameState *> operator=(TypeInfo<GameState *> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
-
-char const * const TypeInfo<GameState *>::name = "GameState *";
-char const * const TypeInfo<GameState *>::weak_name = "GameState";
 
 template<> struct TypeInfo<GameState **> {
     using type = GameState **;
     using weak_type = GameState;
     using base = void;
+    using members = std::tuple<>;
 
-    static char const * const name;
-    static char const * const weak_name;
+    static constexpr char * const name = "GameState **";
+    static constexpr char * const weak_name = "GameState";
 
-    static size_t const member_count = 3;
+    static constexpr size_t member_count = 3;
 
-    static bool const is_ptr = true;
-    static size_t const base_count = 0;
-
-    TypeInfo<GameState **> operator=(TypeInfo<GameState **> a) = delete; // To avoid warning 4512 in MSVC.
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = false;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
 };
 
-char const * const TypeInfo<GameState **>::name = "GameState **";
-char const * const TypeInfo<GameState **>::weak_name = "GameState";
+template<> struct TypeInfo<GameState&> {
+    using type = GameState&;
+    using weak_type = GameState;
+    using base = void;
+    using members = std::tuple<>;
 
+    static constexpr char * const name = "GameState&";
+    static constexpr char * const weak_name = "GameState";
+
+    static constexpr size_t member_count = 3;
+
+    static constexpr bool is_ptr = false;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<GameState *&> {
+    using type = GameState *&;
+    using weak_type = GameState;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "GameState *&";
+    static constexpr char * const weak_name = "GameState";
+
+    static constexpr size_t member_count = 3;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+template<> struct TypeInfo<GameState **&> {
+    using type = GameState **&;
+    using weak_type = GameState;
+    using base = void;
+    using members = std::tuple<>;
+
+    static constexpr char * const name = "GameState **&";
+    static constexpr char * const weak_name = "GameState";
+
+    static constexpr size_t member_count = 3;
+
+    static constexpr bool is_ptr = true;
+    static constexpr bool is_ref = true;
+    static constexpr size_t base_count = 0;
+    static constexpr bool is_primitive = false;
+    static constexpr bool is_class = true;
+    static constexpr bool is_enum = false;
+};
+
+// Get at index.
+#define get_member(variable, Type, index) GetMember<Type, index>::get(&variable);
+template<typename T, int index> struct GetMember {};
+
+template<> struct GetMember<V2, 0> {
+    static float *get(V2 *ptr) {
+        _V2 *cpy = (_V2 *)ptr;
+        float * res = (float *)&cpy->x;
+        return(res);
+    };
+};
+template<> struct GetMember<V2 &, 0> {
+    static float *get(V2 *ptr) {
+        _V2 *cpy = (_V2 *)ptr;
+        float * res = (float *)&cpy->x;
+        return(res);
+    };
+};
+template<> struct GetMember<V2, 1> {
+    static float *get(V2 *ptr) {
+        _V2 *cpy = (_V2 *)ptr;
+        float * res = (float *)&cpy->y;
+        return(res);
+    };
+};
+template<> struct GetMember<V2 &, 1> {
+    static float *get(V2 *ptr) {
+        _V2 *cpy = (_V2 *)ptr;
+        float * res = (float *)&cpy->y;
+        return(res);
+    };
+};
+
+template<> struct GetMember<Transform, 0> {
+    static V2 *get(Transform *ptr) {
+        _Transform *cpy = (_Transform *)ptr;
+        V2 * res = (V2 *)&cpy->pos;
+        return(res);
+    };
+};
+template<> struct GetMember<Transform &, 0> {
+    static V2 *get(Transform *ptr) {
+        _Transform *cpy = (_Transform *)ptr;
+        V2 * res = (V2 *)&cpy->pos;
+        return(res);
+    };
+};
+template<> struct GetMember<Transform, 1> {
+    static V2 *get(Transform *ptr) {
+        _Transform *cpy = (_Transform *)ptr;
+        V2 * res = (V2 *)&cpy->size;
+        return(res);
+    };
+};
+template<> struct GetMember<Transform &, 1> {
+    static V2 *get(Transform *ptr) {
+        _Transform *cpy = (_Transform *)ptr;
+        V2 * res = (V2 *)&cpy->size;
+        return(res);
+    };
+};
+
+template<> struct GetMember<Ball, 0> {
+    static Transform *get(Ball *ptr) {
+        _Ball *cpy = (_Ball *)ptr;
+        Transform * res = (Transform *)&cpy->trans;
+        return(res);
+    };
+};
+template<> struct GetMember<Ball &, 0> {
+    static Transform *get(Ball *ptr) {
+        _Ball *cpy = (_Ball *)ptr;
+        Transform * res = (Transform *)&cpy->trans;
+        return(res);
+    };
+};
+template<> struct GetMember<Ball, 1> {
+    static V2 *get(Ball *ptr) {
+        _Ball *cpy = (_Ball *)ptr;
+        V2 * res = (V2 *)&cpy->speed;
+        return(res);
+    };
+};
+template<> struct GetMember<Ball &, 1> {
+    static V2 *get(Ball *ptr) {
+        _Ball *cpy = (_Ball *)ptr;
+        V2 * res = (V2 *)&cpy->speed;
+        return(res);
+    };
+};
+
+template<> struct GetMember<Paddle, 0> {
+    static Transform *get(Paddle *ptr) {
+        _Paddle *cpy = (_Paddle *)ptr;
+        Transform * res = (Transform *)&cpy->trans;
+        return(res);
+    };
+};
+template<> struct GetMember<Paddle &, 0> {
+    static Transform *get(Paddle *ptr) {
+        _Paddle *cpy = (_Paddle *)ptr;
+        Transform * res = (Transform *)&cpy->trans;
+        return(res);
+    };
+};
+
+template<> struct GetMember<GameState, 0> {
+    static Paddle *get(GameState *ptr) {
+        _GameState *cpy = (_GameState *)ptr;
+        Paddle * res = (Paddle *)&cpy->paddle;
+        return(res);
+    };
+};
+template<> struct GetMember<GameState &, 0> {
+    static Paddle *get(GameState *ptr) {
+        _GameState *cpy = (_GameState *)ptr;
+        Paddle * res = (Paddle *)&cpy->paddle;
+        return(res);
+    };
+};
+template<> struct GetMember<GameState, 1> {
+    static Ball *get(GameState *ptr) {
+        _GameState *cpy = (_GameState *)ptr;
+        Ball * res = (Ball *)&cpy->ball;
+        return(res);
+    };
+};
+template<> struct GetMember<GameState &, 1> {
+    static Ball *get(GameState *ptr) {
+        _GameState *cpy = (_GameState *)ptr;
+        Ball * res = (Ball *)&cpy->ball;
+        return(res);
+    };
+};
+template<> struct GetMember<GameState, 2> {
+    static int *get(GameState *ptr) {
+        _GameState *cpy = (_GameState *)ptr;
+        int * res = (int *)&cpy->score;
+        return(res);
+    };
+};
+template<> struct GetMember<GameState &, 2> {
+    static int *get(GameState *ptr) {
+        _GameState *cpy = (_GameState *)ptr;
+        int * res = (int *)&cpy->score;
+        return(res);
+    };
+};
 static bool is_meta_type_container(int type) {
     if(type == Type_char) {return(false);} // false
     else if(type == Type_short) {return(false);} // false
@@ -778,6 +1694,16 @@ static char const * meta_type_to_name(Type mt, bool is_ptr) {
 
     assert(0); 
     return(0); // Not found
+}
+static size_t get_size_from_str(char const *str) {
+
+    if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {return(sizeof(_V2));}
+    else if((strcmp(str, "Transform") == 0) || (strcmp(str, "Transform *") == 0) || (strcmp(str, "Transform **") == 0)) {return(sizeof(_Transform));}
+    else if((strcmp(str, "Ball") == 0) || (strcmp(str, "Ball *") == 0) || (strcmp(str, "Ball **") == 0)) {return(sizeof(_Ball));}
+    else if((strcmp(str, "Paddle") == 0) || (strcmp(str, "Paddle *") == 0) || (strcmp(str, "Paddle **") == 0)) {return(sizeof(_Paddle));}
+    else if((strcmp(str, "GameState") == 0) || (strcmp(str, "GameState *") == 0) || (strcmp(str, "GameState **") == 0)) {return(sizeof(_GameState));}
+
+    return(0); // Not found.
 }
 // Function to serialize a struct to a char array buffer.
 static size_t
@@ -850,7 +1776,22 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
                     } else {
                         char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);
-                        bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        if(!member->arr_size) {
+                            bytes_written = serialize_struct_(member_ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
+                        } else {
+                            for(int j = 0; (j < member->arr_size); ++j) {
+                                size_t size_of_struct = get_size_from_str(struct_name);
+
+                                char unsigned *ptr;
+                                if(member->is_ptr) {
+                                    ptr = *(char unsigned **)((char unsigned *)member_ptr + (j * sizeof(size_t)));
+                                } else {
+                                    ptr = ((char unsigned *)member_ptr + (j * size_of_struct));
+                                }
+
+                                bytes_written = serialize_struct_(ptr, member->name, struct_name, indent, buffer, buf_size - bytes_written, bytes_written);
+                            }
+                        }
                     }
                 } break; // default 
             }
@@ -862,12 +1803,6 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
-    // Recreated structs.
-    struct _V2 {  _float x;  _float y;  };
-    struct _Transform {  _V2 pos;  _V2 size;  };
-    struct _Ball {  _Transform trans;  _V2 speed;  };
-    struct _Paddle {  _Transform trans;  };
-    struct _GameState {  _Paddle paddle;  _Ball ball;  _int score;  };
     // V2
     if(type_compare(T, V2)) {
         static MemberDefinition members_of_V2[] = {
@@ -914,12 +1849,6 @@ template<typename T> static MemberDefinition *get_members_of_(void) {
 
 // Convert a type into a members of pointer.
 static MemberDefinition *get_members_of_str(char const *str) {
-    // Recreated structs.
-    struct _V2 {  _float x;  _float y;  };
-    struct _Transform {  _V2 pos;  _V2 size;  };
-    struct _Ball {  _Transform trans;  _V2 speed;  };
-    struct _Paddle {  _Transform trans;  };
-    struct _GameState {  _Paddle paddle;  _Ball ball;  _int score;  };
     // char
     if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {
         static MemberDefinition members_of_char[] = {
@@ -1016,21 +1945,30 @@ static MemberDefinition *get_members_of_str(char const *str) {
 
 // Get the number of members for a type.
 static int get_number_of_members_str(char const *str) {
-    if(strcmp(str, "char") == 0) {return(1);}
-    else if(strcmp(str, "short") == 0) {return(1);}
-    else if(strcmp(str, "int") == 0) {return(1);}
-    else if(strcmp(str, "long") == 0) {return(1);}
-    else if(strcmp(str, "float") == 0) {return(1);}
-    else if(strcmp(str, "double") == 0) {return(1);}
-    else if(strcmp(str, "bool") == 0) {return(1);}
-    else if(strcmp(str, "V2") == 0) {return(2);} // V2
-    else if(strcmp(str, "Transform") == 0) {return(2);} // Transform
-    else if(strcmp(str, "Ball") == 0) {return(2);} // Ball
-    else if(strcmp(str, "Paddle") == 0) {return(1);} // Paddle
-    else if(strcmp(str, "GameState") == 0) {return(3);} // GameState
+    if((strcmp(str, "char") == 0) || (strcmp(str, "char *") == 0) || (strcmp(str, "char **") == 0)) {return(1);}
+    else if((strcmp(str, "short") == 0) || (strcmp(str, "short *") == 0) || (strcmp(str, "short **") == 0)) {return(1);}
+    else if((strcmp(str, "int") == 0) || (strcmp(str, "int *") == 0) || (strcmp(str, "int **") == 0)) {return(1);}
+    else if((strcmp(str, "long") == 0) || (strcmp(str, "long *") == 0) || (strcmp(str, "long **") == 0)) {return(1);}
+    else if((strcmp(str, "float") == 0) || (strcmp(str, "float *") == 0) || (strcmp(str, "float **") == 0)) {return(1);}
+    else if((strcmp(str, "double") == 0) || (strcmp(str, "double *") == 0) || (strcmp(str, "double **") == 0)) {return(1);}
+    else if((strcmp(str, "bool") == 0) || (strcmp(str, "bool *") == 0) || (strcmp(str, "bool **") == 0)) {return(1);}
+    else if((strcmp(str, "V2") == 0) || (strcmp(str, "V2 *") == 0) || (strcmp(str, "V2 **") == 0)) {return(2);}
+    else if((strcmp(str, "Transform") == 0) || (strcmp(str, "Transform *") == 0) || (strcmp(str, "Transform **") == 0)) {return(2);}
+    else if((strcmp(str, "Ball") == 0) || (strcmp(str, "Ball *") == 0) || (strcmp(str, "Ball **") == 0)) {return(2);}
+    else if((strcmp(str, "Paddle") == 0) || (strcmp(str, "Paddle *") == 0) || (strcmp(str, "Paddle **") == 0)) {return(1);}
+    else if((strcmp(str, "GameState") == 0) || (strcmp(str, "GameState *") == 0) || (strcmp(str, "GameState **") == 0)) {return(3);}
 
     return(-1); // Error.
 }
+
+//
+// Enum Introspection data.
+//
+
+// Stub functions.
+template<typename T>static char const *enum_to_string(T element) { return(0); }
+template<typename T>static T string_to_enum(char const *str) { return(0); }
+
 
 #define weak_type_compare(A, B) TypeCompare_<pp::Type<A>::weak_type, pp::Type<B>::weak_type>::e;
 #undef _std // :(

@@ -38,8 +38,8 @@ template<> struct TypeInfo<void *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "void *";
-    static constexpr char * const weak_name = "void";
+    static constexpr char const * const name = "void *";
+    static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
 
@@ -57,8 +57,8 @@ template<> struct TypeInfo<void **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "void **";
-    static constexpr char * const weak_name = "void";
+    static constexpr char const * const name = "void **";
+    static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
 
@@ -76,8 +76,8 @@ template<> struct TypeInfo<void *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "void *&";
-    static constexpr char * const weak_name = "void";
+    static constexpr char const * const name = "void *&";
+    static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
 
@@ -95,8 +95,8 @@ template<> struct TypeInfo<void **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "void **&";
-    static constexpr char * const weak_name = "void";
+    static constexpr char const * const name = "void **&";
+    static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
 
@@ -116,8 +116,8 @@ template<> struct TypeInfo<char> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "char";
-    static constexpr char * const weak_name = "char";
+    static constexpr char const * const name = "char";
+    static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
 
@@ -135,8 +135,8 @@ template<> struct TypeInfo<char *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "char *";
-    static constexpr char * const weak_name = "char";
+    static constexpr char const * const name = "char *";
+    static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
 
@@ -154,8 +154,8 @@ template<> struct TypeInfo<char **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "char **";
-    static constexpr char * const weak_name = "char";
+    static constexpr char const * const name = "char **";
+    static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
 
@@ -173,8 +173,8 @@ template<> struct TypeInfo<char&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "char&";
-    static constexpr char * const weak_name = "char";
+    static constexpr char const * const name = "char&";
+    static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
 
@@ -192,8 +192,8 @@ template<> struct TypeInfo<char *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "char *&";
-    static constexpr char * const weak_name = "char";
+    static constexpr char const * const name = "char *&";
+    static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
 
@@ -211,8 +211,8 @@ template<> struct TypeInfo<char **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "char **&";
-    static constexpr char * const weak_name = "char";
+    static constexpr char const * const name = "char **&";
+    static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
 
@@ -232,8 +232,8 @@ template<> struct TypeInfo<short> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "short";
-    static constexpr char * const weak_name = "short";
+    static constexpr char const * const name = "short";
+    static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
 
@@ -251,8 +251,8 @@ template<> struct TypeInfo<short *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "short *";
-    static constexpr char * const weak_name = "short";
+    static constexpr char const * const name = "short *";
+    static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
 
@@ -270,8 +270,8 @@ template<> struct TypeInfo<short **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "short **";
-    static constexpr char * const weak_name = "short";
+    static constexpr char const * const name = "short **";
+    static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
 
@@ -289,8 +289,8 @@ template<> struct TypeInfo<short&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "short&";
-    static constexpr char * const weak_name = "short";
+    static constexpr char const * const name = "short&";
+    static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
 
@@ -308,8 +308,8 @@ template<> struct TypeInfo<short *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "short *&";
-    static constexpr char * const weak_name = "short";
+    static constexpr char const * const name = "short *&";
+    static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
 
@@ -327,8 +327,8 @@ template<> struct TypeInfo<short **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "short **&";
-    static constexpr char * const weak_name = "short";
+    static constexpr char const * const name = "short **&";
+    static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
 
@@ -348,8 +348,8 @@ template<> struct TypeInfo<int> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "int";
-    static constexpr char * const weak_name = "int";
+    static constexpr char const * const name = "int";
+    static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
 
@@ -367,8 +367,8 @@ template<> struct TypeInfo<int *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "int *";
-    static constexpr char * const weak_name = "int";
+    static constexpr char const * const name = "int *";
+    static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
 
@@ -386,8 +386,8 @@ template<> struct TypeInfo<int **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "int **";
-    static constexpr char * const weak_name = "int";
+    static constexpr char const * const name = "int **";
+    static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
 
@@ -405,8 +405,8 @@ template<> struct TypeInfo<int&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "int&";
-    static constexpr char * const weak_name = "int";
+    static constexpr char const * const name = "int&";
+    static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
 
@@ -424,8 +424,8 @@ template<> struct TypeInfo<int *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "int *&";
-    static constexpr char * const weak_name = "int";
+    static constexpr char const * const name = "int *&";
+    static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
 
@@ -443,8 +443,8 @@ template<> struct TypeInfo<int **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "int **&";
-    static constexpr char * const weak_name = "int";
+    static constexpr char const * const name = "int **&";
+    static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
 
@@ -464,8 +464,8 @@ template<> struct TypeInfo<long> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "long";
-    static constexpr char * const weak_name = "long";
+    static constexpr char const * const name = "long";
+    static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
 
@@ -483,8 +483,8 @@ template<> struct TypeInfo<long *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "long *";
-    static constexpr char * const weak_name = "long";
+    static constexpr char const * const name = "long *";
+    static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
 
@@ -502,8 +502,8 @@ template<> struct TypeInfo<long **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "long **";
-    static constexpr char * const weak_name = "long";
+    static constexpr char const * const name = "long **";
+    static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
 
@@ -521,8 +521,8 @@ template<> struct TypeInfo<long&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "long&";
-    static constexpr char * const weak_name = "long";
+    static constexpr char const * const name = "long&";
+    static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
 
@@ -540,8 +540,8 @@ template<> struct TypeInfo<long *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "long *&";
-    static constexpr char * const weak_name = "long";
+    static constexpr char const * const name = "long *&";
+    static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
 
@@ -559,8 +559,8 @@ template<> struct TypeInfo<long **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "long **&";
-    static constexpr char * const weak_name = "long";
+    static constexpr char const * const name = "long **&";
+    static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
 
@@ -580,8 +580,8 @@ template<> struct TypeInfo<float> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "float";
-    static constexpr char * const weak_name = "float";
+    static constexpr char const * const name = "float";
+    static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
 
@@ -599,8 +599,8 @@ template<> struct TypeInfo<float *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "float *";
-    static constexpr char * const weak_name = "float";
+    static constexpr char const * const name = "float *";
+    static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
 
@@ -618,8 +618,8 @@ template<> struct TypeInfo<float **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "float **";
-    static constexpr char * const weak_name = "float";
+    static constexpr char const * const name = "float **";
+    static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
 
@@ -637,8 +637,8 @@ template<> struct TypeInfo<float&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "float&";
-    static constexpr char * const weak_name = "float";
+    static constexpr char const * const name = "float&";
+    static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
 
@@ -656,8 +656,8 @@ template<> struct TypeInfo<float *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "float *&";
-    static constexpr char * const weak_name = "float";
+    static constexpr char const * const name = "float *&";
+    static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
 
@@ -675,8 +675,8 @@ template<> struct TypeInfo<float **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "float **&";
-    static constexpr char * const weak_name = "float";
+    static constexpr char const * const name = "float **&";
+    static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
 
@@ -696,8 +696,8 @@ template<> struct TypeInfo<double> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "double";
-    static constexpr char * const weak_name = "double";
+    static constexpr char const * const name = "double";
+    static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
 
@@ -715,8 +715,8 @@ template<> struct TypeInfo<double *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "double *";
-    static constexpr char * const weak_name = "double";
+    static constexpr char const * const name = "double *";
+    static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
 
@@ -734,8 +734,8 @@ template<> struct TypeInfo<double **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "double **";
-    static constexpr char * const weak_name = "double";
+    static constexpr char const * const name = "double **";
+    static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
 
@@ -753,8 +753,8 @@ template<> struct TypeInfo<double&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "double&";
-    static constexpr char * const weak_name = "double";
+    static constexpr char const * const name = "double&";
+    static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
 
@@ -772,8 +772,8 @@ template<> struct TypeInfo<double *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "double *&";
-    static constexpr char * const weak_name = "double";
+    static constexpr char const * const name = "double *&";
+    static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
 
@@ -791,8 +791,8 @@ template<> struct TypeInfo<double **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "double **&";
-    static constexpr char * const weak_name = "double";
+    static constexpr char const * const name = "double **&";
+    static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
 
@@ -812,8 +812,8 @@ template<> struct TypeInfo<bool> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "bool";
-    static constexpr char * const weak_name = "bool";
+    static constexpr char const * const name = "bool";
+    static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
 
@@ -831,8 +831,8 @@ template<> struct TypeInfo<bool *> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "bool *";
-    static constexpr char * const weak_name = "bool";
+    static constexpr char const * const name = "bool *";
+    static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
 
@@ -850,8 +850,8 @@ template<> struct TypeInfo<bool **> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "bool **";
-    static constexpr char * const weak_name = "bool";
+    static constexpr char const * const name = "bool **";
+    static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
 
@@ -869,8 +869,8 @@ template<> struct TypeInfo<bool&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "bool&";
-    static constexpr char * const weak_name = "bool";
+    static constexpr char const * const name = "bool&";
+    static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
 
@@ -888,8 +888,8 @@ template<> struct TypeInfo<bool *&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "bool *&";
-    static constexpr char * const weak_name = "bool";
+    static constexpr char const * const name = "bool *&";
+    static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
 
@@ -907,8 +907,8 @@ template<> struct TypeInfo<bool **&> {
     using base = void;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "bool **&";
-    static constexpr char * const weak_name = "bool";
+    static constexpr char const * const name = "bool **&";
+    static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
 
@@ -928,8 +928,8 @@ template<> struct TypeInfo<V2> {
     using base = void;
     using members = std::tuple<int, int>;
 
-    static constexpr char * const name = "V2";
-    static constexpr char * const weak_name = "V2";
+    static constexpr char const * const name = "V2";
+    static constexpr char const * const weak_name = "V2";
 
     static constexpr size_t member_count = 2;
 
@@ -947,8 +947,8 @@ template<> struct TypeInfo<V2 *> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "V2 *";
-    static constexpr char * const weak_name = "V2";
+    static constexpr char const * const name = "V2 *";
+    static constexpr char const * const weak_name = "V2";
 
     static constexpr size_t member_count = 2;
 
@@ -966,8 +966,8 @@ template<> struct TypeInfo<V2 **> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "V2 **";
-    static constexpr char * const weak_name = "V2";
+    static constexpr char const * const name = "V2 **";
+    static constexpr char const * const weak_name = "V2";
 
     static constexpr size_t member_count = 2;
 
@@ -985,8 +985,8 @@ template<> struct TypeInfo<V2&> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "V2&";
-    static constexpr char * const weak_name = "V2";
+    static constexpr char const * const name = "V2&";
+    static constexpr char const * const weak_name = "V2";
 
     static constexpr size_t member_count = 2;
 
@@ -1004,8 +1004,8 @@ template<> struct TypeInfo<V2 *&> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "V2 *&";
-    static constexpr char * const weak_name = "V2";
+    static constexpr char const * const name = "V2 *&";
+    static constexpr char const * const weak_name = "V2";
 
     static constexpr size_t member_count = 2;
 
@@ -1023,8 +1023,8 @@ template<> struct TypeInfo<V2 **&> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "V2 **&";
-    static constexpr char * const weak_name = "V2";
+    static constexpr char const * const name = "V2 **&";
+    static constexpr char const * const weak_name = "V2";
 
     static constexpr size_t member_count = 2;
 
@@ -1044,8 +1044,8 @@ template<> struct TypeInfo<Test> {
     using base = void;
     using members = std::tuple<int *, float, V2>;
 
-    static constexpr char * const name = "Test";
-    static constexpr char * const weak_name = "Test";
+    static constexpr char const * const name = "Test";
+    static constexpr char const * const weak_name = "Test";
 
     static constexpr size_t member_count = 3;
 
@@ -1063,8 +1063,8 @@ template<> struct TypeInfo<Test *> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "Test *";
-    static constexpr char * const weak_name = "Test";
+    static constexpr char const * const name = "Test *";
+    static constexpr char const * const weak_name = "Test";
 
     static constexpr size_t member_count = 3;
 
@@ -1082,8 +1082,8 @@ template<> struct TypeInfo<Test **> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "Test **";
-    static constexpr char * const weak_name = "Test";
+    static constexpr char const * const name = "Test **";
+    static constexpr char const * const weak_name = "Test";
 
     static constexpr size_t member_count = 3;
 
@@ -1101,8 +1101,8 @@ template<> struct TypeInfo<Test&> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "Test&";
-    static constexpr char * const weak_name = "Test";
+    static constexpr char const * const name = "Test&";
+    static constexpr char const * const weak_name = "Test";
 
     static constexpr size_t member_count = 3;
 
@@ -1120,8 +1120,8 @@ template<> struct TypeInfo<Test *&> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "Test *&";
-    static constexpr char * const weak_name = "Test";
+    static constexpr char const * const name = "Test *&";
+    static constexpr char const * const weak_name = "Test";
 
     static constexpr size_t member_count = 3;
 
@@ -1139,8 +1139,8 @@ template<> struct TypeInfo<Test **&> {
     using base = void;
     using members = std::tuple<>;
 
-    static constexpr char * const name = "Test **&";
-    static constexpr char * const weak_name = "Test";
+    static constexpr char const * const name = "Test **&";
+    static constexpr char const * const weak_name = "Test";
 
     static constexpr size_t member_count = 3;
 
@@ -1159,8 +1159,8 @@ template<> struct TypeInfo<Letters> {
     using base = short;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "Letters";
-    static constexpr char * const weak_name = "Letters";
+    static constexpr char const * const name = "Letters";
+    static constexpr char const * const weak_name = "Letters";
 
     static constexpr size_t member_count = 3;
 
@@ -1178,8 +1178,8 @@ template<> struct TypeInfo<Letters *> {
     using base = short;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "Letters *";
-    static constexpr char * const weak_name = "Letters";
+    static constexpr char const * const name = "Letters *";
+    static constexpr char const * const weak_name = "Letters";
 
     static constexpr size_t member_count = 3;
 
@@ -1197,8 +1197,8 @@ template<> struct TypeInfo<Letters **> {
     using base = short;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "Letters **";
-    static constexpr char * const weak_name = "Letters";
+    static constexpr char const * const name = "Letters **";
+    static constexpr char const * const weak_name = "Letters";
 
     static constexpr size_t member_count = 3;
 
@@ -1216,8 +1216,8 @@ template<> struct TypeInfo<Letters&> {
     using base = short;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "Letters&";
-    static constexpr char * const weak_name = "Letters";
+    static constexpr char const * const name = "Letters&";
+    static constexpr char const * const weak_name = "Letters";
 
     static constexpr size_t member_count = 3;
 
@@ -1235,8 +1235,8 @@ template<> struct TypeInfo<Letters *&> {
     using base = short;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "Letters *&";
-    static constexpr char * const weak_name = "Letters";
+    static constexpr char const * const name = "Letters *&";
+    static constexpr char const * const weak_name = "Letters";
 
     static constexpr size_t member_count = 3;
 
@@ -1254,8 +1254,8 @@ template<> struct TypeInfo<Letters **&> {
     using base = short;
     using members = std::tuple<void>;
 
-    static constexpr char * const name = "Letters **&";
-    static constexpr char * const weak_name = "Letters";
+    static constexpr char const * const name = "Letters **&";
+    static constexpr char const * const weak_name = "Letters";
 
     static constexpr size_t member_count = 3;
 
