@@ -84,8 +84,11 @@ template<typename T> struct TypeInfo {
     static constexpr size_t member_count = 0;
 
     static constexpr bool is_ptr = 0;
+    static constexpr bool is_ref = 0;
     static constexpr size_t base_count = 0;
     static constexpr bool is_primitive = 0;
+    static constexpr bool is_class = 0;
+    static constexpr bool is_enum = 0;
 };
 
 struct MemberDefinition {
