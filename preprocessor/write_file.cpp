@@ -676,7 +676,7 @@ internal Void write_out_get_at_index(OutputBuffer *ob, StructData *struct_data, 
 
     write_to_output_buffer(ob,
                            "// Get at index.\n"
-                           "#define get_member(variable, Type, index) GetMember<Type, index>::get(&variable);\n"
+                           "#define get_member(variable, index) GetMember<pp::TypeInfo<decltype(variable)>::weak_type, index>::get(&variable)\n"
                            "template<typename T, int index> struct GetMember {};\n");
 
     for(Int i = 0; (i < struct_count); ++i) {
