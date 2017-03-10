@@ -61,12 +61,14 @@ Char *ErrorTypeToString(ErrorType e) {
 }
 
 Void push_error_(ErrorType type, Char *guid) {
+#if ERROR_LOGGING
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count++;
 
         e->type = type;
         e->guid = guid;
     }
+#endif
 }
 
 Bool print_errors(void) {

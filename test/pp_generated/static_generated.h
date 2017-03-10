@@ -76,7 +76,6 @@ template<typename T> struct TypeInfo {
     using type = void;
     using weak_type = void;
     using base = void;
-    using members = std::tuple<void>;
 
     static constexpr char * name = 0;
     static constexpr char * weak_name = 0;
@@ -85,7 +84,9 @@ template<typename T> struct TypeInfo {
 
     static constexpr bool is_ptr = 0;
     static constexpr bool is_ref = 0;
+
     static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = 0;
     static constexpr bool is_class = 0;
     static constexpr bool is_enum = 0;

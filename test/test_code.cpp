@@ -1,3 +1,60 @@
+#include "pp_generated/test_code_generated.h"
+#include <iostream>
+#include <sstream>
+
+class Test {
+public:
+    int i; float f;
+};
+
+template<typename T, int index> void serialize_var(T *var, std::stringstream &buffer) {
+    serialize_var<T, index - 1>(var, buffer);
+    auto member = pp::get_member(var, index);
+
+    // Type of the member.
+    char const *type_as_str = pp::TypeInfo<decltype(member)>::weak_name;
+
+    // Name of the member.
+    char const *member_name = pp::get_member_name<T>(index);
+
+    // Output member in xml format.
+    buffer << "    <name>" << member_name << "</name>" << std::endl;;
+    buffer << "    <type>" << type_as_str << "</type>" << std::endl;;
+    buffer << "    <value>" << *member << "</value>" << std::endl;;
+}
+
+// Empty specializations, so that serialize_var doesn’t
+// recursively generate infinite functions.
+template<>void serialize_var<Test, -1>(Test *t, std::stringstream &buffer) {}
+
+// Simple utility function to make calling serialize_var nicer.
+template<typename T> void write_to_xml(T *var, std::string name) {
+    // Write to string stream.
+    std::stringstream buffer;
+    buffer << "<" << pp::TypeInfo<T>::weak_name << ">" << std::endl;
+    serialize_var<T, pp::TypeInfo<T>::member_count - 1>(var, buffer);
+    buffer << "</" << pp::TypeInfo<T>::weak_name << ">" << "\0";
+
+    // Write to disk.
+    name = name + ".xml";
+    FILE *file = fopen(name.c_str(), "w");
+    if(file) {
+        fwrite(buffer.str().c_str(), 1, buffer.str().size(), file);
+        fclose(file);
+    }
+}
+
+int main(int argc, char **argv) {
+    Test test;
+    test.i = 10;
+    test.f = 3.14f;
+
+    write_to_xml(&test, "test");
+
+    return(0);
+}
+
+
 //
 // Basic name/weak_name example
 //
@@ -261,53 +318,26 @@ int main(int argc, char **argv) {
 //
 // Get the member at an of a struct.
 //
-
+/*
 #include "pp_generated/test_code_generated.h"
 
-struct V2 { int x, y; };
-struct Test {int *a; float f; V2 v;};
-
-enum Letters : short {a, b, c};
-
-template<typename T>
-T adder(T v) {
-    return v;
-}
-
-template<typename T, typename... Args>
-T adder(T first, Args... args) {
-    return first + adder(args...);
-}
-
-#define get_member_helper(var, Type, index) *pp::get_member(var, Type, index)
+class SomeClass {
+public:
+    int a;
+    int b;
+    int c;
+    int d;
+};
 
 int main(int argc, char **argv) {
-    adder(1, 2, 3, 4);
 
-    Test test;
-    test.a = new int; *test.a = 10;
-    test.f = 3.14f;
-    test.v = {10, 20};
-
-    auto &v = get_member_helper(test, Test, 2);
-    auto &b = get_member_helper(v, decltype(v), 1);
-
-    ++b;
-
-    float f = 0;
-    float *p = &f;
-    float **pp = &p;
-
-    float ** &r = pp;
-
-    char const *str1 = pp::TypeInfo<decltype(r)>::name;
-
-
-    char const *str = pp::TypeInfo<decltype(b)>::name;
+    printf("The number of members in %s are %d",
+           "SomeClass",
+           4);
 
     return(0);
 }
-
+*/
 //
 // Simple example showing pp::Types enum.
 //

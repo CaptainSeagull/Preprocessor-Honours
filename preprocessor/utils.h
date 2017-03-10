@@ -59,11 +59,7 @@ struct Error {
     Char *guid;
 };
 
-#if ERROR_LOGGING
-    #define push_error(type) push_error_(type, MAKE_GUID)
-#else
-    #define push_error(type) {}
-#endif
+#define push_error(type) push_error_(type, MAKE_GUID)
 
 Void push_error_(ErrorType type, Char *guid);
 Char *ErrorTypeToString(ErrorType e);
@@ -112,7 +108,7 @@ Void *system_realloc(Void *ptr, PtrSize size);
 #if defined(free)
     #undef free
 #endif
-#define free(x) system_free(x); x = 0
+#define free(x) system_free(x);
 
 #if defined(alloc)
     #undef alloc
