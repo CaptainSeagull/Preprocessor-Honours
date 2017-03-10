@@ -46,8 +46,6 @@
     - I don't think #if 1 #else blocks work correctly...
 */
 
-#include <tuple>
-
 #include "utils.h"
 #include "lexer.h"
 #include "platform.h"
@@ -177,7 +175,6 @@ internal Bool write_static_file() {
         "    using type = void;\n"
         "    using weak_type = void;\n"
         "    using base = void;\n"
-        "    using members = std::tuple<void>;\n"
         "\n"
         "    static constexpr char * name = 0;\n"
         "    static constexpr char * weak_name = 0;\n"
@@ -186,7 +183,9 @@ internal Bool write_static_file() {
         "\n"
         "    static constexpr bool is_ptr = 0;\n"
         "    static constexpr bool is_ref = 0;\n"
+        "\n"
         "    static constexpr size_t base_count = 0;\n"
+        "\n"
         "    static constexpr bool is_primitive = 0;\n"
         "    static constexpr bool is_class = 0;\n"
         "    static constexpr bool is_enum = 0;\n"

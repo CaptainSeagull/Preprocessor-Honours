@@ -178,7 +178,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    using type = %.*s%s%s;\n"
                            "    using weak_type = %.*s;\n"
                            "    using base = %.*s;\n"
-                           "    using members = std::tuple<%s>;\n"
+                           // TODO(Jonny): Remove the tuple stuff.
+                           //"    using members = std::tuple<%s>;\n"
                            "\n"
                            "    static constexpr char const * const name = \"%.*s%s%s\";\n"
                            "    static constexpr char const * const weak_name = \"%.*s\";\n"
@@ -197,7 +198,6 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            name.len, name.e, pointer_stuff, ref,
                            name.len, name.e,
                            (base.len) ? base.len : 4, (base.len) ? base.e : "void",
-                           (tuple_types_buffer) ? tuple_types_buffer : "void",
                            name.len, name.e, pointer_stuff, ref,
                            name.len, name.e,
                            member_count,
@@ -676,8 +676,8 @@ internal Void write_out_get_at_index(OutputBuffer *ob, StructData *struct_data, 
 
     write_to_output_buffer(ob,
                            "// Get at index.\n"
-                           "#define get_member(variable, Type, index) GetMember<Type, index>::get(&variable);\n"
-                           "template<typename T, int index> struct GetMember {};\n");
+                           "#define get_member(variable, index) GetMember<decltype(variable), index>::get(variable)\n"
+                           "template<typename T, int index> struct GetMember { static_assert(0, \"This should never be called.\"); };\n");
 
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;
@@ -686,10 +686,39 @@ internal Void write_out_get_at_index(OutputBuffer *ob, StructData *struct_data, 
         for(Int j = 0; (j < sd->member_count); ++j) {
             Variable *md = sd->members + j;
 
-            write_get_member(ob, sd, md, j, "");
-            write_get_member(ob, sd, md, j, " &");
+            // Because get_member _requires_ a pointer, only generate code for the pointer version.
+            write_get_member(ob, sd, md, j, " *");
+            write_get_member(ob, sd, md, j, " *&");
         }
     }
+}
+
+internal Void write_out_get_name_at_index(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
+    write_to_output_buffer(ob,
+                           "template<typename T>static char const * get_member_name(int index){return(0);}\n");
+    for(Int i = 0; (i < struct_count); ++i) {
+        StructData *sd = struct_data + i;
+
+        write_to_output_buffer(ob,
+                               "template<>char const * get_member_name<%.*s>(int index){\n"
+                               "    switch(index) {\n",
+                               sd->name.len, sd->name.e);
+
+        for(Int j = 0; (j < sd->member_count); ++j) {
+            Variable *md = sd->members + j;
+
+            write_to_output_buffer(ob,
+                                   "        case %d: { return(\"%.*s\"); } break;\n",
+                                   j,
+                                   md->name.len, md->name.e);
+        }
+
+    }
+
+    write_to_output_buffer(ob,
+                           "    }\n"
+                           "    return(0); // Not found.\n"
+                           "}\n");
 }
 
 internal Void write_sizeof_from_str(OutputBuffer *ob, StructData *struct_data, Int struct_count) {
@@ -1320,6 +1349,7 @@ File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData
             write_out_type_specification_struct(&ob, struct_data, struct_count);
             write_out_type_specification_enum(&ob, enum_data, enum_count);
             write_out_get_at_index(&ob, struct_data, struct_count);
+            write_out_get_name_at_index(&ob, struct_data, struct_count);
 
             write_is_container(&ob, types, type_count);
             write_meta_type_to_name(&ob, struct_data, struct_count);
