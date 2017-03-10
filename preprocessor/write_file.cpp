@@ -677,7 +677,7 @@ internal Void write_out_get_at_index(OutputBuffer *ob, StructData *struct_data, 
     write_to_output_buffer(ob,
                            "// Get at index.\n"
                            "#define get_member(variable, index) GetMember<decltype(variable), index>::get(variable)\n"
-                           "template<typename T, int index> struct GetMember { static_assert(0, \"This should never be called.\"); };\n");
+                           "template<typename T, int index> struct GetMember { /* Can I have a static assert in here that will only get called if the function is generated?? */};\n");
 
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;

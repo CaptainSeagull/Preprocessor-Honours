@@ -982,7 +982,7 @@ template<> struct TypeInfo<Test **&> {
 
 // Get at index.
 #define get_member(variable, index) GetMember<decltype(variable), index>::get(variable)
-template<typename T, int index> struct GetMember { static_assert(0, "This should never be called."); };
+template<typename T, int index> struct GetMember { /* Can I have a static assert in here that will only get called if the function is generated?? */};
 
 template<> struct GetMember<Test *, 0> {
     static int *get(Test *ptr) {
