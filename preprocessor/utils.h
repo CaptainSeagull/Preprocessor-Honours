@@ -270,9 +270,18 @@ Uint32 safe_truncate_size_64(Uint64 v);
 //
 // Variable.
 //
+enum Access {
+    Access_public,
+    Access_private,
+    Access_protected,
+
+    Access_count,
+};
+
 struct Variable {
     String type;
     String name;
+    Access access;
     Bool is_ptr;
     Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
     Bool is_inside_anonymous_struct;

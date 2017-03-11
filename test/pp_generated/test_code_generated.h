@@ -2,7 +2,6 @@
 #define TEST_CODE_GENERATED_H
 
 // Forward declared structs and enums (these must be declared outside the namespace...)
-class Test;
 
 #define _std std // TODO(Jonny): This is really stupid...
 
@@ -15,1011 +14,909 @@ namespace pp { enum Type {
     Type_float,
     Type_double,
     Type_bool,
-    Type_Test,
 }; }
 
 #include "static_generated.h"
 namespace pp { // PreProcessor
 
     // Recreated structs.
-    struct _Test {  _int i;  _float f;  };
 //
 // Meta type specialization
 //
 
 // struct void
 template<> struct TypeInfo<void *> {
-    using type = void *;
+    using type      = void *;
     using weak_type = void;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "void *";
+    static constexpr char const * const name      = "void *";
     static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<void **> {
-    using type = void **;
+    using type      = void **;
     using weak_type = void;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "void **";
+    static constexpr char const * const name      = "void **";
     static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<void *&> {
-    using type = void *&;
+    using type      = void *&;
     using weak_type = void;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "void *&";
+    static constexpr char const * const name      = "void *&";
     static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<void **&> {
-    using type = void **&;
+    using type      = void **&;
     using weak_type = void;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "void **&";
+    static constexpr char const * const name      = "void **&";
     static constexpr char const * const weak_name = "void";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct char
 template<> struct TypeInfo<char> {
-    using type = char;
+    using type      = char;
     using weak_type = char;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "char";
+    static constexpr char const * const name      = "char";
     static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<char *> {
-    using type = char *;
+    using type      = char *;
     using weak_type = char;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "char *";
+    static constexpr char const * const name      = "char *";
     static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<char **> {
-    using type = char **;
+    using type      = char **;
     using weak_type = char;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "char **";
+    static constexpr char const * const name      = "char **";
     static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<char&> {
-    using type = char&;
+    using type      = char&;
     using weak_type = char;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "char&";
+    static constexpr char const * const name      = "char&";
     static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<char *&> {
-    using type = char *&;
+    using type      = char *&;
     using weak_type = char;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "char *&";
+    static constexpr char const * const name      = "char *&";
     static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<char **&> {
-    using type = char **&;
+    using type      = char **&;
     using weak_type = char;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "char **&";
+    static constexpr char const * const name      = "char **&";
     static constexpr char const * const weak_name = "char";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct short
 template<> struct TypeInfo<short> {
-    using type = short;
+    using type      = short;
     using weak_type = short;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "short";
+    static constexpr char const * const name      = "short";
     static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<short *> {
-    using type = short *;
+    using type      = short *;
     using weak_type = short;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "short *";
+    static constexpr char const * const name      = "short *";
     static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<short **> {
-    using type = short **;
+    using type      = short **;
     using weak_type = short;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "short **";
+    static constexpr char const * const name      = "short **";
     static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<short&> {
-    using type = short&;
+    using type      = short&;
     using weak_type = short;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "short&";
+    static constexpr char const * const name      = "short&";
     static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<short *&> {
-    using type = short *&;
+    using type      = short *&;
     using weak_type = short;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "short *&";
+    static constexpr char const * const name      = "short *&";
     static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<short **&> {
-    using type = short **&;
+    using type      = short **&;
     using weak_type = short;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "short **&";
+    static constexpr char const * const name      = "short **&";
     static constexpr char const * const weak_name = "short";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct int
 template<> struct TypeInfo<int> {
-    using type = int;
+    using type      = int;
     using weak_type = int;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "int";
+    static constexpr char const * const name      = "int";
     static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<int *> {
-    using type = int *;
+    using type      = int *;
     using weak_type = int;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "int *";
+    static constexpr char const * const name      = "int *";
     static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<int **> {
-    using type = int **;
+    using type      = int **;
     using weak_type = int;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "int **";
+    static constexpr char const * const name      = "int **";
     static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<int&> {
-    using type = int&;
+    using type      = int&;
     using weak_type = int;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "int&";
+    static constexpr char const * const name      = "int&";
     static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<int *&> {
-    using type = int *&;
+    using type      = int *&;
     using weak_type = int;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "int *&";
+    static constexpr char const * const name      = "int *&";
     static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<int **&> {
-    using type = int **&;
+    using type      = int **&;
     using weak_type = int;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "int **&";
+    static constexpr char const * const name      = "int **&";
     static constexpr char const * const weak_name = "int";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct long
 template<> struct TypeInfo<long> {
-    using type = long;
+    using type      = long;
     using weak_type = long;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "long";
+    static constexpr char const * const name      = "long";
     static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<long *> {
-    using type = long *;
+    using type      = long *;
     using weak_type = long;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "long *";
+    static constexpr char const * const name      = "long *";
     static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<long **> {
-    using type = long **;
+    using type      = long **;
     using weak_type = long;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "long **";
+    static constexpr char const * const name      = "long **";
     static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<long&> {
-    using type = long&;
+    using type      = long&;
     using weak_type = long;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "long&";
+    static constexpr char const * const name      = "long&";
     static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<long *&> {
-    using type = long *&;
+    using type      = long *&;
     using weak_type = long;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "long *&";
+    static constexpr char const * const name      = "long *&";
     static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<long **&> {
-    using type = long **&;
+    using type      = long **&;
     using weak_type = long;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "long **&";
+    static constexpr char const * const name      = "long **&";
     static constexpr char const * const weak_name = "long";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct float
 template<> struct TypeInfo<float> {
-    using type = float;
+    using type      = float;
     using weak_type = float;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "float";
+    static constexpr char const * const name      = "float";
     static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<float *> {
-    using type = float *;
+    using type      = float *;
     using weak_type = float;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "float *";
+    static constexpr char const * const name      = "float *";
     static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<float **> {
-    using type = float **;
+    using type      = float **;
     using weak_type = float;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "float **";
+    static constexpr char const * const name      = "float **";
     static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<float&> {
-    using type = float&;
+    using type      = float&;
     using weak_type = float;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "float&";
+    static constexpr char const * const name      = "float&";
     static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<float *&> {
-    using type = float *&;
+    using type      = float *&;
     using weak_type = float;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "float *&";
+    static constexpr char const * const name      = "float *&";
     static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<float **&> {
-    using type = float **&;
+    using type      = float **&;
     using weak_type = float;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "float **&";
+    static constexpr char const * const name      = "float **&";
     static constexpr char const * const weak_name = "float";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct double
 template<> struct TypeInfo<double> {
-    using type = double;
+    using type      = double;
     using weak_type = double;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "double";
+    static constexpr char const * const name      = "double";
     static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<double *> {
-    using type = double *;
+    using type      = double *;
     using weak_type = double;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "double *";
+    static constexpr char const * const name      = "double *";
     static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<double **> {
-    using type = double **;
+    using type      = double **;
     using weak_type = double;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "double **";
+    static constexpr char const * const name      = "double **";
     static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<double&> {
-    using type = double&;
+    using type      = double&;
     using weak_type = double;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "double&";
+    static constexpr char const * const name      = "double&";
     static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<double *&> {
-    using type = double *&;
+    using type      = double *&;
     using weak_type = double;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "double *&";
+    static constexpr char const * const name      = "double *&";
     static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<double **&> {
-    using type = double **&;
+    using type      = double **&;
     using weak_type = double;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "double **&";
+    static constexpr char const * const name      = "double **&";
     static constexpr char const * const weak_name = "double";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 
 // struct bool
 template<> struct TypeInfo<bool> {
-    using type = bool;
+    using type      = bool;
     using weak_type = bool;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "bool";
+    static constexpr char const * const name      = "bool";
     static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<bool *> {
-    using type = bool *;
+    using type      = bool *;
     using weak_type = bool;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "bool *";
+    static constexpr char const * const name      = "bool *";
     static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<bool **> {
-    using type = bool **;
+    using type      = bool **;
     using weak_type = bool;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "bool **";
+    static constexpr char const * const name      = "bool **";
     static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<bool&> {
-    using type = bool&;
+    using type      = bool&;
     using weak_type = bool;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "bool&";
+    static constexpr char const * const name      = "bool&";
     static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = false;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<bool *&> {
-    using type = bool *&;
+    using type      = bool *&;
     using weak_type = bool;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "bool *&";
+    static constexpr char const * const name      = "bool *&";
     static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 template<> struct TypeInfo<bool **&> {
-    using type = bool **&;
+    using type      = bool **&;
     using weak_type = bool;
-    using base = void;
+    using base      = void;
 
-    static constexpr char const * const name = "bool **&";
+    static constexpr char const * const name      = "bool **&";
     static constexpr char const * const weak_name = "bool";
 
     static constexpr size_t member_count = 0;
+    static constexpr size_t base_count   = 0;
 
     static constexpr bool is_ptr = true;
     static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
+
     static constexpr bool is_primitive = true;
-    static constexpr bool is_class = false;
-    static constexpr bool is_enum = false;
-};
-
-
-// struct Test
-template<> struct TypeInfo<Test> {
-    using type = Test;
-    using weak_type = Test;
-    using base = void;
-
-    static constexpr char const * const name = "Test";
-    static constexpr char const * const weak_name = "Test";
-
-    static constexpr size_t member_count = 2;
-
-    static constexpr bool is_ptr = false;
-    static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = true;
-    static constexpr bool is_enum = false;
-};
-
-template<> struct TypeInfo<Test *> {
-    using type = Test *;
-    using weak_type = Test;
-    using base = void;
-
-    static constexpr char const * const name = "Test *";
-    static constexpr char const * const weak_name = "Test";
-
-    static constexpr size_t member_count = 2;
-
-    static constexpr bool is_ptr = true;
-    static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = true;
-    static constexpr bool is_enum = false;
-};
-
-template<> struct TypeInfo<Test **> {
-    using type = Test **;
-    using weak_type = Test;
-    using base = void;
-
-    static constexpr char const * const name = "Test **";
-    static constexpr char const * const weak_name = "Test";
-
-    static constexpr size_t member_count = 2;
-
-    static constexpr bool is_ptr = true;
-    static constexpr bool is_ref = false;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = true;
-    static constexpr bool is_enum = false;
-};
-
-template<> struct TypeInfo<Test&> {
-    using type = Test&;
-    using weak_type = Test;
-    using base = void;
-
-    static constexpr char const * const name = "Test&";
-    static constexpr char const * const weak_name = "Test";
-
-    static constexpr size_t member_count = 2;
-
-    static constexpr bool is_ptr = false;
-    static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = true;
-    static constexpr bool is_enum = false;
-};
-
-template<> struct TypeInfo<Test *&> {
-    using type = Test *&;
-    using weak_type = Test;
-    using base = void;
-
-    static constexpr char const * const name = "Test *&";
-    static constexpr char const * const weak_name = "Test";
-
-    static constexpr size_t member_count = 2;
-
-    static constexpr bool is_ptr = true;
-    static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = true;
-    static constexpr bool is_enum = false;
-};
-
-template<> struct TypeInfo<Test **&> {
-    using type = Test **&;
-    using weak_type = Test;
-    using base = void;
-
-    static constexpr char const * const name = "Test **&";
-    static constexpr char const * const weak_name = "Test";
-
-    static constexpr size_t member_count = 2;
-
-    static constexpr bool is_ptr = true;
-    static constexpr bool is_ref = true;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = false;
-    static constexpr bool is_class = true;
-    static constexpr bool is_enum = false;
+    static constexpr bool is_class     = false;
+    static constexpr bool is_enum      = false;
 };
 
 // Get at index.
 #define get_member(variable, index) GetMember<decltype(variable), index>::get(variable)
 template<typename T, int index> struct GetMember { /* Can I have a static assert in here that will only get called if the function is generated?? */};
-
-template<> struct GetMember<Test *, 0> {
-    static int *get(Test *ptr) {
-        _Test *cpy = (_Test *)ptr;
-        int * res = (int *)&cpy->i;
-        return(res);
-    };
-};
-template<> struct GetMember<Test *&, 0> {
-    static int *get(Test *ptr) {
-        _Test *cpy = (_Test *)ptr;
-        int * res = (int *)&cpy->i;
-        return(res);
-    };
-};
-template<> struct GetMember<Test *, 1> {
-    static float *get(Test *ptr) {
-        _Test *cpy = (_Test *)ptr;
-        float * res = (float *)&cpy->f;
-        return(res);
-    };
-};
-template<> struct GetMember<Test *&, 1> {
-    static float *get(Test *ptr) {
-        _Test *cpy = (_Test *)ptr;
-        float * res = (float *)&cpy->f;
-        return(res);
-    };
-};
 template<typename T>static char const * get_member_name(int index){return(0);}
-template<>char const * get_member_name<Test>(int index){
-    switch(index) {
-        case 0: { return("i"); } break;
-        case 1: { return("f"); } break;
-    }
-    return(0); // Not found.
-}
 static bool is_meta_type_container(int type) {
     if(type == Type_char) {return(false);} // false
     else if(type == Type_short) {return(false);} // false
@@ -1028,24 +925,19 @@ static bool is_meta_type_container(int type) {
     else if(type == Type_float) {return(false);} // false
     else if(type == Type_double) {return(false);} // false
     else if(type == Type_bool) {return(false);} // false
-    else if(type == Type_Test) {return(false);} // false
 
     // Should not be reached.
     assert(0);
     return(0);
 }
 static char const * meta_type_to_name(Type mt, bool is_ptr) {
-    if(mt == Type_Test) {
-        if(is_ptr) {return("Test *");}
-        else       {return("Test");  }
-    }
+
 
     assert(0); 
     return(0); // Not found
 }
 static size_t get_size_from_str(char const *str) {
 
-    if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {return(sizeof(_Test));}
 
     return(0); // Not found.
 }
@@ -1144,17 +1036,14 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
     return(bytes_written);
 }
+//
+// Get access at index.
+//
+template<typename T, int index> constexpr Access get_access_at_index() { return(Access_unknown); }
+
 
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
-    // Test
-    if(type_compare(T, Test)) {
-        static MemberDefinition members_of_Test[] = {
-            {Type_int, "i", offset_of(&_Test::i), false, 1},
-            {Type_float, "f", offset_of(&_Test::f), false, 1},
-        };
-        return(members_of_Test);
-    }
 
     return(0); // Error.
 }
@@ -1210,14 +1099,6 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_bool);
 
-
-    // Test
-    } else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {
-        static MemberDefinition members_of_Test[] = {
-            {Type_int, "i", offset_of(&_Test::i), false, 1},
-            {Type_float, "f", offset_of(&_Test::f), false, 1},
-        };
-        return(members_of_Test);
     }
 
     return(0); // Error.
@@ -1232,7 +1113,6 @@ static int get_number_of_members_str(char const *str) {
     else if((strcmp(str, "float") == 0) || (strcmp(str, "float *") == 0) || (strcmp(str, "float **") == 0)) {return(1);}
     else if((strcmp(str, "double") == 0) || (strcmp(str, "double *") == 0) || (strcmp(str, "double **") == 0)) {return(1);}
     else if((strcmp(str, "bool") == 0) || (strcmp(str, "bool *") == 0) || (strcmp(str, "bool **") == 0)) {return(1);}
-    else if((strcmp(str, "Test") == 0) || (strcmp(str, "Test *") == 0) || (strcmp(str, "Test **") == 0)) {return(2);}
 
     return(-1); // Error.
 }
@@ -1242,8 +1122,8 @@ static int get_number_of_members_str(char const *str) {
 //
 
 // Stub functions.
-template<typename T>static char const *enum_to_string(T element) { return(0); }
-template<typename T>static T string_to_enum(char const *str) { return(0); }
+template<typename T>static constexpr char const *enum_to_string(T element) { return(0); }
+template<typename T>static constexpr T string_to_enum(char const *str) { return(0); }
 
 
 #define weak_type_compare(A, B) TypeCompare_<pp::Type<A>::weak_type, pp::Type<B>::weak_type>::e;

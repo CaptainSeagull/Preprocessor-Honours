@@ -466,6 +466,7 @@ struct ParseStructResult {
 internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
     ParseStructResult res = {};
 
+    Access current_access = ((struct_type == StructType_struct) || (struct_type == StructType_union)) ? Access_public : Access_private;
     res.sd.struct_type = struct_type;
 
     Bool have_name = false;
@@ -507,6 +508,7 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
 
         struct MemberInfo {
             Char *pos;
+            Access access;
             Bool is_inside_anonymous_struct;
         };
 
@@ -517,7 +519,16 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
             Bool inside_anonymous_struct = false;
             for(;;) {
                 Token token = get_token(tokenizer);
-                if((!is_stupid_class_keyword(token))) {
+                if((is_stupid_class_keyword(token))) {
+                    String access_as_string = token_to_string(token);
+                    if(string_compare(access_as_string, create_string("public"))) {
+                        current_access = Access_public;
+                    } else if(string_compare(access_as_string, create_string("private"))) {
+                        current_access = Access_private;
+                    } else if(string_compare(access_as_string, create_string("protected"))) {
+                        current_access = Access_protected;
+                    }
+                } else {
                     // TODO(Jonny): This could be the end of an anonymous struct, so ignore it.
                     if(token_equals(token, "struct")) {
                         eat_token(tokenizer); // Eat the open brace.
@@ -573,6 +584,7 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
 
                                 mi->pos = token.e;
                                 mi->is_inside_anonymous_struct = inside_anonymous_struct;
+                                mi->access = current_access;
                             } else {
                                 if(temp.type == TokenType_open_brace) {
                                     skip_to_matching_bracket(&tokenizer_copy);
@@ -606,6 +618,7 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
                             Tokenizer fake_tokenizer = { member_info[i].pos };
                             res.sd.members[member_index] = parse_member(&fake_tokenizer, j);
                             res.sd.members[member_index].is_inside_anonymous_struct = member_info[i].is_inside_anonymous_struct;
+                            res.sd.members[member_index].access = member_info[i].access;
                             ++member_index;
                         }
                     }
