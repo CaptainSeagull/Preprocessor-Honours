@@ -5,7 +5,7 @@
 
 This is a simple project which aims to provide some meta programming functionality not currently avaiable in C++. The utility generates code, which should be included in the relevant .cpp files.
 
-All generated code strictly follows the C++11 specification, and should compile correctly under MSVC, Clang, or GCC, even with `-Wall` enabled. If you're using a pre-C++11 compiler, then the preprocessor can still be used, but some functions will not compile. All the functions which require C++11 features have alternatives which can be used and are compiant with the C++98 specification.
+All generated code strictly follows the C++11 specification, and should compile correctly under MSVC, Clang, or GCC, even with `-Wall` enabled.
 
 # Build instructions
 
