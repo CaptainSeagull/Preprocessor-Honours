@@ -19,7 +19,7 @@ namespace {
 //
 // Test utils.
 //
-StructData parse_struct_test(Char *str, int ahead = 0) {
+StructData parse_struct_test(Char const *str, int ahead = 0) {
     Tokenizer tokenizer = {str};
 
     eat_token(&tokenizer);
@@ -43,8 +43,8 @@ enum StructCompareFailure {
     StructCompareFailure_func_data,
     StructCompareFailure_func_count,
 };
-Char *struct_compare_failure_to_string(StructCompareFailure scf) {
-    Char *res = 0;
+Char const *struct_compare_failure_to_string(StructCompareFailure scf) {
+    Char const *res = 0;
     if(scf == StructCompareFailure_success)           { res = "StructCompareFailure_success";      }
     else if(scf == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
     else if(scf == StructCompareFailure_member_count) { res = "StructCompareFailure_member_count"; }
@@ -72,12 +72,12 @@ StructCompareFailure compare_struct_data(StructData a, StructData b) {
 // Tests.
 //
 TEST(StructTest, basic_struct_test) {
-    Char *basic_struct = "struct BasicStruct {\n"
-                         "    int i;\n"
-                         "    float *f;\n"
-                         "    bool b[10];\n"
-                         "    double *d[12];\n"
-                         "};\n";
+    Char const *basic_struct = "struct BasicStruct {\n"
+                               "    int i;\n"
+                               "    float *f;\n"
+                               "    bool b[10];\n"
+                               "    double *d[12];\n"
+                               "};\n";
 
     StructData hardcoded = {};
     hardcoded.name = create_string("BasicStruct");
@@ -96,9 +96,9 @@ TEST(StructTest, basic_struct_test) {
 }
 
 TEST(StructTest, inhertiance_struct_test) {
-    Char *inheritance_struct = "struct BaseOne { int a; };\n"
-                               "struct BaseTwo { int b; };\n"
-                               "struct Sub : public BaseOne, public BaseTwo { int c; };";
+    Char const *inheritance_struct = "struct BaseOne { int a; };\n"
+                                     "struct BaseTwo { int b; };\n"
+                                     "struct Sub : public BaseOne, public BaseTwo { int c; };";
 
     StructData hardcoded = {};
     hardcoded.name = create_string("Sub");
@@ -106,7 +106,7 @@ TEST(StructTest, inhertiance_struct_test) {
     hardcoded.members = cast(Variable *)malloc(sizeof(Variable));
     *hardcoded.members = create_variable("int", "c");
     hardcoded.inherited_count = 2;
-    hardcoded.inherited = alloc(String, hardcoded.inherited_count);
+    hardcoded.inherited = system_alloc(String, hardcoded.inherited_count);
     hardcoded.inherited[0] = create_string("BaseOne");
     hardcoded.inherited[1] = create_string("BaseTwo");
 
@@ -117,18 +117,18 @@ TEST(StructTest, inhertiance_struct_test) {
 }
 
 TEST(StructTest, number_of_members_test) {
-    Char *str = "struct A { int a; int b; int c; };";
+    Char const *str = "struct A { int a; int b; int c; };";
     StructData gen = parse_struct_test(str);
     ASSERT_TRUE(gen.member_count == 3) << "Error: Number of members in struct not correct";
 }
 
 TEST(StructTest, struct_name) {
-    Char *str = "struct my_name {};";
+    Char const *str = "struct my_name {};";
     StructData gen = parse_struct_test(str);
     ASSERT_TRUE(string_compare("my_name", gen.name.e, gen.name.len)) << "Error: Failed to properly generate struct name.";
 }
 
-EnumData parse_enum_test(Char *str) {
+EnumData parse_enum_test(Char const *str) {
     Tokenizer tokenizer = {str};
 
     eat_token(&tokenizer);
@@ -136,25 +136,25 @@ EnumData parse_enum_test(Char *str) {
 }
 
 TEST(EnumTest, enum_name_test) {
-    Char *str = "enum MyName {};";
+    Char const *str = "enum MyName {};";
     EnumData gen = parse_enum_test(str);
     ASSERT_TRUE(string_compare("MyName", gen.name.e, gen.name.len)) << "Error: Failed to properly generate enum name.";
 }
 
 TEST(EnumTest, enum_type_test) {
-    Char *str = "enum Enum : short {};";
+    Char const *str = "enum Enum : short {};";
     EnumData gen = parse_enum_test(str);
     ASSERT_TRUE(string_compare("short", gen.type.e, gen.type.len)) << "Error: Failed to properly handle enum type.";
 }
 
 TEST(EnumTest, enum_class_test) {
-    Char *str = "enum class Enum {};";
+    Char const *str = "enum class Enum {};";
     EnumData gen = parse_enum_test(str);
     ASSERT_TRUE(gen.is_struct) << "Error: Failed to properly handle an enum class.";
 }
 
 TEST(EnumTest, enum_number_of_values_test) {
-    Char *str = "enum Nums {one, two, three};";
+    Char const *str = "enum Nums {one, two, three};";
     EnumData gen = parse_enum_test(str);
     ASSERT_TRUE(gen.no_of_values == 3) << "Error: Did not generate the correct number of values for an enum.";
 }
@@ -162,13 +162,13 @@ TEST(EnumTest, enum_number_of_values_test) {
 Int run_tests(void) {
     Int res = 0;
     // Google test uses so much memory, it's difficult to run in x86.
-    if(sizeof(PtrSize) == 8) {
-        Char *flags[] = {"--gtest_break_on_failure", "--gtest_catch_exceptions=0"};
-        Int number_of_flags = array_count(flags);
+#if ENVIRONMENT64
+    Char const *flags[] = {"--gtest_break_on_failure", "--gtest_catch_exceptions=0"};
+    Int number_of_flags = array_count(flags);
 
-        testing::InitGoogleTest(&number_of_flags, flags);
-        res = RUN_ALL_TESTS();
-    }
+    testing::InitGoogleTest(&number_of_flags, (Char **)flags);
+    res = RUN_ALL_TESTS();
+#endif
 
     return(res);
 }

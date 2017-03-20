@@ -50,19 +50,22 @@ enum ErrorType {
     ErrorType_did_not_write_entire_file,
     ErrorType_did_not_read_entire_file,
     ErrorType_could_not_create_directory,
+    ErrorType_incorrect_number_of_members_for_struct,
+    ErrorType_incorrect_struct_name,
+    ErrorType_incorrect_number_of_base_structs,
 
     ErrorType_count,
 };
 
 struct Error {
     ErrorType type;
-    Char *guid;
+    Char const *guid;
 };
 
 #define push_error(type) push_error_(type, MAKE_GUID)
 
-Void push_error_(ErrorType type, Char *guid);
-Char *ErrorTypeToString(ErrorType e);
+Void push_error_(ErrorType type, Char const *guid);
+Char const *ErrorTypeToString(ErrorType e);
 Bool print_errors(void);
 
 // Google Test compains...
@@ -90,136 +93,10 @@ Void *system_malloc(PtrSize size, PtrSize cnt = 1);
 Bool system_free(Void *ptr);
 Void *system_realloc(Void *ptr, PtrSize size);
 
-#if defined(malloc)
-    #undef malloc
+#if defined(system_alloc)
+    #undef system_alloc
 #endif
-#define malloc system_malloc
-
-#if defined(calloc)
-    #undef calloc
-#endif
-#define calloc system_malloc
-
-#if defined(realloc)
-    #undef realloc
-#endif
-#define realloc system_realloc
-
-#if defined(free)
-    #undef free
-#endif
-#define free(x) system_free(x);
-
-#if defined(alloc)
-    #undef alloc
-#endif
-#define alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
-
-#if MEM_CHECK
-struct MemList {
-    Void *ptr;
-    MemList *next;
-    Char *guid;
-    Bool freed;
-};
-#if defined(MEM_ROOT_FILE)
-    MemList *mem_list_root = 0;
-#else
-    extern MemList *mem_list_root;
-#endif
-
-// malloc.
-static Void *malloc_(PtrSize size, Char *guid, PtrSize cnt = 1) {
-    Void *res = system_malloc(size * cnt);
-
-    if(res) {
-        MemList *cur = cast(MemList *)system_malloc(sizeof(MemList));
-        if(!cur) {
-            push_error_(ErrorType_ran_out_of_memory, guid);
-        } else {
-            cur->ptr = res;
-            cur->guid = guid;
-
-            if(!mem_list_root) {
-                mem_list_root = cur;
-            } else {
-                MemList *next = mem_list_root;
-                while(next->next) next = next->next;
-
-                next->next = cur;
-            }
-        }
-    }
-
-    return(res);
-}
-
-// free
-static Void free_(Void *ptr) {
-    system_free(ptr);
-    if(ptr) {
-        Bool found = false;
-        MemList *next = mem_list_root;
-        while(next) {
-            if(next->ptr == ptr) {
-                found = true;
-                next->freed = true;
-            }
-
-            next = next->next;
-        }
-
-        assert(found);
-    }
-}
-
-// realloc
-static Void *realloc_(Void *ptr, PtrSize size, Char *guid) {
-    Void *res = system_realloc(ptr, size);
-    if(ptr) {
-        MemList *next = mem_list_root;
-        while(next) {
-            if(next->ptr == ptr) break;
-            next = next->next;
-        }
-
-        if(next) next->ptr = res;
-        else     push_error_(ErrorType_could_not_find_mallocd_ptr, guid);
-    }
-    return(res);
-}
-
-// malloc
-#if defined(malloc)
-    #undef malloc
-#endif
-#define malloc(size) malloc_(size, MAKE_GUID)
-
-// calloc
-#if defined(calloc)
-    #undef calloc
-#endif
-#define calloc(size, cnt) malloc_(size, MAKE_GUID, cnt)
-
-// realloc
-#if defined(realloc)
-    #undef realloc
-#endif
-#define realloc(ptr, size) realloc_(ptr, size, MAKE_GUID)
-
-// free
-#if defined(free)
-    #undef free
-#endif
-#define free(ptr) free_(ptr)
-
-// alloc
-#if defined(alloc)
-    #undef alloc
-#endif
-#define alloc(Type, ...) (Type *)malloc_(sizeof(Type), MAKE_GUID, ##__VA_ARGS__)
-
-#endif // MEM_CHECK
+#define system_alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
 
 //
 // Scratch memory
@@ -234,21 +111,21 @@ Void free_scratch_memory();
 // String
 //
 struct String {
-    Char *e;
+    Char const *e;
     Int len;
 };
 
-String create_string(Char *str, Int len = 0);
-Int string_length(Char *str);
-Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len);
-Bool string_compare(Char *a, Char *b, Int len);
-Bool string_compare(Char *a, Char *b);
-Void string_copy(Char *dest, Char *src);
+String create_string(Char const *str, Int len = 0);
+Int string_length(Char const *str);
+Bool string_concat(Char *dest, Int len, Char const *a, Int a_len, Char const *b, Int b_len);
+Bool string_compare(Char const *a, Char const *b, Int len);
+Bool string_compare(Char const *a, Char const *b);
+Void string_copy(Char *dest, Char const *src);
 Bool string_compare(String a, String b);
 Bool string_compare_array(String *a, String *b, Int cnt);
 
-Bool string_contains(String str, Char *target);
-Bool string_contains(Char *str, Char *target);
+Bool string_contains(String str, Char const *target);
+Bool string_contains(Char const *str, Char const *target);
 
 Bool is_in_string_array(String target, String *arr, Int arr_cnt);
 
@@ -282,12 +159,12 @@ struct Variable {
     String type;
     String name;
     Access access;
-    Bool is_ptr;
+    Int ptr;
     Int array_count; // This is 1 if it's not an array. TODO(Jonny): Is this true anymore?
     Bool is_inside_anonymous_struct;
 };
 
-Variable create_variable(Char *type, Char *name, Bool is_ptr = false, Int array_count = 1);
+Variable create_variable(Char const *type, Char const *name, Int ptr = 0, Int array_count = 1);
 Bool compare_variable(Variable a, Variable b);
 Bool compare_variable_array(Variable *a, Variable *b, Int count);
 
@@ -296,6 +173,7 @@ Bool compare_variable_array(Variable *a, Variable *b, Int count);
 //
 Char to_caps(Char c);
 
+const Int max_ptr_size = 4;
 
 //
 // memset and memcpy
@@ -304,19 +182,6 @@ Char to_caps(Char c);
 Void copy(Void *dst, Void *src, PtrSize size);
 #define zero(dst, size) set(dst, 0, size)
 Void set(Void *dst, Byte v, PtrSize size);
-
-#if 0
-    #if !RUN_TESTS
-        #if OS_WIN32
-            extern "C" void   *__cdecl memcpy(_Out_writes_bytes_all_(_Size) void *_Dst, _In_reads_bytes_(_Size) const void *_Src, _In_ size_t _Size);
-            extern "C" void   *__cdecl memset(_Out_writes_bytes_all_(_Size) void *_Dst, _In_ int _Val, _In_ size_t _Size);
-        #else
-            extern "C" void *memcpy(void *Dest, void const *Source, PtrSize Size);
-            extern "C" void *memset(void *Dest, int Value, PtrSize NumBytesToSet);
-        #endif
-
-    #endif
-#endif
 
 #define _UTILS_H
 #endif

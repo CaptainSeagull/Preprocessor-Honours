@@ -45,7 +45,7 @@ typedef double Float64;
 //
 // Detect compiler/platform.
 //
-#define COMPILER_WIN32 0
+#define COMPILER_MSVC 0
 #define COMPILER_CLANG 0
 #define COMPILER_GCC 0
 
@@ -59,8 +59,8 @@ typedef double Float64;
     #undef COMPILER_CLANG
     #define COMPILER_CLANG 1
 #elif defined(_MSC_VER)
-    #undef COMPILER_WIN32
-    #define COMPILER_WIN32 1
+    #undef COMPILER_MSVC
+    #define COMPILER_MSVC 1
 #elif (defined(__GNUC__) || defined(__GNUG__)) // This has to be after __clang__, because Clang also defines this.
     #undef COMPILER_GCC
     #define COMPILER_GCC 1
@@ -71,7 +71,7 @@ typedef double Float64;
 #if defined(__linux__)
     #undef OS_LINUX
     #define OS_LINUX 1
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(__CYGWIN__)
     #undef OS_WIN32
     #define OS_WIN32 1
 #else

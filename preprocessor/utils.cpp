@@ -22,8 +22,8 @@
 internal Error global_errors[32];
 internal Int global_error_count = 0;
 
-Char *ErrorTypeToString(ErrorType e) {
-    Char *res = 0;
+Char const *ErrorTypeToString(ErrorType e) {
+    Char const *res = 0;
 
 #define ERROR_TYPE_TO_STRING(err) err: { res = #err; } break
 
@@ -46,6 +46,9 @@ Char *ErrorTypeToString(ErrorType e) {
         case ERROR_TYPE_TO_STRING(ErrorType_did_not_write_entire_file);
         case ERROR_TYPE_TO_STRING(ErrorType_did_not_read_entire_file);
         case ERROR_TYPE_TO_STRING(ErrorType_could_not_create_directory);
+        case ERROR_TYPE_TO_STRING(ErrorType_incorrect_number_of_members_for_struct);
+        case ERROR_TYPE_TO_STRING(ErrorType_incorrect_struct_name);
+        case ERROR_TYPE_TO_STRING(ErrorType_incorrect_number_of_base_structs);
 
         default: assert(0); break;
     }
@@ -60,7 +63,7 @@ Char *ErrorTypeToString(ErrorType e) {
     return(res);
 }
 
-Void push_error_(ErrorType type, Char *guid) {
+Void push_error_(ErrorType type, Char const *guid) {
 #if ERROR_LOGGING
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count++;
@@ -77,7 +80,7 @@ Bool print_errors(void) {
     if(global_error_count) {
         res = true;
 
-        // TODO(Jonny): Write errors to disk.
+        // TODO(Jonny): Write errors to disk?
         system_write_to_stderr("\nPreprocessor errors:\n");
         for(Int i = 0; (i < global_error_count); ++i) {
             Char buffer[256] = {};
@@ -89,8 +92,6 @@ Bool print_errors(void) {
         Char buffer2[256] = {};
         stbsp_snprintf(buffer2, array_count(buffer2), "Preprocessor finished with %d error(s).\n\n\n", global_error_count);
         system_write_to_stderr(buffer2);
-
-        //if(system_check_for_debugger()) { assert(0); }
     }
 
     return(res);
@@ -104,7 +105,7 @@ internal Int scratch_memory_index = 0;
 internal Void *global_scratch_memory = 0;
 Void *push_scratch_memory(Int size/*= scratch_memory_size*/) {
     if(!global_scratch_memory) {
-        global_scratch_memory = alloc(Byte, scratch_memory_size + 1);
+        global_scratch_memory = system_alloc(Byte, scratch_memory_size + 1);
         zero(global_scratch_memory, scratch_memory_size + 1);
     }
 
@@ -127,20 +128,20 @@ Void clear_scratch_memory(void) {
 
 Void free_scratch_memory() {
     if(global_scratch_memory) {
-        free(global_scratch_memory);
+        system_free(global_scratch_memory);
     }
 }
 
 //
 // Strings.
 //
-String create_string(Char *str, Int len/*= 0*/) {
+String create_string(Char const *str, Int len/*= 0*/) {
     String res = {str, (len) ? len : string_length(str)};
 
     return(res);
 }
 
-Int string_length(Char *str) {
+Int string_length(Char const *str) {
     Int res = 0;
 
     while(*str++) {
@@ -150,7 +151,7 @@ Int string_length(Char *str) {
     return(res);
 }
 
-Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) {
+Bool string_concat(Char *dest, Int len, Char const *a, Int a_len, Char const *b, Int b_len) {
     Bool res = false;
     Int i;
 
@@ -164,7 +165,7 @@ Bool string_concat(Char *dest, Int len, Char *a, Int a_len, Char *b, Int b_len) 
     return(res);
 }
 
-Bool string_compare(Char *a, Char *b, Int len) {
+Bool string_compare(Char const *a, Char const *b, Int len) {
     for(Int i = 0; (i < len); ++i, ++a, ++b) {
         if(*a != *b) {
             return(false);
@@ -174,14 +175,14 @@ Bool string_compare(Char *a, Char *b, Int len) {
     return(true);
 }
 
-Bool string_compare(Char *a, Char *b) {
+Bool string_compare(Char const *a, Char const *b) {
     for(;; ++a, ++b) {
         if((*a == 0) && (*b == 0)) return(true);
         else if(*a != *b)          return(false);
     }
 }
 
-Void string_copy(Char *dest, Char *src) {
+Void string_copy(Char *dest, Char const *src) {
     while(*src) {
         *dest = *src;
         ++dest;
@@ -218,7 +219,7 @@ Bool string_compare_array(String *a, String *b, Int cnt) {
     return(res);
 }
 
-Bool string_contains(String str, Char *target) {
+Bool string_contains(String str, Char const *target) {
     Int target_len = string_length(target);
 
     for(Int i = 0; (i < str.len); ++i) {
@@ -238,7 +239,7 @@ Bool string_contains(String str, Char *target) {
     return(false);
 }
 
-Bool string_contains(Char *str, Char *target) {
+Bool string_contains(Char const *str, Char const *target) {
     String s = {str, string_length(str)};
     return(string_contains(s, target));
 }
@@ -249,16 +250,16 @@ Bool string_contains(Char *str, Char *target) {
 ResultInt char_to_int(Char c) {
     ResultInt res = {};
     switch(c) {
-        case '0': res.e = 0; res.success = true; break;
-        case '1': res.e = 1; res.success = true; break;
-        case '2': res.e = 2; res.success = true; break;
-        case '3': res.e = 3; res.success = true; break;
-        case '4': res.e = 4; res.success = true; break;
-        case '5': res.e = 5; res.success = true; break;
-        case '6': res.e = 6; res.success = true; break;
-        case '7': res.e = 7; res.success = true; break;
-        case '8': res.e = 8; res.success = true; break;
-        case '9': res.e = 9; res.success = true; break;
+        case '0': { res.e = 0; res.success = true; } break;
+        case '1': { res.e = 1; res.success = true; } break;
+        case '2': { res.e = 2; res.success = true; } break;
+        case '3': { res.e = 3; res.success = true; } break;
+        case '4': { res.e = 4; res.success = true; } break;
+        case '5': { res.e = 5; res.success = true; } break;
+        case '6': { res.e = 6; res.success = true; } break;
+        case '7': { res.e = 7; res.success = true; } break;
+        case '8': { res.e = 8; res.success = true; } break;
+        case '9': { res.e = 9; res.success = true; } break;
     }
 
     return(res);
@@ -291,56 +292,6 @@ ResultInt string_to_int(Char *str) {
     return(res);
 }
 
-ResultInt calculator_string_to_int(Char *str) {
-    ResultInt res = {};
-
-    /* TODO(Jonny);
-        - Make sure each element in the string is either a number or a operator.
-        - Do the calculator in order (multiply, divide, add, subtract).
-    */
-    String *arr = alloc(String, 256); // TODO(Jonny): Random size.
-    if(arr) {
-        Char *at = str;
-        arr[0].e = at;
-        Int cnt = 0;
-        for(; (*at); ++at, ++arr[cnt].len) {
-            if(*at == ' ') {
-                ++at;
-                arr[++cnt].e = at;
-            }
-        }
-        ++cnt;
-
-        Int *nums = alloc(Int, cnt);
-        Char *ops = alloc(Char, cnt);
-        if((nums) && (ops)) {
-            for(Int i = 0, j = 0; (j < cnt); ++i, j += 2) {
-                ResultInt r = string_to_int(arr[j]);
-                if(r.success) {
-                    nums[i] = r.e;
-                } else          {
-                    goto clean_up;
-                }
-            }
-
-            for(Int i = 0, j = 1; (j < cnt); ++i, j += 2) {
-                assert(arr[j].len == 1);
-                ops[i] = *arr[j].e;
-            }
-
-            // TODO(Jonny): At this point, I have all the numbers and ops in seperate arrays.
-
-clean_up:;
-            free(ops);
-            free(nums);
-        }
-
-        free(arr);
-    }
-
-    return(res);
-}
-
 Bool is_in_string_array(String target, String *arr, Int arr_cnt) {
     Bool res = false;
     for(int i = 0; (i < arr_cnt); ++i) {
@@ -360,11 +311,11 @@ Uint32 safe_truncate_size_64(Uint64 v) {
     return(res);
 }
 
-Variable create_variable(Char *type, Char *name, Bool is_ptr/*= false*/, Int array_count/*= 1*/) {
+Variable create_variable(Char const *type, Char const *name, Int ptr/*= 0*/, Int array_count/*= 1*/) {
     Variable res;
     res.type = create_string(type);
     res.name = create_string(name);
-    res.is_ptr = is_ptr;
+    res.ptr = ptr;
     res.array_count = array_count;
 
     return(res);
@@ -375,7 +326,7 @@ Bool compare_variable(Variable a, Variable b) {
 
     if(!string_compare(a.type, b.type))      res = false;
     else if(!string_compare(a.name, b.name)) res = false;
-    else if(a.is_ptr != b.is_ptr)            res = false;
+    else if(a.ptr != b.ptr)                  res = false;
     else if(a.array_count != b.array_count)  res = false;
 
     return(res);

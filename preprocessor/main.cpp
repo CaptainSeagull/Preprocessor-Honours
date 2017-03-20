@@ -9,51 +9,11 @@
                            Anyone can use this code, modify it, sell it to terrorists, etc.
   ===================================================================================================*/
 
-/* TODO(Jonny):
-    - struct to tuple.
-    - std::map, std::unordered_map, std::set, std::array.
-    - Struct meta data.
-        - Have a way to test if a member is private or not.
-        - An alternative to pp::print and pp::serialize that hide private members.
-        - It breaks if you use a comma to declare members of the same type.
-        - Have a way to get the type of different elements (as strings or types).
-        - Get a get_member(v, i) function, which simple returns the member at index i.
-        - Output a _useful_ error message if the user declares the same struct twice.
-        - In serialize struct, if there is a member which is an enum, call enum_to_string on it's value.
-        - Create bool is_primitive(T) which returns if something is a primitive or not.
-    - Union meta data.
-        - Simple version of struct.
-    - Function meta data.
-        - Get name (as string).
-        - Get linkage (as string).
-        - Get return type.
-        - Get param count.
-        - Get params types, and names as strings.
-    - References.
-    - Templates.
-    - Allow mathematical macros (1 + 1) to be the index for an array.
-    - Global consts for arrays.
-    - Handle typedefs.
-    - Base type macro. If the programmer enters non-pointer (or non reference) value, just return the same value.
-    - Make a is_primitive function.
-    - Make a function tell if something's a pointer or not. Could return false if not a pointer, and a positive integer
-      for the level of pointer otherwise. Should work with references too.
-    - If the user puts a directory in front of the file name ("dir/source.cpp") then the outputted code will get
-      placed in the directories parent, not the directory with the code.
-    - I could handle user-defined containers, assuming they conform to some strict set of rules. These could be:
-        - Does it implement the nessessary member functions to use the C++11 range-based for loops?
-        - It it a template struct where the template can only take one type?
-    - I don't think #if 1 #else blocks work correctly...
-    - A function which gets a pointer to a base class, from a normal class?
-*/
-
 #include "utils.h"
 #include "lexer.h"
 #include "platform.h"
 #include "write_file.h"
-#if RUN_TESTS
-    //    #include "test.h"
-#endif
+#include "test.h"
 
 enum SwitchType {
     SwitchType_unknown,
@@ -68,7 +28,7 @@ enum SwitchType {
     SwitchType_count,
 };
 
-internal SwitchType get_switch_type(Char *str) {
+internal SwitchType get_switch_type(Char const *str) {
     SwitchType res = SwitchType_unknown;
 
     Int len = string_length(str);
@@ -97,7 +57,7 @@ internal SwitchType get_switch_type(Char *str) {
 }
 
 internal Bool write_static_file() {
-    Char *file =
+    Char const *file =
         "//\n"
         "// Code shared between generated files.\n"
         "#if !defined(STATIC_GENERATED_H)\n"
@@ -134,43 +94,6 @@ internal Bool write_static_file() {
         "#define PP_OS_WIN32 0\n"
         "#define PP_OS_LINUX 0\n"
         "\n"
-        "#if defined(__clang__)\n"
-        "    #undef PP_COMPILER_CLANG\n"
-        "    #define PP_COMPILER_CLANG 1\n"
-        "#elif defined(_MSC_VER)\n"
-        "    #undef PP_COMPILER_MSVC\n"
-        "    #define PP_COMPILER_MSVC 1\n"
-        "#elif (defined(__GNUC__) || defined(__GNUG__)) // This has to be after __clang__, because Clang also defines this.\n"
-        "    #undef PP_COMPILER_GCC\n"
-        "    #define PP_COMPILER_GCC 1\n"
-        "#endif\n"
-        "\n"
-        "#if defined(__linux__)\n"
-        "    #undef PP_OS_LINUX\n"
-        "    #define PP_OS_LINUX 1\n"
-        "#elif defined(_WIN32)\n"
-        "    #undef PP_OS_WIN32\n"
-        "    #define PP_OS_WIN32 1\n"
-        "#endif\n"
-        "\n"
-        "#if PP_OS_LINUX\n"
-        "    #if (__x86_64__ || __ppc64__)\n"
-        "        #undef PP_ENVIRONMENT64\n"
-        "        #define PP_ENVIRONMENT64 1\n"
-        "    #else\n"
-        "        #undef PP_ENVIRONMENT32\n"
-        "        #define PP_ENVIRONMENT32 1\n"
-        "    #endif\n"
-        "#elif OS_WIN32\n"
-        "    #if defined(_WIN64)\n"
-        "        #undef PP_ENVIRONMENT64\n"
-        "        #define PP_ENVIRONMENT64 1\n"
-        "    #else\n"
-        "        #undef PP_ENVIRONMENT32\n"
-        "        #define PP_ENVIRONMENT32 1\n"
-        "    #endif\n"
-        "#endif\n"
-        "\n"
         "// TODO(Jonny): Add Type in here?\n"
         "template<typename T> struct TypeInfo {\n"
         "    using type      = void;\n"
@@ -183,8 +106,8 @@ internal Bool write_static_file() {
         "    static constexpr size_t const member_count = 0;\n"
         "    static constexpr size_t const base_count   = 0;\n"
         "\n"
-        "    static constexpr bool const is_ptr = 0;\n"
-        "    static constexpr bool const is_ref = 0;\n"
+        "    static constexpr bool const ptr_level = 0;\n"
+        "    static constexpr bool const is_ref    = 0;\n"
         "\n"
         "\n"
         "    static constexpr bool const is_primitive = 0;\n"
@@ -400,29 +323,23 @@ internal Bool write_static_file() {
     return(res);
 }
 
-struct FunctionData {
-    String linkage;
-    String ret_type;
-    String name;
-    Variable params[32];
-    Int param_count;
-};
-
 internal Bool should_write_to_file = false;
 
-internal Void start_parsing(Char *fname, Char *file) {
+internal Void start_parsing(Char const *fname, Char const *file) {
     ParseResult parse_res = parse_stream(file);
 
     File file_to_write = write_data(fname, parse_res.struct_data, parse_res.struct_cnt,
-                                    parse_res.enum_data, parse_res.enum_cnt);
+                                    parse_res.enum_data, parse_res.enum_cnt,
+                                    parse_res.func_data, parse_res.func_cnt);
 
     if(should_write_to_file) {
-        Char generated_file_name[256] = dir_name "/"; // TODO(Jonny): MAX_PATH?
+        PtrSize const len = 256;
+        Char generated_file_name[len] = dir_name "/"; // TODO(Jonny): MAX_PATH?
         Int start = string_length(dir_name "/");
-        Char *generated_extension = "_generated.h";
+        Char const *generated_extension = "_generated.h";
 
         // Add _generated.h to the filename.
-        if(string_concat(generated_file_name + start, array_count(generated_file_name) - start,
+        if(string_concat(generated_file_name + start, len - start,
                          fname, string_length(fname) - 4, // TODO(Jonny): Hacky, actually detect the extension properly.
                          generated_extension, string_length(generated_extension))) {
             Bool header_write_success = system_write_to_file(generated_file_name, file_to_write.data, file_to_write.size);
@@ -430,39 +347,47 @@ internal Void start_parsing(Char *fname, Char *file) {
                 push_error(ErrorType_could_not_write_to_disk);
             }
 
-            free(file_to_write.data);
+            system_free(file_to_write.data);
         }
     }
 
     for(Int i = 0; (i < parse_res.struct_cnt); ++i) {
-        free(parse_res.struct_data[i].members);
-        free(parse_res.struct_data[i].inherited);
+        system_free(parse_res.struct_data[i].members);
+        system_free(parse_res.struct_data[i].inherited);
     }
-    free(parse_res.struct_data);
+    system_free(parse_res.struct_data);
 
-    for(Int i = 0; (i < parse_res.enum_cnt); ++i) free(parse_res.enum_data[i].values);
-    free(parse_res.enum_data);
+    for(Int i = 0; (i < parse_res.enum_cnt); ++i) {
+        system_free(parse_res.enum_data[i].values);
+    }
+    system_free(parse_res.enum_data);
+
+    for(Int i = 0; (i < parse_res.func_cnt); ++i) {
+        system_free(parse_res.func_data[i].params);
+    }
+    system_free(parse_res.func_data);
 }
 
 internal Void print_help(void) {
-    Char *help = "    List of Commands.\n"
-                 "        -e - Print errors to the console.\n"
-                 "        -h - Print this help.\n"
+    Char const *help = "    List of Commands.\n"
+                       "        -e - Print errors to the console.\n"
+                       "        -h - Print this help.\n"
 #if INTERNAL
-                 "    Internal Commands.\n"
-                 "        -s - Do not output any code, just see if there were errors parsing a file.\n"
-                 "        -t - Run tests on the code.\n"
+                       "    Internal Commands.\n"
+                       "        -s - Do not output any code, just see if there were errors parsing a file.\n"
+                       "        -t - Run tests on the code.\n"
 #endif
-                 "\n";
+                       "\n";
 
     system_write_to_console(help);
 }
 
 Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
+    system_get_file_extension("test_code.cpp");
+
     Int res = 0;
 
     Bool display_time_taken = false;
-    Uint64 start_time = system_get_performance_counter();
 
     if(argc <= 1) {
         push_error(ErrorType_no_parameters);
@@ -475,15 +400,15 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
         PtrSize largest_source_file_size = 0;
         Int number_of_files = 0;
         for(Int i = 1; (i < argc); ++i) {
-            Char *switch_name = argv[i];
+            Char const *switch_name = argv[i];
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
-                case SwitchType_silent:             should_write_to_file = false; break;
-                case SwitchType_log_errors:         should_log_errors = true;     break;
-                case SwitchType_run_tests:          should_run_tests = true;      break;
-                case SwitchType_print_help:         print_help();                 break;
-                case SwitchType_display_time_taken: display_time_taken = true;    break;
+                case SwitchType_silent:             { should_write_to_file = false; } break;
+                case SwitchType_log_errors:         { should_log_errors = true;     } break;
+                case SwitchType_run_tests:          { should_run_tests = true;      } break;
+                case SwitchType_print_help:         { print_help();                 } break;
+                case SwitchType_display_time_taken: { display_time_taken = true;    } break;
 
                 case SwitchType_source_file: {
                     if(!string_contains(switch_name, dir_name)) {
@@ -511,59 +436,43 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
             if(!number_of_files) {
                 push_error(ErrorType_no_files_pass_in);
             } else {
-                Byte *file_memory = alloc(Byte, largest_source_file_size);
+                Byte *file_memory = system_alloc(Byte, largest_source_file_size);
                 if(file_memory) {
                     // Write static file to disk.
                     if(should_write_to_file) {
                         Bool create_folder_success = system_create_folder(dir_name);
 
-                        if(!create_folder_success) push_error(ErrorType_could_not_create_directory);
-                        else                       write_static_file();
+                        if(!create_folder_success) { push_error(ErrorType_could_not_create_directory); }
+                        else                       { write_static_file();                              }
                     }
 
                     // Parse files
                     for(Int i = 1; (i < argc); ++i) {
-                        Char *file_name = argv[i];
+                        Char const *file_name = argv[i];
                         zero(file_memory, largest_source_file_size);
 
                         SwitchType type = get_switch_type(file_name);
                         if(type == SwitchType_source_file) {
                             File file = system_read_entire_file_and_null_terminate(file_name, file_memory);
 
-                            if(file.data) start_parsing(file_name, file.data);
-                            else          push_error(ErrorType_could_not_load_file);
+                            if(file.data) { start_parsing(file_name, file.data);       }
+                            else          { push_error(ErrorType_could_not_load_file); }
                         }
                     }
 
-                    free(file_memory);
+                    system_free(file_memory);
                 }
             }
-#if MEM_CHECK
+
             free_scratch_memory();
-
-            // Check memory leaks.
-            MemList *next = mem_list_root;
-            while(next) {
-                if(!next->freed) {
-                    push_error_(ErrorType_memory_not_freed, next->guid);
-                }
-
-                next = next->next;
-            }
-#endif
-            // Output errors.
         }
 
+        // Output errors.
         if(should_log_errors) {
             if(print_errors()) {
                 res = 255;
             }
         }
-    }
-
-    Uint64 end_time = system_get_performance_counter();
-    if(display_time_taken) {
-        system_print_timer(end_time - start_time);
     }
 
     return(res);

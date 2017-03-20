@@ -48,15 +48,28 @@ struct EnumData {
     Int no_of_values;
 };
 
+struct FunctionData {
+    String linkage;
+    String return_type;
+    Int return_type_ptr;
+    String name;
+
+    Variable *params;
+    Int param_cnt;
+};
+
 struct ParseResult {
     Int enum_cnt;
     EnumData *enum_data;
 
     Int struct_cnt;
     StructData *struct_data;
+
+    Int func_cnt;
+    FunctionData *func_data;
 };
 
-ParseResult parse_stream(Char *stream);
+ParseResult parse_stream(Char const *stream);
 
 #define _LEXER_H
 #endif

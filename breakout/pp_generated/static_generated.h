@@ -73,22 +73,23 @@ typedef bool _bool;
 
 // TODO(Jonny): Add Type in here?
 template<typename T> struct TypeInfo {
-    using type = void;
+    using type      = void;
     using weak_type = void;
-    using base = void;
-    using members = std::tuple<void>;
+    using base      = void;
 
-    static constexpr char * name = 0;
-    static constexpr char * weak_name = 0;
+    static constexpr char const * const name      = 0;
+    static constexpr char const * const weak_name = 0;
 
-    static constexpr size_t member_count = 0;
+    static constexpr size_t const member_count = 0;
+    static constexpr size_t const base_count   = 0;
 
-    static constexpr bool is_ptr = 0;
-    static constexpr bool is_ref = 0;
-    static constexpr size_t base_count = 0;
-    static constexpr bool is_primitive = 0;
-    static constexpr bool is_class = 0;
-    static constexpr bool is_enum = 0;
+    static constexpr bool const ptr_level = 0;
+    static constexpr bool const is_ref    = 0;
+
+
+    static constexpr bool const is_primitive = 0;
+    static constexpr bool const is_class     = 0;
+    static constexpr bool const is_enum      = 0;
 };
 
 struct MemberDefinition {
@@ -197,6 +198,15 @@ template<typename T, typename U> bool fuzzy_type_compare_(void) {
 
     return(false);
 }
+
+enum Access {
+    Access_unknown,
+    Access_public,
+    Access_private,
+    Access_protected,
+
+    Access_count,
+};
 
 #if defined(_MSC_VER)
     #define pp_sprintf(buf, size, format, ...) sprintf_s(buf, size, format, ##__VA_ARGS__)

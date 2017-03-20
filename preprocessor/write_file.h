@@ -15,9 +15,11 @@
 
 struct StructData;
 struct EnumData;
+struct FunctionData;
 struct File;
 
-File write_data(Char *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count);
+File write_data(Char const *fname, StructData *struct_data, Int struct_count, EnumData *enum_data, Int enum_count,
+                FunctionData *func_data, Int func_cnt);
 
 #define _WRTIE_FILE_H
 #endif
