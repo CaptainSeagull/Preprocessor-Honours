@@ -68,12 +68,12 @@ typedef double Float64;
     #error "Could not detect compiler."
 #endif
 
-#if defined(__linux__)
-    #undef OS_LINUX
-    #define OS_LINUX 1
-#elif defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) || defined(__CYGWIN32__)
     #undef OS_WIN32
     #define OS_WIN32 1
+#elif defined(__linux__)
+    #undef OS_LINUX
+    #define OS_LINUX 1
 #else
     #error "Could not detect OS"
 #endif

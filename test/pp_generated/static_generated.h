@@ -46,8 +46,8 @@ template<typename T> struct TypeInfo {
     static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
-    static constexpr bool const ptr_level = 0;
-    static constexpr bool const is_ref    = 0;
+    static constexpr bool const ptr    = 0;
+    static constexpr bool const is_ref = 0;
 
 
     static constexpr bool const is_primitive = 0;

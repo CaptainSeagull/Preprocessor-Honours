@@ -175,10 +175,12 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
 
     Int ptr_count = 0;
     Char const *at = pointer_stuff;
-    while(*at++) {
+    while(*at) {
         if(*at == '*') {
             ++ptr_count;
         }
+
+        ++at;
     }
 
     write_to_output_buffer(ob,
@@ -193,8 +195,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    static constexpr size_t member_count = %d;\n"
                            "    static constexpr size_t base_count   = %d;\n"
                            "\n"
-                           "    static constexpr size_t ptr_level = %d;\n"
-                           "    static constexpr bool is_ref      = %s;\n"
+                           "    static constexpr size_t ptr  = %d;\n"
+                           "    static constexpr bool is_ref = %s;\n"
                            "\n"
                            "    static constexpr bool is_primitive = %s;\n"
                            "    static constexpr bool is_class     = %s;\n"
@@ -243,7 +245,7 @@ internal Void write_type_struct_all(OutputBuffer *ob, String name, Int member_co
         }
 
         write_type_struct(ob, name, member_count, ptr_buf, type, false, base, inherited_count);
-        if((!i) && (!string_compare(name, create_string("void")))) {
+        if((i) && (!string_compare(name, create_string("void")))) {
             write_type_struct(ob, name, member_count, ptr_buf, type, true, base, inherited_count);
         }
     }

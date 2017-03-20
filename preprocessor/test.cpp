@@ -19,7 +19,7 @@ namespace {
 //
 // Test utils.
 //
-StructData parse_struct_test(Char const *str, int ahead = 0) {
+internal StructData parse_struct_test(Char const *str, int ahead = 0) {
     Tokenizer tokenizer = {str};
 
     eat_token(&tokenizer);
@@ -43,7 +43,7 @@ enum StructCompareFailure {
     StructCompareFailure_func_data,
     StructCompareFailure_func_count,
 };
-Char const *struct_compare_failure_to_string(StructCompareFailure scf) {
+internal Char const *struct_compare_failure_to_string(StructCompareFailure scf) {
     Char const *res = 0;
     if(scf == StructCompareFailure_success)           { res = "StructCompareFailure_success";      }
     else if(scf == StructCompareFailure_name)         { res = "StructCompareFailure_name";         }
@@ -56,7 +56,7 @@ Char const *struct_compare_failure_to_string(StructCompareFailure scf) {
     return(res);
 };
 
-StructCompareFailure compare_struct_data(StructData a, StructData b) {
+internal StructCompareFailure compare_struct_data(StructData a, StructData b) {
     StructCompareFailure res = StructCompareFailure_success;
 
     if(!string_compare(a.name, b.name))                                         { res = StructCompareFailure_name;            }
