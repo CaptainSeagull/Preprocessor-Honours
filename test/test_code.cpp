@@ -1,5 +1,4 @@
 #include "pp_generated/test_code_generated.h"
-#include <string.h>
 
 class Shape {
 public:
@@ -13,7 +12,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-
     Rectangle r;
     r.width = 10;
     r.height = 10;
