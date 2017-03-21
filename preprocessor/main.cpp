@@ -24,6 +24,7 @@ enum SwitchType {
     SwitchType_print_help,
     SwitchType_display_time_taken,
     SwitchType_source_file,
+    SwitchType_set_dir,
 
     SwitchType_count,
 };
@@ -35,14 +36,15 @@ internal SwitchType get_switch_type(Char const *str) {
     if(len >= 2) {
         if(str[0] == '-') {
             switch(str[1]) {
-                case 'e': res = SwitchType_log_errors;         break;
-                case 'h': res = SwitchType_print_help;         break;
-                case 'p': res = SwitchType_display_time_taken; break;
+                case 'e': { res = SwitchType_log_errors;         } break;
+                case 'h': { res = SwitchType_print_help;         } break;
+                case 'p': { res = SwitchType_display_time_taken; } break;
+                case 'd': { res = SwitchType_set_dir;            } break;
 #if INTERNAL
-                case 's': res = SwitchType_silent;    break;
-                case 't': res = SwitchType_run_tests; break;
+                case 's': { res = SwitchType_silent;    } break;
+                case 't': { res = SwitchType_run_tests; } break;
 #endif
-                default: assert(0); break;
+                default: { assert(0); } break;
             }
         } else if((str[len - 1] == 'h') && (str[len - 2] == '.')) {
             res = SwitchType_source_file;
@@ -404,11 +406,12 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
 
             SwitchType type = get_switch_type(switch_name);
             switch(type) {
-                case SwitchType_silent:             { should_write_to_file = false; } break;
-                case SwitchType_log_errors:         { should_log_errors = true;     } break;
-                case SwitchType_run_tests:          { should_run_tests = true;      } break;
-                case SwitchType_print_help:         { print_help();                 } break;
-                case SwitchType_display_time_taken: { display_time_taken = true;    } break;
+                case SwitchType_silent:             { should_write_to_file = false;               } break;
+                case SwitchType_log_errors:         { should_log_errors = true;                   } break;
+                case SwitchType_run_tests:          { should_run_tests = true;                    } break;
+                case SwitchType_print_help:         { print_help();                               } break;
+                case SwitchType_display_time_taken: { display_time_taken = true;                  } break;
+                case SwitchType_set_dir:            { system_set_current_folder(switch_name + 2); } break;
 
                 case SwitchType_source_file: {
                     if(!string_contains(switch_name, dir_name)) {
@@ -423,6 +426,10 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
                             }
                         }
                     }
+                } break;
+
+                default: {
+                    system_write_to_console("Unknown argument %s", switch_name);
                 } break;
             }
         }

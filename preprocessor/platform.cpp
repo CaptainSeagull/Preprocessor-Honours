@@ -21,6 +21,9 @@
 #include "platform.h"
 #include "utils.h"
 #include "stdio.h"
+#include "stb_sprintf.h"
+
+internal Char *global_folder = 0;
 
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
     return HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size * cnt);
@@ -41,7 +44,11 @@ File system_read_entire_file_and_null_terminate(Char const *fname, Void *memory)
     LARGE_INTEGER fsize;
     DWORD fsize32, bytes_read;
 
-    fhandle = CreateFileA(fname, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), fname, string_length(fname));
+
+    fhandle = CreateFileA(name_buf, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if(fhandle != INVALID_HANDLE_VALUE) {
         if(GetFileSizeEx(fhandle, &fsize)) {
             fsize32 = safe_truncate_size_64(fsize.QuadPart);
@@ -67,7 +74,11 @@ Bool system_write_to_file(Char const *fname, Char const *data, PtrSize data_size
     HANDLE fhandle;
     DWORD fsize32, bytes_written;
 
-    fhandle = CreateFileA(fname, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CREATE_ALWAYS, 0, 0);
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), fname, string_length(fname));
+
+    fhandle = CreateFileA(name_buf, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CREATE_ALWAYS, 0, 0);
     if(fhandle != INVALID_HANDLE_VALUE) {
 #if ENVIRONMENT32
         fsize32 = data_size;
@@ -90,7 +101,11 @@ PtrSize system_get_file_size(Char const *fname) {
     HANDLE fhandle;
     LARGE_INTEGER large_int;
 
-    fhandle = CreateFileA(fname, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), fname, string_length(fname));
+
+    fhandle = CreateFileA(name_buf, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if(fhandle != INVALID_HANDLE_VALUE) {
         if(GetFileSizeEx(fhandle, &large_int)) {
 #if ENVIRONMENT32
@@ -107,15 +122,26 @@ PtrSize system_get_file_size(Char const *fname) {
 }
 
 Bool system_create_folder(Char const *name) {
-    Int create_dir_res = CreateDirectory(name, 0);
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), name, string_length(name));
+
+    Int create_dir_res = CreateDirectory(name_buf, 0);
 
     Bool res = (create_dir_res == 0);
 
     return(res);
 }
 
-Void system_write_to_console(Char const *str) {
-    printf("%s", str);
+Void system_write_to_console(Char const *str, ...) {
+    PtrSize buf_size = 1024;
+    Char buf[1024] = {};
+
+    va_list args;
+    va_start(args, str);
+    PtrSize bytes_written = stbsp_vsnprintf(buf, buf_size, str, args);
+
+    printf("%s", buf);
 }
 
 Void system_write_to_stderr(Char const *str) {
@@ -126,6 +152,17 @@ Char *system_get_file_extension(Char const *fname) {
     Char *res = PathFindExtensionA(fname);
 
     return(res);
+}
+
+Void system_set_current_folder(Char const *folder_name) {
+    PtrSize len = string_length(folder_name);
+
+    global_folder = system_alloc(Char, len + 2);
+    if(global_folder) {
+        string_copy(global_folder, folder_name);
+        global_folder[len] = '/';
+
+    }
 }
 
 //

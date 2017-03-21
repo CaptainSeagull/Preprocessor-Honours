@@ -144,8 +144,10 @@ String create_string(Char const *str, Int len/*= 0*/) {
 Int string_length(Char const *str) {
     Int res = 0;
 
-    while(*str++) {
-        ++res;
+    if(str) {
+        while(*str++) {
+            ++res;
+        }
     }
 
     return(res);
