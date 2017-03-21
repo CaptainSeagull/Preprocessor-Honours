@@ -26,6 +26,7 @@ enum StdTypes {
     StdTypes_deque,
     StdTypes_forward_list,
     StdTypes_list,
+    StdTypes_string,
 
     StdTypes_cnt,
 };
@@ -42,6 +43,7 @@ internal StdResult get_std_information(String str) {
     Char const *std_deque_str = "std::deque";
     Char const *std_forward_list_str = "std::forward_list";
     Char const *std_list_str = "std::list";
+    Char const *std_string_str = "std::string";
 
     if(string_contains(str, std_vector_str)) { // std::vector
         res.type = StdTypes_vector;
@@ -67,6 +69,12 @@ internal StdResult get_std_information(String str) {
         Int len = string_length(std_list_str);
         res.stored_type.len = str.len - len - 2;
         res.stored_type.e = str.e + len + 1;
+    } else if(string_contains(str, std_string_str)) { // std::string
+        res.type = StdTypes_string;
+
+        Int len = string_length(std_string_str);
+        res.stored_type.len = 4;
+        res.stored_type.e = "char";
     }
 
     return(res);
@@ -321,6 +329,20 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
 
                 ++written_count;
             } break;
+
+            case StdTypes_string: {
+                if(written_count) {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        else ");
+                } else {
+                    temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
+                }
+
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_string_%.*s) {bytes_written = serialize_container<std::string, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                                           std_res.stored_type.len, std_res.stored_type.e,
+                                           std_res.stored_type.len, std_res.stored_type.e);
+
+                ++written_count;
+            };
         }
     }
 
@@ -515,6 +537,10 @@ internal Void write_meta_type_enum(OutputBuffer *ob, String *types, Int type_cou
                 write_to_output_buffer(ob, "    Type_std_list_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
+            case StdTypes_string: {
+                write_to_output_buffer(ob, "    Type_std_string_%.*s,\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
             default: {
                 assert(0);
             } break;
@@ -588,6 +614,10 @@ internal void write_is_container(OutputBuffer *ob, String *types, Int type_count
 
             case StdTypes_list: {
                 write_to_output_buffer(ob, "if(type == Type_std_list_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
+            } break;
+
+            case StdTypes_string: {
+                write_to_output_buffer(ob, "if(type == Type_std_string_%.*s) {return(true);} // true\n", std_res.stored_type.len, std_res.stored_type.e);
             } break;
 
             default: assert(0); break;
@@ -1008,6 +1038,10 @@ internal Void write_get_members_of(OutputBuffer *ob, StructData *struct_data, In
                             write_to_output_buffer(ob, "            {Type_std_list_%.*s", std_res.stored_type.len, std_res.stored_type.e);
                         } break;
 
+                        case StdTypes_string: {
+                            write_to_output_buffer(ob, "            {Type_std_string_%.*s", std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
+
                         default: {
                             assert(0);
                         } break;
@@ -1059,6 +1093,12 @@ internal Void write_get_members_of(OutputBuffer *ob, StructData *struct_data, In
                                     case StdTypes_list: {
                                         write_to_output_buffer(ob,
                                                                "            {Type_std_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_string: {
+                                        write_to_output_buffer(ob,
+                                                               "            {Type_std_string_%.*s",
                                                                std_res.stored_type.len, std_res.stored_type.e);
                                     } break;
 
@@ -1157,6 +1197,11 @@ internal Void write_get_members_of_str(OutputBuffer *ob, StructData *struct_data
                 len = std_res.stored_type.len;
             } break;
 
+            case StdTypes_string: {
+                output_string = std_res.stored_type.e;
+                len = std_res.stored_type.len;
+            } break;
+
             default: {
                 assert(0);
             } break;
@@ -1231,6 +1276,11 @@ internal Void write_get_members_of_str(OutputBuffer *ob, StructData *struct_data
                                                    std_res.stored_type.len, std_res.stored_type.e);
                         } break;
 
+                        case StdTypes_string: {
+                            write_to_output_buffer(ob, "            {Type_std_string_%.*s",
+                                                   std_res.stored_type.len, std_res.stored_type.e);
+                        } break;
+
                         default: {
                             assert(0);
                         } break;
@@ -1277,6 +1327,11 @@ internal Void write_get_members_of_str(OutputBuffer *ob, StructData *struct_data
 
                                     case StdTypes_list: {
                                         write_to_output_buffer(ob, "            {Type_std_list_%.*s",
+                                                               std_res.stored_type.len, std_res.stored_type.e);
+                                    } break;
+
+                                    case StdTypes_string: {
+                                        write_to_output_buffer(ob, "            {Type_std_string_%.*s",
                                                                std_res.stored_type.len, std_res.stored_type.e);
                                     } break;
                                 }

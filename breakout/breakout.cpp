@@ -3,6 +3,7 @@
 #include "pp_generated/breakout_generated.h"
 
 #include "sdl/SDL.h"
+#include "sdl/SDL_ttf.h"
 
 int global_window_width = 640;
 int global_window_height = 480;
@@ -127,121 +128,131 @@ int main(int argc, char **argv) {
                 bool running = true;
                 SDL_Event event = {};
 
-                size_t buf_size = 1024 * 1024;
-                char *buf = (char *)malloc(buf_size);
-                if(buf) {
-                    memset(buf, 0, buf_size);
+                TTF_Init();
+                TTF_Font *font = TTF_OpenFont("courier-new.ttf", 12);
 
-                    bool controls_right = false, controls_left = false;
-                    bool pause = false;
-                    while(running) {
-                        bool clicked = false;
-                        bool display_game_state = false;
-                        int mouse_x = 0, mouse_y = 0;
+                bool controls_right = false, controls_left = false;
+                bool pause = false;
+                while(running) {
+                    bool clicked = false;
+                    bool display_game_state = false;
+                    int mouse_x = 0, mouse_y = 0;
 
-                        while(SDL_PollEvent(&event)) {
-                            switch(event.type) {
-                                case SDL_QUIT: { running = false; } break;
+                    while(SDL_PollEvent(&event)) {
+                        switch(event.type) {
+                            case SDL_QUIT: { running = false; } break;
 
-                                case SDL_KEYDOWN: {
-                                    switch(event.key.keysym.sym) {
-                                        case SDLK_LEFT:  { controls_right = true; } break;
-                                        case SDLK_RIGHT: { controls_left  = true; } break;
+                            case SDL_KEYDOWN: {
+                                switch(event.key.keysym.sym) {
+                                    case SDLK_LEFT:  { controls_right = true; } break;
+                                    case SDLK_RIGHT: { controls_left  = true; } break;
 
-                                        case SDLK_F1: { display_game_state = true; } break;
-                                    }
-                                } break;
-
-                                case SDL_KEYUP: {
-                                    switch(event.key.keysym.sym) {
-                                        case SDLK_LEFT:  { controls_right = false; } break;
-                                        case SDLK_RIGHT: { controls_left  = false; } break;
-
-                                        case SDLK_SPACE: { pause = !pause; } break;
-                                    }
-                                } break;
-
-                                case SDL_MOUSEBUTTONDOWN: {
-                                    SDL_GetMouseState(&mouse_x, &mouse_y);
-                                    clicked = true;
-                                } break;
-                            }
-                        }
-
-
-                        //
-                        // Updating
-                        //
-
-                        if(!pause) {
-                            // Paddle.
-                            {
-                                Paddle *paddle = &game_state.paddle;
-
-                                float movement_speed = 0.5f;
-                                if(controls_right) { paddle->trans.pos.x -= movement_speed; }
-                                if(controls_left)  { paddle->trans.pos.x += movement_speed; }
-                            }
-
-                            // Ball.
-                            {
-                                Ball *ball = &game_state.ball;
-
-                                V2 fake_ball_pos = ball->trans.pos;
-                                fake_ball_pos.x += ball->speed.x;
-                                fake_ball_pos.y += ball->speed.y;
-
-                                if((fake_ball_pos.x < 0) || (fake_ball_pos.x > global_window_width))  {
-                                    ball->speed.x *= -1;
-                                    fake_ball_pos.x = ball->trans.pos.x;
+                                    case SDLK_F1: { display_game_state = true; } break;
                                 }
-                                if((fake_ball_pos.y < 0) || (fake_ball_pos.y > global_window_height)) {
-                                    ball->speed.y *= -1;
-                                    fake_ball_pos.y = ball->trans.pos.y;
+                            } break;
+
+                            case SDL_KEYUP: {
+                                switch(event.key.keysym.sym) {
+                                    case SDLK_LEFT:  { controls_right = false; } break;
+                                    case SDLK_RIGHT: { controls_left  = false; } break;
+
+                                    case SDLK_SPACE: { pause = !pause; } break;
                                 }
+                            } break;
 
-                                if(ball_paddle_collision(*ball, game_state.paddle)) {
-                                    if(ball->speed.y > 0) {
-                                        fake_ball_pos = ball->trans.pos;
-                                        ball->speed.y *= -1.0f;
-                                    }
-                                }
-
-                                ball->trans.pos = fake_ball_pos;
-                            }
+                            case SDL_MOUSEBUTTONDOWN: {
+                                SDL_GetMouseState(&mouse_x, &mouse_y);
+                                clicked = true;
+                            } break;
                         }
-
-                        //
-                        // Serialize part.
-                        //
-                        if(display_game_state) { pp::serialize(game_state, buf, buf_size); }
-                        else if(clicked) {
-                            if(paddle_clicked(mouse_x, mouse_y, game_state.paddle))  { pp::serialize(game_state.paddle, buf, buf_size); }
-                            else if(ball_clicked(mouse_x, mouse_y, game_state.ball)) { pp::serialize(game_state.ball, buf, buf_size);   }
-                        }
-
-                        if(*buf) {
-                            printf("\n%s\n", buf);
-                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Serialized", buf, 0);
-                            memset(buf, 0, buf_size);
-                        }
-
-                        //
-                        // Rendering
-                        //
-                        SDL_FillRect(surface, &back, SDL_MapRGB(surface->format, 0, 0, 0));
-
-                        draw_paddle(game_state.paddle, surface);
-                        draw_ball(game_state.ball, surface);
-
-                        SDL_UpdateWindowSurface(win);
                     }
 
-                    free(buf);
-                }
 
-                SDL_DestroyWindow(win);
+                    //
+                    // Updating
+                    //
+
+                    if(!pause) {
+                        // Paddle.
+                        {
+                            Paddle *paddle = &game_state.paddle;
+
+                            float movement_speed = 0.5f;
+                            if(controls_right) { paddle->trans.pos.x -= movement_speed; }
+                            if(controls_left)  { paddle->trans.pos.x += movement_speed; }
+                        }
+
+                        // Ball.
+                        {
+                            Ball *ball = &game_state.ball;
+
+                            V2 fake_ball_pos = ball->trans.pos;
+                            fake_ball_pos.x += ball->speed.x;
+                            fake_ball_pos.y += ball->speed.y;
+
+                            if((fake_ball_pos.x < 0) || (fake_ball_pos.x > global_window_width))  {
+                                ball->speed.x *= -1;
+                                fake_ball_pos.x = ball->trans.pos.x;
+                            }
+                            if((fake_ball_pos.y < 0) || (fake_ball_pos.y > global_window_height)) {
+                                ball->speed.y *= -1;
+                                fake_ball_pos.y = ball->trans.pos.y;
+                            }
+
+                            if(ball_paddle_collision(*ball, game_state.paddle)) {
+                                if(ball->speed.y > 0) {
+                                    fake_ball_pos = ball->trans.pos;
+                                    ball->speed.y *= -1.0f;
+                                }
+                            }
+
+                            ball->trans.pos = fake_ball_pos;
+                        }
+                    }
+
+                    //
+                    // Rendering
+                    //
+                    SDL_FillRect(surface, &back, SDL_MapRGB(surface->format, 0, 0, 0));
+
+                    draw_paddle(game_state.paddle, surface);
+                    draw_ball(game_state.ball, surface);
+
+                    //
+                    // Serialization code code.
+                    //
+                    {
+                        // Serialization.
+                        size_t buf_size = 1024 * 1024;
+                        char *buf = (char *)malloc(buf_size);
+                        size_t bytes_written = pp::serialize(game_state, buf, buf_size);
+                        assert(bytes_written < buf_size);
+
+                        SDL_Color text_colour;
+                        text_colour.r = 255;
+                        text_colour.g = 0;
+                        text_colour.b = 0;
+                        text_colour.a = 255;
+
+                        SDL_Surface *text_surface = TTF_RenderText_Blended_Wrapped(font, buf, text_colour, strlen(buf));
+
+                        SDL_Rect rect;
+                        rect.x = mouse_x;
+                        rect.y = mouse_y;
+                        rect.w = 400;
+                        rect.h = 200;
+                        SDL_BlitSurface(text_surface, 0, surface, &rect);
+
+                        free(buf);
+                        SDL_FreeSurface(text_surface);
+                    }
+
+
+                    SDL_UpdateWindowSurface(win);
+                }
             }
+
+            SDL_DestroyWindow(win);
         }
 
         SDL_Quit();

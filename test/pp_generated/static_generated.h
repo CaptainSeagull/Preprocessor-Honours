@@ -226,7 +226,8 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
     return(bytes_written);
 
 }
-static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);
+template<typename T, typename U> static size_t
 serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     char indent_buf[256] = {};
     for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
@@ -236,6 +237,16 @@ serialize_container(void *member_ptr, char const *name, int indent, char *buffer
     for(auto &iter : container) {
         bytes_written = serialize_struct_((void *)&iter, "", TypeInfo<U>::name, indent, buffer, buf_size, bytes_written);
     }
+
+    return(bytes_written);
+}
+
+template<> size_t serialize_container<std::string, char>(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    char indent_buf[256] = {};
+    for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
+
+    std::string &container = *(std::string *)member_ptr;
+    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, " \n%s std::string %s = '%.*s' ", indent_buf, name, (int)container.length(), container.c_str());
 
     return(bytes_written);
 }

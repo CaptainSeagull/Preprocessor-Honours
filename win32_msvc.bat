@@ -1,12 +1,12 @@
 @echo off
 
 rem Variables to set.
-set RELEASE=true
+set RELEASE=false
 set RUN_CODE_AFTER_BUILDING=false
 set GTEST=false
 
 set RUN_TEST=true
-set RUN_BREAKOUT=false
+set RUN_BREAKOUT=true
 
 rem Setup Visual Studio 2015.
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
@@ -56,6 +56,6 @@ if "%RUN_BREAKOUT%"=="true" (
     popd
 
     pushd "build"
-    cl -FeBreakout %SDL_COMMON_COMPILER_FLAGS% -MDd -Wall "../breakout/breakout.cpp" -FmTest.map -link -subsystem:windows,5.2 -NODEFAULTLIB:msvcrt.lib kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib sdl2.lib sdl2main.lib
+    cl -FeBreakout %SDL_COMMON_COMPILER_FLAGS% -MDd -Wall "../breakout/breakout.cpp" -FmTest.map -link -subsystem:windows,5.2 -NODEFAULTLIB:msvcrt.lib kernel32.lib user32.lib gdi32.lib opengl32.lib winmm.lib dsound.lib legacy_stdio_definitions.lib sdl2.lib sdl2main.lib sdl2_ttf.lib
     popd
 )

@@ -148,6 +148,13 @@ internal Variable parse_member(Tokenizer *tokenizer, Int var_to_parse) {
         Char const *at = type.e;
         while(*at != '>') {
             ++type.len; ++at;
+            if(type.len == string_length("std::string")) {
+                String a = token_to_string(type);
+                String b = create_string("std::string");
+                if(string_compare(a, b)) {
+                    break;
+                }
+            }
         }
     }
 

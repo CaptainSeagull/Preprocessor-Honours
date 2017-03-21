@@ -34,43 +34,6 @@ typedef bool _bool;
 #define PP_OS_WIN32 0
 #define PP_OS_LINUX 0
 
-#if defined(__clang__)
-    #undef PP_COMPILER_CLANG
-    #define PP_COMPILER_CLANG 1
-#elif defined(_MSC_VER)
-    #undef PP_COMPILER_MSVC
-    #define PP_COMPILER_MSVC 1
-#elif (defined(__GNUC__) || defined(__GNUG__)) // This has to be after __clang__, because Clang also defines this.
-    #undef PP_COMPILER_GCC
-    #define PP_COMPILER_GCC 1
-#endif
-
-#if defined(__linux__)
-    #undef PP_OS_LINUX
-    #define PP_OS_LINUX 1
-#elif defined(_WIN32)
-    #undef PP_OS_WIN32
-    #define PP_OS_WIN32 1
-#endif
-
-#if PP_OS_LINUX
-    #if (__x86_64__ || __ppc64__)
-        #undef PP_ENVIRONMENT64
-        #define PP_ENVIRONMENT64 1
-    #else
-        #undef PP_ENVIRONMENT32
-        #define PP_ENVIRONMENT32 1
-    #endif
-#elif OS_WIN32
-    #if defined(_WIN64)
-        #undef PP_ENVIRONMENT64
-        #define PP_ENVIRONMENT64 1
-    #else
-        #undef PP_ENVIRONMENT32
-        #define PP_ENVIRONMENT32 1
-    #endif
-#endif
-
 // TODO(Jonny): Add Type in here?
 template<typename T> struct TypeInfo {
     using type      = void;
@@ -83,8 +46,8 @@ template<typename T> struct TypeInfo {
     static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
-    static constexpr bool const ptr_level = 0;
-    static constexpr bool const is_ref    = 0;
+    static constexpr bool const ptr    = 0;
+    static constexpr bool const is_ref = 0;
 
 
     static constexpr bool const is_primitive = 0;
@@ -263,7 +226,8 @@ serialize_primitive_(T *member_ptr, bool is_ptr, int arr_size, char const *name,
     return(bytes_written);
 
 }
-static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);template<typename T, typename U> static size_t
+static size_t serialize_struct_(void *var, char const *name, char const *type_as_str, int indent, char *buffer, size_t buf_size, size_t bytes_written);
+template<typename T, typename U> static size_t
 serialize_container(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
     char indent_buf[256] = {};
     for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
@@ -273,6 +237,16 @@ serialize_container(void *member_ptr, char const *name, int indent, char *buffer
     for(auto &iter : container) {
         bytes_written = serialize_struct_((void *)&iter, "", TypeInfo<U>::name, indent, buffer, buf_size, bytes_written);
     }
+
+    return(bytes_written);
+}
+
+template<> size_t serialize_container<std::string, char>(void *member_ptr, char const *name, int indent, char *buffer, size_t buf_size, size_t bytes_written) {
+    char indent_buf[256] = {};
+    for(int i = 0; (i < indent); ++i) {indent_buf[i] = ' ';}
+
+    std::string &container = *(std::string *)member_ptr;
+    bytes_written += pp_sprintf(buffer + bytes_written, buf_size - bytes_written, " \n%s std::string %s = '%.*s' ", indent_buf, name, (int)container.length(), container.c_str());
 
     return(bytes_written);
 }

@@ -1,8 +1,25 @@
-int main(int argc, char **argv) {
-    System::String ^s = "Hello World";
+#include "pp_generated/test_code_generated.h"
+#include <string.h>
 
-    // Prints "String Hello World
-    System::Console::WriteLine("{0} {1}", s->GetType(), s);
+class Shape {
+public:
+    int width;
+    int height;
+};
+
+class Rectangle : public Shape {
+public:
+    std::string s;
+};
+
+int main(int argc, char **argv) {
+
+    Rectangle r;
+    r.width = 10;
+    r.height = 10;
+    r.s = "Hello World";
+
+    pp::print(r);
 
     return(0);
 }
