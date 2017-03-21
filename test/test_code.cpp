@@ -19,6 +19,8 @@ int main(int argc, char **argv) {
     r.height = 10;
     r.s = "Hello World";
 
+    auto s = pp::get_member(&r, 0);
+
     pp::print(r);
 
     return(0);

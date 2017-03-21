@@ -1,7 +1,7 @@
 @echo off
 
 rem Variables to set.
-set RELEASE=false
+set RELEASE=true
 set RUN_CODE_AFTER_BUILDING=false
 set GTEST=false
 
