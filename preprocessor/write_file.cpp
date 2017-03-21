@@ -331,7 +331,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                            "\n"
                            "    if(!bytes_written) {memset(buffer, 0, buf_size);} // If this is the first time through, zero the buffer.\n"
                            "\n"
-                           "    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); assert(members_of_Something); // Get the members_of pointer. \n"
+                           "    MemberDefinition *members_of_Something = get_members_of_str(type_as_str); // Get the members_of pointer. \n"
                            "    if(members_of_Something) {\n"
                            "        // Setup the indent buffer.\n"
                            "        char indent_buf[256] = {};\n"
@@ -759,7 +759,7 @@ internal Void write_out_get_at_index(OutputBuffer *ob, StructData *struct_data, 
     write_to_output_buffer(ob,
                            "// Get at index.\n"
                            "#define get_member(variable, index) GetMember<decltype(variable), index>::get(variable)\n"
-                           "template<typename T, int index> struct GetMember { /* Can I have a static assert in here that will only get called if the function is generated?? */};\n");
+                           "template<typename T, int index> struct GetMember { };\n");
 
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;
@@ -1179,7 +1179,18 @@ internal Void write_get_members_of_str(OutputBuffer *ob, StructData *struct_data
         for(Int i = 0; (i < struct_count); ++i) {
             StructData *sd = struct_data + i;
 
-            if(sd->member_count > 0) {
+            Bool any_members = (sd->member_count > 0);
+            if(!any_members) {
+                for(Int j = 0; (j < sd->inherited_count); ++j) {
+                    StructData *base_class = find_struct(sd->inherited[j], struct_data, struct_count);
+                    if((base_class) && (base_class->member_count)) {
+                        any_members = true;
+                        break;
+                    }
+                }
+            }
+
+            if(any_members) {
                 write_to_output_buffer(ob,
                                        "\n"
                                        "    // %.*s\n"
@@ -1349,7 +1360,7 @@ internal Void write_get_number_of_members_str(OutputBuffer *ob, StructData *stru
 
 internal Void write_enum_to_string(OutputBuffer *ob, EnumData enum_data) {
     write_to_output_buffer(ob,
-                           "template<>constexpr char const *enum_to_string<%.*s>(%.*s element) {\n"
+                           "template<>char const *enum_to_string<%.*s>(%.*s element) {\n"
                            "    %.*s index = (%.*s)element;\n"
                            "    switch(index) {\n",
                            enum_data.name.len, enum_data.name.e,
@@ -1374,7 +1385,7 @@ internal Void write_enum_to_string(OutputBuffer *ob, EnumData enum_data) {
 
 internal void write_string_to_enum(OutputBuffer *ob, EnumData enum_data) {
     write_to_output_buffer(ob,
-                           "template<>constexpr %.*s string_to_enum<%.*s>(char const *str) {\n"
+                           "template<>%.*s string_to_enum<%.*s>(char const *str) {\n"
                            "    %.*s res = {};\n"
                            "    bool equal = false;\n"
                            "    char const *cpy = 0;\n"
