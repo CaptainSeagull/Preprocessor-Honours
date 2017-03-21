@@ -1,17 +1,8 @@
-#include <iostream>
-#include <typeinfo.h>
-
-class Base {};
-class Derived : public Base {};
-
 int main(int argc, char **argv) {
-    Derived *derived = new Derived;
-    Base *base = derived;
+    System::String ^s = "Hello World";
 
-    std::cout << typeid(base).name()     << std::endl; // "class Base *"
-    std::cout << typeid(*base).name()    << std::endl; // "class Derived"
-    std::cout << typeid(derived).name()  << std::endl; // "class Derived *"
-    std::cout << typeid(*derived).name() << std::endl; // "class Derived"
+    // Prints "String Hello World
+    System::Console::WriteLine("{0} {1}", s->GetType(), s);
 
     return(0);
 }
