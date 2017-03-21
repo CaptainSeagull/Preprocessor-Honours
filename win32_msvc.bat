@@ -1,8 +1,8 @@
 @echo off
 
 rem Variables to set.
-set RELEASE=false
-set RUN_CODE_AFTER_BUILDING=true
+set RELEASE=true
+set RUN_CODE_AFTER_BUILDING=false
 set GTEST=false
 
 set RUN_TEST=true
@@ -41,9 +41,7 @@ if "%RUN_CODE_AFTER_BUILDING%"=="true" (
 
 rem Test code.
 if "%RUN_TEST%"=="true" (
-    pushd "test"
-    "../build/preprocessor.exe" test_code.cpp -p
-    popd
+    "build/preprocessor.exe" -dtest test_code.cpp -p
 
     pushd "build"
     cl -FeTestCode %DEBUG_COMMON_COMPILER_FLAGS% -Wall "../test/test_code.cpp" -FmTest.map -link -subsystem:console,5.2 kernel32.lib
