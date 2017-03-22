@@ -2,7 +2,8 @@
 #define TEST_CODE_GENERATED_H
 
 // Forward declared structs, enums, and function (these must be declared outside the namespace...)
-enum class Numbers : int;
+class Person;
+class Student;
 
 // This is nessessary due to the way the generated code is outputted. Is #undef'd at the bottom of this file.
 #define _std std
@@ -17,14 +18,18 @@ namespace pp { enum Type {
     Type_float,
     Type_double,
     Type_bool,
+    Type_Person,
+    Type_std_string_char,
+    Type_Student,
 }; }
 
 #include "static_generated.h"
 namespace pp { // PreProcessor
 
 // Recreated Enums.
-enum class _Numbers : int { zero = 0, one = 1, two = 2, three = 3,  };
 // Recreated structs.
+struct _Person {  _std::string name;  _int age;  _std::string city;  _char gender;  };
+struct _Student : public _Person {  _std::string major;  _std::string minor;  };
 //
 // Meta type specialization
 //
@@ -1104,15 +1109,16 @@ public:
     static constexpr bool const is_enum      = false;
 };
 
-// enum Numbers
-template<> class TypeInfo<Numbers> {
-public:
-    using type      = Numbers;
-    using weak_type = Numbers;
-    using base      = int;
 
-    static constexpr char const * const name      = "Numbers";
-    static constexpr char const * const weak_name = "Numbers";
+// struct Person
+template<> class TypeInfo<Person> {
+public:
+    using type      = Person;
+    using weak_type = Person;
+    using base      = void;
+
+    static constexpr char const * const name      = "Person";
+    static constexpr char const * const weak_name = "Person";
 
     static constexpr size_t const member_count = 4;
     static constexpr size_t const base_count   = 0;
@@ -1121,154 +1127,520 @@ public:
     static constexpr bool   const is_ref = false;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers&> {
+template<> class TypeInfo<Person*> {
 public:
-    using type      = Numbers&;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = Person*;
+    using weak_type = Person;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers&";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "Person*";
+    static constexpr char const * const weak_name = "Person";
 
     static constexpr size_t const member_count = 4;
+    static constexpr size_t const base_count   = 0;
+
+    static constexpr size_t const ptr    = 1;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Person*&> {
+public:
+    using type      = Person*&;
+    using weak_type = Person;
+    using base      = void;
+
+    static constexpr char const * const name      = "Person*&";
+    static constexpr char const * const weak_name = "Person";
+
+    static constexpr size_t const member_count = 4;
+    static constexpr size_t const base_count   = 0;
+
+    static constexpr size_t const ptr    = 1;
+    static constexpr bool   const is_ref = true;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Person**> {
+public:
+    using type      = Person**;
+    using weak_type = Person;
+    using base      = void;
+
+    static constexpr char const * const name      = "Person**";
+    static constexpr char const * const weak_name = "Person";
+
+    static constexpr size_t const member_count = 4;
+    static constexpr size_t const base_count   = 0;
+
+    static constexpr size_t const ptr    = 2;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Person**&> {
+public:
+    using type      = Person**&;
+    using weak_type = Person;
+    using base      = void;
+
+    static constexpr char const * const name      = "Person**&";
+    static constexpr char const * const weak_name = "Person";
+
+    static constexpr size_t const member_count = 4;
+    static constexpr size_t const base_count   = 0;
+
+    static constexpr size_t const ptr    = 2;
+    static constexpr bool   const is_ref = true;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Person***> {
+public:
+    using type      = Person***;
+    using weak_type = Person;
+    using base      = void;
+
+    static constexpr char const * const name      = "Person***";
+    static constexpr char const * const weak_name = "Person";
+
+    static constexpr size_t const member_count = 4;
+    static constexpr size_t const base_count   = 0;
+
+    static constexpr size_t const ptr    = 3;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Person***&> {
+public:
+    using type      = Person***&;
+    using weak_type = Person;
+    using base      = void;
+
+    static constexpr char const * const name      = "Person***&";
+    static constexpr char const * const weak_name = "Person";
+
+    static constexpr size_t const member_count = 4;
+    static constexpr size_t const base_count   = 0;
+
+    static constexpr size_t const ptr    = 3;
+    static constexpr bool   const is_ref = true;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+
+// struct std::string
+template<> class TypeInfo<std::string> {
+public:
+    using type      = std::string;
+    using weak_type = std::string;
+    using base      = void;
+
+    static constexpr char const * const name      = "std::string";
+    static constexpr char const * const weak_name = "std::string";
+
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 0;
-    static constexpr bool   const is_ref = true;
+    static constexpr bool   const is_ref = false;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers*> {
+template<> class TypeInfo<std::string*> {
 public:
-    using type      = Numbers*;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = std::string*;
+    using weak_type = std::string;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers*";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "std::string*";
+    static constexpr char const * const weak_name = "std::string";
 
-    static constexpr size_t const member_count = 4;
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 1;
     static constexpr bool   const is_ref = false;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers*&> {
+template<> class TypeInfo<std::string*&> {
 public:
-    using type      = Numbers*&;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = std::string*&;
+    using weak_type = std::string;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers*&";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "std::string*&";
+    static constexpr char const * const weak_name = "std::string";
 
-    static constexpr size_t const member_count = 4;
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 1;
     static constexpr bool   const is_ref = true;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers**> {
+template<> class TypeInfo<std::string**> {
 public:
-    using type      = Numbers**;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = std::string**;
+    using weak_type = std::string;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers**";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "std::string**";
+    static constexpr char const * const weak_name = "std::string";
 
-    static constexpr size_t const member_count = 4;
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 2;
     static constexpr bool   const is_ref = false;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers**&> {
+template<> class TypeInfo<std::string**&> {
 public:
-    using type      = Numbers**&;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = std::string**&;
+    using weak_type = std::string;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers**&";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "std::string**&";
+    static constexpr char const * const weak_name = "std::string";
 
-    static constexpr size_t const member_count = 4;
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 2;
     static constexpr bool   const is_ref = true;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers***> {
+template<> class TypeInfo<std::string***> {
 public:
-    using type      = Numbers***;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = std::string***;
+    using weak_type = std::string;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers***";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "std::string***";
+    static constexpr char const * const weak_name = "std::string";
 
-    static constexpr size_t const member_count = 4;
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 3;
     static constexpr bool   const is_ref = false;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
-template<> class TypeInfo<Numbers***&> {
+template<> class TypeInfo<std::string***&> {
 public:
-    using type      = Numbers***&;
-    using weak_type = Numbers;
-    using base      = int;
+    using type      = std::string***&;
+    using weak_type = std::string;
+    using base      = void;
 
-    static constexpr char const * const name      = "Numbers***&";
-    static constexpr char const * const weak_name = "Numbers";
+    static constexpr char const * const name      = "std::string***&";
+    static constexpr char const * const weak_name = "std::string";
 
-    static constexpr size_t const member_count = 4;
+    static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
     static constexpr size_t const ptr    = 3;
     static constexpr bool   const is_ref = true;
 
     static constexpr bool const is_primitive = false;
-    static constexpr bool const is_class     = false;
-    static constexpr bool const is_enum      = true;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+
+// struct Student
+template<> class TypeInfo<Student> {
+public:
+    using type      = Student;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 0;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Student*> {
+public:
+    using type      = Student*;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student*";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 1;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Student*&> {
+public:
+    using type      = Student*&;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student*&";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 1;
+    static constexpr bool   const is_ref = true;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Student**> {
+public:
+    using type      = Student**;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student**";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 2;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Student**&> {
+public:
+    using type      = Student**&;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student**&";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 2;
+    static constexpr bool   const is_ref = true;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Student***> {
+public:
+    using type      = Student***;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student***";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 3;
+    static constexpr bool   const is_ref = false;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
+};
+
+template<> class TypeInfo<Student***&> {
+public:
+    using type      = Student***&;
+    using weak_type = Student;
+    using base      = Person;
+
+    static constexpr char const * const name      = "Student***&";
+    static constexpr char const * const weak_name = "Student";
+
+    static constexpr size_t const member_count = 2;
+    static constexpr size_t const base_count   = 1;
+
+    static constexpr size_t const ptr    = 3;
+    static constexpr bool   const is_ref = true;
+
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = true;
+    static constexpr bool const is_enum      = false;
 };
 
 // Get at index.
 #define get_member(variable, index) GetMember<decltype(variable), index>::get(variable)
 template<typename T, int index> struct GetMember { };
+
+template<> struct GetMember<Person *, 0> {
+    static std::string *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        std::string * res = (std::string *)&cpy->name;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *&, 0> {
+    static std::string *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        std::string * res = (std::string *)&cpy->name;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *, 1> {
+    static int *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        int * res = (int *)&cpy->age;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *&, 1> {
+    static int *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        int * res = (int *)&cpy->age;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *, 2> {
+    static std::string *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        std::string * res = (std::string *)&cpy->city;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *&, 2> {
+    static std::string *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        std::string * res = (std::string *)&cpy->city;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *, 3> {
+    static char *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        char * res = (char *)&cpy->gender;
+        return(res);
+    };
+};
+template<> struct GetMember<Person *&, 3> {
+    static char *get(Person *ptr) {
+        _Person *cpy = (_Person *)ptr;
+        char * res = (char *)&cpy->gender;
+        return(res);
+    };
+};
+
+template<> struct GetMember<Student *, 0> {
+    static std::string *get(Student *ptr) {
+        _Student *cpy = (_Student *)ptr;
+        std::string * res = (std::string *)&cpy->major;
+        return(res);
+    };
+};
+template<> struct GetMember<Student *&, 0> {
+    static std::string *get(Student *ptr) {
+        _Student *cpy = (_Student *)ptr;
+        std::string * res = (std::string *)&cpy->major;
+        return(res);
+    };
+};
+template<> struct GetMember<Student *, 1> {
+    static std::string *get(Student *ptr) {
+        _Student *cpy = (_Student *)ptr;
+        std::string * res = (std::string *)&cpy->minor;
+        return(res);
+    };
+};
+template<> struct GetMember<Student *&, 1> {
+    static std::string *get(Student *ptr) {
+        _Student *cpy = (_Student *)ptr;
+        std::string * res = (std::string *)&cpy->minor;
+        return(res);
+    };
+};
 template<typename T>static char const * get_member_name(int index){return(0);}
+template<>char const * get_member_name<Person>(int index){
+    switch(index) {
+        case 0: { return("name"); } break;
+        case 1: { return("age"); } break;
+        case 2: { return("city"); } break;
+        case 3: { return("gender"); } break;
+    }
+    return(0); // Not found.
+}
+template<>char const * get_member_name<Student>(int index){
+    switch(index) {
+        case 0: { return("major"); } break;
+        case 1: { return("minor"); } break;
+    }
+    return(0); // Not found.
+}
 static bool is_meta_type_container(int type) {
     if(type == Type_char) {return(false);} // false
     else if(type == Type_short) {return(false);} // false
@@ -1277,19 +1649,30 @@ static bool is_meta_type_container(int type) {
     else if(type == Type_float) {return(false);} // false
     else if(type == Type_double) {return(false);} // false
     else if(type == Type_bool) {return(false);} // false
+    else if(type == Type_Person) {return(false);} // false
+    else if(type == Type_std_string_char) {return(true);} // true
+    else if(type == Type_Student) {return(false);} // false
 
     // Should not be reached.
     assert(0);
     return(0);
 }
 static char const * meta_type_to_name(Type mt, bool is_ptr) {
-
+    if(mt == Type_Person) {
+        if(is_ptr) {return("Person *");}
+        else       {return("Person");  }
+    } else if(mt == Type_Student) {
+        if(is_ptr) {return("Student *");}
+        else       {return("Student");  }
+    }
 
     assert(0); 
     return(0); // Not found
 }
 static size_t get_size_from_str(char const *str) {
 
+    if((strcmp(str, "Person") == 0) || (strcmp(str, "Person *") == 0) || (strcmp(str, "Person **") == 0)) {return(sizeof(_Person));}
+    else if((strcmp(str, "Student") == 0) || (strcmp(str, "Student *") == 0) || (strcmp(str, "Student **") == 0)) {return(sizeof(_Student));}
 
     return(0); // Not found.
 }
@@ -1361,6 +1744,7 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 
                 default: {
                     if(is_meta_type_container(member->type)) {
+                        if(member->type == Type_std_string_char) {bytes_written = serialize_container<std::string, char>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}
 
                     } else {
                         char const *struct_name = meta_type_to_name(member->type, member->is_ptr != 0);
@@ -1394,8 +1778,69 @@ serialize_struct_(void *var, char const *name, char const *type_as_str, int inde
 template<typename T, int index> constexpr Access get_access_at_index() { return(Access_unknown); }
 
 
+template<> constexpr Access get_access_at_index<Person, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person &, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *&, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **&, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person &, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *&, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **&, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person, 2>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *, 2>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **, 2>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person &, 2>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *&, 2>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **&, 2>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person, 3>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *, 3>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **, 3>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person &, 3>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person *&, 3>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Person **&, 3>() { return(Access_public); }
+
+template<> constexpr Access get_access_at_index<Student, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student *, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student **, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student &, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student *&, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student **&, 0>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student *, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student **, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student &, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student *&, 1>() { return(Access_public); }
+template<> constexpr Access get_access_at_index<Student **&, 1>() { return(Access_public); }
+
 // Convert a type into a members of pointer.
 template<typename T> static MemberDefinition *get_members_of_(void) {
+    // Person
+    if(type_compare(T, Person)) {
+        static MemberDefinition members_of_Person[] = {
+            {Type_std_string_char, "name", offset_of(&_Person::name), 0, 1},
+            {Type_int, "age", offset_of(&_Person::age), 0, 1},
+            {Type_std_string_char, "city", offset_of(&_Person::city), 0, 1},
+            {Type_char, "gender", offset_of(&_Person::gender), 0, 1},
+        };
+        return(members_of_Person);
+
+    // Student
+    } else if(type_compare(T, Student)) {
+        static MemberDefinition members_of_Student[] = {
+            {Type_std_string_char, "major", offset_of(&_Student::major), 0, 1},
+            {Type_std_string_char, "minor", offset_of(&_Student::minor), 0, 1},
+            // Members inherited from Person.
+            {Type_std_string_char, "name", (size_t)&((_Student *)0)->name, 0, 1},
+            {Type_int, "age", (size_t)&((_Student *)0)->age, 0, 1},
+            {Type_std_string_char, "city", (size_t)&((_Student *)0)->city, 0, 1},
+            {Type_char, "gender", (size_t)&((_Student *)0)->gender, 0, 1},
+        };
+        return(members_of_Student);
+    }
 
     return(0); // Error.
 }
@@ -1451,6 +1896,29 @@ static MemberDefinition *get_members_of_str(char const *str) {
         };
         return(members_of_bool);
 
+
+    // Person
+    } else if((strcmp(str, "Person") == 0) || (strcmp(str, "Person *") == 0) || (strcmp(str, "Person **") == 0)) {
+        static MemberDefinition members_of_Person[] = {
+            {Type_std_string_char, "name", offset_of(&_Person::name), 0, 1},
+            {Type_int, "age", offset_of(&_Person::age), 0, 1},
+            {Type_std_string_char, "city", offset_of(&_Person::city), 0, 1},
+            {Type_char, "gender", offset_of(&_Person::gender), 0, 1},
+        };
+        return(members_of_Person);
+
+    // Student
+    } else if((strcmp(str, "Student") == 0) || (strcmp(str, "Student *") == 0) || (strcmp(str, "Student **") == 0)) {
+        static MemberDefinition members_of_Student[] = {
+            {Type_std_string_char, "major", offset_of(&_Student::major), 0, 1},
+            {Type_std_string_char, "minor", offset_of(&_Student::minor), 0, 1},
+            // Members inherited from Person.
+            {Type_std_string_char, "name", (size_t)&((_Student *)0)->name, 0, 1},
+            {Type_int, "age", (size_t)&((_Student *)0)->age, 0, 1},
+            {Type_std_string_char, "city", (size_t)&((_Student *)0)->city, 0, 1},
+            {Type_char, "gender", (size_t)&((_Student *)0)->gender, 0, 1},
+        };
+        return(members_of_Student);
     }
 
     return(0); // Error.
@@ -1465,6 +1933,8 @@ static int get_number_of_members_str(char const *str) {
     else if((strcmp(str, "float") == 0) || (strcmp(str, "float *") == 0) || (strcmp(str, "float **") == 0)) {return(1);}
     else if((strcmp(str, "double") == 0) || (strcmp(str, "double *") == 0) || (strcmp(str, "double **") == 0)) {return(1);}
     else if((strcmp(str, "bool") == 0) || (strcmp(str, "bool *") == 0) || (strcmp(str, "bool **") == 0)) {return(1);}
+    else if((strcmp(str, "Person") == 0) || (strcmp(str, "Person *") == 0) || (strcmp(str, "Person **") == 0)) {return(4);}
+    else if((strcmp(str, "Student") == 0) || (strcmp(str, "Student *") == 0) || (strcmp(str, "Student **") == 0)) {return(6);}
 
     return(-1); // Error.
 }
@@ -1477,79 +1947,6 @@ static int get_number_of_members_str(char const *str) {
 template<typename T>static constexpr char const *enum_to_string(T element) { return(0); }
 template<typename T>static constexpr T string_to_enum(char const *str) { return(0); }
 
-// Numbers.
-template<>char const *enum_to_string<Numbers>(Numbers element) {
-    int index = (int)element;
-    switch(index) {
-        case 0:  { return("zero"); } break;
-        case 1:  { return("one"); } break;
-        case 2:  { return("two"); } break;
-        case 3:  { return("three"); } break;
-
-        default: { return(0); } break;
-    }
-}
-template<>Numbers string_to_enum<Numbers>(char const *str) {
-    int res = {};
-    bool equal = false;
-    char const *cpy = 0;
-    char const *cmp = 0;
-
-    if(!equal) {
-        equal = true;
-        cpy = str;
-        cmp = "zero";
-        while((*cpy) && (*cmp)) {
-            if(*cmp != *cpy) {
-                equal = false;
-                break; // while
-            }
-            ++cpy; ++cmp;
-        }
-        if(equal) { res = 0;}
-    }
-    if(!equal) {
-        equal = true;
-        cpy = str;
-        cmp = "one";
-        while((*cpy) && (*cmp)) {
-            if(*cmp != *cpy) {
-                equal = false;
-                break; // while
-            }
-            ++cpy; ++cmp;
-        }
-        if(equal) { res = 1;}
-    }
-    if(!equal) {
-        equal = true;
-        cpy = str;
-        cmp = "two";
-        while((*cpy) && (*cmp)) {
-            if(*cmp != *cpy) {
-                equal = false;
-                break; // while
-            }
-            ++cpy; ++cmp;
-        }
-        if(equal) { res = 2;}
-    }
-    if(!equal) {
-        equal = true;
-        cpy = str;
-        cmp = "three";
-        while((*cpy) && (*cmp)) {
-            if(*cmp != *cpy) {
-                equal = false;
-                break; // while
-            }
-            ++cpy; ++cmp;
-        }
-        if(equal) { res = 3;}
-    }
-
-    return (Numbers)res;
-}
 
 #define weak_type_compare(A, B) TypeCompare_<pp::Type<A>::weak_type, pp::Type<B>::weak_type>::e;
 #undef _std // :(

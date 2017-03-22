@@ -292,7 +292,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                     temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
                 }
 
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_deque_%.*s) {bytes_written = serialize_container<std::deque<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_deque_%.*s) {bytes_written = serialize_container<std::deque<%.*s>, %.*s>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -307,7 +307,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                     temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
                 }
 
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_forward_list_%.*s) {bytes_written = serialize_container<std::forward_list<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_forward_list_%.*s) {bytes_written = serialize_container<std::forward_list<%.*s>, %.*s>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -322,7 +322,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                     temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
                 }
 
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_list_%.*s) {bytes_written = serialize_container<std::list<%.*s>, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_list_%.*s) {bytes_written = serialize_container<std::list<%.*s>, %.*s>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
@@ -337,7 +337,7 @@ internal Void write_serialize_struct_implementation(OutputBuffer *ob, String *ty
                     temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "                        ");
                 }
 
-                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_string_%.*s) {bytes_written = serialize_container<std::string, %.*s>(member_ptr, name, indent, buffer, buf_size, bytes_written);}\n",
+                temp_cnt += stbsp_snprintf(temp + temp_cnt, scratch_memory_size - temp_cnt, "if(member->type == Type_std_string_%.*s) {bytes_written = serialize_container<std::string, %.*s>(member_ptr, member->name, indent, buffer, buf_size, bytes_written);}\n",
                                            std_res.stored_type.len, std_res.stored_type.e,
                                            std_res.stored_type.len, std_res.stored_type.e);
 

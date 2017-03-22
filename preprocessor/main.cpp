@@ -22,7 +22,7 @@ enum SwitchType {
     SwitchType_log_errors,
     SwitchType_run_tests,
     SwitchType_print_help,
-    SwitchType_display_time_taken,
+    SwitchType_version,
     SwitchType_source_file,
     SwitchType_set_dir,
 
@@ -38,8 +38,8 @@ internal SwitchType get_switch_type(Char const *str) {
             switch(str[1]) {
                 case 'e': { res = SwitchType_log_errors;         } break;
                 case 'h': { res = SwitchType_print_help;         } break;
-                case 'p': { res = SwitchType_display_time_taken; } break;
                 case 'd': { res = SwitchType_set_dir;            } break;
+                case 'v': { res = SwitchType_version;            } break;
 #if INTERNAL
                 case 's': { res = SwitchType_silent;    } break;
                 case 't': { res = SwitchType_run_tests; } break;
@@ -420,6 +420,7 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
                 case SwitchType_run_tests:          { should_run_tests = true;                    } break;
                 case SwitchType_print_help:         { print_help();                               } break;
                 case SwitchType_set_dir:            { system_set_current_folder(switch_name + 2); } break;
+                case SwitchType_version:            { system_write_to_console("Version: 1.0");    } break;
 
                 case SwitchType_source_file: {
                     if(!string_contains(switch_name, dir_name)) {
