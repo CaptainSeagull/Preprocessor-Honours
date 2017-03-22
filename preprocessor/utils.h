@@ -112,6 +112,7 @@ Bool string_compare_array(String *a, String *b, Int cnt);
 
 Bool string_contains(String str, Char const *target);
 Bool string_contains(Char const *str, Char const *target);
+Int string_contains_pos(Char const *str, Char const *target);
 
 Bool is_in_string_array(String target, String *arr, Int arr_cnt);
 

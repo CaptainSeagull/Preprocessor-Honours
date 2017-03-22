@@ -35,7 +35,7 @@ Bool system_check_for_debugger(void);
 Void system_write_to_console(Char const *str, ...);
 Void system_write_to_stderr(Char const *str);
 
-Char *system_get_file_extension(Char const *fname);
+Char const *system_get_file_extension(Char const *fname);
 
 Void system_set_current_folder(Char const *folder_name);
 

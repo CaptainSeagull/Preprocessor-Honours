@@ -72,7 +72,6 @@ internal StdResult get_std_information(String str) {
     } else if(string_contains(str, std_string_str)) { // std::string
         res.type = StdTypes_string;
 
-        Int len = string_length(std_string_str);
         res.stored_type.len = 4;
         res.stored_type.e = "char";
     }

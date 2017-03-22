@@ -65,14 +65,12 @@ Char const *ErrorTypeToString(ErrorType e) {
 }
 
 Void push_error_(ErrorType type, Char const *guid) {
-#if ERROR_LOGGING
     if(global_error_count + 1 < array_count(global_errors)) {
         Error *e = global_errors + global_error_count++;
 
         e->type = type;
         e->guid = guid;
     }
-#endif
 }
 
 Bool print_errors() {
@@ -247,6 +245,28 @@ Bool string_contains(Char const *str, Char const *target) {
     String s = {str, string_length(str)};
     return(string_contains(s, target));
 }
+
+Int string_contains_pos(Char const *str, Char const *target) {
+    Int target_len = string_length(target);
+    Int str_len = string_length(str);
+
+    for(Int i = 0; (i < str_len); ++i) {
+        if(str[i] == target[0]) {
+            for(int j = 0; (j < target_len); ++j) {
+                if(str[i + j] != target[j]) {
+                    break;
+                }
+
+                if(j == (target_len - 1)) {
+                    return(i);
+                }
+            }
+        }
+    }
+
+    return(-1);
+}
+
 
 //
 // Stuff

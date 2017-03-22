@@ -400,8 +400,6 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
 
     Int res = 0;
 
-    Bool display_time_taken = false;
-
     if(argc <= 1) {
         push_error(ErrorType_no_parameters);
         print_help();
@@ -421,7 +419,6 @@ Int main(Int argc, Char **argv) {// TODO(Jonny): Support wildcards.
                 case SwitchType_log_errors:         { should_log_errors = true;                   } break;
                 case SwitchType_run_tests:          { should_run_tests = true;                    } break;
                 case SwitchType_print_help:         { print_help();                               } break;
-                case SwitchType_display_time_taken: { display_time_taken = true;                  } break;
                 case SwitchType_set_dir:            { system_set_current_folder(switch_name + 2); } break;
 
                 case SwitchType_source_file: {

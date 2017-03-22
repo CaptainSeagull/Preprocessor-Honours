@@ -10,6 +10,22 @@
   ===================================================================================================*/
 
 #include "shared.h"
+#include "platform.h"
+#include "utils.h"
+#include "stdio.h"
+#include "stb_sprintf.h"
+
+internal Char *global_folder = 0;
+Void system_set_current_folder(Char const *folder_name) {
+    PtrSize len = string_length(folder_name);
+
+    global_folder = system_alloc(Char, len + 2);
+    if(global_folder) {
+        string_copy(global_folder, folder_name);
+        global_folder[len] = '/';
+
+    }
+}
 
 //
 // Win32
@@ -18,12 +34,6 @@
 
 #include <windows.h>
 #include <Shlwapi.h>
-#include "platform.h"
-#include "utils.h"
-#include "stdio.h"
-#include "stb_sprintf.h"
-
-internal Char *global_folder = 0;
 
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
     return HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size * cnt);
@@ -148,21 +158,10 @@ Void system_write_to_stderr(Char const *str) {
     fprintf(stderr, "%s", str);
 }
 
-Char *system_get_file_extension(Char const *fname) {
+Char const *system_get_file_extension(Char const *fname) {
     Char *res = PathFindExtensionA(fname);
 
     return(res);
-}
-
-Void system_set_current_folder(Char const *folder_name) {
-    PtrSize len = string_length(folder_name);
-
-    global_folder = system_alloc(Char, len + 2);
-    if(global_folder) {
-        string_copy(global_folder, folder_name);
-        global_folder[len] = '/';
-
-    }
 }
 
 //
@@ -172,31 +171,10 @@ Void system_set_current_folder(Char const *folder_name) {
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "platform.h"
-#include "utils.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-Uint64 system_get_performance_counter(void) {
-    Uint64 res = 0;
-
-    return(res);
-}
-
-Void system_print_timer(Uint64 value) {
-
-}
-
-Bool system_check_for_debugger(void) {
-    Bool res = false;
-
-    return(res);
-}
-
-#if defined(malloc)
-    #undef malloc
-#endif
 Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
     Void *res = malloc(size * cnt);
     if(res) {
@@ -206,9 +184,6 @@ Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/) {
     return(res);
 }
 
-#if defined(free)
-    #undef free
-#endif
 Bool system_free(Void *ptr) {
     Bool res = false;
     if(ptr) {
@@ -219,9 +194,6 @@ Bool system_free(Void *ptr) {
     return(res);
 }
 
-#if defined(realloc)
-    #undef realloc
-#endif
 Void *system_realloc(Void *ptr, PtrSize new_size) {
     Void *res = realloc(ptr, new_size);
     // TODO(Jonny): Is there a realloc and zero for linux?
@@ -229,10 +201,14 @@ Void *system_realloc(Void *ptr, PtrSize new_size) {
     return(res);
 }
 
-File system_read_entire_file_and_null_terminate(Char *fname, Void *memory) {
+File system_read_entire_file_and_null_terminate(Char const *fname, Void *memory) {
     File res = {};
 
-    FILE *file = fopen(fname, "r");
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), fname, string_length(fname));
+
+    FILE *file = fopen(name_buf, "r");
     if(file) {
         fseek(file, 0, SEEK_END);
         res.size = ftell(file);
@@ -246,12 +222,16 @@ File system_read_entire_file_and_null_terminate(Char *fname, Void *memory) {
     return(res);
 }
 
-Bool system_write_to_file(Char *fname, Void *data, PtrSize data_size) {
+Bool system_write_to_file(Char const *fname, Char const *data, PtrSize data_size) {
     assert(data_size > 0);
 
     Bool res = false;
 
-    FILE *file = fopen(fname, "w");
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), fname, string_length(fname));
+
+    FILE *file = fopen(name_buf, "w");
     if(file) {
         fwrite(data, 1, data_size, file);
         fclose(file);
@@ -261,10 +241,14 @@ Bool system_write_to_file(Char *fname, Void *data, PtrSize data_size) {
     return(res);
 }
 
-PtrSize system_get_file_size(Char *fname) {
+PtrSize system_get_file_size(Char const *fname) {
     PtrSize size = 0;
 
-    FILE *file = fopen(fname, "r");
+    PtrSize const name_buf_size = 256;
+    Char name_buf[name_buf_size] = {}; // MAX_PATH?
+    string_concat(name_buf, name_buf_size, global_folder, string_length(global_folder), fname, string_length(fname));
+
+    FILE *file = fopen(name_buf, "r");
     if(file) {
         fseek(file, 0, SEEK_END);
         size = ftell(file) + 1;
@@ -275,7 +259,7 @@ PtrSize system_get_file_size(Char *fname) {
     return(size);
 }
 
-Bool system_create_folder(Char *name) {
+Bool system_create_folder(Char const *name) {
     Bool res = false;
     struct stat st = {};
 
@@ -285,12 +269,32 @@ Bool system_create_folder(Char *name) {
     return(res);
 }
 
-Void system_write_to_console(Char *str) {
-    printf("%s", str);
+Void system_write_to_console(Char const *str, ...) {
+    PtrSize buf_size = 1024;
+    Char buf[1024] = {};
+
+    va_list args;
+    va_start(args, str);
+    PtrSize bytes_written = stbsp_vsnprintf(buf, buf_size, str, args);
+    assert(bytes_written < buf_size);
+
+    printf("%s", buf);
 }
 
-Void system_write_to_stderr(Char *str) {
+Void system_write_to_stderr(Char const *str) {
     fprintf(stderr, "%s", str);
 }
+
+Char const *system_get_file_extension(Char const *fname) {
+    Char const *res = 0;
+    Int dot_pos = string_contains_pos(fname, ".");
+
+    if(dot_pos != -1) {
+        res = fname + dot_pos;
+    }
+
+    return(res);
+}
+
 
 #endif
