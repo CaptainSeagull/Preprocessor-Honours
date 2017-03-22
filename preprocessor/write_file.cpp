@@ -192,7 +192,8 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
     }
 
     write_to_output_buffer(ob,
-                           "template<> struct TypeInfo<%.*s%s%s> {\n"
+                           "template<> class TypeInfo<%.*s%s%s> {\n"
+                           "public:\n"
                            "    using type      = %.*s%s%s;\n"
                            "    using weak_type = %.*s;\n"
                            "    using base      = %.*s;\n"
@@ -200,15 +201,15 @@ internal Void write_type_struct(OutputBuffer *ob, String name, Int member_count,
                            "    static constexpr char const * const name      = \"%.*s%s%s\";\n"
                            "    static constexpr char const * const weak_name = \"%.*s\";\n"
                            "\n"
-                           "    static constexpr size_t member_count = %d;\n"
-                           "    static constexpr size_t base_count   = %d;\n"
+                           "    static constexpr size_t const member_count = %d;\n"
+                           "    static constexpr size_t const base_count   = %d;\n"
                            "\n"
-                           "    static constexpr size_t ptr  = %d;\n"
-                           "    static constexpr bool is_ref = %s;\n"
+                           "    static constexpr size_t const ptr    = %d;\n"
+                           "    static constexpr bool   const is_ref = %s;\n"
                            "\n"
-                           "    static constexpr bool is_primitive = %s;\n"
-                           "    static constexpr bool is_class     = %s;\n"
-                           "    static constexpr bool is_enum      = %s;\n"
+                           "    static constexpr bool const is_primitive = %s;\n"
+                           "    static constexpr bool const is_class     = %s;\n"
+                           "    static constexpr bool const is_enum      = %s;\n"
                            "};\n"
                            "\n",
                            name.len, name.e, pointer_stuff, ref,
@@ -843,8 +844,8 @@ internal Void write_sizeof_from_str(OutputBuffer *ob, StructData *struct_data, I
     for(Int i = 0; (i < struct_count); ++i) {
         StructData *sd = struct_data + i;
 
-        if(!i) write_to_output_buffer(ob, "    ");
-        else   write_to_output_buffer(ob, "    else ");
+        if(!i) { write_to_output_buffer(ob, "    ");      }
+        else   { write_to_output_buffer(ob, "    else "); }
 
         write_to_output_buffer(ob,
                                "if((strcmp(str, \"%.*s\") == 0) || (strcmp(str, \"%.*s *\") == 0) || (strcmp(str, \"%.*s **\") == 0)) {return(sizeof(_%.*s));}\n",
@@ -969,14 +970,6 @@ internal Void write_out_type_specification_enum(OutputBuffer *ob, EnumData *enum
                 write_type_struct(ob, ed->name, ed->no_of_values, ptr_buf, an_enum, false, ed->type);
                 write_type_struct(ob, ed->name, ed->no_of_values, ptr_buf, an_enum, true, ed->type);
             }
-#if 0
-            write_type_struct(ob, ed->name, ed->no_of_values, " *", an_enum, false, ed->type);
-            write_type_struct(ob, ed->name, ed->no_of_values, " **", an_enum, false, ed->type);
-
-            write_type_struct(ob, ed->name, ed->no_of_values, "", an_enum, true, ed->type);
-            write_type_struct(ob, ed->name, ed->no_of_values, " *", an_enum, true, ed->type);
-            write_type_struct(ob, ed->name, ed->no_of_values, " **", an_enum, true, ed->type);
-#endif
         }
     }
 }

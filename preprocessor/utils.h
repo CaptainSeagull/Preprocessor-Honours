@@ -85,20 +85,6 @@ struct File {
 };
 
 //
-// Memory stuff.
-//
-
-// These are implemented in Platform code... but defined here.
-Void *system_malloc(PtrSize size, PtrSize cnt = 1);
-Bool system_free(Void *ptr);
-Void *system_realloc(Void *ptr, PtrSize size);
-
-#if defined(system_alloc)
-    #undef system_alloc
-#endif
-#define system_alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
-
-//
 // Scratch memory
 //
 // A quick-to-access temp region of memory. Should be frequently cleared.
@@ -140,7 +126,6 @@ struct ResultInt {
 ResultInt char_to_int(Char c);
 ResultInt string_to_int(String str);
 ResultInt string_to_int(Char *str);
-ResultInt calculator_string_to_int(Char *str);
 
 Uint32 safe_truncate_size_64(Uint64 v);
 

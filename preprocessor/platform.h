@@ -14,9 +14,13 @@
 #include "shared.h"
 
 // Memory.
-Void *system_malloc(PtrSize size, PtrSize cnt/*= 1*/);
+Void *system_malloc(PtrSize size, PtrSize cnt = 1);
 Bool system_free(Void *ptr);
 Void *system_realloc(Void *ptr, PtrSize size);
+#if defined(system_alloc)
+    #undef system_alloc
+#endif
+#define system_alloc(Type, ...) (Type *)system_malloc(sizeof(Type), ##__VA_ARGS__)
 
 // File IO.
 struct File;

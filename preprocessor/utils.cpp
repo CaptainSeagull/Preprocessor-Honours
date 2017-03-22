@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "platform.h"
 
+#define STB_SPRINTF_NOFLOAT
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb_sprintf.h"
 
@@ -74,7 +75,7 @@ Void push_error_(ErrorType type, Char const *guid) {
 #endif
 }
 
-Bool print_errors(void) {
+Bool print_errors() {
     Bool res = false;
 
     if(global_error_count) {
@@ -103,6 +104,7 @@ Bool print_errors(void) {
 // A quick-to-access temp region of memory. Should be frequently cleared.
 internal Int scratch_memory_index = 0;
 internal Void *global_scratch_memory = 0;
+
 Void *push_scratch_memory(Int size/*= scratch_memory_size*/) {
     if(!global_scratch_memory) {
         global_scratch_memory = system_alloc(Byte, scratch_memory_size + 1);
@@ -272,7 +274,9 @@ ResultInt string_to_int(String str) {
 
     for(Int i = 0; (i < str.len); ++i) {
         ResultInt temp_int = char_to_int(str.e[i]);
-        if(!temp_int.success) break;
+        if(!temp_int.success) {
+            break;
+        }
 
         res.e *= 10;
         res.e += temp_int.e;
@@ -326,10 +330,10 @@ Variable create_variable(Char const *type, Char const *name, Int ptr/*= 0*/, Int
 Bool compare_variable(Variable a, Variable b) {
     Bool res = true;
 
-    if(!string_compare(a.type, b.type))      res = false;
-    else if(!string_compare(a.name, b.name)) res = false;
-    else if(a.ptr != b.ptr)                  res = false;
-    else if(a.array_count != b.array_count)  res = false;
+    if(!string_compare(a.type, b.type))      { res = false; }
+    else if(!string_compare(a.name, b.name)) { res = false; }
+    else if(a.ptr != b.ptr)                  { res = false; }
+    else if(a.array_count != b.array_count)  { res = false; }
 
     return(res);
 }
@@ -362,7 +366,7 @@ Void copy(Void *dest, Void *src, PtrSize size) {
     }
 }
 
-Void set(void *dest, Byte v, PtrSize n) {
+Void set(Void *dest, Byte v, PtrSize n) {
     Byte *dest8 = cast(Byte *)dest;
     for(Int i = 0; (i < n); ++i, ++dest8) {
         *dest8 = cast(Byte)v;

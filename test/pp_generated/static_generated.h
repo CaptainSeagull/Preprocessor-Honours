@@ -35,24 +35,25 @@ typedef bool _bool;
 #define PP_OS_LINUX 0
 
 // TODO(Jonny): Add Type in here?
-template<typename T> struct TypeInfo {
+template<typename T> class TypeInfo {
+public:
     using type      = void;
     using weak_type = void;
     using base      = void;
 
-    static constexpr char const * const name      = 0;
-    static constexpr char const * const weak_name = 0;
+    static constexpr char const * const name      = NULL;
+    static constexpr char const * const weak_name = NULL;
 
     static constexpr size_t const member_count = 0;
     static constexpr size_t const base_count   = 0;
 
-    static constexpr bool const ptr    = 0;
-    static constexpr bool const is_ref = 0;
+    static constexpr size_t const ptr    = 0;
+    static constexpr bool   const is_ref = false;
 
 
-    static constexpr bool const is_primitive = 0;
-    static constexpr bool const is_class     = 0;
-    static constexpr bool const is_enum      = 0;
+    static constexpr bool const is_primitive = false;
+    static constexpr bool const is_class     = false;
+    static constexpr bool const is_enum      = false;
 };
 
 struct MemberDefinition {

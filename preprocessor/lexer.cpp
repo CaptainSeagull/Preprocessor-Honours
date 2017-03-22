@@ -10,6 +10,7 @@
   ===================================================================================================*/
 
 #include "lexer.h"
+#include "platform.h"
 
 struct MacroData {
     String iden;
@@ -41,7 +42,6 @@ enum TokenType {
     TokenType_inclusive_or,
     TokenType_not,
     TokenType_var_args,
-
 
     TokenType_plus,
     TokenType_minus,
@@ -345,7 +345,9 @@ internal Bool peak_require_token(Tokenizer *tokenizer, Char const *str) {
     Tokenizer cpy = *tokenizer;
     Token token = get_token(&cpy);
 
-    if(string_compare(token.e, str, token.len)) { res = true; }
+    if(string_compare(token.e, str, token.len)) {
+        res = true;
+    }
 
     return(res);
 }
@@ -372,7 +374,9 @@ internal Void skip_to_matching_bracket(Tokenizer *tokenizer) {
     while(should_loop) {
         token = get_token(tokenizer);
         switch(token.type) {
-            case TokenType_open_brace: ++brace_count; break;
+            case TokenType_open_brace: {
+                ++brace_count;
+            } break;
 
             case TokenType_close_brace: {
                 --brace_count;
@@ -391,10 +395,13 @@ internal Void parse_template(Tokenizer *tokenizer) {
     while(should_loop) {
         token = get_token(tokenizer);
         switch(token.type) {
-            case TokenType_open_angle_bracket: ++angle_bracket_count; break;
+            case TokenType_open_angle_bracket: {
+                ++angle_bracket_count;
+            } break;
 
             case TokenType_close_angle_bracket: {
                 --angle_bracket_count;
+
                 if(!angle_bracket_count) {
                     should_loop = false;
                 }
@@ -406,6 +413,11 @@ internal Void parse_template(Tokenizer *tokenizer) {
 struct ParseStructResult {
     StructData sd;
     Bool success;
+};
+struct MemberInfo {
+    Char const *pos;
+    Access access;
+    Bool is_inside_anonymous_struct;
 };
 internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_type) {
     ParseStructResult res = {};
@@ -445,12 +457,6 @@ internal ParseStructResult parse_struct(Tokenizer *tokenizer, StructType struct_
 
         res.sd.member_count = 0;
         Int member_cnt = 0;
-
-        struct MemberInfo {
-            Char const *pos;
-            Access access;
-            Bool is_inside_anonymous_struct;
-        };
 
         PtrSize member_info_mem_cnt = 256;
         MemberInfo *member_info = system_alloc(MemberInfo, member_info_mem_cnt);
@@ -818,7 +824,9 @@ internal Token get_token(Tokenizer *tokenizer) {
         case '"': {
             res.e = tokenizer->at;
             while((tokenizer->at[0]) && (tokenizer->at[0] != '"')) {
-                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { ++tokenizer->at; }
+                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) {
+                    ++tokenizer->at;
+                }
                 ++tokenizer->at;
             }
 
@@ -830,7 +838,9 @@ internal Token get_token(Tokenizer *tokenizer) {
         case '\'': {
             res.e = tokenizer->at;
             while((tokenizer->at[0]) && (tokenizer->at[0] != '\'')) {
-                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) { ++tokenizer->at; }
+                if((tokenizer->at[0] == '\\') && (tokenizer->at[1])) {
+                    ++tokenizer->at;
+                }
                 ++tokenizer->at;
             }
 
@@ -848,7 +858,9 @@ internal Token get_token(Tokenizer *tokenizer) {
                 res.len = safe_truncate_size_64(tokenizer->at - res.e);
                 res.type = TokenType_identifier;
             } else if(is_num(c)) {
-                while(is_num(tokenizer->at[0])) { ++tokenizer->at; }
+                while(is_num(tokenizer->at[0])) {
+                    ++tokenizer->at;
+                }
 
                 res.len = safe_truncate_size_64(tokenizer->at - res.e);
                 res.type = TokenType_number;

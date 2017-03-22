@@ -10,6 +10,7 @@
   ===================================================================================================*/
 
 #include "google_test/gtest.h"
+#include "platform.h"
 #include "lexer.h"
 namespace {
 #include "lexer.cpp"
@@ -148,13 +149,13 @@ TEST(EnumTest, enum_type_test) {
 }
 
 TEST(EnumTest, enum_class_test) {
-    Char const *str = "enum class Enum {};";
+    Char const *str = "enum class Enum : int {};";
     EnumData gen = parse_enum_test(str);
     ASSERT_TRUE(gen.is_struct) << "Error: Failed to properly handle an enum class.";
 }
 
 TEST(EnumTest, enum_number_of_values_test) {
-    Char const *str = "enum Nums {one, two, three};";
+    Char const *str = "enum Nums : short {one, two, three};";
     EnumData gen = parse_enum_test(str);
     ASSERT_TRUE(gen.no_of_values == 3) << "Error: Did not generate the correct number of values for an enum.";
 }

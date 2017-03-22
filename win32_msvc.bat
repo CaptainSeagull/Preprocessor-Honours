@@ -1,12 +1,12 @@
 @echo off
 
 rem Variables to set.
-set RELEASE=true
+set RELEASE=false
 set RUN_CODE_AFTER_BUILDING=false
-set GTEST=false
+set GTEST=true
 
 set RUN_TEST=true
-set RUN_BREAKOUT=true
+set RUN_BREAKOUT=false
 
 rem Setup Visual Studio 2015.
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
