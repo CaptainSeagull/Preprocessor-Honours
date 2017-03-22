@@ -23,29 +23,3 @@ if [ "$GTEST" = "true" ]; then
         ./build/preprocessor -t
     fi
 fi
-
-#delme from here
-BUILD_TEST_CODE=true
-BUILD_BREAKOUT=false
-
-# Test.
-if [ "$BUILD_TEST_CODE" = "true" ]; then
-    echo "Building test code"
-    pushd "test"
-    "../build/preprocessor" test_code.cpp
-    popd
-
-    clang++-"$CLANG_VERSION" -Wall -Wextra "test/test_code.cpp" -std=c++1z -o test_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -Wno-switch -Wno-sign-compare -Wno-unused-private-field -Wno-unused-parameter -g -ldl
-    mv "./test_exe" "build/test"
-fi
-
-# Breakout.
-if [ "$BUILD_BREAKOUT" = "true" ]; then
-    echo "Building Breakout."
-    pushd "breakout"
-    "../build/preprocessor" breakout.cpp
-    popd
-
-    clang++-"$CLANG_VERSION" -Wall -Wextra "breakout/breakout.cpp" -std=c++11 -o breakout_exe -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-c++11-compat-deprecated-writable-strings -g -ldl -lSDL2
-    mv "./breakout_exe" "build/breakout"
-fi
